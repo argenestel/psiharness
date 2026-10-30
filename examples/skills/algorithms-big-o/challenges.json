@@ -1,0 +1,375 @@
+[
+	{
+		"id": "ch-complexity-analysis-1",
+		"skill": "algorithms-big-o",
+		"subskillId": "complexity-analysis",
+		"kind": "apply",
+		"level": 1,
+		"prompt": "Implement count_even(values: list[int]) -> int. Return how many values are even, make one pass, and do not mutate the input. State the time and extra-space complexity after coding.",
+		"hints": [
+			"An empty list should contribute zero; each item needs one parity check.",
+			"Accumulate a count while iterating once."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def count_even(values: list[int]) -> int:\n    \"\"\"Count even integers in one pass without changing values.\"\"\"\n    pass",
+		"tests": "assert count_even([]) == 0, \"empty input should count zero\"\nassert count_even([1, 2, 4, 5]) == 2, \"mixed parity count\"\nassert count_even([-2, 0, 3]) == 2, \"negative and zero are handled\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-complexity-analysis-2",
+		"skill": "algorithms-big-o",
+		"subskillId": "complexity-analysis",
+		"kind": "build",
+		"level": 4,
+		"prompt": "BUILD QUEST: For an ascending list, implement linear_contains(values, target), binary_contains(values, target), and search_report(values, target). The first two return booleans; the report returns a dict with keys linear and binary. Keep the input unchanged and explain why the two helpers have different time complexity. This is intentionally a multi-function quest.",
+		"hints": [
+			"The linear helper can stop at the first match; the binary helper maintains an inclusive left/right window.",
+			"When the target is smaller than the middle value, discard the right half; when larger, discard the left half.",
+			"The report should call both helpers rather than duplicate their search logic."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def linear_contains(values: list[int], target: int) -> bool:\n    \"\"\"Return whether target appears using a linear scan.\"\"\"\n    pass\n\n\ndef binary_contains(values: list[int], target: int) -> bool:\n    \"\"\"Return whether target appears in an ascending list using binary search.\"\"\"\n    pass\n\n\ndef search_report(values: list[int], target: int) -> dict[str, bool]:\n    \"\"\"Compare both membership answers without changing the input.\"\"\"\n    pass",
+		"tests": "data = [-5, -1, 0, 3, 9]\nassert linear_contains(data, -5) is True, \"linear finds first item\"\nassert binary_contains(data, 9) is True, \"binary finds last item\"\nassert search_report(data, 4) == {\"linear\": False, \"binary\": False}, \"both reject a missing item\"\nassert search_report([], 0) == {\"linear\": False, \"binary\": False}, \"empty input is safe\"\nassert data == [-5, -1, 0, 3, 9], \"searches must not mutate input\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-complexity-analysis-3",
+		"skill": "algorithms-big-o",
+		"subskillId": "complexity-analysis",
+		"kind": "predict",
+		"level": 1,
+		"prompt": "A function visits each of n items exactly once and performs constant work per item. Which time-growth class describes it?",
+		"hints": [
+			"Count how the work changes when n doubles.",
+			"One visit per item grows in direct proportion to n."
+		],
+		"format": "choice",
+		"choices": ["O(1)", "O(log n)", "O(n)", "O(n²)"],
+		"expected": "O(n)",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-complexity-analysis-4",
+		"skill": "algorithms-big-o",
+		"subskillId": "complexity-analysis",
+		"kind": "predict",
+		"level": 2,
+		"prompt": "Two independent loops each may visit all n items. What is the tightest usual time-growth class for the combined code?",
+		"hints": [
+			"Sequential loops add their work; nested loops multiply it.",
+			"Two n-sized loops run one after another, so 2n drops its constant factor."
+		],
+		"format": "choice",
+		"choices": ["O(1)", "O(log n)", "O(n)", "O(n²)"],
+		"expected": "O(n)",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-two-pointers-1",
+		"skill": "algorithms-big-o",
+		"subskillId": "two-pointers",
+		"kind": "apply",
+		"level": 1,
+		"prompt": "Implement is_palindrome(text: str) -> bool. Compare from both ends, ignoring case and non-alphanumeric characters. Return True for an empty or punctuation-only string.",
+		"hints": [
+			"Move left and right toward the center after skipping characters that are not letters or digits.",
+			"Compare lowercase forms; a mismatch can return False immediately."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def is_palindrome(text: str) -> bool:\n    \"\"\"Check a normalized string with two inward-moving pointers.\"\"\"\n    pass",
+		"tests": "assert is_palindrome(\"\") is True, \"empty text is a palindrome\"\nassert is_palindrome(\"A man, a plan, a canal: Panama\") is True, \"normalized phrase\"\nassert is_palindrome(\"race a car\") is False, \"non-palindrome phrase\"\nassert is_palindrome(\" !!! \" ) is True, \"punctuation-only text has no mismatch\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-two-pointers-2",
+		"skill": "algorithms-big-o",
+		"subskillId": "two-pointers",
+		"kind": "debug",
+		"level": 2,
+		"prompt": "Fix the merge routine: implement merge_sorted(left, right) -> list[int] for two ascending lists. Return a new ascending list, preserving duplicates and all values. Use one pointer per input and handle either list becoming empty.",
+		"hints": [
+			"At each step append the smaller current head, then advance only that pointer.",
+			"When one pointer reaches the end, append the remaining tail from the other list."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def merge_sorted(left: list[int], right: list[int]) -> list[int]:\n    \"\"\"Merge two ascending lists without losing duplicate values.\"\"\"\n    pass",
+		"tests": "assert merge_sorted([], []) == [], \"two empty lists\"\nassert merge_sorted([], [-2, 4]) == [-2, 4], \"empty left tail\"\nassert merge_sorted([1, 3, 3], [2, 3, 5]) == [1, 2, 3, 3, 3, 5], \"duplicates stay in order\"\nleft = [0, 2]\nright = [1]\nassert merge_sorted(left, right) == [0, 1, 2], \"interleaved values\"\nassert left == [0, 2] and right == [1], \"inputs are not mutated\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-two-pointers-3",
+		"skill": "algorithms-big-o",
+		"subskillId": "two-pointers",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement remove_duplicates_sorted(values: list[int]) -> int. The input is ascending. Compact unique values at the front in place and return the number of unique values; the suffix after that length does not matter.",
+		"hints": [
+			"Keep a write pointer for the next unseen value and scan with a read pointer.",
+			"The first value, when present, is already unique; only write when the value differs from the previous kept value."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def remove_duplicates_sorted(values: list[int]) -> int:\n    \"\"\"Compact an ascending list in place and return its unique prefix length.\"\"\"\n    pass",
+		"tests": "values = []\nassert remove_duplicates_sorted(values) == 0 and values == [], \"empty list\"\nvalues = [1, 1, 2, 2, 3]\nlength = remove_duplicates_sorted(values)\nassert length == 3 and values[:length] == [1, 2, 3], \"mixed duplicates\"\nvalues = [0, 0, 0]\nlength = remove_duplicates_sorted(values)\nassert length == 1 and values[:length] == [0], \"all values equal\"\nvalues = [-2, -2, -1]\nlength = remove_duplicates_sorted(values)\nassert length == 2 and values[:length] == [-2, -1], \"negative values\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-binary-search-1",
+		"skill": "algorithms-big-o",
+		"subskillId": "binary-search",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Implement first_index(sorted_values: list[int], target: int) -> int. Return the first index containing target in an ascending list with duplicates, or -1 when absent. Use O(log n) search rather than a full scan.",
+		"hints": [
+			"On equality, save the index and continue searching to the left.",
+			"Use a half-open or inclusive interval consistently, and stop when no candidates remain."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def first_index(sorted_values: list[int], target: int) -> int:\n    \"\"\"Find the leftmost target in an ascending list with binary search.\"\"\"\n    pass",
+		"tests": "assert first_index([], 4) == -1, \"empty input\"\nassert first_index([1, 2, 2, 2, 5], 2) == 1, \"leftmost duplicate\"\nassert first_index([1, 3, 5], 1) == 0, \"first position\"\nassert first_index([1, 3, 5], 4) == -1, \"missing target\"\nassert first_index([1, 3, 5], 9) == -1, \"target beyond right boundary\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-binary-search-2",
+		"skill": "algorithms-big-o",
+		"subskillId": "binary-search",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Implement search_insert(sorted_values: list[int], target: int) -> int. Return the leftmost index where target is found or inserted in an ascending list. Duplicates insert before existing equal values.",
+		"hints": [
+			"This is a lower-bound search: keep a candidate answer when values[mid] is at least target.",
+			"When values[mid] is smaller, move left past mid; otherwise keep mid and move right down."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def search_insert(sorted_values: list[int], target: int) -> int:\n    \"\"\"Return the leftmost insertion position for target.\"\"\"\n    pass",
+		"tests": "assert search_insert([], 3) == 0, \"empty list inserts at zero\"\nassert search_insert([1, 3, 5, 6], 5) == 2, \"existing value\"\nassert search_insert([1, 3, 5, 6], 2) == 1, \"between values\"\nassert search_insert([1, 3, 5, 6], 9) == 4, \"after all values\"\nassert search_insert([1, 2, 2, 4], 2) == 1, \"leftmost duplicate position\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-binary-search-3",
+		"skill": "algorithms-big-o",
+		"subskillId": "binary-search",
+		"kind": "predict",
+		"level": 2,
+		"prompt": "A binary search discards half of its remaining sorted candidates after each comparison. Which time-growth class describes searching n candidates?",
+		"hints": [
+			"Ask how many halvings reduce n to one candidate.",
+			"The answer counts the exponent in 2^k ≈ n."
+		],
+		"format": "choice",
+		"choices": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+		"expected": "O(log n)",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-hash-maps-1",
+		"skill": "algorithms-big-o",
+		"subskillId": "hash-maps",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Implement two_sum(values: list[int], target: int) -> tuple[int, int]. Return indices of the first pair encountered whose values sum to target, using distinct indices; return (-1, -1) when no pair exists. Aim for O(n) average time.",
+		"hints": [
+			"For each value, look up target - value among indices already seen.",
+			"Check the complement before storing the current index so one element cannot pair with itself."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def two_sum(values: list[int], target: int) -> tuple[int, int]:\n    \"\"\"Return the first distinct index pair whose values add to target.\"\"\"\n    pass",
+		"tests": "assert two_sum([], 0) == (-1, -1), \"empty input has no pair\"\nassert two_sum([2, 7, 11, 15], 9) == (0, 1), \"basic complement lookup\"\nassert two_sum([3, 3], 6) == (0, 1), \"duplicate values use distinct indices\"\nassert two_sum([1, 2, 4], 8) == (-1, -1), \"missing pair\"\nassert two_sum([-3, 5, 1], 2) == (0, 1), \"negative values\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-hash-maps-2",
+		"skill": "algorithms-big-o",
+		"subskillId": "hash-maps",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Implement first_unique_char(text: str) -> int. Return the index of the first character occurring exactly once, preserving case; return -1 if none exists.",
+		"hints": [
+			"Make one frequency table, then make a second left-to-right pass.",
+			"Do not confuse a character's first position with its total frequency."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def first_unique_char(text: str) -> int:\n    \"\"\"Return the first index whose character has frequency one.\"\"\"\n    pass",
+		"tests": "assert first_unique_char(\"\") == -1, \"empty text\"\nassert first_unique_char(\"leetcode\") == 0, \"first character is unique\"\nassert first_unique_char(\"loveleetcode\") == 2, \"later unique character\"\nassert first_unique_char(\"aabb\") == -1, \"no unique character\"\nassert first_unique_char(\"AaA\") == 1, \"case is preserved\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-hash-maps-3",
+		"skill": "algorithms-big-o",
+		"subskillId": "hash-maps",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement group_anagrams(words: list[str]) -> list[list[str]]. Group words with the same letters, preserve input order within each group, and order groups by the first word that created each group. Treat case as significant.",
+		"hints": [
+			"A sorted spelling is a canonical key for an anagram group.",
+			"Use a dictionary from key to the group list, and append a group only when its key is new."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def group_anagrams(words: list[str]) -> list[list[str]]:\n    \"\"\"Group anagrams while preserving first-seen group and word order.\"\"\"\n    pass",
+		"tests": "assert group_anagrams([]) == [], \"empty input\"\nassert group_anagrams([\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\"]) == [[\"eat\", \"tea\", \"ate\"], [\"tan\", \"nat\"], [\"bat\"]], \"stable anagram groups\"\nassert group_anagrams([\"\", \"\"]) == [[\"\", \"\"]], \"empty strings share a group\"\nassert group_anagrams([\"Ab\", \"ba\"]) == [[\"Ab\"], [\"ba\"]], \"case-sensitive keys\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-stacks-queues-1",
+		"skill": "algorithms-big-o",
+		"subskillId": "stacks-queues",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Implement is_valid_brackets(text: str) -> bool. Validate (), [], and {} nesting while ignoring every non-bracket character. Return False for a mismatched, prematurely closed, or unclosed bracket.",
+		"hints": [
+			"Push opening brackets; a closing bracket must match the most recent opening bracket.",
+			"At the end, the stack must be empty."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def is_valid_brackets(text: str) -> bool:\n    \"\"\"Validate nested brackets while ignoring ordinary characters.\"\"\"\n    pass",
+		"tests": "assert is_valid_brackets(\"\") is True, \"no brackets are valid\"\nassert is_valid_brackets(\"a[(b){c}]\") is True, \"proper nesting\"\nassert is_valid_brackets(\"([)]\") is False, \"crossed brackets\"\nassert is_valid_brackets(\"hello )\") is False, \"premature close\"\nassert is_valid_brackets(\"{[()] }\") is True, \"spaces are ignored\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-stacks-queues-2",
+		"skill": "algorithms-big-o",
+		"subskillId": "stacks-queues",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Implement next_greater(values: list[int]) -> list[int]. For each position, return the first later value strictly greater than it, or -1 if none exists. Use a monotonic stack so each item is pushed and popped at most once.",
+		"hints": [
+			"Keep indices whose next greater value has not been seen yet.",
+			"When the current value exceeds the value at the stack's top index, resolve that older index and continue popping."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def next_greater(values: list[int]) -> list[int]:\n    \"\"\"Return each position's first strictly greater value to its right.\"\"\"\n    pass",
+		"tests": "assert next_greater([]) == [], \"empty input\"\nassert next_greater([2, 1, 2, 4, 3]) == [4, 2, 4, -1, -1], \"mixed rises and drops\"\nassert next_greater([5]) == [-1], \"single value\"\nassert next_greater([2, 2]) == [-1, -1], \"equal values are not greater\"\nassert next_greater([-1, -2, -3]) == [-1, -1, -1], \"decreasing negatives\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-graph-traversal-1",
+		"skill": "algorithms-big-o",
+		"subskillId": "graph-traversal",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement shortest_path(graph: dict[str, list[str]], start: str, target: str) -> int for an unweighted directed graph. Return the minimum number of edges from start to target, or -1 if unreachable. Handle cycles and start == target.",
+		"hints": [
+			"Use a queue of (node, distance) pairs and mark a node visited when enqueuing it.",
+			"The first time BFS dequeues target, its distance is minimal."
+		],
+		"format": "code",
+		"language": "python",
+		"setup": "from collections import deque",
+		"starterCode": "def shortest_path(graph: dict[str, list[str]], start: str, target: str) -> int:\n    \"\"\"Return an unweighted directed shortest-path length with BFS.\"\"\"\n    pass",
+		"tests": "graph = {\"A\": [\"B\", \"C\"], \"B\": [\"D\"], \"C\": [\"D\"], \"D\": []}\nassert shortest_path(graph, \"A\", \"D\") == 2, \"shortest route\"\nassert shortest_path(graph, \"A\", \"A\") == 0, \"same start and target\"\nassert shortest_path(graph, \"D\", \"A\") == -1, \"unreachable target\"\ncyclic = {\"A\": [\"B\"], \"B\": [\"A\", \"C\"], \"C\": []}\nassert shortest_path(cyclic, \"A\", \"C\") == 2, \"cycle does not loop forever\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-graph-traversal-2",
+		"skill": "algorithms-big-o",
+		"subskillId": "graph-traversal",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Implement count_components(n: int, edges: list[tuple[int, int]]) -> int for an undirected graph whose vertices are 0 through n-1. Count isolated vertices, ignore repeated edges, and do not traverse outside the valid vertex range.",
+		"hints": [
+			"Build adjacency lists, then start a DFS/BFS from every still-unvisited vertex.",
+			"Mark each vertex before following its neighbors; increment the component count once per new traversal."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def count_components(n: int, edges: list[tuple[int, int]]) -> int:\n    \"\"\"Count connected components in an undirected vertex-labeled graph.\"\"\"\n    pass",
+		"tests": "assert count_components(0, []) == 0, \"empty graph\"\nassert count_components(4, [(0, 1), (1, 2), (0, 1)]) == 2, \"duplicate edge still one component\"\nassert count_components(5, [(0, 1), (3, 4)]) == 3, \"isolated vertex counts\"\nassert count_components(3, [(0, 4), (1, 2)]) == 2, \"out-of-range edge is ignored\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-graph-traversal-3",
+		"skill": "algorithms-big-o",
+		"subskillId": "graph-traversal",
+		"kind": "explain",
+		"level": 4,
+		"prompt": "Explain when BFS is preferable to DFS for an unweighted graph, why marking nodes when discovered prevents duplicate work, and the time/space complexity of either traversal with adjacency lists. Include one edge case a robust implementation must test.",
+		"hints": [
+			"Contrast shortest-path layers with simply reaching every node.",
+			"Name the queue/stack frontier and the visited set in the complexity accounting."
+		],
+		"format": "text",
+		"rubric": [
+			"Says BFS explores in distance layers and therefore finds an unweighted shortest path; DFS does not guarantee that order.",
+			"Explains that marking on discovery prevents cycles and repeated enqueues/visits.",
+			"Gives O(V+E) time and O(V) auxiliary space for an adjacency-list traversal, plus an edge case such as a cycle, disconnected graph, or start equal to target."
+		],
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sorting-1",
+		"skill": "algorithms-big-o",
+		"subskillId": "sorting",
+		"kind": "boss",
+		"level": 5,
+		"prompt": "BOSS: Implement merge_sort(values: list[int]) -> list[int] without mutating the input or calling sort/sorted, and sort_students(students: list[tuple[str, int]]) -> list[tuple[str, int]] ordered by ascending score then ascending name. Explain why merge_sort is O(n log n) time and O(n) extra space, and make the tie-break deterministic.",
+		"hints": [
+			"Split until a list has at most one item, then merge two sorted halves.",
+			"For student records compare (score, name); for numeric merge, append the smaller head and then the remaining tail.",
+			"Copy records or build new lists so neither input is changed."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def merge_sort(values: list[int]) -> list[int]:\n    \"\"\"Return a new sorted list using merge sort, without mutating values.\"\"\"\n    pass\n\n\ndef sort_students(students: list[tuple[str, int]]) -> list[tuple[str, int]]:\n    \"\"\"Return records ordered by score, then name, without mutating students.\"\"\"\n    pass",
+		"tests": "values = [3, -1, 2, 2, 0]\nassert merge_sort(values) == [-1, 0, 2, 2, 3], \"numeric merge sort\"\nassert values == [3, -1, 2, 2, 0], \"numeric input is unchanged\"\nassert merge_sort([]) == [], \"empty merge sort\"\nstudents = [(\"zoe\", 90), (\"amy\", 80), (\"lee\", 90), (\"bea\", 80)]\nassert sort_students(students) == [(\"amy\", 80), (\"bea\", 80), (\"lee\", 90), (\"zoe\", 90)], \"score then name order\"\nassert students == [(\"zoe\", 90), (\"amy\", 80), (\"lee\", 90), (\"bea\", 80)], \"student input is unchanged\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sorting-2",
+		"skill": "algorithms-big-o",
+		"subskillId": "sorting",
+		"kind": "predict",
+		"level": 2,
+		"prompt": "What is the usual comparison-based time complexity of merge sort on n items, including its worst case?",
+		"hints": [
+			"There are logarithmically many split levels.",
+			"Each level merges a total of n items."
+		],
+		"format": "choice",
+		"choices": ["O(n)", "O(log n)", "O(n log n)", "O(n²)"],
+		"expected": "O(n log n)",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sorting-3",
+		"skill": "algorithms-big-o",
+		"subskillId": "sorting",
+		"kind": "quickfire",
+		"level": 3,
+		"prompt": "A binary search halves the candidate range each step. For n = 1024 candidates, what is ceil(log2(n))? Enter the number only.",
+		"hints": [
+			"Compute powers of two until you reach 1024.",
+			"2^10 equals 1024."
+		],
+		"format": "number",
+		"expected": "10",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sorting-4",
+		"skill": "algorithms-big-o",
+		"subskillId": "sorting",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Implement top_k_frequent(values: list[int], k: int) -> list[int]. Return up to k distinct values ordered by decreasing frequency, then increasing numeric value for ties. Return [] when k <= 0.",
+		"hints": [
+			"Count values with a dictionary, then make the ranking key (-frequency, value).",
+			"Sort the distinct keys by that key and slice to k; never return a duplicate value."
+		],
+		"format": "code",
+		"language": "python",
+		"starterCode": "def top_k_frequent(values: list[int], k: int) -> list[int]:\n    \"\"\"Return up to k values ranked by frequency and then numeric value.\"\"\"\n    pass",
+		"tests": "assert top_k_frequent([], 3) == [], \"empty input\"\nassert top_k_frequent([1, 1, 1, 2, 2, 3], 2) == [1, 2], \"most frequent values\"\nassert top_k_frequent([4, 1, 3, 2], 3) == [1, 2, 3], \"numeric tie-break\"\nassert top_k_frequent([2, 2, 1], 0) == [], \"nonpositive k\"\nassert top_k_frequent([5, 5, 6], 9) == [5, 6], \"k larger than distinct count\"",
+		"createdAt": "2026-10-30T00:00:00Z"
+	}
+]

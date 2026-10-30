@@ -1,0 +1,456 @@
+[
+	{
+		"id": "ch-sql-names",
+		"skill": "sql-lab",
+		"subskillId": "select-filter",
+		"kind": "apply",
+		"level": 1,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return name, city for all customers.",
+		"hints": [
+			"Choose only the requested columns.",
+			"Project name and city from customers."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[\"Ann\",\"Pune\"],[\"Bo\",\"Delhi\"],[\"Cy\",\"Pune\"],[\"Dee\",\"Kochi\"],[\"Eli\",\"Delhi\"]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-price-boundary",
+		"skill": "sql-lab",
+		"subskillId": "select-filter",
+		"kind": "apply",
+		"level": 1,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return product_id, name for ware products priced at least 20.",
+		"hints": [
+			"Both conditions must hold.",
+			"Combine category and price with AND; include price 20."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[3,\"Mug\"],[4,\"Plate\"]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-paid-dates",
+		"skill": "sql-lab",
+		"subskillId": "select-filter",
+		"kind": "apply",
+		"level": 1,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return order_id for paid orders dated on or after 2026-01-02.",
+		"hints": [
+			"ISO dates compare lexically.",
+			"Quote paid and the date; use >= for the boundary."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[102],[103],[105],[106]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-top-prices",
+		"skill": "sql-lab",
+		"subskillId": "sort-limit",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return product_id, price for the three most expensive products, price descending then product_id ascending.",
+		"hints": [
+			"Equal prices need a deterministic tie breaker.",
+			"Order by price DESC, product_id ASC before LIMIT 3."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- ordered\n-- Compare returned rows with expected; row order matters.",
+		"expected": "[[4,30],[2,20],[3,20]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-distinct-cities",
+		"skill": "sql-lab",
+		"subskillId": "select-filter",
+		"kind": "apply",
+		"level": 1,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return each distinct city once.",
+		"hints": [
+			"Duplicate city names should collapse.",
+			"Use DISTINCT on city."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[\"Pune\"],[\"Delhi\"],[\"Kochi\"]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-customer-orders",
+		"skill": "sql-lab",
+		"subskillId": "joins",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return order_id, customer name for paid orders only.",
+		"hints": [
+			"Connect the foreign key to its primary key.",
+			"Join customers on customer_id and filter paid orders."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[101,\"Ann\"],[102,\"Ann\"],[103,\"Bo\"],[105,\"Cy\"],[106,\"Ann\"]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-never-ordered",
+		"skill": "sql-lab",
+		"subskillId": "joins",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return customer name for customers with no orders of any status.",
+		"hints": [
+			"An inner join loses the rows you need.",
+			"LEFT JOIN orders, then keep NULL order ids."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[\"Eli\"]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-line-totals",
+		"skill": "sql-lab",
+		"subskillId": "joins",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. For order 101, return product name, quantity, line total (price times quantity).",
+		"hints": [
+			"Each item is one output row.",
+			"Join products and multiply price by quantity."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[\"Tea\",2,20],[\"Mug\",1,20]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-order-counts",
+		"skill": "sql-lab",
+		"subskillId": "group-having",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return customer name, count of all orders, including zero orders.",
+		"hints": [
+			"Preserve the customer without orders.",
+			"COUNT(o.order_id) ignores the NULL from the LEFT JOIN."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[\"Ann\",3],[\"Bo\",2],[\"Cy\",1],[\"Dee\",1],[\"Eli\",0]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-repeat-paid",
+		"skill": "sql-lab",
+		"subskillId": "group-having",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return customer_id, paid order count for customers with at least two paid orders.",
+		"hints": [
+			"Filter rows before grouping and groups afterward.",
+			"Use WHERE paid, GROUP BY customer_id, then HAVING COUNT(*) >= 2."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[1,3]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-paid-revenue",
+		"skill": "sql-lab",
+		"subskillId": "group-having",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return product name, paid revenue for every product, including zero for unsold products. Cancelled and pending orders contribute zero.",
+		"hints": [
+			"Start with products so an unsold product survives.",
+			"Use LEFT JOINs and sum CASE WHEN paid THEN price*quantity ELSE 0 END."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[\"Tea\",40],[\"Coffee\",20],[\"Mug\",60],[\"Plate\",60],[\"Spoon\",0]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-above-average",
+		"skill": "sql-lab",
+		"subskillId": "subqueries",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return name, price for products priced strictly above the overall average price.",
+		"hints": [
+			"Compute a single scalar average.",
+			"Compare each product price to SELECT AVG(price) FROM products."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[\"Coffee\",20],[\"Mug\",20],[\"Plate\",30]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-no-paid",
+		"skill": "sql-lab",
+		"subskillId": "subqueries",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return names of customers with no paid orders (including customers with no orders).",
+		"hints": [
+			"Test absence relative to each customer.",
+			"Use correlated NOT EXISTS with status paid."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[\"Dee\"],[\"Eli\"]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-bought-mug",
+		"skill": "sql-lab",
+		"subskillId": "subqueries",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return each customer name once if they bought a Mug in a paid order.",
+		"hints": [
+			"Multiple matching items should not duplicate a customer.",
+			"Use EXISTS around the orders/items/products join."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- Compare returned rows with expected; row order does not matter.",
+		"expected": "[[\"Ann\"],[\"Cy\"]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-row-number",
+		"skill": "sql-lab",
+		"subskillId": "window-ranking",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return customer_id, order_id, sequential order number per customer across all orders. Number by order_date then order_id; output by customer_id then order number.",
+		"hints": [
+			"Each customer starts at one.",
+			"Partition ROW_NUMBER by customer_id and order by date and id."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- ordered\n-- Compare returned rows with expected; row order matters.",
+		"expected": "[[1,101,1],[1,102,2],[1,106,3],[2,103,1],[2,104,2],[3,105,1],[4,107,1]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-price-rank",
+		"skill": "sql-lab",
+		"subskillId": "window-ranking",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return product_id, price, global price RANK descending; output by price descending then product_id ascending. Ties share ranks and leave gaps.",
+		"hints": [
+			"The tie breaker belongs only in the final ORDER BY.",
+			"RANK over price DESC preserves ties; final order adds product_id."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- ordered\n-- Compare returned rows with expected; row order matters.",
+		"expected": "[[4,30,1],[2,20,2],[3,20,2],[1,10,4],[5,5,5]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-running-quantity",
+		"skill": "sql-lab",
+		"subskillId": "window-totals",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return item_id, running sum of quantity across all items in item_id order. Use an explicit ROWS frame.",
+		"hints": [
+			"Accumulate from the first item through the current item.",
+			"Use SUM(quantity) OVER (ORDER BY item_id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- ordered\n-- Compare returned rows with expected; row order matters.",
+		"expected": "[[1,2],[2,3],[3,4],[4,5],[5,7],[6,10],[7,12],[8,13],[9,14]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-category-totals",
+		"skill": "sql-lab",
+		"subskillId": "window-totals",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. Return product_id, category, total catalog price within its category beside every product; output by product_id.",
+		"hints": [
+			"Keep detail rows instead of collapsing them.",
+			"Partition SUM(price) by category without a window ORDER BY."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- ordered\n-- Compare returned rows with expected; row order matters.",
+		"expected": "[[1,\"drink\",30],[2,\"drink\",30],[3,\"ware\",55],[4,\"ware\",55],[5,\"ware\",55]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-build-revenue-report",
+		"skill": "sql-lab",
+		"subskillId": "window-totals",
+		"kind": "build",
+		"level": 5,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. BUILD a multi-part paid-revenue report using CTEs: (1) order_totals computes each paid order total from its items, (2) customer_totals sums those totals per customer, (3) left join every customer and replace missing revenue with 0, (4) assign global DENSE_RANK by revenue descending. Return name, revenue, rank; order by revenue descending then customer_id ascending. Dee and Eli must both have zero.",
+		"hints": [
+			"Solve each CTE at its own grain before ranking.",
+			"Aggregate line totals to orders, orders to customers, then LEFT JOIN customers.",
+			"COALESCE to zero before DENSE_RANK; add customer_id only to final ordering."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- ordered\n-- Compare returned rows with expected; row order matters.",
+		"expected": "[[\"Ann\",70,1],[\"Bo\",70,1],[\"Cy\",40,2],[\"Dee\",0,3],[\"Eli\",0,3]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-boss-paid-ledger",
+		"skill": "sql-lab",
+		"subskillId": "window-totals",
+		"kind": "boss",
+		"level": 5,
+		"prompt": "Use the seeded shop schema in setup (prices are integer units). Return exactly the requested columns. BOSS: return customer name, paid order_id, integer order revenue, and running paid revenue per customer. Aggregate item rows to orders before the window. Order each customer’s ledger by order_date then order_id; output by customer_id then date then id. Exclude pending/cancelled orders and customers without paid orders.",
+		"hints": [
+			"Avoid a window directly on item rows.",
+			"Make one row per paid order first; then partition by customer.",
+			"Use a ROWS frame ordered by date and id; output the same order."
+		],
+		"format": "code",
+		"language": "sql",
+		"starterCode": "-- Replace this placeholder with your query.\nSELECT 1;",
+		"setup": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT NOT NULL, city TEXT NOT NULL);\nCREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date TEXT NOT NULL, status TEXT NOT NULL);\nCREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL);\nCREATE TABLE order_items (item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER NOT NULL);\nINSERT INTO customers VALUES (1,'Ann','Pune'),(2,'Bo','Delhi'),(3,'Cy','Pune'),(4,'Dee','Kochi'),(5,'Eli','Delhi');\nINSERT INTO products VALUES (1,'Tea','drink',10),(2,'Coffee','drink',20),(3,'Mug','ware',20),(4,'Plate','ware',30),(5,'Spoon','ware',5);\nINSERT INTO orders VALUES (101,1,'2026-01-01','paid'),(102,1,'2026-01-02','paid'),(103,2,'2026-01-02','paid'),(104,2,'2026-01-03','cancelled'),(105,3,'2026-01-03','paid'),(106,1,'2026-01-03','paid'),(107,4,'2026-01-04','pending');\nINSERT INTO order_items VALUES (1,101,1,2),(2,101,3,1),(3,102,2,1),(4,103,1,1),(5,103,4,2),(6,104,2,3),(7,105,3,2),(8,106,1,1),(9,107,4,1);\n",
+		"tests": "-- ordered\n-- Compare returned rows with expected; row order matters.",
+		"expected": "[[\"Ann\",101,40,40],[\"Ann\",102,20,60],[\"Ann\",106,10,70],[\"Bo\",103,70,70],[\"Cy\",105,40,40]]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-predict-count",
+		"skill": "sql-lab",
+		"subskillId": "joins",
+		"kind": "predict",
+		"level": 2,
+		"format": "choice",
+		"prompt": "Predict SELECT COUNT(*) FROM customers c LEFT JOIN orders o ON o.customer_id=c.customer_id on the seeded shop: Ann has 3 orders, Bo 2, Cy 1, Dee 1, Eli 0.",
+		"expected": "8",
+		"hints": [
+			"Count one row for every matched order.",
+			"The unmatched customer also contributes one row."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"5",
+			"7",
+			"8",
+			"9"
+		]
+	},
+	{
+		"id": "ch-sql-predict-rank",
+		"skill": "sql-lab",
+		"subskillId": "window-ranking",
+		"kind": "predict",
+		"level": 4,
+		"format": "choice",
+		"prompt": "Predict RANK() OVER (ORDER BY price DESC) for Tea at price 10 when catalog prices are 30,20,20,10,5.",
+		"expected": "4",
+		"hints": [
+			"RANK leaves gaps after ties.",
+			"Two products share rank 2; count the three rows ahead of Tea."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"2",
+			"3",
+			"4",
+			"5"
+		]
+	},
+	{
+		"id": "ch-sql-paid-count",
+		"skill": "sql-lab",
+		"subskillId": "group-having",
+		"kind": "quickfire",
+		"level": 1,
+		"format": "number",
+		"prompt": "How many paid orders are in setup? Statuses by id are: 101 paid, 102 paid, 103 paid, 104 cancelled, 105 paid, 106 paid, 107 pending.",
+		"expected": "5",
+		"hints": [
+			"Count only the paid labels.",
+			"Exclude ids 104 and 107."
+		],
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-sql-group-filter",
+		"skill": "sql-lab",
+		"subskillId": "group-having",
+		"kind": "quickfire",
+		"level": 2,
+		"format": "text",
+		"prompt": "Which SQL clause filters grouped aggregate results after GROUP BY? Answer with the one keyword.",
+		"expected": "HAVING",
+		"hints": [
+			"Row filters and group filters run at different stages.",
+			"The clause starts with H and can test COUNT(*)."
+		],
+		"createdAt": "2026-10-30T00:00:00Z"
+	}
+]

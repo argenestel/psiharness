@@ -1,0 +1,150 @@
+{
+	"skill": "sql-lab",
+	"title": "SQL Lab",
+	"targetPerformance": "After 20 hours, solve 9 of 10 shop-query tasks in 40 minutes, including joins, HAVING, a subquery, ranking and running totals; then complete the revenue-report build and boss without hints.",
+	"whyItMatters": "Turn business questions into reproducible SQLite queries with the correct output grain.",
+	"subskills": [
+		{
+			"id": "select-filter",
+			"title": "Select and filter",
+			"why": "Practice select and filter to answer shop reporting questions.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Check projected column order and inclusive filter boundaries.",
+			"drills": [
+				"Project customer names and cities.",
+				"Filter prices at a boundary."
+			],
+			"status": "active"
+		},
+		{
+			"id": "sort-limit",
+			"title": "Sort with tie breakers",
+			"why": "Practice sort with tie breakers to answer shop reporting questions.",
+			"priority": 1,
+			"prerequisites": [
+				"select-filter"
+			],
+			"selfCorrection": "Resolve ties with an id; manually trace the first two rows.",
+			"drills": [
+				"Find the top prices.",
+				"Sort equal dates by id."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "joins",
+			"title": "Join at the correct grain",
+			"why": "Practice join at the correct grain to answer shop reporting questions.",
+			"priority": 1,
+			"prerequisites": [
+				"select-filter"
+			],
+			"selfCorrection": "Count unmatched customers and repeated order rows before aggregating.",
+			"drills": [
+				"Join customer orders.",
+				"Preserve customers with no orders."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "group-having",
+			"title": "Group and filter summaries",
+			"why": "Practice group and filter summaries to answer shop reporting questions.",
+			"priority": 1,
+			"prerequisites": [
+				"joins"
+			],
+			"selfCorrection": "Name the output grain and compare COUNT(*) with COUNT(non-null id).",
+			"drills": [
+				"Count orders per customer.",
+				"Filter grouped totals."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "subqueries",
+			"title": "Compose subqueries",
+			"why": "Practice compose subqueries to answer shop reporting questions.",
+			"priority": 2,
+			"prerequisites": [
+				"group-having"
+			],
+			"selfCorrection": "Run the inner query alone; test a customer with no matches.",
+			"drills": [
+				"Find prices above average.",
+				"Use NOT EXISTS."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "window-ranking",
+			"title": "Number and rank rows",
+			"why": "Practice number and rank rows to answer shop reporting questions.",
+			"priority": 2,
+			"prerequisites": [
+				"group-having",
+				"sort-limit"
+			],
+			"selfCorrection": "Separate the window ordering from final output ordering; test tied prices.",
+			"drills": [
+				"Number each customer’s orders.",
+				"Rank prices with ties."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "window-totals",
+			"title": "Accumulate and integrate",
+			"why": "Practice accumulate and integrate to answer shop reporting questions.",
+			"priority": 3,
+			"prerequisites": [
+				"window-ranking",
+				"subqueries"
+			],
+			"selfCorrection": "Trace the first row and an equal-date peer; explicitly choose a ROWS frame.",
+			"drills": [
+				"Compute running order counts.",
+				"Build paid-revenue reports."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "SQLite SELECT",
+			"url": "https://www.sqlite.org/lang_select.html",
+			"why": "Check clause order, join semantics and grouping."
+		},
+		{
+			"title": "SQLite window functions",
+			"url": "https://www.sqlite.org/windowfunctions.html",
+			"why": "Look up ranking and explicit ROWS frames."
+		},
+		{
+			"title": "SQLite Tutorial",
+			"url": "https://www.sqlitetutorial.net/",
+			"why": "Review short worked examples before another drill."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "No database installed",
+			"fix": "Use the browser SQL runner; each challenge recreates the same seeded shop.",
+			"done": false
+		},
+		{
+			"barrier": "Too many SQL clauses at once",
+			"fix": "Write the output grain first, then add one clause and inspect the rows.",
+			"done": false
+		},
+		{
+			"barrier": "Mistakes discourage retries",
+			"fix": "Record one counterexample and retry a five-minute drill; failures still earn progress.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

@@ -1,0 +1,139 @@
+{
+	"skill": "javascript-essentials",
+	"title": "JavaScript essentials",
+	"targetPerformance": "After 20 focused hours, solve at least 18 of 22 JavaScript tasks in 35 minutes, including array transformations, immutable object updates, a closure, sequential and concurrent Promise flows, and a small class-based build.",
+	"whyItMatters": "A compact command of JavaScript's core data and control patterns lets you turn a problem into a tested function before framework details get in the way.",
+	"subskills": [
+		{
+			"id": "let-const-types",
+			"title": "Bindings and value types",
+			"why": "Choose stable bindings and recognize the runtime type you actually have.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Ask whether the name or the value needs to change, then test null, undefined, and an empty value separately.",
+			"drills": [
+				"Label primitive values and null.",
+				"Predict const mutation versus reassignment.",
+				"Repair a function that changes a binding unnecessarily."
+			],
+			"status": "active"
+		},
+		{
+			"id": "arrays-map-filter-reduce",
+			"title": "Transform arrays",
+			"why": "Map, filter, and reduce express common data pipelines clearly and testably.",
+			"priority": 1,
+			"prerequisites": ["let-const-types"],
+			"selfCorrection": "Write the input and output shape first; check the empty array and verify whether the callback returns a value.",
+			"drills": [
+				"Map numbers without mutating the input.",
+				"Filter by a boundary that includes or excludes zero.",
+				"Reduce an empty and a mixed-sign array."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "objects-destructuring",
+			"title": "Compose objects and destructure safely",
+			"why": "Object spread and destructuring make data boundaries explicit while preserving immutability.",
+			"priority": 1,
+			"prerequisites": ["let-const-types", "arrays-map-filter-reduce"],
+			"selfCorrection": "Check which properties are copied, which are renamed, and whether a nested input is absent before reading it.",
+			"drills": [
+				"Destructure with a default value.",
+				"Pick a subset of fields without mutating the source.",
+				"Merge a patch while keeping unrelated fields."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "closures",
+			"title": "Use closures for private state",
+			"why": "A closure keeps a small piece of state next to the functions that intentionally change it.",
+			"priority": 2,
+			"prerequisites": ["let-const-types", "arrays-map-filter-reduce"],
+			"selfCorrection": "Name the variable captured by the returned function and test two independent factory calls.",
+			"drills": [
+				"Return a multiplier that remembers a factor.",
+				"Build a once-only wrapper.",
+				"Keep an accumulator private across calls."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "async-promises",
+			"title": "Compose asynchronous results",
+			"why": "Promises and async/await let you sequence or combine work without hidden timing assumptions.",
+			"priority": 2,
+			"prerequisites": ["arrays-map-filter-reduce", "objects-destructuring", "closures"],
+			"selfCorrection": "Separate a value from a Promise of that value; use await only where ordering matters and test rejection explicitly.",
+			"drills": [
+				"Return a resolved value from an async function.",
+				"Run task functions in input order.",
+				"Summarize fulfilled and rejected Promise results."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "classes",
+			"title": "Model behavior with classes",
+			"why": "A small class can make state, invariants, and related methods easy to discover at the call site.",
+			"priority": 2,
+			"prerequisites": ["objects-destructuring", "closures"],
+			"selfCorrection": "Check constructor defaults, `this` at each call site, and whether one instance leaks state into another.",
+			"drills": [
+				"Create an instance with a default field.",
+				"Add methods that preserve an invariant.",
+				"Build a small class-backed task board."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "MDN JavaScript Guide",
+			"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+			"why": "Review the language's core syntax and control patterns from a maintained reference."
+		},
+		{
+			"title": "MDN Array reference",
+			"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
+			"why": "Check callback contracts and edge cases for map, filter, and reduce."
+		},
+		{
+			"title": "MDN Promise reference",
+			"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+			"why": "Check Promise composition, allSettled, and async function behavior."
+		},
+		{
+			"title": "MDN Classes reference",
+			"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes",
+			"why": "Review constructors, methods, and instance state."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "The language surface feels too broad",
+			"fix": "Use one pure function at a time and defer framework APIs until the six subskills feel routine.",
+			"done": false
+		},
+		{
+			"barrier": "A failing test feels like a dead end",
+			"fix": "Read the first failing assertion, write the smallest counterexample, and retry with one changed assumption.",
+			"done": false
+		},
+		{
+			"barrier": "Async code seems to require real services",
+			"fix": "Practice with deterministic Promise-returning functions; no network, timers, or external packages are needed.",
+			"done": false
+		},
+		{
+			"barrier": "I copy patterns without knowing the data shape",
+			"fix": "State the input and output shape in a sentence before writing the function body.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

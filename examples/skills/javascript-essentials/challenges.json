@@ -1,0 +1,415 @@
+[
+	{
+		"id": "ch-let-const-types-1",
+		"skill": "javascript-essentials",
+		"subskillId": "let-const-types",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Implement typeLabel(value). Return the string \"null\" for null; for every other input return JavaScript's typeof result. Keep the function pure and do not mutate the input.",
+		"hints": [
+			"typeof null is a historical JavaScript quirk.",
+			"Handle null before applying typeof.",
+			"Return value === null ? \"null\" : typeof value."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Return a stable type label for a JavaScript value.\n * @param {unknown} value\n * @returns {string}\n */\nfunction typeLabel(value) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); };",
+		"tests": "equal(typeLabel(null), \"null\", \"null gets its own label\");\nequal(typeLabel(undefined), \"undefined\", \"undefined label\");\nequal(typeLabel(3), \"number\", \"number label\");\nequal(typeLabel(\"x\"), \"string\", \"string label\");\nequal(typeLabel(false), \"boolean\", \"boolean label\");\nequal(typeLabel({}), \"object\", \"object label\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-let-const-types-2",
+		"skill": "javascript-essentials",
+		"subskillId": "let-const-types",
+		"kind": "predict",
+		"level": 1,
+		"prompt": "Predict JSON.stringify({ mode: alias.mode, same }) after this code runs:\n\nconst settings = { mode: \"light\" };\nconst alias = settings;\nsettings.mode = \"dark\";\nconst same = alias === settings;",
+		"hints": [
+			"const protects a binding, not the inside of an object.",
+			"alias and settings point at the same object.",
+			"The result is a JSON object with mode dark and same true."
+		],
+		"format": "choice",
+		"choices": [
+			"{\"mode\":\"dark\",\"same\":true}",
+			"{\"mode\":\"light\",\"same\":true}",
+			"{\"mode\":\"dark\",\"same\":false}"
+		],
+		"expected": "{\"mode\":\"dark\",\"same\":true}",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-let-const-types-3",
+		"skill": "javascript-essentials",
+		"subskillId": "let-const-types",
+		"kind": "debug",
+		"level": 2,
+		"prompt": "Implement updateSettings(settings). Return a new object with every original property and theme set to \"dark\". The original object must remain unchanged, even when it already has a theme.",
+		"hints": [
+			"Copy the object before changing a property.",
+			"A const object reference can still be mutated, but sharing it would mutate the caller.",
+			"Use object spread, then assign next.theme = \"dark\"."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Return a themed copy without changing settings.\n * @param {{theme?: string, compact?: boolean}} settings\n * @returns {{theme?: string, compact?: boolean}}\n */\nfunction updateSettings(settings) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); }; const assert = (condition, message) => { if (!condition) throw new Error(message); };",
+		"tests": "const original = { theme: \"light\", compact: true };\nconst next = updateSettings(original);\nequal(next, { theme: \"dark\", compact: true }, \"new theme and original fields\");\nassert(next !== original, \"result must be a new object\");\nequal(original, { theme: \"light\", compact: true }, \"input remains unchanged\");\nconst already = { theme: \"blue\" };\nequal(updateSettings(already).theme, \"dark\", \"existing theme is replaced\");\nequal(already.theme, \"blue\", \"second input remains unchanged\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-let-const-types-4",
+		"skill": "javascript-essentials",
+		"subskillId": "let-const-types",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "What number is printed by this block?\n\nlet attempts = 2;\n{\n  const attempts = 4;\n  console.log(attempts);\n}\nattempts += 1;\nconsole.log(attempts);\n\nReturn the final value of attempts after the block.",
+		"hints": [
+			"The inner const shadows the outer let only inside the braces.",
+			"The outer binding starts at 2 and is incremented once.",
+			"The final value is 3."
+		],
+		"format": "number",
+		"expected": "3",
+		"tolerance": 0,
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-arrays-map-filter-reduce-1",
+		"skill": "javascript-essentials",
+		"subskillId": "arrays-map-filter-reduce",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Implement doubleNumbers(values). Return a new array with every number doubled; do not mutate values. The empty input should produce an empty output.",
+		"hints": [
+			"The output has one item for every input item.",
+			"Use map rather than push into the input.",
+			"The callback can return value * 2."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Double each number without mutating the input array.\n * @param {number[]} values\n * @returns {number[]}\n */\nfunction doubleNumbers(values) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); };",
+		"tests": "const values = [0, -2, 3];\nequal(doubleNumbers(values), [0, -4, 6], \"positive, negative, and zero values\");\nequal(values, [0, -2, 3], \"input is not mutated\");\nequal(doubleNumbers([]), [], \"empty input\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-arrays-map-filter-reduce-2",
+		"skill": "javascript-essentials",
+		"subskillId": "arrays-map-filter-reduce",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Implement keepLongWords(words, minLength). Return words whose length is at least minLength, preserving their original order and leaving words unchanged.",
+		"hints": [
+			"This output may have fewer items than the input.",
+			"Use filter and compare word.length with minLength.",
+			"The boundary is inclusive: length === minLength stays."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Keep words meeting an inclusive minimum length.\n * @param {string[]} words\n * @param {number} minLength\n * @returns {string[]}\n */\nfunction keepLongWords(words, minLength) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); };",
+		"tests": "equal(keepLongWords([\"a\", \"cat\", \"plane\", \"to\"], 3), [\"cat\", \"plane\"], \"inclusive length and order\");\nequal(keepLongWords([\"one\", \"two\"], 3), [\"one\", \"two\"], \"exact boundary\");\nequal(keepLongWords([], 1), [], \"empty input\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-arrays-map-filter-reduce-3",
+		"skill": "javascript-essentials",
+		"subskillId": "arrays-map-filter-reduce",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement sumPositive(values). Return the sum of only values greater than zero. Return 0 for an empty array or an array with no positive values.",
+		"hints": [
+			"The accumulator needs a safe starting value.",
+			"Reduce each value to either itself or zero.",
+			"Use 0 as the initial accumulator so [] is handled."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Sum only strictly positive numbers.\n * @param {number[]} values\n * @returns {number}\n */\nfunction sumPositive(values) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); };",
+		"tests": "equal(sumPositive([4, -2, 0, 3]), 7, \"mixed signs\");\nequal(sumPositive([-3, 0]), 0, \"no positive values\");\nequal(sumPositive([]), 0, \"empty input\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-arrays-map-filter-reduce-4",
+		"skill": "javascript-essentials",
+		"subskillId": "arrays-map-filter-reduce",
+		"kind": "predict",
+		"level": 3,
+		"prompt": "What does JSON.stringify([1, 2, 3, 4].filter(n => n % 2 === 0).map(n => n * 3)) return?",
+		"hints": [
+			"Filter keeps only even values.",
+			"The remaining values are 2 and 4.",
+			"Map triples them, so the JSON array is [6,12]."
+		],
+		"format": "choice",
+		"choices": [
+			"[6,12]",
+			"[3,6,9,12]",
+			"[2,4]"
+		],
+		"expected": "[6,12]",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-objects-destructuring-1",
+		"skill": "javascript-essentials",
+		"subskillId": "objects-destructuring",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Implement getDisplayName(user). Destructure firstName and lastName; if lastName is missing, use \"Unknown\". Return the two names separated by one space.",
+		"hints": [
+			"Destructuring can supply a default when a property is undefined.",
+			"Use const { firstName, lastName = \"Unknown\" } = user.",
+			"Build the result with a template literal or string concatenation."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Format a user's first and last name.\n * @param {{firstName: string, lastName?: string}} user\n * @returns {string}\n */\nfunction getDisplayName(user) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); };",
+		"tests": "equal(getDisplayName({ firstName: \"Ada\", lastName: \"Lovelace\" }), \"Ada Lovelace\", \"full name\");\nequal(getDisplayName({ firstName: \"Linus\" }), \"Linus Unknown\", \"default last name\");\nequal(getDisplayName({ firstName: \"Grace\", lastName: \"\" }), \"Grace \", \"empty last name is not missing\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-objects-destructuring-2",
+		"skill": "javascript-essentials",
+		"subskillId": "objects-destructuring",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement mergeProfile(user, updates). Return a new object containing all user fields overridden by fields in updates. Do not mutate either input object.",
+		"hints": [
+			"Later object-spread properties override earlier ones.",
+			"Start with { ...user } and then spread updates.",
+			"Check both input references after producing the result."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Apply a shallow profile patch without mutating either input.\n * @param {{name: string, role: string, active: boolean}} user\n * @param {Partial<{name: string, role: string, active: boolean}>} updates\n * @returns {{name: string, role: string, active: boolean}}\n */\nfunction mergeProfile(user, updates) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); }; const assert = (condition, message) => { if (!condition) throw new Error(message); };",
+		"tests": "const user = { name: \"Mina\", role: \"reader\", active: true };\nconst updates = { role: \"editor\" };\nconst result = mergeProfile(user, updates);\nequal(result, { name: \"Mina\", role: \"editor\", active: true }, \"patch overrides role\");\nassert(result !== user && result !== updates, \"result is a fresh object\");\nequal(user, { name: \"Mina\", role: \"reader\", active: true }, \"user unchanged\");\nequal(updates, { role: \"editor\" }, \"updates unchanged\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-objects-destructuring-3",
+		"skill": "javascript-essentials",
+		"subskillId": "objects-destructuring",
+		"kind": "predict",
+		"level": 3,
+		"prompt": "What string is assigned to theme?\n\nconst account = { name: \"Mina\", prefs: { theme: \"dark\" } };\nconst { prefs: { theme } } = account;\n\nAnswer with the value of theme.",
+		"hints": [
+			"The outer property is prefs.",
+			"The nested destructuring reaches prefs.theme.",
+			"The value is the string dark."
+		],
+		"format": "text",
+		"expected": "dark",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-closures-1",
+		"skill": "javascript-essentials",
+		"subskillId": "closures",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Implement makeMultiplier(factor). Return a function that multiplies every number it receives by factor. Two multipliers must keep independent factors.",
+		"hints": [
+			"The returned function needs to read factor later.",
+			"A function returned from a factory closes over the factory's variables.",
+			"Return value => value * factor."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Create a multiplier that remembers factor.\n * @param {number} factor\n * @returns {(value: number) => number}\n */\nfunction makeMultiplier(factor) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); };",
+		"tests": "const triple = makeMultiplier(3);\nconst half = makeMultiplier(0.5);\nequal(triple(4), 12, \"triple remembers 3\");\nequal(half(8), 4, \"half remembers 0.5\");\nequal(triple(-2), -6, \"negative values\");\nequal(half(0), 0, \"zero value\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-closures-2",
+		"skill": "javascript-essentials",
+		"subskillId": "closures",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Implement makeOnce(fn). The returned function must call fn only on its first invocation, cache that result, and return the same result on later invocations without calling fn again.",
+		"hints": [
+			"Keep a boolean and a cached result in the factory scope.",
+			"The returned function can branch on whether it has already called fn.",
+			"Set the flag after calling fn, then return the cached result every time."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Wrap fn so it runs at most once.\n * @param {() => unknown} fn\n * @returns {() => unknown}\n */\nfunction makeOnce(fn) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); }; const assert = (condition, message) => { if (!condition) throw new Error(message); };",
+		"tests": "let calls = 0;\nconst once = makeOnce(() => { calls += 1; return { token: calls }; });\nconst first = once();\nconst second = once();\nconst third = once();\nequal(first, { token: 1 }, \"first call result\");\nassert(first === second && second === third, \"cached object is returned\");\nequal(calls, 1, \"fn called once\");\nlet emptyCalls = 0;\nconst empty = makeOnce(() => { emptyCalls += 1; return undefined; });\nequal(empty(), undefined, \"undefined may be cached\");\nequal(empty(), undefined, \"undefined remains cached\");\nequal(emptyCalls, 1, \"undefined-producing fn called once\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-closures-3",
+		"skill": "javascript-essentials",
+		"subskillId": "closures",
+		"kind": "predict",
+		"level": 4,
+		"prompt": "What does callbacks.map(callback => callback()).join(\",\") return?\n\nconst callbacks = [];\nfor (let i = 0; i < 3; i += 1) callbacks.push(() => i);",
+		"hints": [
+			"The loop uses let, so each iteration gets a distinct binding.",
+			"Each callback reads the binding from its own iteration.",
+			"The three returned numbers are 0, 1, and 2."
+		],
+		"format": "choice",
+		"choices": ["0,1,2", "3,3,3", "2,2,2"],
+		"expected": "0,1,2",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-async-promises-1",
+		"skill": "javascript-essentials",
+		"subskillId": "async-promises",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Implement toUpper(value) as an async function that resolves to String(value).toUpperCase(). It must work for numbers as well as strings and use no network or timer.",
+		"hints": [
+			"An async function automatically returns a Promise.",
+			"Convert the input to a string before calling toUpperCase.",
+			"Return String(value).toUpperCase()."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Resolve the uppercase string representation of value.\n * @param {unknown} value\n * @returns {Promise<string>}\n */\nasync function toUpper(value) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); }; const assert = (condition, message) => { if (!condition) throw new Error(message); };",
+		"tests": "const text = toUpper(\"hello\");\nassert(text instanceof Promise, \"async function returns a Promise\");\nequal(await text, \"HELLO\", \"uppercase text\");\nequal(await toUpper(42), \"42\", \"number conversion\");\nequal(await toUpper(\"\"), \"\", \"empty text\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-async-promises-2",
+		"skill": "javascript-essentials",
+		"subskillId": "async-promises",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement runInOrder(tasks). Each task is a zero-argument function that may return a plain value or a Promise. Invoke tasks in array order, await each result before invoking the next, and return the resolved results in order.",
+		"hints": [
+			"A for...of loop makes the invocation order explicit.",
+			"Push await task() into a results array.",
+			"Do not use Promise.all here: later tasks must wait for earlier ones."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Run Promise-returning or synchronous tasks sequentially.\n * @param {Array<() => unknown | Promise<unknown>>} tasks\n * @returns {Promise<unknown[]>}\n */\nasync function runInOrder(tasks) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); }; const assert = (condition, message) => { if (!condition) throw new Error(message); };",
+		"tests": "const order = [];\nconst tasks = [\n\t() => { order.push(\"first\"); return Promise.resolve(1); },\n\tasync () => { assert(order.join(\",\") === \"first\", \"second waits for first\"); order.push(\"second\"); return 2; },\n\t() => { order.push(\"third\"); return 3; }\n];\nequal(await runInOrder(tasks), [1, 2, 3], \"resolved results\");\nequal(order, [\"first\", \"second\", \"third\"], \"invocation order\");\nequal(await runInOrder([]), [], \"empty tasks\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-async-promises-3",
+		"skill": "javascript-essentials",
+		"subskillId": "async-promises",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Implement settledSummary(tasks). Start every zero-argument task, await all of them, and return one object per task: { status: \"fulfilled\", value } for success or { status: \"rejected\", reason: String(reason) } for failure. Do not throw when one task rejects.",
+		"hints": [
+			"Promise.all rejects too early for this contract.",
+			"Map tasks to calls, then use Promise.allSettled.",
+			"Map each settled record and convert a rejection reason to String."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Summarize every task without throwing on rejected tasks.\n * @param {Array<() => unknown | Promise<unknown>>} tasks\n * @returns {Promise<Array<{status: string, value?: unknown, reason?: string}>>}\n */\nasync function settledSummary(tasks) {\n\t// TODO: implement\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); };",
+		"tests": "const result = await settledSummary([\n\t() => Promise.resolve(\"ok\"),\n\t() => Promise.reject(\"nope\"),\n\t() => 7\n]);\nequal(result, [\n\t{ status: \"fulfilled\", value: \"ok\" },\n\t{ status: \"rejected\", reason: \"nope\" },\n\t{ status: \"fulfilled\", value: 7 }\n], \"mixed outcomes\");\nequal(await settledSummary([]), [], \"empty tasks\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-classes-1",
+		"skill": "javascript-essentials",
+		"subskillId": "classes",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Implement createCounterClass(). Return a class Counter whose constructor accepts an optional starting number (default 0) and whose increment(step = 1) method updates and returns the counter value. Instances must not share state.",
+		"hints": [
+			"The outer function should return a class declaration or class expression.",
+			"Store the current value on this in the constructor.",
+			"increment adds step to this.value and returns the new value."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Create a class with independent incrementing state.\n * @returns {new (start?: number) => {increment(step?: number): number}}\n */\nfunction createCounterClass() {\n\t// TODO: return the Counter class\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); }; const assert = (condition, message) => { if (!condition) throw new Error(message); };",
+		"tests": "const Counter = createCounterClass();\nconst first = new Counter(2);\nequal(first.increment(), 3, \"default step\");\nequal(first.increment(4), 7, \"custom step\");\nconst second = new Counter();\nequal(second.increment(), 1, \"second instance starts at zero\");\nequal(first.increment(0), 7, \"instances keep independent values\");\nassert(first !== second, \"instances are distinct\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-classes-2",
+		"skill": "javascript-essentials",
+		"subskillId": "classes",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement createInventoryClass(). Return an Inventory class whose constructor accepts entries like [[\"apple\", 2]], add(name, quantity = 1) increments a quantity, and count(name) returns 0 for an unknown item.",
+		"hints": [
+			"A Map is useful for associating each name with a count.",
+			"Copy the constructor input into instance state rather than retaining the input array.",
+			"add can use this.items.get(name) ?? 0, then set the new total."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Create a class that tracks item quantities.\n * @returns {new (entries?: Array<[string, number]>) => {add(name: string, quantity?: number): void, count(name: string): number}}\n */\nfunction createInventoryClass() {\n\t// TODO: return the Inventory class\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); };",
+		"tests": "const Inventory = createInventoryClass();\nconst inventory = new Inventory([[\"apple\", 2]]);\nequal(inventory.count(\"apple\"), 2, \"seed quantity\");\nequal(inventory.count(\"pear\"), 0, \"unknown item\");\ninventory.add(\"apple\", 3);\nequal(inventory.count(\"apple\"), 5, \"increment existing item\");\ninventory.add(\"pear\");\nequal(inventory.count(\"pear\"), 1, \"default quantity\");\nconst seed = [[\"tea\", 4]];\nconst other = new Inventory(seed);\ninventory.add(\"tea\", 2);\nequal(seed, [[\"tea\", 4]], \"constructor input is not mutated\");\nequal(other.count(\"tea\"), 4, \"instances keep independent state\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-classes-3",
+		"skill": "javascript-essentials",
+		"subskillId": "classes",
+		"kind": "predict",
+		"level": 4,
+		"prompt": "What number is first.value after this code?\n\nclass Counter {\n  constructor(value = 0) { this.value = value; }\n}\nconst first = new Counter();\nfirst.value += 2;",
+		"hints": [
+		"The constructor default is used because new Counter has no argument.",
+		"value starts at 0, then the instance property is incremented.",
+		"The final number is 2."
+		],
+		"format": "choice",
+		"choices": ["2", "0", "undefined"],
+		"expected": "2",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-classes-build-task-board",
+		"skill": "javascript-essentials",
+		"subskillId": "classes",
+		"kind": "build",
+		"level": 4,
+		"prompt": "Build a tiny task-board API in createTaskBoard(initialTasks = []). Return an object with three functions: add(title) creates and returns a new { id, title, done: false } task; complete(id) marks a matching task done and returns true, or returns false when absent; pending() returns the titles of unfinished tasks in original order. Use private closure state, copy initial tasks, and keep the input array unchanged.",
+		"hints": [
+			"Create a private tasks array and next id inside the factory.",
+			"Define add, complete, and pending as separate functions over that state.",
+			"Return { add, complete, pending }; pending can filter then map titles."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Build a closure-backed task board with add, complete, and pending operations.\n * @param {Array<{id: number, title: string, done?: boolean}>} initialTasks\n * @returns {{add(title: string): {id: number, title: string, done: boolean}, complete(id: number): boolean, pending(): string[]}}\n */\nfunction createTaskBoard(initialTasks = []) {\n\t// TODO: implement the task board\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); }; const assert = (condition, message) => { if (!condition) throw new Error(message); };",
+		"tests": "const initial = [{ id: 1, title: \"read\", done: false }, { id: 2, title: \"ship\", done: true }];\nconst board = createTaskBoard(initial);\nequal(board.pending(), [\"read\"], \"initial pending titles\");\nequal(board.complete(1), true, \"existing task completes\");\nequal(board.complete(99), false, \"missing task reports false\");\nconst added = board.add(\"review\");\nequal(added, { id: 3, title: \"review\", done: false }, \"new task shape and id\");\nequal(board.pending(), [\"review\"], \"completed task leaves only review\");\nequal(initial, [{ id: 1, title: \"read\", done: false }, { id: 2, title: \"ship\", done: true }], \"initial input is unchanged\");\nassert(board.add(\"write\").id === 4, \"ids continue increasing\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	},
+	{
+		"id": "ch-boss-javascript-essentials",
+		"skill": "javascript-essentials",
+		"subskillId": "classes",
+		"kind": "boss",
+		"level": 5,
+		"prompt": "Boss: implement createScoreboardClass(). Return a Scoreboard class. Its constructor copies an optional entries array of { name, score } objects; add(name, score) appends one entry; top(limit = 3) returns fresh entry objects sorted by score descending, breaking ties by name ascending, and limited to limit. Do not mutate constructor input or expose internal objects.",
+		"hints": [
+			"Copy each entry with object spread in the constructor and when returning results.",
+			"Sort a copied array with score descending, then localeCompare for equal scores.",
+			"Use slice(0, limit) after sorting and map to fresh objects."
+		],
+		"format": "code",
+		"language": "javascript",
+		"starterCode": "/**\n * Create the final scoreboard class.\n * @returns {new (entries?: Array<{name: string, score: number}>) => {add(name: string, score: number): void, top(limit?: number): Array<{name: string, score: number}>}}\n */\nfunction createScoreboardClass() {\n\t// TODO: return the Scoreboard class\n}",
+		"setup": "const equal = (actual, expected, message) => { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message + \" actual=\" + JSON.stringify(actual)); }; const assert = (condition, message) => { if (!condition) throw new Error(message); };",
+		"tests": "const Scoreboard = createScoreboardClass();\nconst seed = [{ name: \"Ada\", score: 9 }, { name: \"Bo\", score: 12 }, { name: \"Cy\", score: 12 }];\nconst board = new Scoreboard(seed);\nboard.add(\"Dee\", 15);\nequal(board.top(3), [{ name: \"Dee\", score: 15 }, { name: \"Bo\", score: 12 }, { name: \"Cy\", score: 12 }], \"sorted top three with tie break\");\nequal(board.top(1), [{ name: \"Dee\", score: 15 }], \"limit\");\nconst result = board.top(2);\nassert(result[0] !== seed[0], \"returned entries are fresh\");\nresult[0].score = -1;\nequal(board.top(1), [{ name: \"Dee\", score: 15 }], \"internal state is not exposed\");\nequal(seed, [{ name: \"Ada\", score: 9 }, { name: \"Bo\", score: 12 }, { name: \"Cy\", score: 12 }], \"constructor input is unchanged\");\nequal(new Scoreboard().top(), [], \"empty scoreboard\");",
+		"createdAt": "2026-10-30T00:00:00Z"
+	}
+]

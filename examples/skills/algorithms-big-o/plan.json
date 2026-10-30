@@ -1,0 +1,148 @@
+{
+	"skill": "algorithms-big-o",
+	"title": "Algorithms and Big-O",
+	"targetPerformance": "Within 20 focused hours, solve at least 18 of these 22 Python prompts in 30-minute timed rounds, with at least 80% first-try success; implement the core patterns from memory, state time and space complexity, and name edge cases before coding.",
+	"whyItMatters": "Algorithmic patterns turn a vague problem into a small set of testable choices: how to scan, search, store, traverse, and order data. Big-O lets you predict whether a solution will still work when the input grows.",
+	"subskills": [
+		{
+			"id": "complexity-analysis",
+			"title": "Read complexity from loops",
+			"why": "Estimate growth before coding so a correct-looking solution does not collapse on large input.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Name the input size, count how many times each loop can run, and ask whether loops are sequential or nested.",
+			"drills": [
+				"Classify one-pass and nested-loop snippets.",
+				"Compare constant, logarithmic, linear, and quadratic growth.",
+				"State the extra space used by a helper data structure."
+			],
+			"status": "active"
+		},
+		{
+			"id": "two-pointers",
+			"title": "Shrink and advance two pointers",
+			"why": "Turn many pair and boundary scans into linear passes with a visible invariant.",
+			"priority": 1,
+			"prerequisites": ["complexity-analysis"],
+			"selfCorrection": "Write what the left and right pointers still rule out after every move; test empty, singleton, duplicate, and already-sorted inputs.",
+			"drills": [
+				"Check a palindrome from both ends.",
+				"Merge two sorted sequences without rereading either side.",
+				"Compact a sorted array in place and return its new length."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "binary-search",
+			"title": "Maintain a binary-search window",
+			"why": "Cut ordered search space in half instead of scanning every candidate.",
+			"priority": 1,
+			"prerequisites": ["complexity-analysis"],
+			"selfCorrection": "State what every index outside [left, right] cannot be, then verify progress when the interval has one or two items.",
+			"drills": [
+				"Find the first occurrence of a duplicate target.",
+				"Return an insertion point before, between, and after values.",
+				"Trace the interval on a target that is absent."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "hash-maps",
+			"title": "Use hash maps for constant-time lookups",
+			"why": "Trade predictable extra memory for fast complements, counts, and grouping.",
+			"priority": 1,
+			"prerequisites": ["complexity-analysis"],
+			"selfCorrection": "Define the key and value before the loop, and check whether the current item may reuse itself.",
+			"drills": [
+				"Find two indices that sum to a target.",
+				"Locate the first non-repeating character.",
+				"Group words by a canonical anagram key."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "stacks-queues",
+			"title": "Choose LIFO or FIFO state",
+			"why": "Model nested delimiters, waiting work, and monotonic next-event queries with the right frontier structure.",
+			"priority": 2,
+			"prerequisites": ["complexity-analysis"],
+			"selfCorrection": "Say whether the newest or oldest pending item must be processed, then test an empty structure and a repeated value.",
+			"drills": [
+				"Validate brackets while ignoring ordinary text.",
+				"Use a monotonic stack for next greater values.",
+				"Describe why a queue avoids revisiting already-served work."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "sorting",
+			"title": "Order data with a deliberate cost",
+			"why": "Use ordering to simplify later decisions and understand the time and stability trade-offs.",
+			"priority": 2,
+			"prerequisites": ["complexity-analysis", "hash-maps"],
+			"selfCorrection": "Write the sort key and tie-break rule explicitly; check empty input, duplicate keys, and whether the input must stay unchanged.",
+			"drills": [
+				"Trace merge sort's split and merge phases.",
+				"Compare O(n log n) sorting with a linear counting pass.",
+				"Select the most frequent values with a deterministic tie-break."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "graph-traversal",
+			"title": "Traverse graphs with BFS and DFS",
+			"why": "Turn networks and dependencies into systematic visits while handling cycles, disconnected nodes, and start/target boundaries.",
+			"priority": 3,
+			"prerequisites": ["hash-maps", "stacks-queues"],
+			"selfCorrection": "Mark a node when it is discovered, not only when it is removed from the frontier, and test a cycle plus a disconnected component.",
+			"drills": [
+				"Find an unweighted shortest path with BFS.",
+				"Count connected components with DFS.",
+				"State O(V+E) for adjacency-list traversal."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "Big-O Cheat Sheet",
+			"url": "https://www.bigocheatsheet.com/",
+			"why": "Quickly compare common operation and algorithm growth rates."
+		},
+		{
+			"title": "VisuAlgo",
+			"url": "https://visualgo.net/en",
+			"why": "Step through sorting, searching, graph, and data-structure operations visually."
+		},
+		{
+			"title": "Data Structure Visualizations",
+			"url": "https://www.cs.usfca.edu/~galles/visualization/Algorithms.html",
+			"why": "Replay pointer movement, heaps, trees, and graph traversals one operation at a time."
+		},
+		{
+			"title": "Python data structures tutorial",
+			"url": "https://docs.python.org/3/tutorial/datastructures.html",
+			"why": "Check the standard list, set, dictionary, and queue building blocks used by the exercises."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Big-O feels like notation without a concrete meaning",
+			"fix": "Double a toy input, count the work again, and write the observed growth before naming the class.",
+			"done": false
+		},
+		{
+			"barrier": "Edge cases are postponed until after the main algorithm",
+			"fix": "Make an empty, singleton, duplicate, and boundary-value table before writing the loop.",
+			"done": false
+		},
+		{
+			"barrier": "Pattern names are memorized without invariants",
+			"fix": "Before coding, state what the pointers, map, stack, or frontier guarantee after each iteration.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

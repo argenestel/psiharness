@@ -1,0 +1,395 @@
+[
+	{
+		"id": "ch-syntax-types-1",
+		"skill": "python-foundations",
+		"subskillId": "syntax-types",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Implement `is_even(n)`. Return True when n is divisible by two and False otherwise. Keep the function pure; it must work for zero and negative integers.",
+		"hints": [
+			"The remainder operator tells you what is left after division.",
+			"An even number has remainder zero after division by 2.",
+			"Return the boolean expression `n % 2 == 0`."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def is_even(n):\n    \"\"\"Return True when n is divisible by two.\"\"\"\n    pass\n",
+		"tests": "assert is_even(4) is True, \"4 should be even\"\nassert is_even(5) is False, \"5 should be odd\"\nassert is_even(0) is True, \"zero is divisible by two\"\nassert is_even(-3) is False, \"negative odd numbers stay odd\"\n"
+	},
+	{
+		"id": "ch-syntax-types-2",
+		"skill": "python-foundations",
+		"subskillId": "syntax-types",
+		"kind": "predict",
+		"level": 2,
+		"prompt": "Predict the output of this Python code: `x = [1, 2, 3]; y = x; y.append(4); print(len(x))`. Return one choice.",
+		"hints": [
+			"Assignment gives y another reference to the same list.",
+			"append changes that shared list in place.",
+			"Count the elements after the append."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "4",
+		"format": "choice",
+		"choices": ["3", "4", "TypeError", "None"]
+	},
+	{
+		"id": "ch-strings-1",
+		"skill": "python-foundations",
+		"subskillId": "strings",
+		"kind": "apply",
+		"level": 1,
+		"prompt": "Implement `normalize_name(text)`. Strip surrounding whitespace, collapse internal whitespace to one space, and title-case each word. Return an empty string for empty or whitespace-only input.",
+		"hints": [
+			"`split()` without an argument already handles repeated whitespace.",
+			"Join the cleaned words with one literal space.",
+			"Apply `.title()` after joining the words."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def normalize_name(text):\n    \"\"\"Clean whitespace and title-case a person's name.\"\"\"\n    pass\n",
+		"tests": "assert normalize_name(\"  ada   lovelace \") == \"Ada Lovelace\", \"collapse and title-case whitespace\"\nassert normalize_name(\"gRACE\\tHOPPER\") == \"Grace Hopper\", \"tabs count as whitespace\"\nassert normalize_name(\"\") == \"\", \"empty input stays empty\"\nassert normalize_name(\"   \") == \"\", \"whitespace-only input stays empty\"\nassert normalize_name(\"  Élodie  \") == \"Élodie\", \"preserve a non-ASCII letter\"\n"
+	},
+	{
+		"id": "ch-strings-2",
+		"skill": "python-foundations",
+		"subskillId": "strings",
+		"kind": "debug",
+		"level": 2,
+		"prompt": "Fix the stub `count_vowels(text)` so it counts the five English vowels, case-insensitively. Ignore punctuation, spaces, and consonants; return 0 for empty text.",
+		"hints": [
+			"Membership in the string `aeiou` is a boolean test.",
+			"Normalize each character before testing it.",
+			"Sum one for each matching character, including repeated vowels."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def count_vowels(text):\n    \"\"\"Count English vowels without counting case or punctuation.\"\"\"\n    return 0\n",
+		"tests": "assert count_vowels(\"Education\") == 5, \"Education has five vowels\"\nassert count_vowels(\"Rhythm!\") == 0, \"punctuation and consonants do not count\"\nassert count_vowels(\"AEIOU aeiou\") == 10, \"case must not matter\"\nassert count_vowels(\"\") == 0, \"empty text has no vowels\"\n"
+	},
+	{
+		"id": "ch-collections-1",
+		"skill": "python-foundations",
+		"subskillId": "collections",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Implement `merge_counts(words)`. Return a dictionary counting words case-insensitively with `casefold()`. Preserve the normalized word as each key and return an empty dictionary for no words.",
+		"hints": [
+			"Start with an empty dictionary.",
+			"Normalize each word before using it as a key.",
+			"Use `get(key, 0)` or an equivalent initialization before incrementing."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def merge_counts(words):\n    \"\"\"Count words after case-insensitive normalization.\"\"\"\n    return {}\n",
+		"tests": "assert merge_counts([\"Tea\", \"tea\", \"COFFEE\", \"coffee\", \"coffee\"]) == {\"tea\": 2, \"coffee\": 3}, \"merge equivalent spellings\"\nassert merge_counts([]) == {}, \"empty input has no keys\"\nassert merge_counts([\"Straße\", \"STRASSE\"]) == {\"strasse\": 2}, \"casefold handles equivalent Unicode spellings\"\nassert merge_counts([\"one\"]) == {\"one\": 1}, \"single item count is one\"\n"
+	},
+	{
+		"id": "ch-collections-2",
+		"skill": "python-foundations",
+		"subskillId": "collections",
+		"kind": "predict",
+		"level": 2,
+		"prompt": "What number does `len({x % 3 for x in range(8)})` produce? Answer with a number only.",
+		"hints": [
+			"A set keeps one copy of each value.",
+			"The remainder modulo 3 can only be 0, 1, or 2.",
+			"All three remainders occur between 0 and 7."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "3",
+		"tolerance": 0,
+		"format": "number"
+	},
+	{
+		"id": "ch-collections-3",
+		"skill": "python-foundations",
+		"subskillId": "collections",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement `rotate_left(items, k)`. Return a new list rotated left by k positions. Do not mutate the input; support k larger than the list length and return [] for an empty list.",
+		"hints": [
+			"An empty list must be handled before taking a modulo.",
+			"Reduce k with the list length so large rotations wrap around.",
+			"Join the slice from k onward with the slice before k."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def rotate_left(items, k):\n    \"\"\"Return a new list rotated left by k positions.\"\"\"\n    return []\n",
+		"tests": "original = [1, 2, 3, 4]\nassert rotate_left(original, 2) == [3, 4, 1, 2], \"rotate two positions\"\nassert rotate_left(original, 6) == [3, 4, 1, 2], \"large rotations wrap\"\nassert rotate_left(original, 0) == original, \"zero rotation preserves order\"\nassert rotate_left([], 4) == [], \"empty input stays empty\"\nassert original == [1, 2, 3, 4], \"the input list must not be mutated\"\n"
+	},
+	{
+		"id": "ch-loops-comprehensions-1",
+		"skill": "python-foundations",
+		"subskillId": "loops-comprehensions",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Implement `sum_positive(numbers)`. Return the sum of values greater than zero, ignoring zero and negatives. The input may be any iterable and may be empty.",
+		"hints": [
+			"Filter before adding.",
+			"A generator expression can feed the built-in `sum`.",
+			"Zero is not positive, so use a strict comparison."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def sum_positive(numbers):\n    \"\"\"Sum only values strictly greater than zero.\"\"\"\n    return 0\n",
+		"tests": "assert sum_positive([4, -2, 0, 3]) == 7, \"ignore non-positive values\"\nassert sum_positive([]) == 0, \"empty input sums to zero\"\nassert sum_positive((-1, 2, 5)) == 7, \"accept any iterable\"\nassert sum_positive([0, -10]) == 0, \"zero and negatives contribute nothing\"\n"
+	},
+	{
+		"id": "ch-loops-comprehensions-2",
+		"skill": "python-foundations",
+		"subskillId": "loops-comprehensions",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Implement `first_repeated(items)`. Scan left to right and return the first value whose second occurrence you encounter. Return None when every value is unique or the input is empty.",
+		"hints": [
+			"Keep a set of values already seen.",
+			"Check membership before adding the current value.",
+			"Return immediately on the first duplicate; otherwise return None after the loop."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def first_repeated(items):\n    \"\"\"Return the first value encountered for a second time.\"\"\"\n    return None\n",
+		"tests": "assert first_repeated([3, 1, 3, 1]) == 3, \"return the earliest repeated value\"\nassert first_repeated([\"a\", \"b\"]) is None, \"unique values have no repeat\"\nassert first_repeated([]) is None, \"empty input has no repeat\"\nassert first_repeated([0, 0, 1]) == 0, \"zero is a valid value\"\n"
+	},
+	{
+		"id": "ch-loops-comprehensions-3",
+		"skill": "python-foundations",
+		"subskillId": "loops-comprehensions",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement `group_by_initial(words)`. Return a dictionary keyed by each non-empty word's lowercase first character; values are lists preserving original spelling and input order. Ignore empty strings.",
+		"hints": [
+			"Skip a word when it is empty.",
+			"Derive the key from `word[0].lower()` but append the original word.",
+			"Create a list for a key the first time you see it."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def group_by_initial(words):\n    \"\"\"Group non-empty words by lowercase initial.\"\"\"\n    return {}\n",
+		"tests": "assert group_by_initial([\"Apple\", \"apricot\", \"Berry\", \"\", \"banana\"]) == {\"a\": [\"Apple\", \"apricot\"], \"b\": [\"Berry\", \"banana\"]}, \"group and preserve spelling\"\nassert group_by_initial([]) == {}, \"empty input has no groups\"\nassert group_by_initial([\"Zed\"]) == {\"z\": [\"Zed\"]}, \"single item gets one group\"\nassert group_by_initial([\"\", \"\"]) == {}, \"empty words are ignored\"\n"
+	},
+	{
+		"id": "ch-loops-comprehensions-4",
+		"skill": "python-foundations",
+		"subskillId": "loops-comprehensions",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Implement `flatten_unique(rows)`. Read any number of nested iterables and return a list containing each value once, in first-seen order. Empty rows are valid.",
+		"hints": [
+			"Use a set for membership and a list for output order.",
+			"Visit rows from left to right and values within each row from left to right.",
+			"Append only values not already in the set."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def flatten_unique(rows):\n    \"\"\"Flatten nested iterables while keeping only first occurrences.\"\"\"\n    return []\n",
+		"tests": "assert flatten_unique([[1, 2], [2, 3], []]) == [1, 2, 3], \"deduplicate without changing first-seen order\"\nassert flatten_unique([]) == [], \"empty input has no values\"\nassert flatten_unique([(\"a\", \"b\"), (\"a\",)]) == [\"a\", \"b\"], \"work with tuples as rows\"\nassert flatten_unique([[0, False], [1, 0]]) == [0, 1], \"do not confuse equality with truthiness\"\n"
+	},
+	{
+		"id": "ch-functions-1",
+		"skill": "python-foundations",
+		"subskillId": "functions",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Implement `apply_twice(fn, value)`. Call fn exactly two times, feeding the result of the first call into the second, and return the final value.",
+		"hints": [
+			"The inner call must happen before the outer call.",
+			"Write `fn(fn(value))` or the equivalent two-step sequence.",
+			"Do not call fn zero, one, or three times."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def apply_twice(fn, value):\n    \"\"\"Apply fn two times and return the result.\"\"\"\n    return value\n",
+		"tests": "assert apply_twice(lambda x: x + 3, 0) == 6, \"add three twice\"\nassert apply_twice(str.upper, \"go\") == \"GO\", \"support a callable with string values\"\nseen = []\ndef remember(value):\n    seen.append(value)\n    return value + 1\nassert apply_twice(remember, 0) == 2, \"return the second result\"\nassert seen == [0, 1], \"call the function exactly twice in order\"\n"
+	},
+	{
+		"id": "ch-functions-2",
+		"skill": "python-foundations",
+		"subskillId": "functions",
+		"kind": "predict",
+		"level": 2,
+		"prompt": "What exception type does Python raise for `1 / 0`? Return the class name only.",
+		"hints": [
+			"The denominator is zero, so ordinary division cannot produce a finite result.",
+			"Python uses a specific built-in exception for arithmetic division by zero.",
+			"Return the name without quotes or parentheses."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "ZeroDivisionError",
+		"format": "text"
+	},
+	{
+		"id": "ch-functions-3",
+		"skill": "python-foundations",
+		"subskillId": "functions",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement `make_counter(start=0)`. Return a callable that returns the current value and then increments it by one. Separate counters must not share state.",
+		"hints": [
+			"Keep the current value in a variable inside the factory.",
+			"The nested function needs `nonlocal` to update that variable.",
+			"Return the current value before incrementing it."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def make_counter(start=0):\n    \"\"\"Return a callable counter beginning at start.\"\"\"\n    return lambda: start\n",
+		"tests": "counter = make_counter(5)\nassert counter() == 5, \"first call returns the starting value\"\nassert counter() == 6, \"second call increments\"\nassert make_counter()() == 0, \"default start is zero\"\nother = make_counter(5)\nassert other() == 5, \"counters have independent state\"\n"
+	},
+	{
+		"id": "ch-recursion-1",
+		"skill": "python-foundations",
+		"subskillId": "recursion",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement `sum_nested(values)` recursively. Sum integers found inside arbitrarily nested lists and tuples; empty containers contribute zero.",
+		"hints": [
+			"The base case is a value that is not a list or tuple.",
+			"For a container, recursively sum each child and add the results.",
+			"An empty container should naturally produce the identity value 0."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def sum_nested(values):\n    \"\"\"Recursively sum integers in nested lists and tuples.\"\"\"\n    return 0\n",
+		"tests": "assert sum_nested([1, [2, [3]], 4]) == 10, \"sum several nesting levels\"\nassert sum_nested([]) == 0, \"empty list sums to zero\"\nassert sum_nested((1, (), (-2, 5))) == 4, \"support tuples and negative values\"\nassert sum_nested([[], [[]]]) == 0, \"empty nested containers contribute zero\"\n"
+	},
+	{
+		"id": "ch-recursion-2",
+		"skill": "python-foundations",
+		"subskillId": "recursion",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Implement `reverse_text(text)` recursively. Return the characters in reverse order without using slicing with a negative step or `reversed()`.",
+		"hints": [
+			"Empty and one-character strings are base cases.",
+			"The reverse of the rest of the string comes before the first character.",
+			"Each recursive call should remove one character so it reaches the base case."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def reverse_text(text):\n    \"\"\"Return text in reverse order using recursion.\"\"\"\n    return text\n",
+		"tests": "assert reverse_text(\"python\") == \"nohtyp\", \"reverse a multi-character word\"\nassert reverse_text(\"\") == \"\", \"empty text is its own reverse\"\nassert reverse_text(\"x\") == \"x\", \"one character is unchanged\"\nassert reverse_text(\"a! b\") == \"b !a\", \"preserve spaces and punctuation\"\n"
+	},
+	{
+		"id": "ch-exceptions-1",
+		"skill": "python-foundations",
+		"subskillId": "exceptions",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement `parse_ints(text)`. Parse a comma-separated string into integers, allowing whitespace and ignoring blank fields. Raise ValueError when a non-blank field is not an integer.",
+		"hints": [
+			"Split on commas and strip each field.",
+			"Skip a field only after checking that it is blank.",
+			"Pass the cleaned field to `int`; its ValueError is the promised failure."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def parse_ints(text):\n    \"\"\"Parse comma-separated integers and reject non-integer fields.\"\"\"\n    return []\n",
+		"tests": "assert parse_ints(\" 10, 20 ,,-3\") == [10, 20, -3], \"parse spaces, blanks, and negatives\"\nassert parse_ints(\"\") == [], \"empty text has no integers\"\nassert parse_ints(\" ,  \") == [], \"blank fields are ignored\"\ntry:\n    parse_ints(\"1, nope\")\n    raise AssertionError(\"a non-integer field must raise ValueError\")\nexcept ValueError:\n    pass\n"
+	},
+	{
+		"id": "ch-exceptions-2",
+		"skill": "python-foundations",
+		"subskillId": "exceptions",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Implement `safe_divide(a, b)`. Return a / b normally, but return None when b is zero. Do not hide unrelated errors.",
+		"hints": [
+			"Check the documented exceptional input before dividing.",
+			"Only zero denominators need the sentinel value.",
+			"For every other denominator, return the ordinary division result."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def safe_divide(a, b):\n    \"\"\"Divide, returning None only for a zero denominator.\"\"\"\n    return a / b\n",
+		"tests": "assert safe_divide(6, 2) == 3, \"ordinary division still works\"\nassert safe_divide(1, 0) is None, \"zero denominator returns None\"\nassert safe_divide(-3, 2) == -1.5, \"negative values divide normally\"\nassert safe_divide(0, 5) == 0, \"zero numerator remains zero\"\n"
+	},
+	{
+		"id": "ch-classes-1",
+		"skill": "python-foundations",
+		"subskillId": "classes",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Implement a `Rectangle` class with width and height. `area()` returns width times height, `perimeter()` returns the outline length, negative dimensions raise ValueError, and zero dimensions are allowed.",
+		"hints": [
+			"Validate both dimensions in `__init__` before storing them.",
+			"Area multiplies the two dimensions.",
+			"Perimeter adds the dimensions and doubles the result."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "class Rectangle:\n    \"\"\"A rectangle with non-negative width and height.\"\"\"\n    pass\n",
+		"tests": "rectangle = Rectangle(3, 4)\nassert rectangle.area() == 12, \"area multiplies width and height\"\nassert rectangle.perimeter() == 14, \"perimeter is twice the sum\"\nassert Rectangle(0, 8).area() == 0, \"zero width is allowed\"\ntry:\n    Rectangle(-1, 2)\n    raise AssertionError(\"negative dimensions must raise ValueError\")\nexcept ValueError:\n    pass\n"
+	},
+	{
+		"id": "ch-classes-2",
+		"skill": "python-foundations",
+		"subskillId": "classes",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Implement `BankAccount`. Its constructor accepts a non-negative starting balance. `deposit(amount)` and `withdraw(amount)` require positive amounts; withdrawal also cannot exceed the current balance. Invalid operations raise ValueError and leave the balance unchanged.",
+		"hints": [
+			"Store the balance on each instance in `__init__`.",
+			"Validate an amount before changing state.",
+			"Check both positivity and sufficient funds before withdrawing."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "class BankAccount:\n    \"\"\"Keep a non-negative balance and enforce valid transfers.\"\"\"\n    pass\n",
+		"tests": "account = BankAccount(10)\naccount.deposit(5)\nassert account.balance == 15, \"deposit increases the balance\"\naccount.withdraw(7)\nassert account.balance == 8, \"withdraw decreases the balance\"\ntry:\n    account.withdraw(9)\n    raise AssertionError(\"overdraft must raise ValueError\")\nexcept ValueError:\n    pass\nassert account.balance == 8, \"failed withdrawal leaves balance unchanged\"\ntry:\n    account.deposit(0)\n    raise AssertionError(\"non-positive deposit must raise ValueError\")\nexcept ValueError:\n    pass\nassert BankAccount(0).balance == 0, \"zero starting balance is allowed\"\n"
+	},
+	{
+		"id": "ch-classes-3",
+		"skill": "python-foundations",
+		"subskillId": "classes",
+		"kind": "build",
+		"level": 4,
+		"prompt": "BUILD a small reading-list tracker with three functions. `add_book(books, title)` returns a new list with a stripped, incomplete book; blank titles raise ValueError. `complete_book(books, title)` returns a new list with the first matching title marked done without mutating the input. `reading_summary(books)` returns a dictionary with `total`, `completed`, and `remaining`. Include the edge cases shown by the tests.",
+		"hints": [
+			"Represent each book as a dictionary with `title` and `done` keys.",
+			"Copy the outer list and each book before marking a title complete.",
+			"The summary counts completed books and derives remaining from total."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"starterCode": "def add_book(books, title):\n    \"\"\"Return a new reading list with one incomplete, cleaned title.\"\"\"\n    return list(books)\n\ndef complete_book(books, title):\n    \"\"\"Return a copied list with the first matching title completed.\"\"\"\n    return list(books)\n\ndef reading_summary(books):\n    \"\"\"Count total, completed, and remaining books.\"\"\"\n    return {\"total\": 0, \"completed\": 0, \"remaining\": 0}\n",
+		"tests": "books = []\nbooks = add_book(books, \"  Python 101  \")\nbooks = add_book(books, \"Testing\")\nassert books == [{\"title\": \"Python 101\", \"done\": False}, {\"title\": \"Testing\", \"done\": False}], \"add and clean titles\"\ncompleted = complete_book(books, \"Python 101\")\nassert completed[0][\"done\"] is True and completed[1][\"done\"] is False, \"complete only the first matching title\"\nassert books[0][\"done\"] is False, \"completion must not mutate the input\"\nassert reading_summary(completed) == {\"total\": 2, \"completed\": 1, \"remaining\": 1}, \"summarize progress\"\nassert reading_summary([]) == {\"total\": 0, \"completed\": 0, \"remaining\": 0}, \"empty list summary\"\ntry:\n    add_book([], \"  \")\n    raise AssertionError(\"blank title must raise ValueError\")\nexcept ValueError:\n    pass\n"
+	},
+	{
+		"id": "ch-classes-4",
+		"skill": "python-foundations",
+		"subskillId": "classes",
+		"kind": "boss",
+		"level": 5,
+		"prompt": "BOSS: Implement `analyze_text(text)` using only Python's standard library. Split on whitespace, strip surrounding ASCII punctuation, and casefold each remaining word. Return a dictionary with `words` (total count), `unique_words`, `top_word` (the first word to reach the highest frequency, or None), and `average_length` rounded to two decimals (0.0 for no words).",
+		"hints": [
+			"Use `string.punctuation` with `strip`, then discard empty tokens.",
+			"Count normalized words in a dictionary while retaining insertion order for ties.",
+			"Compute the average from normalized word lengths and guard the empty case."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"format": "code",
+		"language": "python",
+		"setup": "import string\n",
+		"starterCode": "def analyze_text(text):\n    \"\"\"Return compact frequency and length statistics for text.\"\"\"\n    return {\"words\": 0, \"unique_words\": 0, \"top_word\": None, \"average_length\": 0.0}\n",
+		"tests": "report = analyze_text(\"Red, blue red!\")\nassert report == {\"words\": 3, \"unique_words\": 2, \"top_word\": \"red\", \"average_length\": 3.33}, \"normalize punctuation and count repeats\"\ntie = analyze_text(\"cat dog\")\nassert tie[\"top_word\"] == \"cat\", \"break ties by first appearance\"\nassert analyze_text(\"!!!\") == {\"words\": 0, \"unique_words\": 0, \"top_word\": None, \"average_length\": 0.0}, \"punctuation-only text is empty\"\nassert analyze_text(\"\") == {\"words\": 0, \"unique_words\": 0, \"top_word\": None, \"average_length\": 0.0}, \"empty text has zero statistics\"\nassert analyze_text(\"Straße STRASSE\")[\"unique_words\"] == 1, \"casefold equivalent words\"\n"
+	}
+]

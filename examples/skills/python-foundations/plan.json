@@ -1,0 +1,172 @@
+{
+	"skill": "python-foundations",
+	"title": "Python foundations",
+	"targetPerformance": "After 20 hours, implement and explain four of five unseen small Python functions in 30 minutes, passing edge-case tests for syntax, strings, collections, loops, functions, recursion, exceptions, and simple classes; complete the reading-list build and text-analysis boss.",
+	"whyItMatters": "A dependable Python foundation lets you turn a problem into a testable program instead of memorizing isolated syntax.",
+	"subskills": [
+		{
+			"id": "syntax-types",
+			"title": "Read syntax and types",
+			"why": "Names, literals, operators, and booleans are the vocabulary every later function uses.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Read each expression left to right and check the value and type after every operator.",
+			"drills": [
+				"Predict the type of a literal.",
+				"Trace a boolean expression.",
+				"Write a small predicate and test zero and negative inputs."
+			],
+			"status": "active"
+		},
+		{
+			"id": "strings",
+			"title": "Transform strings",
+			"why": "Text cleanup is a frequent boundary between messy input and reliable code.",
+			"priority": 1,
+			"prerequisites": [
+				"syntax-types"
+			],
+			"selfCorrection": "Test empty text, repeated whitespace, mixed case, and punctuation before trusting a transformation.",
+			"drills": [
+				"Normalize names and whitespace.",
+				"Count characters by a rule.",
+				"Compare strip, split, join, lower, and casefold."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "collections",
+			"title": "Use lists, sets, and dictionaries",
+			"why": "Choosing the right collection makes membership, counting, and ordered data straightforward.",
+			"priority": 1,
+			"prerequisites": [
+				"syntax-types"
+			],
+			"selfCorrection": "Name the invariant: order, uniqueness, key lookup, or mutation; then pick the collection that provides it.",
+			"drills": [
+				"Count normalized words in a dictionary.",
+				"Rotate a list without mutating the input.",
+				"Use a set to detect a repeated value."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "loops-comprehensions",
+			"title": "Loop and build collections",
+			"why": "Explicit loops and comprehensions turn a sequence of examples into a reusable rule.",
+			"priority": 1,
+			"prerequisites": [
+				"collections"
+			],
+			"selfCorrection": "Trace one item through the loop, including the empty and boundary cases.",
+			"drills": [
+				"Filter and sum values.",
+				"Stop when a duplicate appears.",
+				"Group records by a derived key."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "functions",
+			"title": "Compose functions and closures",
+			"why": "Small functions give a program named pieces that can be tested independently and reused.",
+			"priority": 1,
+			"prerequisites": [
+				"loops-comprehensions"
+			],
+			"selfCorrection": "State the input, output, and side effects before writing the body; then test two independent calls.",
+			"drills": [
+				"Pass a function as an argument.",
+				"Write a default argument that starts state.",
+				"Build a closure with private state."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "recursion",
+			"title": "Use a recursive base case",
+			"why": "Recursion makes nested data and self-similar problems easier to express when the base case is explicit.",
+			"priority": 2,
+			"prerequisites": [
+				"functions"
+			],
+			"selfCorrection": "Point to the base case and show how each call moves closer to it.",
+			"drills": [
+				"Reverse a string recursively.",
+				"Sum nested lists and tuples.",
+				"Test depth zero, one, and several levels."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "exceptions",
+			"title": "Handle expected failures",
+			"why": "Clear exception boundaries turn invalid input into a useful contract instead of a mysterious crash.",
+			"priority": 2,
+			"prerequisites": [
+				"functions"
+			],
+			"selfCorrection": "Catch only the failure the function promises to handle; let unrelated errors remain visible.",
+			"drills": [
+				"Parse valid and blank fields.",
+				"Raise a useful ValueError for bad input.",
+				"Return a sentinel for one documented exceptional case."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "classes",
+			"title": "Model small objects",
+			"why": "A compact class can keep state and enforce an invariant when a handful of functions is no longer enough.",
+			"priority": 2,
+			"prerequisites": [
+				"exceptions",
+				"collections"
+			],
+			"selfCorrection": "Write the invariant in one sentence and check it after construction and every mutating method.",
+			"drills": [
+				"Implement a value object with derived methods.",
+				"Reject invalid state transitions.",
+				"Combine a class with helper functions in a small project."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "The Python tutorial",
+			"url": "https://docs.python.org/3/tutorial/",
+			"why": "Use the official guided path for syntax, control flow, data structures, and functions."
+		},
+		{
+			"title": "Built-in functions",
+			"url": "https://docs.python.org/3/library/functions.html",
+			"why": "Check the exact behavior of common tools such as len, sum, sorted, and isinstance."
+		},
+		{
+			"title": "Classes",
+			"url": "https://docs.python.org/3/tutorial/classes.html",
+			"why": "Review instances, methods, inheritance, and class design after the function drills."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Syntax lookup interrupts the first attempt",
+			"fix": "Write a tiny example from memory, run it, and look up only the error that remains.",
+			"done": false
+		},
+		{
+			"barrier": "Happy-path tests hide boundary bugs",
+			"fix": "Add an empty input, a one-item input, and one invalid input before calling a function finished.",
+			"done": false
+		},
+		{
+			"barrier": "A failing test feels like lost progress",
+			"fix": "Record the failing example and one lesson, then make the smallest repair and rerun it.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}
