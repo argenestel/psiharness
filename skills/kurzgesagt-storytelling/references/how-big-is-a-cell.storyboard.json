@@ -1,0 +1,638 @@
+{
+	"id": "how-big-is-a-cell",
+	"title": "How big is a cell?",
+	"topic": "cell-biology",
+	"style": "kurzgesagt",
+	"scenes": [
+		{
+			"id": "hook",
+			"narration": "How can something invisible hold a whole working world?",
+			"durationSec": 5,
+			"background": "#18243c",
+			"elements": [
+				{
+					"id": "hook-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "How big is a cell?",
+						"size": 42,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "hook-cell",
+					"kind": "circle",
+					"props": {
+						"x": 800,
+						"y": 440,
+						"r": 160,
+						"fill": "#19b9ad",
+						"stroke": "#b8ffe9"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "hook-viewer",
+					"kind": "creature",
+					"props": {
+						"x": 1240,
+						"y": 640,
+						"size": 85,
+						"color": "#ffbb55",
+						"mood": "curious"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.8,
+						"duration": 0.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "meter-to-millimeter",
+			"narration": "Begin with one meter. Shrink our reference length one thousand times: now it is one millimeter.",
+			"durationSec": 8,
+			"background": "#18243c",
+			"elements": [
+				{
+					"id": "meter-to-millimeter-scale",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "1 m / 1000 = 1 mm",
+						"size": 42,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "meter-to-millimeter-ruler",
+					"kind": "rect",
+					"props": {
+						"x": 300,
+						"y": 400,
+						"w": 1000,
+						"h": 60,
+						"rx": 10,
+						"fill": "#ffbb55"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "meter-to-millimeter-note",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 780,
+						"text": "Reference lengths; diagrams are rebased at each jump.",
+						"size": 28,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.05,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "millimeter-to-cell",
+			"narration": "Shrink one hundred times again. Ten micrometers is a representative cell width, though real cells vary greatly.",
+			"durationSec": 8,
+			"background": "#18243c",
+			"elements": [
+				{
+					"id": "millimeter-to-cell-scale",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "1 mm / 100 = 10 micrometers",
+						"size": 42,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "millimeter-to-cell-cell",
+					"kind": "circle",
+					"props": {
+						"x": 800,
+						"y": 440,
+						"r": 160,
+						"fill": "#19b9ad",
+						"stroke": "#b8ffe9"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "millimeter-to-cell-note",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 780,
+						"text": "Representative cell width, not a universal cell size.",
+						"size": 28,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "cell-to-feature",
+			"narration": "Shrink ten times more to one micrometer. A feature this wide fits ten times across our example cell.",
+			"durationSec": 8,
+			"background": "#18243c",
+			"elements": [
+				{
+					"id": "cell-to-feature-scale",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "10 micrometers / 10 = 1 micrometer",
+						"size": 42,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "cell-to-feature-cell",
+					"kind": "circle",
+					"props": {
+						"x": 800,
+						"y": 440,
+						"r": 180,
+						"fill": "#19b9ad",
+						"stroke": "#b8ffe9"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "cell-to-feature-feature",
+					"kind": "circle",
+					"props": {
+						"x": 800,
+						"y": 440,
+						"r": 18,
+						"fill": "#fa709a"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "cell-to-feature-note",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 780,
+						"text": "Illustrative 1 micrometer feature; not a named organelle.",
+						"size": 28,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.15,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "bus-comparison",
+			"narration": "Enlarge our cell to ten meters, roughly bus-length. The one-micrometer feature becomes one meter wide in that same model.",
+			"durationSec": 8,
+			"background": "#18243c",
+			"elements": [
+				{
+					"id": "bus-comparison-scale",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "Same enlargement: one million times in length",
+						"size": 42,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "bus-comparison-cell-model",
+					"kind": "rect",
+					"props": {
+						"x": 300,
+						"y": 360,
+						"w": 1000,
+						"h": 200,
+						"rx": 60,
+						"fill": "#19b9ad"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "bus-comparison-feature-model",
+					"kind": "rect",
+					"props": {
+						"x": 700,
+						"y": 400,
+						"w": 100,
+						"h": 100,
+						"rx": 20,
+						"fill": "#fa709a"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "bus-comparison-comparison",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 740,
+						"text": "Cell: 10 m across. Feature: 1 m across.",
+						"size": 36,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "bus-comparison-note",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 800,
+						"text": "Bus-length comparison is approximate; schematic model.",
+						"size": 26,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "creature-reaction",
+			"narration": "Our tiny explorer needs a bigger ruler. Small compared with us can still mean spacious compared with its own parts.",
+			"durationSec": 8,
+			"background": "#18243c",
+			"elements": [
+				{
+					"id": "creature-reaction-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "Small and spacious can both be true.",
+						"size": 42,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "creature-reaction-cell",
+					"kind": "circle",
+					"props": {
+						"x": 800,
+						"y": 440,
+						"r": 160,
+						"fill": "#19b9ad",
+						"stroke": "#b8ffe9"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "creature-reaction-viewer",
+					"kind": "creature",
+					"props": {
+						"x": 1240,
+						"y": 640,
+						"size": 85,
+						"color": "#ffbb55",
+						"mood": "surprised"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.8,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "creature-reaction-tiny-ruler",
+					"kind": "rect",
+					"props": {
+						"x": 1090,
+						"y": 540,
+						"w": 110,
+						"h": 18,
+						"fill": "#ffbb55"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "zoom-out",
+			"narration": "Zoom back out: a feature, a cell, a millimeter, a meter. The universe offers no favorite scale, only more to notice.",
+			"durationSec": 9.0,
+			"background": "#18243c",
+			"elements": [
+				{
+					"id": "zoom-out-recap",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "1 micrometer -> 10 micrometers -> 1 mm -> 1 m",
+						"size": 42,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "zoom-out-feature",
+					"kind": "circle",
+					"props": {
+						"x": 300,
+						"y": 450,
+						"r": 12,
+						"fill": "#fa709a"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "zoom-out-cell",
+					"kind": "circle",
+					"props": {
+						"x": 600,
+						"y": 450,
+						"r": 45,
+						"fill": "#19b9ad"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "zoom-out-millimeter",
+					"kind": "circle",
+					"props": {
+						"x": 950,
+						"y": 450,
+						"r": 90,
+						"fill": "#5579d4"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "zoom-out-meter",
+					"kind": "circle",
+					"props": {
+						"x": 1300,
+						"y": 450,
+						"r": 140,
+						"fill": "#ffbb55"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "zoom-out-note",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 790,
+						"text": "Nested reference lengths; these symbols are not to scale.",
+						"size": 28,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "recap-check",
+			"narration": "In our ten-meter cell model, how wide would a two-micrometer feature be? Pause, predict, then explain your scale factor.",
+			"durationSec": 10,
+			"background": "#18243c",
+			"elements": [
+				{
+					"id": "recap-check-question",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "If 10 micrometers becomes 10 m...",
+						"size": 42,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "recap-check-prediction",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 440,
+						"text": "What does 2 micrometers become?",
+						"size": 48,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "recap-check-viewer",
+					"kind": "creature",
+					"props": {
+						"x": 1240,
+						"y": 640,
+						"size": 85,
+						"color": "#ffbb55",
+						"mood": "happy"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.8,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "recap-check-note",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 790,
+						"text": "Use the same length scale for both objects.",
+						"size": 28,
+						"align": "middle",
+						"fill": "#ffffff"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 0.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		}
+	]
+}
