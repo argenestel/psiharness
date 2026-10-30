@@ -6,7 +6,7 @@ import { isAbsolute, join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 
 // Load dependencies before registering tests; skip only when core is unavailable.
-let extension: typeof import("../src/index.ts").default | undefined;
+let extension: typeof import("../src/index.ts").registerConceptLayer | undefined;
 let missingCore: string | undefined;
 try {
 	await import("../../core/src/index.ts");
@@ -14,7 +14,7 @@ try {
 	if ((error as NodeJS.ErrnoException).code !== "ERR_MODULE_NOT_FOUND") throw error;
 	missingCore = `Core store is not available yet: ${String(error)}`;
 }
-if (!missingCore) extension = (await import("../src/index.ts")).default;
+if (!missingCore) extension = (await import("../src/index.ts")).registerConceptLayer;
 async function load(t: { skip: (reason: string) => void }) {
 	if (missingCore) t.skip(missingCore);
 	return extension;
