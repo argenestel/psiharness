@@ -4,7 +4,107 @@ Contracts live in `core/src/types.ts`; the JSON schemas agents see are in `exten
 validators are `validateStoryboard()` and `validateExplorable()` in `visual/src/`. Dates are ISO-8601 strings. In the
 tables below `?` marks an optional field.
 
-## Topic packs
+## Writing a skill pack
+
+Practice packs are the main authoring format: a first-20-hours plan and text challenges. Start from
+`examples/skills/mental-math/`, `examples/skills/sql-queries/`, `examples/skills/regex/`,
+`examples/skills/git-fluency/`, or `examples/skills/spanish-cafe-a1/`.
+Each contains `plan.json` and a `challenges.json` array. These are different from optional topic packs below
+and from host instruction skills (`SKILL.md`). Contracts are in `core/src/types.ts`; storage and grading are in
+`core/src/practice.ts`.
+
+### Plan fields
+
+| Field | Meaning |
+| --- | --- |
+| `skill` | Kebab-case skill slug; use the same identity in every challenge. |
+| `title` | Display name. |
+| `targetPerformance` | Observable, testable definition of good enough. |
+| `whyItMatters` | The learner's reason for learning. |
+| `subskills` | Array of the records below. |
+| `resources` | Array of `{ title, url?, why }`; choose only enough to self-correct. The `/skill` workflow requests at most 3; no count is enforced by validation. |
+| `barriers` | Array of `{ barrier, fix, done }`, where `done` is boolean. |
+| `hoursGoal` | Positive hour target, conventionally 20. The plan tool supplies 20 when omitted. |
+| `createdAt`, `updatedAt` | ISO-8601 timestamps; include them in pack files. The plan tool manages timestamps for its own writes. |
+
+Every subskill has `id`, `title`, `why`, `priority` (1 core, 2 useful, 3 later), `prerequisites` (subskill ids),
+`selfCorrection`, `drills` (string array), and `status` (`locked`, `active`, `practicing`, or `solid`).
+Use unique kebab-case ids and an acyclic prerequisite graph. Next-subskill selection chooses the lowest numeric
+priority unfinished subskill whose prerequisites are all solid, breaking ties by plan order. Successful attempts
+do not automatically change subskill status.
+
+### Challenge fields and hint ladders
+
+Full pack records contain `id`, `skill`, `kind`, `level` (integer 1–5), `prompt`, `hints` (string array), and
+`createdAt`. Optional fields are `subskillId`, `expected`, `acceptable` (string array), `tolerance` (number), and
+`rubric` (string array). Use stable, globally unique challenge ids: attempt recording resolves ids across skills.
+The challenge tool assigns ids and timestamps for challenges it creates.
+
+Kinds are `quickfire`, `predict`, `debug`, `apply`, `explain`, `build`, and `boss`. Give open tasks a concrete rubric;
+leave `expected` absent when a single exact answer would be misleading. Write hints in order from a small nudge to
+a specific method, with the answer left for the learner. `/hint` reveals one rung at a time; terminal drills use `?`.
+
+**Pack convention: include one boss and one build quest per pack.** The shipped examples follow it; neither
+`PracticeStore` nor the CLI importer enforces the count. A build quest uses kind `build`, not a separate quest kind.
+
+### Auto-gradable answers
+
+`PracticeStore.checkAnswer(challenge, answer)` returns `success` or `fail` when `expected` is a nonblank string;
+otherwise it returns `undefined` for tutor grading. `acceptable` adds alternative strings but does not enable
+auto-grading without `expected`.
+
+The actual normalization in `core/src/practice.ts` lowercases, trims, converts several Unicode minus/dash forms to
+ASCII minus, strips leading wrappers/sentence punctuation and trailing wrappers/sentence punctuation, and collapses
+whitespace runs to one space. It preserves internal punctuation, signs, decimal points, and percent markers.
+It does not execute SQL, run regexes, or check semantic equivalence. Supply alternate spellings explicitly.
+
+Numeric comparison also accepts signed decimals, correctly grouped thousands commas, fractions, and percentages.
+`75%` means `0.75`, not `75`. `tolerance` is an absolute numeric difference; without it, the threshold is
+`1e-9 * max(1, abs(expectedNumericValue))`. A normalized exact-string match succeeds before numeric tolerance is
+checked. Use a nonnegative tolerance, including 0 for exact numeric answers.
+
+### Validate before importing
+
+`cli/src/commands/import-skill.ts` parses both JSON files, checks that the plan has a usable skill name and that
+challenges is an array, normalizes skill identities, and writes the two files. It does not validate subskill fields,
+prerequisite references, answer quality, or boss/build counts. `--force` replaces pack files while keeping existing
+attempts, sessions, and progress; keep ids stable when updating an installed pack.
+
+Before importing, inspect the fields above and use the checker against every canonical answer and alternative.
+From the repository root, this read-only check exercises all shipped packs:
+
+```sh
+node --input-type=module <<'JS'
+import assert from "node:assert/strict";
+import { readdirSync, readFileSync } from "node:fs";
+import { PracticeStore } from "./core/src/practice.ts";
+const store = new PracticeStore();
+for (const pack of readdirSync("examples/skills")) {
+    const dir = `examples/skills/${pack}`;
+    const plan = JSON.parse(readFileSync(`${dir}/plan.json`, "utf8"));
+    const challenges = JSON.parse(readFileSync(`${dir}/challenges.json`, "utf8"));
+    assert.equal(challenges.filter(c => c.kind === "boss").length, 1);
+    assert.equal(challenges.filter(c => c.kind === "build").length, 1);
+    for (const c of challenges) {
+        assert.equal(c.skill, plan.skill);
+        if (!c.expected?.trim()) {
+            assert.equal(store.checkAnswer(c, "an open response"), undefined);
+            assert.ok(c.rubric?.length, `${pack}/${c.id}: needs a rubric`);
+            continue;
+        }
+        for (const answer of [c.expected, ...(c.acceptable ?? [])]) {
+            assert.equal(store.checkAnswer(c, answer), "success", `${pack}/${c.id}`);
+        }
+    }
+}
+JS
+```
+
+This is a sanity check, not proof that answers are correct: also try plausible wrong answers, tolerance boundaries,
+and prompt-specific edge cases. Then run `psi import-skill examples/skills/mental-math` and
+`psi practice mental-math` against a scratch `PSI_HOME`. Open-ended build/boss tasks need the agent's rubric grading.
+
+## Optional topic packs
 
 A pack is a directory that `psi import` copies to `$PSI_HOME/topics/<graph.topic>/`:
 
@@ -115,7 +215,7 @@ guidance.
 
 ## Storyboard JSON
 
-Saved as `storyboards/<id>.json`. `psi_storyboard { storyboard }` validates, saves, and renders
+Saved as `storyboards/<id>.json`. `psi_storyboard { storyboard, speech?, autoplay? }` validates, saves, and renders
 `artifacts/<id>.html`; `psi render <file.json> [-o out.html]` renders without saving.
 
 ```json
@@ -233,8 +333,8 @@ nested videos by the returned path.
 
 ## Skills and prompts
 
-The host discovers these; psi has no loader of its own. `package.json` declares `pi.extensions`, `pi.skills`
-(`./skills`), and `pi.prompts` (`./prompts/*.md`); the CLI passes the same directories with `--skill` and
+Host instruction skills are separate from practice packs. The pi host discovers these; omp receives a skill index instead of pi resource flags. `package.json` declares `pi.extensions`, `pi.skills`
+(`./skills`), and `pi.prompts` (`./prompts/*.md`); the pi CLI launch passes the same directories with `--skill` and
 `--prompt-template`. Adding a file needs no registration in psi code.
 
 **Skill** — `skills/<name>/SKILL.md` with `name` and `description` frontmatter (description says *what* and *when*).
@@ -262,7 +362,8 @@ Ask one prediction question about $1, then wait for the learner.
 ```
 
 Name tools exactly as registered (`psi_…`, see [tools and commands](tools-and-commands.md)). New *slash commands*
-with behavior need `registerCommand()` in `extension/src/commands.ts`.
+with behavior need `registerCommand()` in `extension/src/practice/commands.ts` for practice or
+`extension/src/commands.ts` for the optional concept layer.
 
 ## Adding a crew role
 

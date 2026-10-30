@@ -4,6 +4,36 @@ psi runs TypeScript directly on Node ≥ 22.18 (type stripping). It has no build
 Teaching sessions need an installed, authenticated [pi](https://pi.dev) or oh-my-pi (`omp`) host with model access;
 psi never handles provider credentials itself.
 
+## Practice first
+
+psi is a text-first, practice-first learning agent. Start from the repository root with Node ≥ 22.18.
+In these examples, `psi` means `node cli/src/psi.ts` (also available as `npm run psi --`).
+
+```sh
+psi import-skill examples/skills/mental-math
+psi practice mental-math
+psi learn
+```
+
+The first two commands need no model or host. The terminal drill grades explicit answers; `?` asks for a hint,
+`s` skips, and `q` quits. Failures still earn XP; a reflection recorded with a failed attempt earns a lesson bonus.
+For a timed drill, use `psi practice mental-math --minutes 10`.
+
+`psi learn` opens the full agent and needs an authenticated pi/omp host. Continue there:
+
+```text
+/skill mental math
+/practice 20
+/remember I learn best when I try a small example first
+/recap
+```
+
+The tutor asks about your target, current level, and available time, then saves a first-20-hours plan.
+Practice is one challenge at a time: attempt, optional hints, feedback, and another attempt.
+`/quest` requests a small build project; `/boss` mixes subskills. `/recap` asks the agent to stop the session,
+save wins and struggles, and leave a concrete next step. These agent workflows depend on model tool calls.
+`/remember` saves a preference directly. `psi skills`, `psi hours`, `psi progress`, and `psi memory` inspect local data.
+
 ## Install
 
 **As a pi package** — loads the extension, skills, and prompt templates declared under `pi` in `package.json`:
@@ -12,14 +42,16 @@ psi never handles provider credentials itself.
 pi install git:github.com/argenestel/psiharness
 ```
 
-Then start `pi` and type `/learn Fourier transform`. This does not put a `psi` command on your `PATH`.
+Then start `pi` and type `/skill mental math`. This does not put a `psi` command on your `PATH`.
 
 **From a checkout** — gives you the `psi` CLI, which launches pi/omp with psi preloaded:
 
 ```sh
 git clone https://github.com/argenestel/psiharness && cd psiharness
 node cli/src/psi.ts doctor
-node cli/src/psi.ts learn "Fourier transform"
+node cli/src/psi.ts import-skill examples/skills/mental-math
+node cli/src/psi.ts practice mental-math
+node cli/src/psi.ts learn
 ```
 
 In these docs `psi` means `node cli/src/psi.ts` (or `npm run psi --`). For a real command, symlink the entry point the
@@ -55,11 +87,13 @@ Both services share the `psi-data` volume (`PSI_HOME=/data`). Images: `psi` (Nod
 
 ## Where data lives
 
+Learner memory and recaps live in `$PSI_HOME/memory.json` (default `~/.psi/memory.json`).
+Skill plans, challenges, attempts, sessions, and progress live under `$PSI_HOME/skills/<skill>/`.
 Everything is plain files under `PSI_HOME` (default `~/.psi`): `topics/<topic>/` holds the graph, plan, cards, learner
 model, review log, specs, and rendered artifacts; `workspace/` is the host's working directory when launched by the
 CLI. Layout details: [architecture](architecture.md#storage).
 
-## First session
+## Optional concept and visual tutor
 
 ```sh
 psi learn "Fourier transform"
@@ -110,7 +144,7 @@ grading the current card.
 
 - Node ≥ 22.18 (required);
 - `pi`, `omp`, `latex`, `ffmpeg`, `docker` version commands, and `PSI_BIN` if set;
-- `manim --version` locally, and `docker image inspect` of `PSI_MANIM_IMAGE` (default `psi-manim:latest`);
+- local Manim availability (`manim --version`, with a `uv` fallback), and `docker image inspect` of `PSI_MANIM_IMAGE` (default `psi-manim:latest`);
 - that `PSI_HOME` is writable (creates and removes a probe directory).
 
 Each failure prints a fix. Exit status is 1 if **any** check fails, including optional tools you may not need (you only
@@ -120,9 +154,12 @@ need omp, Manim, TeX, FFmpeg, or Docker for those features). Doctor does not tes
 
 | Launch | Default URL | Notes |
 | --- | --- | --- |
-| `psi studio [--port N] [--open]` | `http://127.0.0.1:3210` | Always binds loopback. `--port 0` picks a free port. `--open` uses `open`/`xdg-open`. |
-| `npm run studio` | `http://127.0.0.1:4173` | Honors `PSI_STUDIO_PORT` and `PSI_STUDIO_HOST` (then `HOST`). |
-| `/studio` in a session | `http://localhost:4173` | Spawns the standalone server detached, port from `PSI_STUDIO_PORT`; does not open a browser. |
+| `psi studio [--port N] [--host H] [--open]` | `http://127.0.0.1:4173` | Flags override `PSI_STUDIO_PORT` and `PSI_STUDIO_HOST`. `--port 0` picks a free port; `--open` opens a browser. |
+| `npm run studio` | `http://127.0.0.1:4173` | Honors `PSI_STUDIO_PORT` and `PSI_STUDIO_HOST`; `HOST` is ignored. |
+| `/studio` in a session | `http://127.0.0.1:4173` | Starts or reuses the server using `PSI_STUDIO_PORT` and `PSI_STUDIO_HOST`; prints the connection URL. |
+
+For studio configuration, only `PSI_STUDIO_HOST`, `PSI_STUDIO_PORT`, and
+`PSI_STUDIO_ALLOWED_HOSTS` are honored; the last adds comma-separated names to the HTTP Host allowlist.
 
 Per topic, studio shows a concept map with frontier, the lesson path, an artifact gallery, reveal-and-rate card review,
 and progress/review history. It watches `$PSI_HOME/topics` and refreshes live; ratings made in studio go through the

@@ -33,10 +33,10 @@ Challenge · apply · level 2
   Answer with a single SQL query.
 
 > select customer_id, sum(total) from orders group by customer_id where sum(total) > 500
-✗ Not quite. +4 XP for the attempt.
+✗ Not quite — still earns XP for the attempt.
   What will you try differently?
 > filters on groups go in HAVING, after GROUP BY
-✓ Lesson logged: +5 XP. Try it again?
+✓ Lesson logged (bonus XP). Try it again?
 ```
 
 ## Features
@@ -44,7 +44,7 @@ Challenge · apply · level 2
 | | |
 |---|---|
 | **Learner memory** | Goals, background, preferences, what clicked, recurring struggles, misconceptions. It's recalled every session and stays private on your machine (`~/.psi/memory.json`). `/remember`, `/memory`, `/forget`. |
-| **20-hour skill plans** | `/skill <what>` sets a concrete target, deconstructs it into subskills (the vital few first), picks 3–5 resources, lists practice barriers and their fixes, and tracks hours toward 20. |
+| **20-hour skill plans** | `/skill <what>` sets a concrete target, deconstructs it into subskills (the vital few first), picks a few (≤ 5) resources, lists practice barriers and their fixes, and tracks hours toward 20. |
 | **Interactive practice** | `/practice`, `/challenge`, `/boss`, `/hint`. Quickfire, predict, debug, apply, explain, build, and boss challenges, graded instantly when there's an exact answer and by rubric otherwise. |
 | **Game layer** | XP for every attempt (failing included), levels, daily streaks, badges (`first-fail`, `comeback`, `no-hints`, `hour-20`…). |
 | **Build quests** | `/quest` gives you a small real project with 3–5 milestones for the active skill. |

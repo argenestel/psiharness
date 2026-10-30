@@ -1,5 +1,8 @@
 # Contributing to psi
 
+psi is a text-first, practice-first learning agent. Prioritize learner memory, first-20-hours plans,
+auto-graded challenges, failure reflections, and build quests. Concept maps and visuals are optional extras.
+
 Read [AGENTS.md](AGENTS.md) first: it holds the module map and the stable APIs. This file covers setup and workflow.
 
 ## Setup
@@ -24,7 +27,7 @@ node cli/src/psi.ts doctor
 | `npm run psi -- <args>` | the CLI |
 
 Run one file with `node --test core/test/fsrs.test.ts`. Use a throwaway store for manual testing:
-`PSI_HOME=$(mktemp -d) node cli/src/psi.ts import examples/topics/exponential-growth`.
+`PSI_HOME=$(mktemp -d) node cli/src/psi.ts import-skill examples/skills/mental-math`.
 
 ## Conventions
 
@@ -50,9 +53,25 @@ point `PSI_BIN` at a stub and `PSI_HOME` at a temp directory (see `crew/test/` a
 
 **Style.** Tabs, double quotes, semicolons, 120 columns. Small focused files. A short doc comment on every export.
 
-**Pedagogy.** Nothing except a graded review may change mastery. Tools, prompts, and skills must name `psi_*` tools
-and parameters exactly as registered in `extension/src/tools.ts` — see
+**Pedagogy.** Practice XP rewards attempts and reflection; it is not mastery. Only graded card reviews update
+concept BKT mastery. Keep practice text-first: one challenge, attempt, optional hint, feedback. Tools, prompts, and
+skills must name `psi_*` tools and parameters exactly as registered in `extension/src/practice/tools.ts` or
+`extension/src/tools.ts` — see
 [docs/tools-and-commands.md](docs/tools-and-commands.md).
+
+## Contributing learning material
+
+Practice packs live in `examples/skills/`: a plan plus challenges, with auto-gradable answers where appropriate and
+rubrics for open work. Include one boss and one build quest by convention. Follow
+[Writing a skill pack](docs/authoring.md#writing-a-skill-pack) and exercise canonical, alternate, and wrong answers
+with the answer checker before importing. Host instruction skills and prompt templates live separately in `skills/`
+and `prompts/`. Optional concept packs live in `examples/topics/`.
+
+[Getting started](docs/getting-started.md) · [Architecture](docs/architecture.md) ·
+[Tools and commands](docs/tools-and-commands.md) · [Learning science](docs/learning-science.md).
+
+There is no separate build, lint, or static-analysis script. TypeScript checking and the Node test suite are the
+repository's automated checks; run both via `npm run check`.
 
 ## Running studio and crew locally
 
@@ -61,7 +80,7 @@ and parameters exactly as registered in `extension/src/tools.ts` — see
 PSI_HOME=/tmp/psi-dev node cli/src/psi.ts studio --port 0 --open
 PSI_HOME=/tmp/psi-dev PSI_STUDIO_PORT=4173 npm run studio
 
-# Crew (needs an authenticated pi or omp; a lesson spawns five role agents)
+# Crew (needs an authenticated pi or omp; a lesson runs five role tasks)
 PSI_HOME=/tmp/psi-dev node cli/src/psi.ts crew exponential-growth doubling-time
 PSI_HOST=omp node cli/src/psi.ts crew <topic> <conceptId> --model <model>
 ```
@@ -84,7 +103,7 @@ Pins and auth options: [docker/README.md](docker/README.md).
 
 ## CI
 
-Workflows are staged in `ci/workflows/` (not yet active) because the pushing token lacks the `workflow` scope:
+Workflows are staged in `ci/workflows/` (not yet active) as described in [ci/README.md](ci/README.md):
 
 - `ci.yml` — `npm ci`, typecheck, tests on Node 22.
 - `docker.yml` — builds `psi`, `psi-manim`, then `psi-full` and pushes them to GHCR.

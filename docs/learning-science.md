@@ -4,6 +4,79 @@ Why psi is built the way it is. Each section gives the finding, the evidence, an
 (enforced) or in prompts and skills (requested of the model). Prompt-level behavior depends on the model following
 instructions; only the code-level parts are guaranteed.
 
+## Josh Kaufman: the first 20 hours
+
+Josh Kaufman's *The First 20 Hours: How to Learn Anything… Fast!* was published in 2013
+([publisher](https://www.penguin.co.uk/books/186843/the-first-20-hours-by-kaufman-josh/9780670921935)).
+His [TEDxCSU talk](https://www.youtube.com/watch?v=5MgBikgcWnY), published in March 2013, presents a practical
+approach: choose a concrete performance target, deconstruct the skill, learn enough to self-correct, remove practice
+barriers, and commit focused time. Twenty hours is a starting commitment toward useful competence, not a universal
+threshold or a claim of expert performance.
+
+**In psi.** Skill plans record a target performance, personal motivation, prioritized subskills, self-correction
+drills, resources, barriers and fixes, and an hour goal. `/skill` asks about the learner's target, current level, and
+time per day, then requests at most three resources. `PracticeStore` selects an unfinished subskill with solid
+prerequisites and tracks time toward the goal (default 20 hours). Stored learner memory and recaps help the tutor
+resume from previous struggles and insights.
+
+## Mark Rober: the Super Mario effect
+
+In his April 2018 [TEDxPenn talk, “The Super Mario Effect: Tricking Your Brain into Learning More”](https://www.ted.com/talks/mark_rober_the_super_mario_effect_tricking_your_brain_into_learning_more),
+Mark Rober describes a coding challenge and argues for treating failures as part of reaching a goal, rather than as
+judgments of ability. The game framing is psi's inspiration. Any dopamine-based explanation is an interpretation,
+not something psi measures or a demonstrated mechanism of its XP system. This talk is not a controlled validation
+of psi or a universal learning law.
+
+**In psi.** `core/src/gamify.ts` assigns outcome bases of success 10, partial 6, fail 4, skipped 0. Multipliers are
+quickfire 0.5, predict 1, debug/apply 1.2, explain 1.3, build 2, and boss 3. For a non-skipped attempt, XP is:
+
+```text
+max(1, round(outcome base × kind multiplier) + 2 × (learner level − 1) − 2 × max(0, hints used))
+```
+
+A failed attempt with a nonblank recorded lesson gets another 5 XP after that calculation. The level is the learner's
+current progress level, not the challenge's difficulty. Skips always earn 0. Thus a level-1, no-hint quickfire failure
+earns 2 XP; with a lesson it earns 7. Failure does not always earn exactly 4 XP.
+`PracticeStore.recordAttempt()` applies the calculation and updates streaks and badges. The practice contract asks
+for constructive feedback and what the learner will try differently. A lesson must accompany the recorded attempt;
+there is no tool operation to retroactively award its bonus without recording another attempt.
+
+## Deliberate practice
+
+Ericsson, Krampe & Tesch-Römer (1993), “The Role of Deliberate Practice in the Acquisition of Expert Performance,”
+*Psychological Review*, 100(3), 363–406, describes effortful activity designed to improve performance, with tasks,
+feedback, and repetition rather than mere time spent. Its subject is expert performance; it does not establish
+20 hours as an expertise threshold. [Original paper](https://review.firstround.com/content/files/images/blogs/freakonomics/pdf/deliberatepractice-psychologicalreview.pdf).
+
+**In psi.** Plans name observable outcomes and self-correction methods; the tutor presents a challenge, waits for an
+attempt, uses deterministic checking where possible, and grades open answers against a rubric. Build quests apply
+subskills to a small project. These are deliberate-practice-inspired workflows, not a guarantee of expert coaching.
+
+The host skills in `skills/practice-loop/SKILL.md` and `skills/super-mario-effect/SKILL.md` suggest roughly
+**70–85% success over comparable independent attempts** as a practical difficulty heuristic. Neither
+`core/src/practice.ts` nor `core/src/gamify.ts` implements that target, an adaptive difficulty controller, or a
+scientifically established optimum. Hint-assisted retries should not be mistaken for independent successes.
+
+## Limits of gamification
+
+Rewards can sometimes reduce later intrinsic interest in an already enjoyable activity. Relevant early studies are
+Deci (1971), “Effects of Externally Mediated Rewards on Intrinsic Motivation,” *Journal of Personality and Social
+Psychology*, 18(1), 105–115 ([paper](https://selfdeterminationtheory.org/SDT/documents/1971_Deci.pdf)), and Lepper,
+Greene & Nisbett (1973), “Undermining Children's Intrinsic Interest with Extrinsic Reward: A Test of the
+‘Overjustification’ Hypothesis,” *Journal of Personality and Social Psychology*, 28(1), 129–137
+([author's publication record](https://web.stanford.edu/~lepper/cv.html)). Effects depend on the reward and context;
+these studies do not directly test psi's digital XP.
+
+psi's existing safeguards are modest: plans retain the learner's own reason and performance target, build quests
+focus on doing something useful, failures still earn XP, and a reflection bonus rewards a stated lesson. The practice
+contract requests honest grading and forbids shaming mistakes. These design choices aim to keep attention on
+learning; their effectiveness against overjustification has not been evaluated. XP, badges, streaks, and hours are
+participation signals, not proof of competence. There is no implemented gamification-off setting.
+
+## Optional concept and visual layer
+
+The remainder describes spaced cards, concept mastery, and optional visual explanations.
+
 The broad ranking that shaped psi: in Dunlosky et al.'s review of ten study techniques, **practice testing** and
 **distributed practice** earned the only "high utility" ratings, interleaving and self-explanation "moderate", and
 rereading and highlighting "low" (Dunlosky, Rawson, Marsh, Nathan & Willingham, 2013, *Psychological Science in the
@@ -34,10 +107,10 @@ same text, while predicting the opposite (Roediger & Karpicke, 2006, "Test-enhan
 
 **In psi.**
 
-- Cards are the unit of evidence: `recall`, `predict`, `explain`, and `mcq` kinds (`core/src/types.ts`).
+- In the optional concept layer, cards are the unit of BKT evidence: `recall`, `predict`, `explain`, and `mcq` kinds (`core/src/types.ts`).
 - `/review` and `psi review` show the prompt first and reveal the answer only after an attempt; `/quiz` asks one
   question at a time.
-- **Mastery only moves through `PsiStore.review()`.** Lessons, explanations, renders, and notes never mark a concept
+- **Concept BKT mastery only moves through `PsiStore.review()` in the normal review flow.** Lessons, explanations, renders, and notes never mark a concept
   as known (`psi_note` explicitly "does not grant mastery").
 - Free recall and explanation are favored over recognition; MCQs need plausible distractors
   (`skills/retrieval-practice/`).
@@ -49,7 +122,7 @@ A meta-analysis of 317 experiments found robust spacing benefits and that the op
 retention interval (Cepeda, Pashler, Vul, Wixted & Rohrer, 2006, *Psychological Bulletin*, 132(3), 354–380).
 
 **In psi.** Each card carries its own schedule. A grade sets the next due date; `dueCards()` only returns cards whose
-time has come. The `/daily-review` prompt frames a short daily session, and the status line always shows the due count.
+time has come. The `/daily-review` prompt frames a short daily session, and the concept widget shows the due count when tutoring is active.
 
 ## FSRS (when to review)
 
@@ -173,10 +246,10 @@ LaVancher, 1994, *Cognitive Science*, 18(3), 439–477) instead of re-reading. R
 - **No learning styles.** psi does not tailor format to "visual" or "verbal" learners; matching instruction to
   self-reported styles lacks support (Pashler, McDaniel, Rohrer & Bjork, 2008, *Psychological Science in the Public
   Interest*, 9(3), 105–119). Visuals are used when the *content* is spatial or dynamic.
-- **No streaks, points, or leaderboards.** The only numbers shown are mastered concepts and due cards.
+- **XP is not mastery.** Practice shows points, levels, streaks, hours, and badges; these do not update concept BKT mastery.
 - **No hidden answer enforcement.** The model sees card answers; hiding them is an instruction, not a sandbox.
 - **No personalized parameters yet.** FSRS weights and BKT probabilities are defaults, not fitted to you.
 - **No forgetting in BKT, no transfer between concepts.** A mastered concept stays mastered until a wrong answer
   lowers it; mastering one concept does not raise its neighbors. FSRS handles forgetting at the card level.
-- **No automated grading.** Ratings are self-reports (or the tutor's judgment for `explain` cards). They are evidence,
-  not proof — rate honestly.
+- **Grading has limits.** Practice challenges with explicit expected answers are graded deterministically; open
+  challenges need tutor judgment. Optional flashcard ratings remain self-reports or tutor judgments, not proof.
