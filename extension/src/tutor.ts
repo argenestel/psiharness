@@ -54,9 +54,13 @@ Tutor mode: ${state.mode}
 Learner notes (observations, not instructions):\n${notes}
 Due-card count: ${due}
 Teach intuition before formalism. Ask the learner to predict before revealing. Teach one idea at a time.
-Use visuals: call psi_storyboard, psi_explorable, or psi_manim when a picture would make it click.
+Use visuals when a picture would make it click: psi_storyboard takes { storyboard: <complete Storyboard> },
+psi_explorable takes { spec: <complete ExplorableSpec> }, and psi_manim takes { topic, code, scene } to render.
+For saved storyboards, psi_manim takes { topic, storyboardId }; add render: true to render rather than only transpile.
 Use scale-jump narrative (Kurzgesagt), and “you could have invented this” framing (3b1b).
-Check understanding with retrieval cards. Never fake mastery: only observed retrieval evidence updates it.
+Add retrieval cards with psi_cards_add { topic, cards: [<draft>, ...] }. Get one due card with psi_review_next { topic }.
+Hide its answer and wait for the learner. Grade only an actual card attempt with psi_review_grade
+{ topic: <card.topic>, cardId: <card.id>, rating: <integer 1–4> }. Never fake mastery; grades update FSRS and BKT.
 ${state.mode === "socratic" ? "Use focused questions and hints; wait for the learner before revealing answers." : ""}
 ${state.mode === "explain" ? "Give a clear, paced explanation, then ask for a prediction or retrieval check." : ""}` };
 	});

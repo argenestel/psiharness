@@ -8,7 +8,54 @@ import type {
 	Card, ConceptGraph, ExplorableSpec, LearnerProfile, LessonPlan, Rating, ReviewLog, Storyboard,
 } from "./types.ts";
 
-function readText(file: string): string | undefined {
+function assertNoSymlink(root: string, target: string): void {
+	const base = path.resolve(root);
+	const absoluteTarget = path.resolve(target);
+	const relative = path.relative(base, absoluteTarget);
+	if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+		throw new Error(`Path escapes store root: ${target}`);
+	}
+	// The store root itself may be a symlink (docker volumes, dotfile setups); only links below it are refused.
+	const components = relative === "" ? [] : relative.split(path.sep);
+	if (components.length === 0) return;
+	let current = path.join(base, components[0]!);
+	for (const component of components.slice(1)) {
+		try {
+			if (fs.lstatSync(current).isSymbolicLink()) throw new Error(`Refusing symlink inside store: ${current}`);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+			throw error;
+		}
+		current = path.join(current, component);
+	}
+	try {
+		if (fs.lstatSync(current).isSymbolicLink()) throw new Error(`Refusing symlink inside store: ${current}`);
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+	}
+}
+
+function hasUnsafeComponentSyntax(value: string): boolean {
+	if (typeof value !== "string" || value.length === 0 || value === "." || value === "..") return true;
+	if (value.includes("\0") || value.includes("/") || value.includes("\\") || value.includes("..")) return true;
+	if (path.posix.isAbsolute(value) || path.win32.isAbsolute(value) || /^[A-Za-z]:/.test(value)) return true;
+	let decoded = value;
+	for (let attempt = 0; attempt < 8; attempt += 1) {
+		let next: string;
+		try {
+			next = decodeURIComponent(decoded);
+		} catch {
+			return false;
+		}
+		if (next === decoded) return false;
+		if (next.includes("\0") || next.includes("/") || next.includes("\\") || next.includes("..")) return true;
+		decoded = next;
+	}
+	return true;
+}
+
+function readText(file: string, root: string): string | undefined {
+	assertNoSymlink(root, file);
 	try {
 		return fs.readFileSync(file, "utf8");
 	} catch (error) {
@@ -17,29 +64,38 @@ function readText(file: string): string | undefined {
 	}
 }
 
-function readJson<T>(file: string): T | undefined {
-	const text = readText(file);
+function readJson<T>(file: string, root: string): T | undefined {
+	const text = readText(file, root);
 	return text === undefined ? undefined : JSON.parse(text) as T;
 }
 
-function writeJson(file: string, value: unknown): void {
-	fs.mkdirSync(path.dirname(file), { recursive: true });
-	const temporary = `${file}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
+function atomicWrite(file: string, content: string | Uint8Array, root: string): void {
+	assertNoSymlink(root, file);
+	const directory = path.dirname(file);
+	fs.mkdirSync(directory, { recursive: true });
+	assertNoSymlink(root, file);
+	const temporary = path.join(directory,
+		`.${path.basename(file)}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`);
 	try {
-		fs.writeFileSync(temporary, JSON.stringify(value, null, "\t") + "\n", { flag: "wx" });
+		fs.writeFileSync(temporary, content, { flag: "wx" });
 		fs.renameSync(temporary, file);
 	} finally {
 		fs.rmSync(temporary, { force: true });
 	}
 }
 
+function writeJson(file: string, value: unknown, root: string): void {
+	atomicWrite(file, JSON.stringify(value, null, "\t") + "\n", root);
+}
+
 function validateId(id: string): void {
-	if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(id) || id.includes("..")) {
+	if (hasUnsafeComponentSyntax(id) || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(id)) {
 		throw new Error(`Invalid id: ${id}`);
 	}
 }
 
-function listFiles(directory: string, directories: boolean): string[] {
+function listFiles(directory: string, directories: boolean, root: string): string[] {
+	assertNoSymlink(root, directory);
 	try {
 		return fs.readdirSync(directory, { withFileTypes: true })
 			.filter((entry) => directories ? entry.isDirectory() : entry.isFile())
@@ -61,53 +117,57 @@ export class PsiStore {
 
 	/** Return the absolute directory for a validated topic slug. */
 	topicDir(topic: string): string {
-		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(topic)) throw new Error(`Invalid topic slug: ${topic}`);
-		return path.join(this.root, "topics", topic);
+		if (hasUnsafeComponentSyntax(topic) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(topic)) {
+			throw new Error(`Invalid topic slug: ${topic}`);
+		}
+		const directory = path.join(this.root, "topics", topic);
+		assertNoSymlink(this.root, directory);
+		return directory;
 	}
 
 	/** List topic directories alphabetically. */
 	listTopics(): string[] {
-		return listFiles(path.join(this.root, "topics"), true);
+		return listFiles(path.join(this.root, "topics"), true, this.root);
 	}
 
 	/** Read a topic graph, if present. */
 	readGraph(topic: string): ConceptGraph | undefined {
-		return readJson(path.join(this.topicDir(topic), "graph.json"));
+		return readJson(path.join(this.topicDir(topic), "graph.json"), this.root);
 	}
 
 	/** Atomically persist a topic graph. */
 	writeGraph(topic: string, graph: ConceptGraph): void {
-		writeJson(path.join(this.topicDir(topic), "graph.json"), graph);
+		writeJson(path.join(this.topicDir(topic), "graph.json"), graph, this.root);
 	}
 
 	/** Read a lesson plan, if present. */
 	readPlan(topic: string): LessonPlan | undefined {
-		return readJson(path.join(this.topicDir(topic), "plan.json"));
+		return readJson(path.join(this.topicDir(topic), "plan.json"), this.root);
 	}
 
 	/** Atomically persist a lesson plan. */
 	writePlan(topic: string, plan: LessonPlan): void {
-		writeJson(path.join(this.topicDir(topic), "plan.json"), plan);
+		writeJson(path.join(this.topicDir(topic), "plan.json"), plan, this.root);
 	}
 
 	/** Read the learner profile, if present. */
 	readLearner(topic: string): LearnerProfile | undefined {
-		return readJson(path.join(this.topicDir(topic), "learner.json"));
+		return readJson(path.join(this.topicDir(topic), "learner.json"), this.root);
 	}
 
 	/** Atomically persist a learner profile. */
 	writeLearner(topic: string, learner: LearnerProfile): void {
-		writeJson(path.join(this.topicDir(topic), "learner.json"), learner);
+		writeJson(path.join(this.topicDir(topic), "learner.json"), learner, this.root);
 	}
 
 	/** Read saved cards, returning an empty array when absent. */
 	readCards(topic: string): Card[] {
-		return readJson<Card[]>(path.join(this.topicDir(topic), "cards.json")) ?? [];
+		return readJson<Card[]>(path.join(this.topicDir(topic), "cards.json"), this.root) ?? [];
 	}
 
 	/** Atomically replace a topic's cards. */
 	writeCards(topic: string, cards: Card[]): void {
-		writeJson(path.join(this.topicDir(topic), "cards.json"), cards);
+		writeJson(path.join(this.topicDir(topic), "cards.json"), cards, this.root);
 	}
 
 	/** Append fresh cards and return only the newly created cards. */
@@ -149,7 +209,9 @@ export class PsiStore {
 			cardId, rating, reviewedAt,
 			elapsedDays: result.log.elapsedDays, scheduledDays: result.log.scheduledDays,
 		};
-		fs.appendFileSync(path.join(this.topicDir(topic), "reviews.jsonl"), JSON.stringify(log) + "\n");
+		const reviewsFile = path.join(this.topicDir(topic), "reviews.jsonl");
+		const existingReviews = readText(reviewsFile, this.root) ?? "";
+		atomicWrite(reviewsFile, `${existingReviews}${JSON.stringify(log)}\n`, this.root);
 		const learner = this.readLearner(topic) ?? { topic, mastery: {}, notes: [], updatedAt: reviewedAt };
 		learner.mastery[card.conceptId] = updateMastery(
 			learner.mastery[card.conceptId], card.conceptId, rating >= 3,
@@ -161,69 +223,71 @@ export class PsiStore {
 
 	/** Read review history, ignoring blank lines. */
 	readReviews(topic: string): ReviewLog[] {
-		const text = readText(path.join(this.topicDir(topic), "reviews.jsonl")) ?? "";
+		const text = readText(path.join(this.topicDir(topic), "reviews.jsonl"), this.root) ?? "";
 		return text.split(/\r?\n/).filter((line) => line.trim()).map((line) => JSON.parse(line) as ReviewLog);
 	}
 
 	/** Read topic notes, returning empty text when absent. */
 	readNotes(topic: string): string {
-		return readText(path.join(this.topicDir(topic), "notes.md")) ?? "";
+		return readText(path.join(this.topicDir(topic), "notes.md"), this.root) ?? "";
 	}
 
 	/** Append a note followed by a newline. */
 	appendNote(topic: string, text: string): void {
 		const directory = this.topicDir(topic);
-		fs.mkdirSync(directory, { recursive: true });
-		fs.appendFileSync(path.join(directory, "notes.md"), text + "\n");
+		const file = path.join(directory, "notes.md");
+		const existing = readText(file, this.root) ?? "";
+		atomicWrite(file, existing + text + "\n", this.root);
 	}
 
 	/** Save a storyboard under its topic and id. */
 	saveStoryboard(storyboard: Storyboard): void {
 		const directory = this.topicDir(storyboard.topic);
 		validateId(storyboard.id);
-		writeJson(path.join(directory, "storyboards", `${storyboard.id}.json`), storyboard);
+		writeJson(path.join(directory, "storyboards", `${storyboard.id}.json`), storyboard, this.root);
 	}
 
 	/** Read a storyboard, if present. */
 	readStoryboard(topic: string, id: string): Storyboard | undefined {
 		const directory = this.topicDir(topic);
 		validateId(id);
-		return readJson(path.join(directory, "storyboards", `${id}.json`));
+		return readJson(path.join(directory, "storyboards", `${id}.json`), this.root);
 	}
 
 	/** Save an explorable under its topic and id. */
 	saveExplorable(spec: ExplorableSpec): void {
 		const directory = this.topicDir(spec.topic);
 		validateId(spec.id);
-		writeJson(path.join(directory, "explorables", `${spec.id}.json`), spec);
+		writeJson(path.join(directory, "explorables", `${spec.id}.json`), spec, this.root);
 	}
 
 	/** Read an explorable, if present. */
 	readExplorable(topic: string, id: string): ExplorableSpec | undefined {
 		const directory = this.topicDir(topic);
 		validateId(id);
-		return readJson(path.join(directory, "explorables", `${id}.json`));
+		return readJson(path.join(directory, "explorables", `${id}.json`), this.root);
 	}
 
 	/** Return the artifacts directory without creating it. */
 	artifactsDir(topic: string): string {
-		return path.join(this.topicDir(topic), "artifacts");
+		const directory = path.join(this.topicDir(topic), "artifacts");
+		assertNoSymlink(this.root, directory);
+		return directory;
 	}
 
 	/** Write a single artifact with a safe filename and return its absolute path. */
 	writeArtifact(topic: string, filename: string, content: string | Uint8Array): string {
 		const directory = this.artifactsDir(topic);
-		if (!filename || filename === "." || /[/\\\x00]/.test(filename) || filename.includes("..")) {
+		if (hasUnsafeComponentSyntax(filename)) {
 			throw new Error(`Invalid artifact filename: ${filename}`);
 		}
-		fs.mkdirSync(directory, { recursive: true });
 		const file = path.join(directory, filename);
-		fs.writeFileSync(file, content);
+		atomicWrite(file, content, this.root);
 		return file;
 	}
 
 	/** List artifact filenames alphabetically. */
 	listArtifacts(topic: string): string[] {
-		return listFiles(this.artifactsDir(topic), false);
+		return listFiles(this.artifactsDir(topic), false, this.root);
 	}
 }

@@ -71,7 +71,8 @@ description: Write focused retrieval cards, interleave due reviews, and grade le
 ## Creating cards with psi
 - Call `psi_cards_add` only for a known topic and graph concept; check the tool's schema at runtime.
 - Card drafts contain conceptId, kind, prompt, answer, and choices only for mcq.
-- Do not manufacture id, topic wrappers, FSRS state, or creation times; use the actual schema and returned ids.
+- Call with `{ topic, cards: [<draft>, ...] }` (at least one draft). topic may be omitted for the active topic.
+- Do not put id, topic, FSRS state, or creation times inside drafts; use returned ids.
 - Keep the answer hidden from the learner until their attempt or explicit request for a reveal.
 - Reuse an existing card when it already tests the target; duplicates bias review toward one idea.
 - Save a good learner explanation as a new question and rubric, not as a transcript quotation.
@@ -79,9 +80,10 @@ description: Write focused retrieval cards, interleave due reviews, and grade le
 - Do not claim saved cards if the call failed; an unsaved draft can still support an informal check.
 
 ## Review selection and interleaving
-1. Inspect available due-card access; check the runtime tools or `/review` command rather than inventing a tool name.
-2. Select a handful of due cards across relevant concepts, prioritizing overdue and goal-relevant items.
-3. Alternate concepts or problem types when possible; avoid exhausting one concept before switching.
+1. Call `psi_review_next` with `{ topic }` for one due card in store order, or start `/review`.
+2. Retain the returned card, including its id and topic; stop if card is null. The response includes remaining.
+3. The tool has no limit, concept filter, skip, or reorder parameter. Follow its queue; interleave at deck-design time.
+   Omitting topic uses the active topic; only when none is active does it search all topics.
 4. Keep enough context to distinguish tasks, while avoiding headings that announce the solution method.
 5. Ask one card, wait for the learner's answer, give feedback, and record one rating.
 6. If a prerequisite fails repeatedly, pause the queue for a small repair lesson.
@@ -136,8 +138,10 @@ Do not upgrade any of these because the learner agrees with the feedback.
 ## Recording a review
 1. Retain the actual stored card id and the learner's response until grading is complete.
 2. Apply the rubric to the response and assistance received, not the quality of the tutor's explanation.
-3. Call `psi_review_grade` with the card identifier, rating, and any topic field required by its runtime schema.
-4. Read the result before reporting success; FSRS scheduling and BKT updates happen through this call.
+3. Call `psi_review_grade` with `{ topic: <card.topic>, cardId: <card.id>, rating: <integer 1–4> }`.
+   topic defaults to the active topic when omitted; use the card's topic explicitly for cross-topic review.
+4. Read card, masteryChange, next, and remaining in the result before reporting success. FSRS and BKT update here.
+   Continue with next or call `psi_review_next` again; do not grade the same attempt twice.
 5. If the call reports failure, say the review is unrecorded; check status before retrying an uncertain write.
 6. Read `psi_mastery` if the next lesson depends on whether a threshold was crossed.
 Do not write learner.json or reviews.jsonl directly, and never report an invented pKnown.

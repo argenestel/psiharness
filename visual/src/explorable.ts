@@ -169,17 +169,23 @@ export function renderExplorableHtml(spec: ExplorableSpec): string {
 main{display:grid;grid-template-columns:minmax(0,1fr) 320px;min-height:100dvh}
 .stage{position:relative;min-width:0;height:100dvh;padding:16px}
 canvas{display:block;width:100%;height:100%;touch-action:none}
-aside{padding:28px;background:${theme.panel};overflow:auto}h1{font-size:1.6rem;margin:0 0 28px}
-label{display:block;margin:22px 0 5px}output{float:right;font-variant-numeric:tabular-nums}
-input{width:100%;accent-color:${theme.accents[0]}}ul{padding-left:20px;line-height:1.6}li{margin:16px 0}
+aside{padding:32px 26px;background:${theme.panel};overflow:auto;border-left:1px solid ${theme.grid}}
+h1{font-size:1.65rem;line-height:1.2;letter-spacing:-.035em;margin:12px 0 32px}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;color:${theme.accents[0]}}
+.stage{background:radial-gradient(ellipse at center,${theme.panel},${theme.bg})}
+canvas{border-radius:18px;border:1px solid ${theme.grid}}
+label{display:flex;justify-content:space-between;gap:12px;margin:24px 0 10px;font-size:14px}output{float:right;font-variant-numeric:tabular-nums}
+input{width:100%;min-height:28px;cursor:pointer;accent-color:${theme.accents[0]}}ul{padding-left:20px;line-height:1.6}li{margin:16px 0}
 button{background:${theme.bg};color:inherit;border:1px solid ${theme.grid};border-radius:10px;padding:9px;margin:4px}
-#status{white-space:pre-line;line-height:1.6;font-variant-numeric:tabular-nums}
+#status{white-space:pre-line;line-height:1.8;font-size:13px;padding:16px;border:1px solid ${theme.grid};border-radius:12px;font-variant-numeric:tabular-nums}
+li{font-size:14px}button{min-height:44px;cursor:pointer}button:hover{border-color:${theme.accents[0]}}
+button:focus-visible,input:focus-visible{outline:2px solid ${theme.accents[0]};outline-offset:3px}
 canvas:focus-visible{outline:2px solid ${theme.accents[0]}}
-@media(max-width:760px){main{grid-template-columns:1fr}.stage{height:62dvh;min-height:340px}aside{padding:22px}}
+@media(max-width:760px){main{grid-template-columns:1fr}.stage{height:52dvh;min-height:340px;padding:12px}aside{padding:22px;border-left:0;border-top:1px solid ${theme.grid}}h1{margin-bottom:20px}}
 </style></head><body><main><section class="stage" aria-label="Interactive visualization">
 <canvas tabindex="0" aria-label="${escapeHtml(spec.title)}">
 Interactive visualization requires JavaScript and canvas.</canvas>
-</section><aside><h1>${escapeHtml(spec.title)}</h1><div id="sliders"></div><div id="controls"></div>
+</section><aside><span class="eyebrow">ψ · INTERACTIVE LAB</span><h1>${escapeHtml(spec.title)}</h1><div id="sliders"></div><div id="controls"></div>
 <p id="status" role="status" aria-live="polite"></p>
 <ul>${spec.prompts.map((p) => `<li>Try: ${escapeHtml(p)}</li>`).join("")}</ul>
 </aside></main><script id="spec" type="application/json">${safeJson(spec)}</script>
@@ -202,6 +208,7 @@ let trace = [], particles = [], histogram = [], total = 0, successes = 0, probab
 const accent = palette.accents, tau = Math.PI * 2;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const fmt = v => Number.isFinite(v) ? Number(v.toPrecision(5)).toString() : "undefined";
+const tickLabel = v => fmt(v).length > 7 ? v.toExponential(1) : fmt(v);
 function message(text) { if (status.textContent !== text) status.textContent = text; }
 function compile(expr, variables) {
 	const source = expressionSource(expr, variables.concat(names), mathMembers);
@@ -211,13 +218,20 @@ function compile(expr, variables) {
 		catch { return NaN; }
 	};
 }
+const presets = new URLSearchParams(window.location?.search || "");
 for (const [i, slider] of spec.sliders.entries()) {
-	values[slider.name] = slider.value;
+	const raw = presets.get(slider.name), requested = raw !== null && raw.trim() ? Number(raw) : NaN;
+	const bounded = clamp(Number.isFinite(requested) ? requested : slider.value, slider.min, slider.max);
+	const steps = Math.floor((slider.max - slider.min) / slider.step + 1e-9);
+	const value = Number((slider.min + clamp(Math.round((bounded - slider.min) / slider.step), 0, steps)
+		* slider.step).toPrecision(12));
+	values[slider.name] = value;
 	const label = document.createElement("label"), input = document.createElement("input");
 	const readout = document.createElement("output"), text = document.createElement("span");
 	input.id = "slider-" + i; input.type = "range"; label.htmlFor = input.id;
-	readout.htmlFor = input.id; text.textContent = slider.label; readout.textContent = fmt(slider.value);
-	for (const key of ["min", "max", "step", "value"]) input[key] = String(slider[key]);
+	readout.htmlFor = input.id; text.textContent = slider.label; readout.textContent = fmt(value);
+	for (const key of ["min", "max", "step"]) input[key] = String(slider[key]);
+	input.value = String(value);
 	label.append(text, readout); document.getElementById("sliders").append(label, input);
 	input.addEventListener("input", () => {
 		values[slider.name] = Number(input.value); readout.textContent = fmt(values[slider.name]);
@@ -254,8 +268,8 @@ function plane(domain = [-5,5], range = [-5,5]) {
 	const dx = tick(domain[1]-domain[0]), dy = tick(range[1]-range[0]);
 	for (let i=0; i<=12; i++) {
 		const x = Math.ceil(domain[0]/dx)*dx+i*dx, y = Math.ceil(range[0]/dy)*dy+i*dy;
-		if (x <= domain[1]) { line(X(x),top,X(x),bottom); label(fmt(x),X(x)-8,bottom+20); }
-		if (y <= range[1]) { line(left,Y(y),right,Y(y)); label(fmt(y),3,Y(y)+4); }
+		if (x <= domain[1]) { line(X(x),top,X(x),bottom); label(tickLabel(x),X(x)-8,bottom+20); }
+		if (y <= range[1]) { line(left,Y(y),right,Y(y)); label(tickLabel(y),3,Y(y)+4); }
 	}
 	if (domain[0]<=0 && domain[1]>=0) line(X(0),top,X(0),bottom,palette.fg);
 	if (range[0]<=0 && range[1]>=0) line(left,Y(0),right,Y(0),palette.fg);
@@ -370,6 +384,17 @@ const coefficients=spec.template==="fourier-epicycles"?fourierCoefficients():[];
 function fourier(dt) {
 	clock+=dt*values.speed*.6;
 	const scale=Math.min(width,height)*.30, n=clamp(Math.round(values.terms),1,coefficients.length);
+	// A faint reconstruction gives context before the animated pen completes its first lap.
+	ctx.beginPath();ctx.strokeStyle=palette.grid;ctx.lineWidth=1;ctx.setLineDash([3,5]);
+	for(let i=0;i<=256;i++) {
+		let px=width/2,py=height/2;
+		for(const c of coefficients.slice(0,n)) {
+			const angle=c.frequency*i/256*tau+c.phase;
+			px+=c.amplitude*scale*Math.cos(angle);py-=c.amplitude*scale*Math.sin(angle);
+		}
+		if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);
+	}
+	ctx.stroke();ctx.setLineDash([]);
 	let x=width/2,y=height/2;
 	for(const c of coefficients.slice(0,n)) {
 		const angle=c.frequency*clock+c.phase,r=c.amplitude*scale;
@@ -379,7 +404,7 @@ function fourier(dt) {
 	if(dt>0) { trace.push([x,y]);if(trace.length>2400) trace.shift(); }
 	ctx.beginPath();ctx.strokeStyle=accent[1];ctx.lineWidth=2;
 	trace.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.stroke();circle(x,y,4,accent[3],true);
-	message(n+" rotating Fourier coefficients\nFrequencies retain their signs after sorting by amplitude.");
+	message(n+" rotating Fourier coefficients\nDashed: full reconstruction · yellow: pen trace\nFrequencies retain their signs after sorting by amplitude.");
 }
 /** probability-sim params: experiment:coin|dice|galton; coin is Binomial(1,p), Galton Binomial(10,p). */
 function resetProbability() {
@@ -444,7 +469,7 @@ function growth() {
 	// A shared linear scale makes the contrast explicit; clip runaway values for a readable axis.
 	const maximum=Math.min(1e12,Math.max(2,...series.flatMap(([f])=>[f(0),f(steps)]).filter(Number.isFinite)));
 	const X=t=>left+t/steps*(right-left),Y=n=>plotBottom-n/maximum*(plotBottom-top);
-	for(let i=0;i<=4;i++) { const n=i/4*maximum,y=Y(n);line(left,y,right,y);label(fmt(n),2,y+4);
+	for(let i=0;i<=4;i++) { const n=i/4*maximum,y=Y(n);line(left,y,right,y);label(tickLabel(n),2,y+4);
 		label(fmt(i/4*steps),X(i/4*steps)-5,plotBottom+20); }
 	label("Value",left,22);label("Steps",right-40,plotBottom+38);
 	ctx.save();ctx.beginPath();ctx.rect(left,top,right-left,plotBottom-top);ctx.clip();
@@ -454,13 +479,13 @@ function growth() {
 			if(started)ctx.lineTo(X(t),Y(n));else ctx.moveTo(X(t),Y(n));started=true; }
 		ctx.stroke();
 	}ctx.restore();
-	series.forEach((s,i)=>label(s[2],left+i*125,top+18,s[1]));
+	series.forEach((s,i)=>label(s[2],left+i*(right-left)/series.length,top+18,s[1]));
 	const target=p.mode==="logistic"?logistic(steps):exponential(steps);
 	const count=clamp(Math.floor(Number.isFinite(target)?target:1024),0,1024);
 	const cols=Math.max(1,Math.floor((width-70)/10)),dotTop=height*.75;
 	for(let i=0;i<count;i++) { const x=40+(i%cols)*10,y=dotTop+Math.floor(i/cols)*10;
 		if(y<height-18)circle(x,y,3,accent[2],true); }
-	label("Population cells (display capped at 1,024)",40,height*.72);
+	label(width < 440 ? "Population cells · up to 1,024" : "Population cells (display capped at 1,024)",40,height*.72);
 	message("After "+steps+" steps\n"+series.map(([f,color,name])=>name+": "+fmt(f(steps))).join("\n")+
 		(p.mode==="doubling"?"\nDoubling time: "+fmt(1/rate)+" steps":"")+
 		(p.mode==="logistic"?"\nCarrying capacity K = "+fmt(K):""));

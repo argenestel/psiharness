@@ -128,7 +128,7 @@ test("all styles render and script serialization escapes HTML delimiters and Uni
 });
 
 // Run the actual emitted script with a minimal DOM/canvas, rather than testing a duplicate renderer.
-function browser(spec: ExplorableSpec) {
+function browser(spec: ExplorableSpec, search = "") {
 	const events = new Map<string, () => void>();
 	const elements: ElementStub[] = [];
 	class ElementStub {
@@ -163,7 +163,8 @@ function browser(spec: ExplorableSpec) {
 			getElementById: (id: string) => nodes.get(id),
 			createElement: () => { const el = new ElementStub(); elements.push(el); return el; },
 		},
-		window: { devicePixelRatio: 2, addEventListener: (name: string, fn: () => void) => events.set(name, fn) },
+		URLSearchParams,
+		window: { location: { search }, devicePixelRatio: 2, addEventListener: (name: string, fn: () => void) => events.set(name, fn) },
 		requestAnimationFrame: (fn: (time: number) => void) => { frame = fn; },
 	}, { timeout: 3000 });
 	return { nodes, canvas, elements, coordinates, events, tick: (time: number) => frame(time) };
@@ -236,6 +237,31 @@ test("real, repeated and complex matrix eigenvalues execute", () => {
 		const app = browser(spec);
 		assert.match(app.nodes.get("status")!.textContent, /det\(A\)/);
 		assert.match(app.nodes.get("status")!.textContent, /eigenvalue|eigenvector/);
+		assert.ok(app.coordinates.every(Number.isFinite));
+	}
+});
+
+
+test("query presets synchronize slider values, outputs and evaluated function", () => {
+	const app = browser(demo(), "?a=2&b=3");
+	const inputs = app.elements.filter(el => el.listeners.has("input"));
+	assert.deepEqual(inputs.map(el => el.value), ["2", "3"]);
+	const labels = app.nodes.get("sliders")!.children.filter(el => el.children.length);
+	assert.deepEqual(labels.map(el => el.children[1].textContent), ["2", "3"]);
+	Reflect.apply(app.canvas.listeners.get("pointermove")!, null, [{ clientX: 412 }]);
+	assert.match(app.nodes.get("status")!.textContent, /f\(x\) = 0/);
+});
+
+test("query presets ignore invalid values and clamp and snap to slider steps", () => {
+	const spec = demo();
+	for (const [query, expected] of [
+		["?a=NaN&b=Infinity", spec.sliders.map(s => String(s.value))],
+		["?a=&b=hello", spec.sliders.map(s => String(s.value))],
+		["?a=-999&b=999", spec.sliders.map((s, i) => String(i ? s.max : s.min))],
+		["?a=1.234&b=2.345", ["1.2", "2.3"]],
+	] as const) {
+		const app = browser(spec, query);
+		assert.deepEqual(app.elements.filter(el => el.listeners.has("input")).map(el => el.value), expected);
 		assert.ok(app.coordinates.every(Number.isFinite));
 	}
 });

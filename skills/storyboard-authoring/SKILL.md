@@ -7,7 +7,7 @@ description: Write and review exact psi Storyboard JSON with timed scenes, suppo
 
 Read core/src/types.ts before authoring against a changed checkout.
 Treat its Storyboard, StoryScene, StoryElement, and Anim types as the contract.
-Renderer implementations may still be arriving; do not invent fields to fill gaps.
+Use visual/src/storyboard-html.ts for renderer behavior; do not invent fields to fill gaps.
 Produce a complete JSON object rather than fragments with comments or ellipses.
 
 ## Top-level contract
@@ -67,7 +67,7 @@ Coordinates and sizes are in virtual canvas units unless the renderer states oth
 | circle | x, y, r, fill?, stroke? |
 | rect | x, y, w, h, rx?, fill?, stroke? |
 | text | x, y, text, size?, fill?, weight?, align?: "start" / "middle" / "end" |
-| arrow | x1, y1, x2, y2, stroke?, width?, curve? |
+| arrow | x1, y1, x2, y2, stroke?, width? |
 | path | d, fill?, stroke?, width? |
 | equation | x, y, tex, size?, fill? |
 | graph | x, y, w, h, fn, domain: [a,b], range?: [c,d], stroke? |
@@ -86,7 +86,7 @@ For vector, dx and dy are endpoint offsets, not absolute endpoint coordinates.
 For creature, use color rather than fill, and one of the three documented moods.
 For group, children are full elements, with coordinates relative to the group.
 Apply parent translation, scale, and rotation once; avoid double-offsetting children.
-Inspect renderer conventions for rotation units before using rotate.
+Group rotate is in degrees. HTML camera x/y are absolute canvas centers, defaulting to (800, 450).
 
 ## Lay out the 1600 by 900 canvas
 
@@ -217,9 +217,9 @@ Camera drift: specify the intended later end pose rather than assuming an automa
 ## Saving and rendering
 
 Parse the JSON and check the contract before sending it to a tool.
-Call the psi_storyboard tool with the storyboard JSON.
+Call `psi_storyboard` with `{ "storyboard": <complete Storyboard> }`.
 The tool saves to $PSI_HOME/topics/<topic>/storyboards/<id>.json and renders HTML.
-The tool is being built; inspect its exposed schema rather than inventing argument wrappers.
+The tool returns `{ path }` on success or `{ errors }` on validation failure; confirm the result before reporting a save.
 If unavailable, return the complete JSON and clearly say it has not been saved or rendered.
 After rendering, inspect layout, timing, camera framing, and the final output path.
 Keep narration comprehensible when optional speech or online equation rendering is unavailable.

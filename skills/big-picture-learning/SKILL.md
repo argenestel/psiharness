@@ -81,7 +81,8 @@ Use the template that matches the mechanism; inspect available parameters before
 - `exponential-growth`: distinguish constant proportional growth from constant additive growth.
 Give one instruction before play: “Predict what happens if you double this slider, then try it.”
 Give one observation after play: “Which feature changed, and which stayed fixed?”
-Hide unrelated controls initially because simultaneous changes make causal attribution difficult.
+Ask the learner to hold unrelated controls fixed; the renderer displays every slider in the spec.
+Keep required template sliders even when a control is inactive in the chosen mode.
 
 ## Flow 4: Practice and retrieve
 - Use predict-before-reveal: ask for an outcome, wait, show it, explain the mismatch, ask for a new case.
@@ -95,10 +96,10 @@ Hide unrelated controls initially because simultaneous changes make causal attri
 - Do not grade a just-revealed answer as independent retrieval.
 
 ## Flow 5: Start later sessions with spaced review
-1. Check available due-card access or use `/review`; inspect runtime capabilities rather than inventing a due-card tool.
+1. Call `psi_review_next` with `{ topic }` or use `/review` for the active topic.
 2. For a roughly 20-minute session, budget 3–5 minutes for 3–5 due cards, then one new concept.
 3. For a 10-minute session, choose 1–2 due cards and one small checkpoint rather than rushing a full lesson.
-4. Interleave relevant concepts; avoid reviewing every card of one type in a block.
+4. Follow the returned due-card queue; `psi_review_next` has no skip, reorder, or concept-filter parameter.
 5. Ask one card at a time; wait for an answer, explain feedback, then call `psi_review_grade`.
 6. Let FSRS set the next due dates; read returned state before reporting the schedule.
 7. If a missed prerequisite blocks the new concept, replace the new lesson with a repair checkpoint.
@@ -132,10 +133,10 @@ Use one mechanism at three scales, then state a limit of the connection.
 Ask “Which part of this analogy should we not transfer?” before treating the connection as understood.
 
 ## Session lifecycle and tools
-All psi calls require inspecting the tool's schema at runtime; the schemas may not yet be installed.
+Use the registered tool schemas; pass the intended topic explicitly unless it is already active.
 | Phase | Action | Tools and skill |
 | --- | --- | --- |
-| Start | Revisit goal, select due cards, read the frontier | Due-card access or `/review`, `psi_mastery`; `retrieval-practice`. |
+| Start | Revisit goal, select due cards, read the frontier | `psi_review_next` or `/review`, `psi_mastery`; `retrieval-practice`. |
 | Map or repair | Validate graph, order unmastered lessons, attach real checks | `psi_concept_graph`, `psi_cards_add`, `psi_lesson_plan`; `concept-decomposition`. |
 | Middle | Teach and test one concept with an appropriate visual | Available visual tools; `socratic-tutor`, optionally `feynman-technique`. |
 | Review answer | Grade actual learner evidence and read the result | `psi_review_grade`; `retrieval-practice`. |

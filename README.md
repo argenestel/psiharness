@@ -53,16 +53,22 @@ See [docker/README.md](docker/README.md) for images (`psi`, `psi-manim`, `psi-fu
 
 ## Inside a session
 
-| Command | |
+| Command | Behavior |
 |---|---|
-| `/learn <big idea>` | Diagnose what you know, build the concept map, plan the path |
-| `/map` | Show the concept graph and your frontier |
-| `/lesson [concept]` | Teach the next concept: hook → intuition → visual → formalism → check |
-| `/visualize <idea>` · `/explore <idea>` | Make a Kurzgesagt-style explainer or an interactive explorable |
-| `/crew <concept>` | Have the multi-agent crew build a complete lesson |
-| `/quiz` · `/review` | Retrieval practice and spaced review |
-| `/studio` · `/progress` | Open the studio and see mastery |
-| `/tutor on\|off\|socratic\|explain` | Change the teaching mode |
+| `/learn <big idea>` | Required topic text; selects the topic, enables tutoring, diagnoses knowledge, then builds the graph and plan |
+| `/map` | Show the active topic's graph and frontier; arguments are ignored |
+| `/lesson [concept]` | Exact concept id or case-insensitive full title; defaults to the first frontier concept |
+| `/visualize [focus]` | Make an animated storyboard; defaults to the current lesson, then the next frontier concept |
+| `/explore [focus]` | Make a slider-driven explorable; same focus default as `/visualize` |
+| `/crew [concept]` | Build a full lesson; resolve a title to a concept id; defaults to the current lesson, then the next frontier concept |
+| `/quiz [focus]` | Ask retrieval questions one at a time; same focus default as `/visualize` |
+| `/review [focus]` | Drill due cards for the active topic; optional text is forwarded as context, not a queue filter |
+| `/studio` | Start or reuse the local studio and print its URL; arguments are ignored |
+| `/progress` | Show active-topic mastery/review progress, or a global summary with no active topic; arguments are ignored |
+| `/tutor on\|off\|socratic\|explain` | Required mode, case-insensitive |
+
+Except for `/learn`, `/tutor`, `/studio`, and `/progress`, commands require an active topic selected with `/learn`.
+`/map` and `/lesson` also require an existing graph.
 
 ## Sample topics
 

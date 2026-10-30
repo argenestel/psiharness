@@ -194,8 +194,8 @@ End by asking the learner to invent a rule for the observed sign changes.
 
 Deliver the puzzle, color key, beat order, and one learner check with the visual.
 Include a brief note on the mathematical assumptions the picture uses.
-Call the psi_storyboard tool with the storyboard JSON when choosing that format.
-Call the psi_explorable tool with the spec JSON when the learner should experiment.
+Call `psi_storyboard` with `{ "storyboard": <complete Storyboard> }` when choosing that format.
+Call `psi_explorable` with `{ "spec": <complete ExplorableSpec> }` when the learner should experiment.
 For Manim, inspect helpers, draft at low quality, and inspect the resulting frames.
 If a tool is unavailable, return the complete source and state that rendering is pending.
 Call the lesson effective only after the learner can explain or predict a new case.

@@ -226,8 +226,9 @@ Do not promise convergence for every signal; pure infinite-duration sinusoids re
 ## Validate and persist
 1. Check unique ids, known prerequisites, no self-edges, and no cycles before any write.
 2. Use `validateGraph` when available; otherwise inspect dependencies and perform a topological check.
-3. Call `psi_concept_graph` with the validated graph; check the tool's schema at runtime.
-4. Confirm success, create needed cards, then call `psi_lesson_plan` with the ordered plan.
+3. Call `psi_concept_graph` with `{ topic, title, bigIdea, concepts }`; the tool supplies graph timestamps.
+4. Confirm success, create needed cards, then call `psi_lesson_plan` with `{ topic, plan: <complete LessonPlan> }`.
+   To read the plan/frontier without saving, pass `{ topic }`; add `targetId` for a target path.
 5. Validate topic, concept references, beat kinds, visual fields, and actual card ids before that call.
 6. If validation fails, repair the reported edge or field and validate again before continuing.
 7. If writing fails, report what remains unsaved; never claim a successful graph or plan from a draft.

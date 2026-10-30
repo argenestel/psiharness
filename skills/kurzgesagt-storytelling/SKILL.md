@@ -128,7 +128,7 @@ Reserve a pause before revealing the result of a comparison.
 
 Use camera.zoom, camera.x, and camera.y on scenes that change framing.
 Camera is the end-of-scene pose; renderers interpolate from the previous pose.
-Inspect the renderer to determine whether x and y represent focus or translation.
+In HTML, x and y are absolute canvas centers, defaulting to (800, 450).
 Always inspect the resulting frame before promising a particular crop.
 Physical scale labels carry the numerical argument.
 Camera zoom is a composition control and need not equal the physical scale factor.
@@ -147,7 +147,7 @@ The example then enlarges the cell to bus-length to make its internal scale tang
 The creature reacts before a final zoom-out and a retrieval question.
 The cell and feature sizes are representative examples, not universal measurements.
 The camera changes are gentle framing moves between rebased scale diagrams.
-No particular optional palette is assumed while the renderer registry is being built.
+The example omits palette to use the kurzgesagt style default.
 
 ## A small complete opening
 
@@ -188,7 +188,7 @@ Expand it into a sequence before presenting it as a finished explainer.
 
 ## Save and inspect
 
-Call the psi_storyboard tool with the storyboard JSON when the tool is available.
+Call `psi_storyboard` with `{ "storyboard": <complete Storyboard> }` when the tool is available.
 Inspect the returned HTML for clipped labels, camera crops, and narration timing.
 Return source with an explicit unrendered status if the tool is unavailable.
 Do not claim a saved artifact exists merely because the example JSON is complete.

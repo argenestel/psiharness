@@ -15,5 +15,6 @@ Supply a concise answer and an explicit grading criterion for open-ended questio
 Avoid answer leakage, trivia, and cards that merely repeat the lesson's phrasing.
 Return drafts with conceptId, kind, prompt, answer, and choices only for mcq.
 Let the store assign ids, topic, FSRS state, and createdAt when drafts are saved.
-Use an available psi card-creation tool only after inspecting its actual schema.
+Save through `psi_cards_add` with `{ topic: <topic slug>, cards: [<draft>, ...] }` (at least one draft).
+Each mcq needs at least two choices. Omit topic only when the active topic is the intended destination.
 State which drafts were saved and which were only returned as text.

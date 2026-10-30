@@ -117,7 +117,10 @@ test("artifacts support text and bytes, sorted filenames, and reject unsafe path
 	assert.equal(fs.readFileSync(file, "utf8"), "<p>Vectors</p>");
 	const binary = store.writeArtifact(topic, "image.bin", new Uint8Array([0, 1, 255]));
 	assert.deepEqual([...fs.readFileSync(binary)], [0, 1, 255]);
-	for (const name of ["../evil.html", "a/b.html", "..\\x", "", ".", "..", "/tmp/evil.html"]) {
+	for (const name of [
+		"../evil.html", "a/b.html", "..\\x", "", ".", "..", "/tmp/evil.html",
+		"encoded%2fpath.html", "encoded%5cpath.html", "encoded%00path.html", "%2e%2e%2fevil.html",
+	]) {
 		assert.throws(() => store.writeArtifact(topic, name, "x"), /Invalid artifact filename/);
 	}
 	assert.deepEqual(store.listArtifacts(topic), ["image.bin", "lesson.html"]);
@@ -128,7 +131,10 @@ test("artifacts support text and bytes, sorted filenames, and reject unsafe path
 test("topic paths reject invalid slugs", (t) => {
 	const store = fixture(t);
 	assert.throws(() => store.readGraph("../etc"), /Invalid topic slug/);
-	for (const invalid of ["Bad Topic", "", "a/b", "a\\b", "-topic", "topic-", "a--b"]) {
+	for (const invalid of [
+		"Bad Topic", "", "a/b", "a\\b", "-topic", "topic-", "a--b",
+		"topic%2fescape", "topic%5cescape", "topic%00escape", "%2e%2e%2fescape",
+	]) {
 		assert.throws(() => store.topicDir(invalid), /Invalid topic slug/);
 	}
 });
@@ -176,12 +182,65 @@ test("storyboards and explorables roundtrip with validated ids", (t) => {
 	store.saveExplorable(explorable);
 	assert.deepEqual(store.readStoryboard(topic, storyboard.id), storyboard);
 	assert.deepEqual(store.readExplorable(topic, explorable.id), explorable);
-	for (const id of ["../escape", "a/b", "a\\b", "a..b", ""]) {
+	for (const id of [
+		"../escape", "a/b", "a\\b", "a..b", "", "a%2fb", "a%5cb", "a%00b", "%2e%2e%2fescape",
+	]) {
 		assert.throws(() => store.saveStoryboard({ ...storyboard, id }), /Invalid id/);
 		assert.throws(() => store.readStoryboard(topic, id), /Invalid id/);
 		assert.throws(() => store.saveExplorable({ ...explorable, id }), /Invalid id/);
 		assert.throws(() => store.readExplorable(topic, id), /Invalid id/);
 	}
+});
+
+test("topic and visual storage paths reject symlinks", (t) => {
+	const store = fixture(t);
+	const outside = fs.mkdtempSync(path.join(os.tmpdir(), "psi-store-outside-"));
+	t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
+	const topicPath = path.join(store.root, "topics", topic);
+	fs.mkdirSync(path.dirname(topicPath), { recursive: true });
+	fs.symlinkSync(outside, topicPath, "dir");
+	assert.throws(() => store.readGraph(topic), /Refusing symlink inside store/);
+	assert.throws(() => store.writeGraph(topic, graph()), /Refusing symlink inside store/);
+	assert.equal(fs.existsSync(path.join(outside, "graph.json")), false);
+	fs.unlinkSync(topicPath);
+
+	store.writeGraph(topic, graph());
+	const storyboards = path.join(topicPath, "storyboards");
+	fs.symlinkSync(outside, storyboards, "dir");
+	const storyboard: Storyboard = { id: "intro-1", topic, title: "Vectors", style: "3b1b", scenes: [] };
+	assert.throws(() => store.saveStoryboard(storyboard), /Refusing symlink inside store/);
+	assert.throws(() => store.readStoryboard(topic, storyboard.id), /Refusing symlink inside store/);
+	fs.unlinkSync(storyboards);
+
+	const explorables = path.join(topicPath, "explorables");
+	fs.symlinkSync(outside, explorables, "dir");
+	const explorable: ExplorableSpec = {
+		id: "plot-1", topic, title: "Plot", style: "plain", template: "function-plot",
+		params: {}, sliders: [], prompts: [],
+	};
+	assert.throws(() => store.saveExplorable(explorable), /Refusing symlink inside store/);
+	assert.throws(() => store.readExplorable(topic, explorable.id), /Refusing symlink inside store/);
+});
+
+test("artifact and review-log writes reject symlink targets", (t) => {
+	const store = fixture(t);
+	const outside = fs.mkdtempSync(path.join(os.tmpdir(), "psi-store-outside-"));
+	t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
+	const [card] = store.addCards(topic, [draft], now);
+	const artifacts = store.artifactsDir(topic);
+	fs.mkdirSync(artifacts, { recursive: true });
+	const outsideArtifact = path.join(outside, "artifact.bin");
+	fs.writeFileSync(outsideArtifact, "keep");
+	fs.symlinkSync(outsideArtifact, path.join(artifacts, "linked.bin"));
+	assert.throws(() => store.writeArtifact(topic, "linked.bin", "overwrite"), /Refusing symlink inside store/);
+	assert.equal(fs.readFileSync(outsideArtifact, "utf8"), "keep");
+
+	const reviews = path.join(store.topicDir(topic), "reviews.jsonl");
+	const outsideReviews = path.join(outside, "reviews.jsonl");
+	fs.writeFileSync(outsideReviews, "keep\n");
+	fs.symlinkSync(outsideReviews, reviews);
+	assert.throws(() => store.review(topic, card.id, 3, now), /Refusing symlink inside store/);
+	assert.equal(fs.readFileSync(outsideReviews, "utf8"), "keep\n");
 });
 
 test("malformed JSON surfaces errors rather than looking absent", (t) => {

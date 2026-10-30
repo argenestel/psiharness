@@ -208,8 +208,10 @@ If moving labels crowd the formula, move the plot upward before constructing lin
 
 ## Render drafts before polishing
 
-Call the psi_manim tool with the scene's full Python source and exact class name.
-Inspect the tool's live schema for its field names; it is being built.
+Call `psi_manim` with `{ topic, code: <full Python source>, scene: <exact class name>, quality: "l" }`.
+Supply topic explicitly unless an active topic is selected. Direct code renders immediately.
+For a saved storyboard, pass `{ topic, storyboardId }` to generate Python only; add `render: true` to render.
+Save the storyboard with `psi_storyboard` first. When both code and storyboardId are supplied, the storyboard wins.
 Use -ql for drafts, -qm for review, and -qh only after content is stable.
 These map to quality "l", "m", and "h" in visual/src/manim.ts renderManim.
 For direct CLI use: manim -ql projection.py DotProductProjection.

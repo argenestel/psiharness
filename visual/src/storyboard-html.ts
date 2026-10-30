@@ -194,7 +194,7 @@ function renderElement(e: StoryElement, palette: Palette): string {
 		case "vector": body = line(x, y, x + n("dx"), y + n("dy")) +
 			`<text x="${x + n("dx") + 16}" y="${y + n("dy")}" fill="${stroke}" font-size="28">${h(p.label ?? "")}</text>`; break;
 		case "equation": body = `<foreignObject x="${x}" y="${y - n("size", 48)}"
-			width="${n("w", 1000)}" height="${n("h", 180)}"><div xmlns="http://www.w3.org/1999/xhtml"
+			width="${n("w", Math.max(120, 1560 - x))}" height="${n("h", 180)}"><div xmlns="http://www.w3.org/1999/xhtml"
 			class="equation" style="font-size:${n("size", 48)}px;color:${color("fill", palette.fg)}"
 			><code>${h(p.tex)}</code></div></foreignObject>`; break;
 		case "graph": {
@@ -331,7 +331,9 @@ function activate(index) {
   addAnimation(n, [{transform:"translate(0,0)"},{transform:"translate(" + d + "px,-18px)"},
    {transform:"translate(0,0)"}], 0, Number(n.dataset.drift), true);
  });
- caption.textContent = scene.narration; speak(index);
+ caption.textContent = scene.narration;
+ document.getElementById("scene-label").textContent = "SCENE " + (index + 1) + " / " + scenes.length;
+ speak(index);
 }
 // Camera x/y are absolute canvas centers when supplied; absent centers use (800,450).
 // Thus the default camera produces viewBox 0 0 1600 900, and zoom z gives 1600/z by 900/z.
@@ -359,6 +361,20 @@ function seek(value) {
  cancelSpeech(); time=Math.max(0,Math.min(total,value)); started=true;
  update(); if (playing) { cancelSpeech(); speak(active); }
 }
+// Public links use one-based scene numbers and seconds within that scene.
+function applyHash() {
+ const params = new URLSearchParams(window.location.hash.slice(1));
+ if (!params.has("scene") && !params.has("t")) return false;
+ const number = (key, fallback) => {
+  const raw = params.get(key);
+  return raw !== null && raw.trim() && Number.isFinite(Number(raw)) ? Number(raw) : fallback;
+ };
+ const index = Math.max(0, Math.min(scenes.length - 1, Math.trunc(number("scene", 1)) - 1));
+ const local = Math.max(0, Math.min(sb.scenes[index].durationSec - .000001, number("t", 0)));
+ playing = false; seek(starts[index] + local);
+ return true;
+}
+window.addEventListener("hashchange", applyHash);
 function move(delta) {
  seek(starts[Math.max(0,Math.min(sb.scenes.length-1,active+delta))]);
 }
@@ -384,14 +400,22 @@ window.addEventListener("pagehide", cancelSpeech);
 function typeset() {
  if (!window.katex) return;
  document.querySelectorAll(".equation").forEach(node => {
-  const tex=node.textContent;
+  const tex=node.dataset.tex || node.textContent;
   try { window.katex.render(tex,node,{throwOnError:false,trust:false}); } catch (_) { node.textContent=tex; }
  });
 }
+// Keep readable mathematics when the optional CDN is unavailable; preserve TeX for late loading.
+document.querySelectorAll(".equation").forEach(node => {
+ node.dataset.tex = node.textContent;
+ node.querySelector("code").textContent = node.textContent
+  .replace(/\\+/g, "\\").replace(/\\propto/g, "∝").replace(/\\lambda/g, "λ")
+  .replace(/\\times/g, "×").replace(/\\cdot/g, "·")
+  .replace(/\^\{(-?\d+)\}/g, (_, digits) => Array.from(digits, c => "⁰¹²³⁴⁵⁶⁷⁸⁹"[Number(c)] || "⁻").join(""));
+});
 const katexScript=document.getElementById("katex-script");
 katexScript.addEventListener("load", typeset); typeset();
 update(); requestAnimationFrame(frame);
-if(data.autoplay) setPlaying(true);
+if(!applyHash() && data.autoplay) setPlaying(true);
 })();
 `;
 
@@ -417,22 +441,30 @@ export function renderStoryboardHtml(sb: Storyboard, opts: { autoplay?: boolean;
 <title>${h(sb.title)}</title>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet">
 <style>
-*{box-sizing:border-box}body{margin:0;background:${h(p.deep)};color:${h(p.fg)};font-family:system-ui,sans-serif}
-main{max-width:1280px;margin:3vh auto;padding:16px}.screen{position:relative;aspect-ratio:16/9;overflow:hidden;
+*{box-sizing:border-box}body{margin:0;background:${h(p.deep)};color:${h(p.fg)};font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:1180px;margin:2vh auto;padding:24px}.screen{position:relative;aspect-ratio:16/9;overflow:hidden;
 border-radius:18px;background:${h(p.bg)};box-shadow:0 18px 70px #0005}svg{display:block;width:100%;height:100%}
-.equation{font-family:monospace;white-space:pre-wrap}
+.equation{font-family:ui-serif,Georgia,serif;white-space:pre-wrap;line-height:1.4;overflow-wrap:anywhere}
+.equation code{font:inherit}.screen{border:1px solid #ffffff18}
+#scene-label{display:block;color:${h(p.accent[0])};font-size:11px;font-weight:700;letter-spacing:.18em;margin:0 0 14px}
 #title-card{position:absolute;inset:0;display:grid;place-content:center;
-text-align:center;padding:5%;background:${h(p.bg)}ed}#title-card[hidden]{display:none}
+text-align:center;padding:5%;background:radial-gradient(ellipse at 50% 40%,${h(p.bg)}ed,${h(p.deep)})}#title-card[hidden]{display:none}
 h1{font-size:clamp(24px,4vw,56px);margin:0 0 12px}
 #title-card p{color:${h(p.muted)}}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 0}
-button{background:${h(p.bg)};color:${h(p.fg)};border:1px solid ${h(p.muted)};
+button{background:${h(p.bg)};color:${h(p.fg)};border:1px solid ${h(p.muted)}66;min-height:44px;font:inherit;
 padding:10px 18px;border-radius:24px;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:3px solid ${h(p.accent[0])};outline-offset:3px}
-input{flex:1;min-width:140px;accent-color:${h(p.accent[0])}}#clock{font-variant-numeric:tabular-nums;font-size:14px}
+button:hover{border-color:${h(p.accent[0])}}#play{background:${h(p.accent[0])};color:${h(p.deep)};font-weight:700}
+input{flex:1;min-width:0;accent-color:${h(p.accent[0])}}#clock{font-variant-numeric:tabular-nums;font-size:14px}
 #caption{min-height:4em;line-height:1.6;font-size:clamp(16px,2vw,21px);margin:0;padding:16px 22px;
-border-left:3px solid ${h(p.accent[0])};background:${h(p.bg)};border-radius:6px}text{font-family:system-ui,sans-serif}
-${kurz ? '.scene>[data-element]{filter:url(#psi-glow)}' : ''}
-</style></head><body><main><div class="screen">
+border-left:3px solid ${h(p.accent[0])};background:${h(p.bg)};border-radius:6px}text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+${kurz ? '.scene>[data-element]:has(circle),.scene>[data-element]:has(ellipse){filter:url(#psi-glow)}' : ''}
+@media(max-width:600px){main{padding:12px;margin:12px auto}.screen{border-radius:12px}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}button{padding:10px 8px}
+#scrub{grid-column:1/-1;width:100%;margin:4px 0;min-height:32px}#clock{grid-column:1/-1;text-align:right}
+#caption{padding:14px 16px;font-size:16px}#scene-label{margin-bottom:10px}}
+@media(prefers-reduced-motion:reduce){button{transition:none}}
+</style></head><body><main><output id="scene-label" aria-label="Scene"></output><div class="screen">
 <svg id="stage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"
 role="img" aria-label="${h(sb.title)}">
 <defs><marker id="psi-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"

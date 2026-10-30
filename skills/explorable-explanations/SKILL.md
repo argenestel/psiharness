@@ -23,9 +23,7 @@ prompts is an array of strings, not an object mapping questions to answers.
 
 The type's doc comment describes behaviors, not authoritative parameter spellings.
 visual/src/explorable.ts is the authoritative source for template params and bindings.
-That renderer is being written; recheck it before calling or rendering a spec.
-The examples below use the current/proposed vocabulary and valid contract envelopes.
-They are not a promise that every future renderer revision accepts identical params.
+The examples below use its supported parameter names and valid contract envelopes.
 Match slider names exactly to the variables the template consumes.
 Keep fixed configuration in params; slider initial values belong in sliders[].value.
 
@@ -111,7 +109,7 @@ Do not promise real eigenvector directions for every matrix.
 
 ## vector-field
 
-Shows a vector assigned to each point, with optional flow behavior supplied by the renderer.
+Shows a vector assigned to each point and particles advected by midpoint integration.
 Current params.fx and params.fy are expressions in x, y, and slider names.
 The example combines rotation with radial attraction or repulsion.
 omega controls turning; k controls the outward radial contribution.
@@ -208,7 +206,7 @@ Keep p between 0 and 1 and choose integer trial batches.
 
 What to notice: convergence is a tendency, not a guarantee for every finite sample.
 Repeated runs at the same settings may differ; never grade one random realization as a law.
-Changing parameters may reset the sample history; check the renderer's reset behavior.
+Changing any slider resets the sample history; Start, Pause, and Reset control the run.
 
 ## exponential-growth
 
@@ -217,7 +215,8 @@ Current params.mode is compound, doubling, or logistic.
 Required sliders are rate, steps, and capacity, even when capacity is inactive in compound mode.
 For compound, the current model starts at one and uses (1+rate)^t.
 For doubling, the current rate is doublings per step, giving 2^(rate*t).
-For logistic, inspect the renderer's rate and capacity formula before describing its units.
+For logistic, the capacity-limited curve is K/(1+(K-1)*Math.exp(-rate*t)), starting at one.
+K is capacity; rate is the continuous growth rate per step. Linear and compound curves remain visible for comparison.
 This example selects compound and labels capacity's inactive role explicitly.
 
 ```json
@@ -260,8 +259,8 @@ Do not imply an unbounded model is a realistic forecast forever.
 ## Save and inspect
 
 Parse the JSON, validate its envelope, and check params against visual/src/explorable.ts.
-Call the psi_explorable tool with the spec JSON.
-The tool is being built; inspect its schema rather than inventing argument wrappers.
+Call `psi_explorable` with `{ "spec": <complete ExplorableSpec> }`.
+The tool returns `{ path }` on success or `{ errors }` on validation failure.
 Inspect the returned interactive HTML at defaults, extremes, and a critical intermediate value.
 If the tool is unavailable, deliver the complete spec and say it has not been saved or rendered.
 Finish by asking the learner to explain the observed pattern in their own words.

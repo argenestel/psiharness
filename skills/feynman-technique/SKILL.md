@@ -124,9 +124,11 @@ Do not require a textbook speech when a short explanation meets these criteria.
 - 3: correct core with one minor gap repaired independently, without a conceptual prompt.
 - 2: success needs a conceptual cue or retains a significant gap.
 - 1: wrong, blank, or unable to answer after an offered cue; a revealed answer does not repair the grade.
-- Call `psi_review_grade` only for the actual answered card; check the tool's schema at runtime.
+- Call `psi_review_grade` only for the actual answered card, using `{ topic: <card.topic>, cardId: <card.id>, rating }`.
+  rating must be an integer from 1 through 4.
 - A conversational teach-back without a card is formative evidence, not a fabricated review event.
-- If the explanation is worth retesting, call `psi_cards_add` with one explain prompt and a 2–4 point rubric.
+- If worth retesting, call `psi_cards_add` with `{ topic, cards: [{ conceptId, kind: "explain", prompt, answer }] }`.
+  Store the 2–4 point rubric as the answer string.
 - Retain returned ids; do not create an invented prior card just to grade the current conversation.
 - Use `psi_note` only for a durable observation, such as “distinguishes growth rate from absolute gain using balances.”
 - Do not store the full transcript or turn a single vocabulary slip into a permanent learner label.

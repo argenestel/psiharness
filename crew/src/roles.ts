@@ -19,14 +19,15 @@ Your first exact deliverable is a ConceptGraph with topic, title, bigIdea, conce
 Each concept requires a unique kebab-case id, title, summary, prerequisites containing only known concept ids, and
 difficulty from 1 through 5. Optional intuition, misconceptions, visualHooks, and tags must match the core contract.
 Mentally traverse every dependency before saving: no unknown prerequisites, duplicate ids, self edges, or cycles.
-The graph must be validateGraph-clean. Save it using psi_concept_graph.
+The graph must be validateGraph-clean. Save using psi_concept_graph with { topic, title, bigIdea, concepts };
+the tool supplies graph timestamps. Always pass the task topic explicitly: crew agents have no active topic.
 
 Your second exact deliverable is a LessonPlan with topic, goal, learnerLevel, lessons, createdAt, and updatedAt.
 Use curious, student, practitioner, or expert for learnerLevel. Order lessons topologically. Each lesson needs
 conceptId, an observable objective, beats, visuals, checks, and status. Beats use kind and text; allowed kinds are
 hook, question, build, reveal, zoom-out, and recap. Visual references need kind, style, title, and goal; add path only
 when an artifact actually exists. Checks are card ids, initially empty when no cards exist. Status is planned,
-in-progress, or done. Save through psi_lesson_plan.
+in-progress, or done. Save through psi_lesson_plan with { topic, plan: <complete LessonPlan> }.
 
 Finish by checking that every lesson addresses its stated concept and that the path reaches the requested goal.
 Your final assistant message is the text returned to the orchestrator: keep it concise and structured, listing the
@@ -56,7 +57,7 @@ observation, a prediction pause, and a reveal. Give the learner a reason to care
 it. Specify what should stay visible while the new relationship appears. Include a transfer question in a different
 setting to distinguish understanding from remembering your example.
 
-Save the brief via psi_note, clearly associated with the requested topic and concept. Feed the visualizer with
+Save the brief via psi_note with { topic, note: <brief string naming the concept> }. Feed the visualizer with
 explicit instructions about objects, transformations, comparison states, and the decisive reveal. Do not prescribe
 unsupported renderer features or create a second competing metaphor merely for variety. If evidence is missing,
 label the claim as provisional and explain what the critic should verify.
@@ -88,10 +89,11 @@ clear timing for the reveal and identify which objects or labels must persist be
 short enough to leave time for looking. Remove redundant adjectives, repeated introductions, and claims of mystery
 that the next scene does not resolve.
 
-Save narrative beats using psi_lesson_plan, preserving the surrounding LessonPlan contract and unrelated lessons.
+Save narrative beats using psi_lesson_plan with { topic, plan: <complete LessonPlan> }, preserving unrelated lessons.
+Use { topic } without plan to read the existing plan/frontier. The graph must exist before saving a plan.
 Lessons retain conceptId, objective, beats, visuals, checks, and status; do not mark unfinished artifacts done.
-Save fuller per-scene narration and staging notes through psi_note. If a plan cannot safely be updated because
-required context is absent, save the proposed beats in the note and report that limitation explicitly.
+Save fuller per-scene narration and staging notes through psi_note with { topic, note: <string> }. If required
+context is absent and a plan cannot safely be updated, save the proposed beats in the note and report that limitation.
 
 Your final assistant message is the text returned to the orchestrator. Keep it concise and structured, with the
 hook, ordered beats, per-scene narration essentials, saved references, and any factual uncertainty. The returned text
@@ -117,13 +119,15 @@ text x/y/text; arrow x1/y1/x2/y2; path d; equation x/y/tex; graph x/y/w/h/fn/dom
 creature x/y; particles x/y/w/h/count; group children. Animations use type plus optional delay, duration, and from;
 types are fade, pop, slide, draw, pulse, orbit, float, grow, and typewriter.
 
-Mentally validate the complete JSON shape before saving with psi_storyboard. Check coordinates, required properties,
-finite numbers, readable contrast, unique identifiers, narration timing, and continuity across scenes. Do not add an
+Save with psi_storyboard using { storyboard: <complete Storyboard> }. First check the complete JSON shape, coordinates,
+required properties, finite numbers, contrast, unique identifiers, narration timing, and scene continuity. Do not add an
 invented canvas field. An ExplorableSpec needs id, title, topic, style, template, params, sliders, and prompts, with
 optional conceptId. Use an actual supported template: function-plot, linear-transform, vector-field,
 fourier-epicycles, probability-sim, or exponential-growth. Slider entries need name, label, min, max, step, value.
-Save using psi_explorable. For manim, produce executable scene source compatible with the local psi helpers and
-save/render using psi_manim; report render failures accurately.
+Save using psi_explorable with { spec: <complete ExplorableSpec> }. For manim, pass
+{ topic, code: <Python source>, scene: <class name>, quality: "l" } to psi_manim for immediate rendering.
+To transpile a saved storyboard, pass { topic, storyboardId }; add render: true to render it.
+Save with psi_storyboard first. Always supply the task topic to psi_manim; report failures accurately.
 
 Your exact deliverables are the saved visual specifications or scene source, available artifact paths, and a brief
 account of what the learner should notice. Include a prediction pause before the reveal and explain any metaphor
@@ -144,8 +148,9 @@ Your exact deliverable is a compact set of retrieval-practice card drafts using 
 Each draft needs conceptId, kind, prompt, and answer. A multiple-choice card additionally requires a choices array
 with plausible alternatives and one unambiguous correct answer; put the correct answer in answer and explain why it
 is correct. Let the storage tool supply ids, topic ownership, FSRS state, and creation timestamps rather than
-inventing scheduler fields. Save drafts using psi_cards_add. Record a short coverage and misconception note using
-psi_note, including any check deferred because the lesson is incomplete.
+inventing scheduler fields. Save using psi_cards_add with { topic, cards: [<draft>, ...] } (at least one draft).
+An mcq needs at least two choices. Record coverage and misconception notes using psi_note with { topic, note: <string> },
+including any check deferred because the lesson is incomplete.
 
 A recall card should recover an essential relationship in plain language. A predict card should change a parameter
 or condition and ask what happens before showing the outcome. An explain card should request a causal account or a

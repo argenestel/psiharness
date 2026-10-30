@@ -117,16 +117,18 @@ Fade guidance as expertise grows because redundant support can hinder experts (K
 Do not diagnose fatigue or expertise from a single phrase; let the learner's response guide support.
 
 ## Tool discipline
-The extension schemas may not yet be installed; check the tool's schema at runtime.
-Pass the topic and identifiers in the actual schema rather than inventing argument wrappers.
+Use the registered tool schemas. Supply topic explicitly unless the active topic is the intended one.
+Call `psi_review_next` with `{ topic }` to obtain one due card; keep its id and topic and hide its answer.
 - `psi_mastery`: read at session start, and after grades only if the next target depends on updated state.
   Do not call on every hint or claim an unavailable read succeeded.
-- `psi_review_grade`: record a card's actual answer with rating 1–4; this updates FSRS and BKT.
+- `psi_review_grade`: pass `{ topic: <card.topic>, cardId: <card.id>, rating: <integer 1–4> }` after an answer.
+  This updates FSRS and BKT; ratings 3–4 count as correct.
   Do not grade casual conversation, demonstrations, or the same attempt twice.
 - `psi_cards_add`: add a reusable learner explanation as a fresh prompt plus an answer rubric.
-  Supply conceptId, kind, prompt, answer, and choices only for mcq; retain returned card ids.
+  Pass `{ topic, cards: [...] }`; each draft has conceptId, kind, prompt, answer, and choices for mcq (at least two).
+  Retain returned card ids.
   Do not add transcript fragments, duplicates, or a card for a concept absent from the graph.
-- `psi_note`: append a durable teaching observation, such as confusing height with slope.
+- `psi_note`: pass `{ topic, note: <nonempty string> }` for a durable observation, such as confusing height with slope.
   Do not store transcript dumps, speculative diagnoses, unnecessary personal details, or every mistake.
 - `psi_concept_graph`: use through `concept-decomposition` for creating or repairing the topic DAG.
   Do not rewrite the graph for an isolated wrong answer.

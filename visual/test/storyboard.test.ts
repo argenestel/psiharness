@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { runInNewContext } from "node:vm";
 import assert from "node:assert/strict";
 import type { Storyboard } from "../../core/src/types.ts";
 import { renderStoryboardHtml, validateStoryboard } from "../src/storyboard-html.ts";
@@ -167,4 +168,67 @@ test("graph samples map to the plot box and break across non-finite values", () 
 	const invalid = story();
 	invalid.scenes[0]!.elements = [{ id: "bad-group", kind: "group", props: { children: "invalid" } }];
 	assert.match(validateStoryboard(invalid).join(" "), /children must be an array/);
+});
+
+
+// Execute the emitted player, including URL navigation, without depending on external browser packages.
+function player(hash: string, autoplay = false) {
+	const sb = story();
+	sb.scenes[0]!.elements = [];
+	sb.scenes.push({ id: "two", durationSec: 6, narration: "Second scene", elements: [] });
+	const listeners = new Map<string, () => void>();
+	const nodes = new Map<string, any>();
+	for (const id of ["stage", "play", "scrub", "caption", "clock", "title-card", "prev", "next",
+		"scene-label", "katex-script"]) {
+		nodes.set(id, { style: {}, textContent: "", addEventListener() {}, setAttribute() {} });
+	}
+	nodes.set("psi-data", { textContent: JSON.stringify({ storyboard: sb, autoplay }) });
+	const scenes = sb.scenes.map(() => ({ style: {}, querySelectorAll: () => [] }));
+	const code = { textContent: "" };
+	const equation = { textContent: "I \\propto \\lambda^{-4}", dataset: {} as Record<string, string>,
+		querySelector: () => code };
+	const window = { location: { hash }, addEventListener: (name: string, fn: () => void) => listeners.set(name, fn) };
+	const html = renderStoryboardHtml(sb);
+	const source = html.match(/<script>([\s\S]*?)<\/script>/)![1]!;
+	runInNewContext(source, {
+		window, URLSearchParams, performance: { now: () => 0 }, requestAnimationFrame() {},
+		document: {
+			getElementById: (id: string) => nodes.get(id), addEventListener() {},
+			querySelectorAll: (selector: string) => selector === ".scene" ? scenes : [equation],
+		},
+	}, { timeout: 1000 });
+	return { nodes, scenes, window, listeners, code, equation };
+}
+
+test("scene hashes seek using one-based numbers and pause even with autoplay", () => {
+	const app = player("#scene=2&t=2.5", true);
+	assert.equal(app.nodes.get("clock").textContent, "10.5 / 14.0 s");
+	assert.equal(app.nodes.get("play").textContent, "Play");
+	assert.equal(app.nodes.get("title-card").hidden, true);
+	assert.equal(app.nodes.get("scene-label").textContent, "SCENE 2 / 2");
+	assert.equal((app.scenes[1]!.style as { display?: string }).display, "inline");
+	app.window.location.hash = "#scene=1&t=1";
+	app.listeners.get("hashchange")!();
+	assert.equal(app.nodes.get("clock").textContent, "1.0 / 14.0 s");
+});
+
+test("hash controls clamp bounds without accidentally entering the next scene", () => {
+	for (const [hash, scene, clock] of [
+		["#scene=-5&t=-2", 1, "0.0 / 14.0 s"],
+		["#scene=999&t=999", 2, "14.0 / 14.0 s"],
+		["#scene=1&t=999", 1, "8.0 / 14.0 s"],
+		["#scene=NaN&t=Infinity", 1, "0.0 / 14.0 s"],
+		["#t=2.5", 1, "2.5 / 14.0 s"],
+	] as const) {
+		const app = player(hash);
+		assert.equal(app.nodes.get("scene-label").textContent, `SCENE ${scene} / 2`);
+		assert.equal(app.nodes.get("clock").textContent, clock);
+	}
+	assert.equal(player("").nodes.get("title-card").hidden, false);
+});
+
+test("offline equations stay readable while retaining source for late KaTeX loading", () => {
+	const app = player("");
+	assert.equal(app.code.textContent, "I ∝ λ⁻⁴");
+	assert.equal(app.equation.dataset.tex, "I \\propto \\lambda^{-4}");
 });
