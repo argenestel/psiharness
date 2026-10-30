@@ -70,16 +70,142 @@ function normalize(answer: string): string {
 function numeric(text: string): number | undefined {
 	// Percentages always mean fractions: 75% = 0.75, never 75.
 	const percent = text.endsWith("%");
-	const body = percent ? text.slice(0, -1).trim() : text;
+	const body = (percent ? text.slice(0, -1).trim() : text)
+		.replace(/([\d.])\s*[×x]\s*10\s*\^\s*([+-]?\d+)/gi, "$1e$2");
 	const parts = body.split("/").map((part) => part.trim());
 	if (parts.length > 2) return undefined;
 	const values = parts.map((part) => {
-		if (!/^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?$|^[+-]?\.\d+$/u.test(part)) return NaN;
+		if (!/^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d*)?(?:e[+-]?\d+)?$|^[+-]?\.\d+(?:e[+-]?\d+)?$/u.test(part)) return NaN;
 		return Number(part.replaceAll(",", ""));
 	});
 	if (values.some((value) => !Number.isFinite(value)) || values[1] === 0) return undefined;
 	const result = values[0] / (values[1] ?? 1) / (percent ? 100 : 1);
 	return Number.isFinite(result) ? result : undefined;
+}
+
+function normalizeMath(text: string): string {
+	let result = text.trim().replace(/^\$\$([\s\S]*)\$\$$|^\$([\s\S]*)\$$/, (_, a, b) => a ?? b)
+		.replace(/\\(?:left|right)\b/g, "").replace(/\s+/g, "")
+		.replace(/\\cdot|×/g, "*").replace(/\\pi\b/g, "pi")
+		.replace(/[−‐‑‒–—﹣－]/gu, "-");
+	// Repeated substitution handles nested simple fractions and roots from the inside out.
+	let previous: string;
+	do {
+		previous = result;
+		result = result.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, "($1)/($2)")
+			.replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)").replace(/\^\{([^{}]+)\}/g, "^($1)");
+	} while (result !== previous);
+	return result.replace(/\^\(([+-]?\d+)\)/g, "^$1");
+}
+
+// Recursive descent: sum → product → unary → power → primary. Exponents associate right.
+function evaluateMath(text: string): number | undefined {
+	if (text.length > 4096) return undefined;
+	let at = 0;
+	function primary(): number {
+		if (text[at] === "(") {
+			at++;
+			const value = sum();
+			if (text[at++] !== ")") throw new Error("Missing parenthesis");
+			return value;
+		}
+		if (text.startsWith("sqrt(", at)) {
+			at += 4;
+			return Math.sqrt(primary());
+		}
+		for (const [name, value] of [["pi", Math.PI], ["e", Math.E]] as const) {
+			if (text.startsWith(name, at)) { at += name.length; return value; }
+		}
+		const match = /^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/.exec(text.slice(at));
+		if (!match) throw new Error("Expected number");
+		at += match[0].length;
+		return Number(match[0]);
+	}
+	function power(): number {
+		const value = primary();
+		if (text[at] !== "^") return value;
+		at++;
+		return value ** unary();
+	}
+	function unary(): number {
+		if (text[at] === "+") { at++; return unary(); }
+		if (text[at] === "-") { at++; return -unary(); }
+		return power();
+	}
+	function product(): number {
+		let value = unary();
+		while (text[at] === "*" || text[at] === "/") {
+			const op = text[at++];
+			const right = unary();
+			value = op === "*" ? value * right : value / right;
+		}
+		return value;
+	}
+	function sum(): number {
+		let value = product();
+		while (text[at] === "+" || text[at] === "-") {
+			const op = text[at++];
+			const right = product();
+			value = op === "+" ? value + right : value - right;
+		}
+		return value;
+	}
+	try {
+		const value = sum();
+		return at === text.length && Number.isFinite(value) ? value : undefined;
+	} catch { return undefined; }
+}
+
+function closeEnough(actual: number | undefined, target: number | undefined, tolerance?: number): boolean {
+	return actual !== undefined && target !== undefined
+		&& Math.abs(actual - target) <= (tolerance ?? 1e-9 * Math.max(1, Math.abs(target)));
+}
+
+function numberWithUnit(text: string, unit?: string): number | undefined {
+	let value = text.trim().toLowerCase().replace(/[−‐‑‒–—﹣－]/gu, "-");
+	const suffix = unit?.trim().toLowerCase();
+	if (suffix && value.endsWith(suffix)) value = value.slice(0, -suffix.length).trim();
+	return numeric(value);
+}
+
+/** Validate challenge contracts before persistence; return every discovered error. */
+export function validateChallenge(c: Challenge): string[] {
+	const errors: string[] = [];
+	if (typeof c.skill !== "string" || !SLUG.test(c.skill)) errors.push("Invalid skill slug");
+	for (const key of ["id", "prompt", "createdAt"] as const) {
+		if (typeof c[key] !== "string" || !c[key].trim()) errors.push(`${key} must be a nonempty string`);
+	}
+	if (!Number.isFinite(Date.parse(c.createdAt))) errors.push("createdAt must be a valid date");
+	if (!["quickfire", "predict", "debug", "apply", "explain", "build", "boss"].includes(c.kind)) {
+		errors.push("Invalid challenge kind");
+	}
+	if (!Number.isInteger(c.level) || c.level < 1 || c.level > 5) errors.push("level must be an integer 1–5");
+	if (c.format !== undefined && !["text", "number", "math", "choice", "code"].includes(c.format)) {
+		errors.push("Invalid challenge format");
+	}
+	for (const key of ["hints", "acceptable", "rubric", "choices"] as const) {
+		const value = c[key];
+		if ((key === "hints" || value !== undefined) &&
+			(!Array.isArray(value) || !value.every((item) => typeof item === "string"))) {
+			errors.push(`${key} must be an array of strings`);
+		}
+	}
+	for (const key of ["subskillId", "expected", "unit", "starterCode", "setup", "tests"] as const) {
+		if (c[key] !== undefined && typeof c[key] !== "string") errors.push(`${key} must be a string`);
+	}
+	if (c.tolerance !== undefined && (!Number.isFinite(c.tolerance) || c.tolerance < 0)) {
+		errors.push("tolerance must be finite and nonnegative");
+	}
+	if (c.language !== undefined && !["python", "javascript", "sql"].includes(c.language)) {
+		errors.push("Invalid code language");
+	}
+	if (c.format === "choice" && (!Array.isArray(c.choices) || !c.choices.includes(c.expected!))) {
+		errors.push("choice format requires choices containing expected");
+	}
+	if (c.format === "code" && (!c.language || typeof c.tests !== "string" || !c.tests.trim())) {
+		errors.push("code format requires language and tests");
+	}
+	return errors;
 }
 
 /** Select the earliest lowest-priority unfinished subskill whose prerequisites are solid. */
@@ -164,9 +290,12 @@ export class PracticeStore {
 
 	/** Create and persist a uniquely identified challenge. */
 	addChallenge(draft: Omit<Challenge, "id" | "createdAt" | "hints"> & { hints?: string[] }): Challenge {
-		const challenges = this.listChallenges(draft.skill);
 		const challenge: Challenge = { ...draft, id: randomUUID(), createdAt: new Date().toISOString(),
-			hints: [...(draft.hints ?? [])] };
+			hints: draft.hints === undefined ? [] : draft.hints };
+		const errors = validateChallenge(challenge);
+		if (errors.length) throw new Error(errors.join("; "));
+		challenge.hints = [...challenge.hints];
+		const challenges = this.listChallenges(draft.skill);
 		this.write(draft.skill, "challenges.json", [...challenges, challenge]);
 		return challenge;
 	}
@@ -188,16 +317,35 @@ export class PracticeStore {
 	/** Grade explicit expected/acceptable answers; open answers require tutor grading. */
 	checkAnswer(c: Challenge, answer: string): Outcome | undefined {
 		validateSkill(c.skill);
-		if (!c.expected?.trim()) return undefined;
+		if (c.format === "code" || !c.expected?.trim()) return undefined;
+		const candidates = [c.expected, ...(c.acceptable ?? [])];
+		if (c.format === "choice") {
+			const clean = (value: string) => value.trim().toLowerCase().replace(/\s+/g, " ");
+			const actual = clean(answer);
+			if (candidates.some((candidate) => clean(candidate) === actual)) return "success";
+			const label = /^([a-z]|[1-9]\d*)[).]?$/.exec(actual)?.[1];
+			const index = label === undefined ? -1 : /^[a-z]$/.test(label)
+				? label.charCodeAt(0) - 97 : Number(label) - 1;
+			const resolved = c.choices?.[index];
+			return resolved !== undefined && candidates.some((candidate) => clean(candidate) === clean(resolved))
+				? "success" : "fail";
+		}
+		if (c.format === "number") {
+			return candidates.some((candidate) => closeEnough(numberWithUnit(answer, c.unit),
+				numberWithUnit(candidate, c.unit), c.tolerance)) ? "success" : "fail";
+		}
+		if (c.format === "math") {
+			const actual = normalizeMath(answer), number = evaluateMath(actual);
+			return candidates.some((candidate) => {
+				const expected = normalizeMath(candidate), target = evaluateMath(expected);
+				return number !== undefined && target !== undefined ? closeEnough(number, target, c.tolerance)
+					: actual === expected;
+			}) ? "success" : "fail";
+		}
 		const actual = normalize(answer);
-		const number = numeric(actual);
-		return [c.expected, ...(c.acceptable ?? [])].some((candidate) => {
+		return candidates.some((candidate) => {
 			const expected = normalize(candidate);
-			if (actual === expected) return true;
-			const target = numeric(expected);
-			// Explicit tolerance is absolute per Challenge; the default is relative to the expected value.
-			return number !== undefined && target !== undefined
-				&& Math.abs(number - target) <= (c.tolerance ?? 1e-9 * Math.max(1, Math.abs(target)));
+			return actual === expected || closeEnough(numeric(actual), numeric(expected), c.tolerance);
 		}) ? "success" : "fail";
 	}
 

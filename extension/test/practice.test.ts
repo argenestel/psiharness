@@ -55,9 +55,16 @@ const registerPractice = missingCore ? undefined : (await import("../src/practic
 async function fixture(t: test.TestContext, run: (f: ReturnType<typeof fake>, home: string) => Promise<void>) {
 	if (!registerPractice) { t.skip(`Core ${missingCore}.ts is not available yet.`); return; }
 	const home = mkdtempSync(join(tmpdir(), "psi-practice-extension-"));
+	const previousHome = process.env.PSI_HOME;
+	process.env.PSI_HOME = home;
 	const f = fake();
-	try { registerPractice(f.api, { home }); await run(f, home); }
-	finally { await f.fire("session_shutdown"); rmSync(home, { recursive: true, force: true }); }
+	try { registerPractice(f.api); await run(f, home); }
+	finally {
+		await f.fire("session_shutdown");
+		if (previousHome === undefined) delete process.env.PSI_HOME;
+		else process.env.PSI_HOME = previousHome;
+		rmSync(home, { recursive: true, force: true });
+	}
 }
 
 const draft = (overrides = {}) => ({
@@ -138,6 +145,11 @@ test("injection appends bounded memory, state, and tutor guidance", async (t) =>
 	assert.match(injected, /\/15 minutes/);
 	assert.match(injected, /psi_attempt/);
 	assert.match(injected, /psi_recap/);
+	assert.match(injected, /LaTeX: \$\.\.\.\$ inline and \$\$\.\.\.\$\$ display/);
+	assert.match(injected, /worked example -> faded example -> independent problem/);
+	assert.match(injected, /code challenges with tests/);
+	assert.match(injected, /units and orders of magnitude/);
+	assert.match(injected, /prediction before running code/);
 	assert.ok(injected.length - "Original system\n\n".length <= 2500);
 	const { MemoryStore } = await import("../../core/src/memory.ts");
 	new MemoryStore(home).setName("Long learner name ".repeat(300));
@@ -161,7 +173,7 @@ test("session restores skill, honors flags, and welcomes the learner", async (t)
 	assert.match(f.statuses.at(-1)!, /ψ guitar/);
 	f.flags.clear(); f.entries.length = 0;
 	await f.fire("session_start");
-	assert.equal(f.statuses.at(-1), undefined);
+	assert.match(f.statuses.at(-1)!, /ψ guitar/);
 }));
 
 test("plans default to 20 hours and reject invalid graphs", async (t) => fixture(t, async (f) => {
@@ -200,7 +212,7 @@ test("hints clamp indices; stopping clears the widget", async (t) => fixture(t, 
 	assert.equal(f.widgets.at(-1), undefined);
 }));
 
-test("default export installs both the practice layer and the concept layer", async () => {
+test("default export installs both the practice layer and the concept layer", async (t) => fixture(t, async () => {
 	const names: string[] = [];
 	const api = new Proxy({}, {
 		get: (_t, key) => key === "registerTool" ? (tool: { name: string }) => names.push(tool.name) : () => undefined,
@@ -209,4 +221,121 @@ test("default export installs both the practice layer and the concept layer", as
 	for (const name of ["psi_attempt", "psi_memory_remember", "psi_skill_plan", "psi_concept_graph", "psi_cards_add"]) {
 		assert.ok(names.includes(name), name);
 	}
-});
+}));
+
+test("fresh registrations resume active skill and open challenge without session entries", async (t) => fixture(t, async (f) => {
+	await f.execute("psi_skill_plan", { action: "create", plan: plan() });
+	const challenge = await f.execute("psi_challenge", draft({ skill: undefined }));
+	const second = fake();
+	registerPractice!(second.api);
+	try {
+		assert.equal(second.entries.length, 0);
+		for (const startSession of [false, true]) {
+			if (startSession) await second.fire("session_start");
+			const prompt = (await second.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+			assert.match(prompt, /Active skill: sql/);
+			assert.match(prompt, /Next subskill: select: Select/);
+			assert.ok(prompt.includes(challenge.details.challengeId));
+			assert.match(prompt, /"kind":"quickfire","format":"text","prompt":"What is 2 \+ 2\?"/);
+			assert.match(prompt, /do not search files/);
+		}
+		const attempt = await second.execute("psi_attempt", { challengeId: challenge.details.challengeId, answer: "4" });
+		assert.equal(attempt.details.outcome, "success");
+		const third = fake();
+		registerPractice!(third.api);
+		try {
+			const prompt = (await third.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+			assert.match(prompt, /Active skill: sql/);
+			assert.match(prompt, /OPEN challenge: none/);
+		} finally { await third.fire("session_shutdown"); }
+	} finally { await second.fire("session_shutdown"); }
+}));
+
+test("skill selection and session start persist, and session entries take precedence", async (t) => fixture(t, async (f, home) => {
+	const { StateStore } = await import("../../core/src/state.ts");
+	const saved = new StateStore(home);
+	await f.command("skill", "Physics");
+	assert.equal(saved.read().activeSkill, "physics");
+	await f.execute("psi_practice_session", { action: "start", skill: "sql" });
+	assert.equal(saved.read().activeSkill, "sql");
+	await f.execute("psi_practice_session", { action: "stop" });
+	await f.execute("psi_challenge", draft());
+	saved.update({ activeSkill: "physics", openChallenge: undefined });
+	await f.fire("session_start");
+	const prompt = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+	assert.match(prompt, /Active skill: sql/);
+	assert.match(prompt, /What is 2/);
+}));
+
+test("challenge validation rejects invalid choices and incomplete code without persisting", async (t) => fixture(t, async (f, home) => {
+	const { PracticeStore } = await import("../../core/src/practice.ts");
+	for (const overrides of [
+		{ format: "choice" }, { format: "choice", choices: ["1", "2"] },
+		{ format: "choice", choices: ["4"] }, { format: "choice", choices: ["4", "4"] },
+		{ format: "choice", choices: ["4", " "] }, { format: "choice", choices: [4, "4"] },
+		{ format: "code", language: "python" }, { format: "code", tests: "assert True" },
+		{ format: "code", language: "ruby", tests: "assert true" },
+		{ format: "code", language: "python", tests: " " },
+	]) {
+		const rejected = await f.execute("psi_challenge", draft(overrides));
+		assert.ok(rejected.details.errors?.length, JSON.stringify(overrides));
+	}
+	assert.equal(new PracticeStore(home).listChallenges("sql").length, 0);
+	const accepted = await f.execute("psi_challenge", draft({ format: "choice", choices: ["3", "4"] }));
+	assert.deepEqual(accepted.details.widget.choices, ["3", "4"]);
+}));
+
+test("challenge widgets carry browser fields while content hides answers and code internals", async (t) => fixture(t, async (f) => {
+	const text = await f.execute("psi_challenge", draft({ expected: "PRIVATE_ANSWER", acceptable: ["ALTERNATE"] }));
+	assert.deepEqual(text.details.widget, {
+		type: "challenge", skill: "sql", id: text.details.challengeId, kind: "quickfire", level: 1,
+		format: "text", prompt: "What is 2 + 2?", choices: undefined, unit: undefined,
+		language: undefined, starterCode: undefined, hintsCount: 2,
+	});
+	assert.equal(text.content[0].text, "The challenge card is shown to the learner; wait for their answer");
+	assert.doesNotMatch(JSON.stringify(text), /PRIVATE_ANSWER|ALTERNATE|expected/);
+	for (const language of ["python", "javascript", "sql"]) {
+		const code = await f.execute("psi_challenge", draft({
+			format: "code", language, setup: "PRIVATE_SETUP", tests: "PRIVATE_TESTS", starterCode: "# start",
+			expected: "PRIVATE_EXPECTED", unit: "m/s",
+		}));
+		assert.equal(code.details.widget.setup, "PRIVATE_SETUP");
+		assert.equal(code.details.widget.tests, "PRIVATE_TESTS");
+		assert.equal(code.details.widget.language, language);
+		assert.equal(code.details.widget.starterCode, "# start");
+		assert.equal(code.details.widget.unit, "m/s");
+		assert.doesNotMatch(code.content[0].text, /PRIVATE_|setup|tests|expected/);
+	}
+}));
+
+test("code attempts require run outcomes and return attempt widgets", async (t) => fixture(t, async (f) => {
+	const c = await f.execute("psi_challenge", draft({ format: "code", language: "javascript", tests: "assert(ok)" }));
+	const params = { challengeId: c.details.challengeId, answer: "4" };
+	assert.match((await f.execute("psi_attempt", params)).details.errors[0], /code.*explicit outcome/);
+	assert.equal((await f.execute("psi_progress_report", {})).details.skills[0].attempts, 0);
+	const attempt = await f.execute("psi_attempt", { ...params, outcome: "fail" });
+	assert.equal(attempt.details.outcome, "fail");
+	assert.deepEqual(attempt.details.widget, {
+		type: "attempt", outcome: "fail", xp: attempt.details.xp, level: attempt.details.level,
+		levelBar: attempt.details.levelBar, leveledUp: attempt.details.leveledUp,
+		badges: attempt.details.badges, streak: attempt.details.streak,
+	});
+	assert.ok(attempt.details.widget.xp > 0);
+}));
+
+
+test("before-agent fallback reads state written after registration", async (t) => fixture(t, async (f) => {
+	const waiting = fake();
+	registerPractice!(waiting.api);
+	try {
+		await f.command("skill", "Physics");
+		const c = await f.execute("psi_challenge", draft({ skill: undefined }));
+		const prompt = (await waiting.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+		assert.match(prompt, /Active skill: physics/);
+		assert.ok(prompt.includes(c.details.challengeId));
+		await waiting.execute("psi_hint", { challengeId: c.details.challengeId, n: 1 });
+		await waiting.execute("psi_memory_remember", { kind: "goal", text: "Learn motion" });
+		const recalled = await waiting.execute("psi_memory_recall", {});
+		assert.equal(recalled.details.items[0].skill, "physics");
+	} finally { await waiting.fire("session_shutdown"); }
+}));

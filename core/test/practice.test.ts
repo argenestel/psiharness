@@ -3,7 +3,7 @@ import * as assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { PracticeStore, nextSubskill } from "../src/practice.ts";
+import { PracticeStore, nextSubskill, validateChallenge } from "../src/practice.ts";
 import type { Challenge, SkillPlan, Subskill } from "../src/types.ts";
 
 const skill = "sql-queries";
@@ -294,4 +294,100 @@ test("default home reads PSI_HOME at construction time", (t) => {
 		if (previous === undefined) delete process.env.PSI_HOME;
 		else process.env.PSI_HOME = previous;
 	}
+});
+
+test("choice grading accepts normalized exact answers, letters and one-based indices", (t) => {
+	const store = fixture(t), c = answerChallenge({ format: "choice", choices: ["red", "Light Blue", "green"],
+		expected: "Light Blue" });
+	for (const answer of ["Light Blue", " LIGHT   BLUE ", "B", "b)", "b", "2"]) {
+		assert.equal(store.checkAnswer(c, answer), "success", answer);
+	}
+	for (const answer of ["red", "a", "1", "0", "4", "blue", "Light Blue!"]) {
+		assert.equal(store.checkAnswer(c, answer), "fail", answer);
+	}
+});
+
+test("number format parses fractions, percents, scientific notation, grouping and matching units", (t) => {
+	const store = fixture(t);
+	for (const [expected, answer] of [["0.75", "3/4"], ["0.25", "25%"], ["1200", "1.2e3"],
+		["1200", "1.2×10^3"], ["1200", "1.2x10^3"], ["0.0012", "1.2E-3"],
+		["1234567", "1,234,567"], ["-0.75", "−3/4"], ["1200", "1.2 × 10 ^ 3"]]) {
+		assert.equal(store.checkAnswer(answerChallenge({ format: "number", expected }), answer), "success", answer);
+	}
+	const c = answerChallenge({ format: "number", expected: "1200", unit: "m/s" });
+	for (const answer of ["1200 m/s", "1200m/s", "1.2e3 m/s", "1200"]) {
+		assert.equal(store.checkAnswer(c, answer), "success", answer);
+	}
+	for (const answer of ["1200 km/s", "1200 s", "1201 m/s", "1,20,0 m/s", "Infinity", "NaN", "3/0", ""]) {
+		assert.equal(store.checkAnswer(c, answer), "fail", answer);
+	}
+	assert.equal(store.checkAnswer({ ...c, expected: "1200 m/s" }, "1200"), "success");
+	assert.equal(store.checkAnswer({ ...c, tolerance: 0.1 }, "1200.05 m/s"), "success");
+	assert.equal(store.checkAnswer({ ...c, tolerance: 0 }, "1200.00001 m/s"), "fail");
+});
+
+test("math format normalizes LaTeX and compares safe numeric expressions", (t) => {
+	const store = fixture(t);
+	for (const [expected, answer] of [
+		["1/2", "\\frac{1}{2}"], ["(x+1)", "\\left( x + 1 \\right)"], ["x+1", "$ x + 1 $"],
+		["x+1", "$$x+1$$"], ["x*y", "x\\cdot y"], ["x*y", "x × y"], ["x^2", "x^{2}"],
+		["sqrt(x)", "\\sqrt{x}"], ["1/2", "2/4"], ["2", "\\sqrt{4}"], ["8", "2^{3}"],
+		["6", "2\\cdot3"], ["6", "2×3"], ["512", "2^3^2"], ["-4", "-2^2"],
+		["0.25", "2^-2"], ["1", "pi/pi"], ["1", "e/e"], ["3", "1+4/2"],
+		["0.125", "\\frac{1}{\\frac{8}{1}}"], ["2", "\\sqrt{\\sqrt{16}}"],
+		["3.141592653589793", "\\pi"], ["1200", "1.2e3"], ["1", "1.0000000005"],
+	]) {
+		assert.equal(store.checkAnswer(answerChallenge({ format: "math", expected }), answer), "success",
+			`${expected} / ${answer}`);
+	}
+	for (const [expected, answer] of [["1/2", "2/3"], ["x^2", "x^3"], ["1", "1.000000002"],
+		["0", "1/0"], ["0", "sqrt(-1)"], ["1", "1+"], ["1", "(1"], ["1", "1)"],
+		["1", "process.exit()"], ["1", "globalThis.x=1"], ["1", "Math.sqrt(1)"], ["1", "1;1"]]) {
+		assert.equal(store.checkAnswer(answerChallenge({ format: "math", expected }), answer), "fail", answer);
+	}
+	assert.equal(store.checkAnswer(answerChallenge({ format: "math", expected: "x", acceptable: ["y"] }),
+		"$y$"), "success");
+});
+
+test("code format always defers grading even when expected matches", (t) => {
+	const store = fixture(t);
+	assert.equal(store.checkAnswer(answerChallenge({ format: "code" }), "yes"), undefined);
+	assert.equal(store.checkAnswer(answerChallenge({ format: "code", expected: undefined }), ""), undefined);
+});
+
+test("validateChallenge accepts valid formats and reports malformed contracts", () => {
+	assert.deepEqual(validateChallenge(answerChallenge()), []);
+	assert.deepEqual(validateChallenge(answerChallenge({ format: "choice", choices: ["yes", "no"] })), []);
+	assert.deepEqual(validateChallenge(answerChallenge({ format: "code", language: "sql", tests: "select 1" })), []);
+	const invalid: [Partial<Challenge>, RegExp][] = [
+		[{ format: "choice" }, /choices containing expected/],
+		[{ format: "choice", choices: ["no"] }, /choices containing expected/],
+		[{ format: "code", tests: "assert True" }, /language and tests/],
+		[{ format: "code", language: "python" }, /language and tests/],
+		[{ format: "code", language: "python", tests: " " }, /language and tests/],
+		[{ level: 0 as Challenge["level"] }, /level/], [{ level: 6 as Challenge["level"] }, /level/],
+		[{ level: 1.5 as Challenge["level"] }, /level/],
+		[{ hints: "hint" as unknown as string[] }, /hints/], [{ hints: undefined }, /hints/],
+		[{ hints: [1] as unknown as string[] }, /hints/], [{ prompt: " " }, /prompt/],
+		[{ skill: "../x" }, /Invalid skill slug/], [{ tolerance: -1 }, /tolerance/],
+		[{ tolerance: Infinity }, /tolerance/], [{ createdAt: "bad" }, /createdAt/],
+		[{ kind: "bad" as Challenge["kind"] }, /kind/], [{ format: "bad" as Challenge["format"] }, /format/],
+		[{ language: "ruby" as Challenge["language"] }, /language/],
+		[{ acceptable: "yes" as unknown as string[] }, /acceptable/],
+		[{ choices: "yes" as unknown as string[] }, /choices/],
+		[{ tests: 123 as unknown as string }, /tests/],
+	];
+	for (const [patch, pattern] of invalid) assert.match(validateChallenge(answerChallenge(patch)).join("; "), pattern);
+});
+
+test("addChallenge rejects invalid drafts before writing and joins validation errors", (t) => {
+	const store = fixture(t);
+	assert.throws(() => store.addChallenge({ ...draft, format: "choice", level: 0 as Challenge["level"] }),
+		/level.*; .*choices containing expected/);
+	assert.throws(() => store.addChallenge({ ...draft, hints: "bad" as unknown as string[] }), /hints/);
+	assert.throws(() => store.addChallenge({ ...draft, format: "code" }), /language and tests/);
+	assert.deepEqual(fs.readdirSync(store.root), []);
+	const good = store.addChallenge(draft);
+	assert.throws(() => store.addChallenge({ ...draft, prompt: "" }), /prompt/);
+	assert.deepEqual(store.listChallenges(skill), [good]);
 });

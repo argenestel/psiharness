@@ -1,5 +1,6 @@
 import { Type } from "@earendil-works/pi-ai";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { validateChallenge } from "../../../core/src/practice.ts";
 import type { ChallengeKind, MemoryKind, Outcome, SkillPlan } from "../../../core/src/types.ts";
 import { progressReport } from "./hud.ts";
 import type { PracticeDeps } from "./index.ts";
@@ -15,8 +16,8 @@ const slug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const optionalString = () => Type.Optional(Type.String());
 
 /** Return model-readable text and structured details without hidden challenge answers. */
-function result(details: unknown) {
-	return { content: [{ type: "text" as const, text: JSON.stringify(details, null, 2) }], details };
+function result(details: unknown, text = JSON.stringify(details, null, 2)) {
+	return { content: [{ type: "text" as const, text }], details };
 }
 
 function object(value: unknown): value is Record<string, unknown> {
@@ -100,7 +101,7 @@ export function registerTools(pi: ExtensionAPI, deps: PracticeDeps): void {
 			kind: memoryKind, text: Type.String(), skill: optionalString(), topic: optionalString(),
 			source: Type.Optional(choice(["learner", "observed", "inferred"] as const)),
 		}),
-		async execute(_id, p) { return result(memory.remember(p)); },
+		async execute(_id, p) { return result(memory.remember({ ...p, skill: p.skill ?? state.skill })); },
 	}));
 	pi.registerTool(defineTool({
 		name: "psi_memory_recall", label: "Recall learner memory", description: "Find relevant learner observations.",
@@ -108,7 +109,7 @@ export function registerTools(pi: ExtensionAPI, deps: PracticeDeps): void {
 			query: optionalString(), kind: Type.Optional(memoryKind), skill: optionalString(),
 			limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
 		}),
-		async execute(_id, p) { return result({ items: memory.recall(p) }); },
+		async execute(_id, p) { return result({ items: memory.recall({ ...p, skill: p.skill ?? state.skill }) }); },
 	}));
 	pi.registerTool(defineTool({
 		name: "psi_memory_forget", label: "Forget memory", description: "Delete one learner observation by id.",
@@ -163,44 +164,71 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 		name: "psi_challenge", label: "Practice challenge",
 		description: "Save and present one challenge. Keep expected answers private.",
 		parameters: Type.Object({
-			skill: Type.String(), subskillId: optionalString(),
+			skill: optionalString(), subskillId: optionalString(),
 			kind: choice<ChallengeKind>(["quickfire", "predict", "debug", "apply", "explain", "build", "boss"]),
 			level: Type.Unsafe<1 | 2 | 3 | 4 | 5>(Type.Integer({ minimum: 1, maximum: 5 })),
 			prompt: Type.String(), expected: optionalString(), acceptable: Type.Optional(strings()),
 			tolerance: Type.Optional(Type.Number({ minimum: 0 })), rubric: Type.Optional(strings()), hints: strings(),
+			format: Type.Optional(choice(["text", "number", "math", "choice", "code"] as const)),
+			choices: Type.Optional(strings()), unit: optionalString(),
+			language: Type.Optional(choice(["python", "javascript", "sql"] as const)),
+			starterCode: optionalString(), setup: optionalString(), tests: optionalString(),
 		}),
 		// Default tool-call rendering would expose expected/acceptable arguments in the learner UI.
 		renderCall() { return { render: () => ["ψ Practice challenge"], invalidate() {} }; },
 		async execute(_id, p, _signal, _update, ctx) {
-			if (!slug.test(p.skill)) return result({ errors: ["skill must be kebab-case."] });
-			const c = practice.addChallenge(p);
+			const skill = p.skill ?? state.skill;
+			if (!skill) return result({ errors: ["Select a skill with /skill first."] });
+			const draft = { ...p, skill };
+			const errors = validateChallenge({ ...draft, id: "pending", createdAt: new Date().toISOString() });
+			if (p.format === "choice" && Array.isArray(p.choices)
+				&& (p.choices.length < 2 || p.choices.some((v) => typeof v !== "string" || !v.trim())
+					|| new Set(p.choices).size !== p.choices.length)) {
+				errors.push("choices must contain at least two distinct nonempty strings.");
+			}
+			if (errors.length) return result({ errors });
+			const c = practice.addChallenge(draft);
 			deps.activate(c.skill);
 			state.challengeId = c.id;
 			state.hintIndex = 0;
+			deps.persist();
 			deps.refresh(ctx);
-			return result({ challengeId: c.id, skill: c.skill,
-				card: `ψ ${c.kind} · Level ${c.level}\n\n${c.prompt}\n\nYour turn. Ask /hint if you want a nudge.` });
+			const widget = { type: "challenge", skill: c.skill, id: c.id, kind: c.kind, level: c.level,
+				format: c.format ?? "text", prompt: c.prompt, choices: c.choices, unit: c.unit,
+				language: c.language, starterCode: c.starterCode, hintsCount: c.hints.length,
+				...(c.format === "code" ? { setup: c.setup, tests: c.tests,
+					...(c.language === "sql" ? { expected: c.expected } : {}) } : {}) };
+			return result({ challengeId: c.id, skill: c.skill, widget },
+				"The challenge card is shown to the learner; wait for their answer");
 		},
 	}));
 	pi.registerTool(defineTool({
 		name: "psi_attempt", label: "Record practice attempt",
-		description: "Grade a real attempt; deterministic answers override model grades.",
+		description: "Grade a real attempt; deterministic answers override model grades. Code requires a browser-run outcome.",
 		parameters: Type.Object({
-			challengeId: Type.String(), skill: Type.String(), answer: Type.String(), outcome: Type.Optional(outcomeSchema),
+			challengeId: Type.String(), skill: optionalString(), answer: Type.String(), outcome: Type.Optional(outcomeSchema),
 			hintsUsed: Type.Optional(Type.Integer({ minimum: 0 })), lesson: optionalString(), feedback: optionalString(),
 		}),
 		async execute(_id, p, _signal, _update, ctx) {
-			const c = practice.getChallenge(p.skill, p.challengeId);
+			const skill = p.skill ?? state.skill;
+			if (!skill || !slug.test(skill)) return result({ errors: ["Select a valid skill with /skill first."] });
+			const c = practice.getChallenge(skill, p.challengeId);
 			if (!c) return result({ errors: ["Challenge not found for this skill."] });
-			const outcome = practice.checkAnswer(c, p.answer) ?? p.outcome;
+			if (c.format === "code" && !p.outcome) {
+				return result({ errors: ["code requires an explicit outcome from a code run."] });
+			}
+			const outcome = c.format === "code" ? p.outcome : practice.checkAnswer(c, p.answer) ?? p.outcome;
 			if (!outcome) return result({ errors: ["Open answer requires an explicit outcome graded against the rubric."] });
-			const hintsUsed = p.hintsUsed ?? (state.skill === p.skill && state.challengeId === c.id ? state.hintIndex : 0);
+			const hintsUsed = p.hintsUsed ?? (state.skill === skill && state.challengeId === c.id ? state.hintIndex : 0);
 			const recorded = practice.recordAttempt({ ...p, outcome, hintsUsed });
-			deps.activate(p.skill);
-			const report = progressReport(practice, p.skill);
+			deps.activate(skill);
+			const report = progressReport(practice, skill);
 			if (state.challengeId === c.id) { state.challengeId = undefined; state.hintIndex = 0; }
+			deps.persist();
 			deps.refresh(ctx);
-			return result({ outcome, xp: recorded.attempt.xp, level: report.level, leveledUp: recorded.leveledUp,
+			const widget = { type: "attempt", outcome, xp: recorded.attempt.xp, level: report.level,
+				levelBar: report.levelBar, leveledUp: recorded.leveledUp, badges: recorded.badges, streak: report.streak };
+			return result({ widget, outcome, xp: recorded.attempt.xp, level: report.level, leveledUp: recorded.leveledUp,
 				levelBar: report.levelBar, streak: report.streak, badges: recorded.badges,
 				guidance: outcome === "fail"
 					? "Experiment logged: failure still earns XP. Ask the learner what they will try differently. "
@@ -212,13 +240,15 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 	pi.registerTool(defineTool({
 		name: "psi_hint", label: "Challenge hint",
 		description: "Show a 1-based hint from the hint ladder; clamp to its range.",
-		parameters: Type.Object({ challengeId: Type.String(), skill: Type.String(), n: Type.Integer() }),
+		parameters: Type.Object({ challengeId: Type.String(), skill: optionalString(), n: Type.Integer() }),
 		async execute(_id, p) {
-			const c = practice.getChallenge(p.skill, p.challengeId);
+			const skill = p.skill ?? state.skill;
+			if (!skill || !slug.test(skill)) return result({ errors: ["Select a valid skill with /skill first."] });
+			const c = practice.getChallenge(skill, p.challengeId);
 			if (!c) return result({ errors: ["Challenge not found for this skill."] });
 			if (!c.hints.length) return result({ hint: null, message: "No hints in this ladder." });
 			const n = Math.max(1, Math.min(c.hints.length, p.n));
-			if (state.skill === p.skill && state.challengeId === c.id) state.hintIndex = Math.max(state.hintIndex, n);
+			if (state.skill === skill && state.challengeId === c.id) state.hintIndex = Math.max(state.hintIndex, n);
 			return result({ n, total: c.hints.length, hint: c.hints[n - 1], clamped: n !== p.n });
 		},
 	}));
@@ -226,21 +256,23 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 		name: "psi_practice_session", label: "Practice session",
 		description: "Start/stop a timed practice block or show its status.",
 		parameters: Type.Object({
-			action: choice(["start", "stop", "status"] as const), skill: Type.String(), focus: optionalString(),
+			action: choice(["start", "stop", "status"] as const), skill: optionalString(), focus: optionalString(),
 			minutes: Type.Optional(Type.Number({ exclusiveMinimum: 0, maximum: 180 })),
 		}),
 		async execute(_id, p, _signal, _update, ctx) {
-			deps.activate(p.skill);
+			const skill = p.skill ?? state.skill;
+			if (!skill || !slug.test(skill)) return result({ errors: ["Select a valid skill with /skill first."] });
+			deps.activate(skill);
 			if (p.action === "start") {
-				if (!practice.activeSession(p.skill)) practice.startSession(p.skill, p.focus);
+				if (!practice.activeSession(skill)) practice.startSession(skill, p.focus);
 				state.plannedMinutes = p.minutes ?? 20;
 			}
-			const stopped = p.action === "stop" ? practice.endSession(p.skill) : undefined;
-			const session = practice.activeSession(p.skill);
+			const stopped = p.action === "stop" ? practice.endSession(skill) : undefined;
+			const session = practice.activeSession(skill);
 			deps.refresh(ctx);
 			return result({ session: stopped ?? session, active: !!session,
 				elapsedMinutes: session ? Math.max(0, (Date.now() - Date.parse(session.startedAt)) / 60000) : 0,
-				plannedMinutes: state.plannedMinutes ?? 20, hours: practice.hours(p.skill),
+				plannedMinutes: state.plannedMinutes ?? 20, hours: practice.hours(skill),
 				guidance: p.action === "stop" ? "Save psi_recap and durable learning observations."
 					: "Attempt first; one challenge at a time." });
 		},
