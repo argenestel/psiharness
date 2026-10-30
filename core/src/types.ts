@@ -422,7 +422,33 @@ export interface Challenge {
 	rubric?: string[];
 	/** Hint ladder, vaguest first. */
 	hints: string[];
+	/** How the learner answers. Default "text". */
+	format?: "text" | "number" | "math" | "choice" | "code";
+	/** For format "choice". `expected` must equal one of these. */
+	choices?: string[];
+	/** For format "number"/"math": unit shown beside the input, e.g. "m/s". */
+	unit?: string;
+	/** For format "code". */
+	language?: "python" | "javascript" | "sql";
+	/** For format "code": editor contents at start. */
+	starterCode?: string;
+	/** For format "code": run before the learner's code (helpers, SQL schema + seed rows). */
+	setup?: string;
+	/**
+	 * For format "code": run after the learner's code in the browser sandbox; the attempt passes when it completes
+	 * without error. python/javascript: assertions; sql: a query whose result rows must equal `expected` (JSON rows).
+	 */
+	tests?: string;
 	createdAt: string;
+}
+
+/** Cross-process "where were we" state, persisted at $PSI_HOME/state.json. */
+export interface PsiState {
+	activeSkill?: string;
+	activeTopic?: string;
+	/** Last challenge presented and not yet attempted. */
+	openChallenge?: { skill: string; id: string };
+	updatedAt: string;
 }
 
 export type Outcome = "success" | "partial" | "fail" | "skipped";

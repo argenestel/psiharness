@@ -98,6 +98,37 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
     (adds minutes to progress.minutesLogged; sessions longer than 3 h are capped)
   - `progress(skill): Progress`, `hours(skill): { logged: number; goal: number }`
 
+- `state.ts`: `class StateStore` — `read(): PsiState`, `update(patch: Partial<Omit<PsiState,"updatedAt">>): PsiState`
+  (`$PSI_HOME/state.json`; extension + web keep activeSkill/activeTopic/openChallenge here so a new process resumes).
+- Challenge `format`: text | number | math | choice | code. `checkAnswer` grades text/number/math/choice; `code` is graded
+  by running `setup` + learner code + `tests` in the browser sandbox (web) and recording the outcome.
+
+### web (psi web — the browser UI; lives in `studio/`)
+- Server `studio/src/server.ts` (existing routes stay) + new modules:
+  - `studio/src/agent.ts` — `class AgentHub`: one `pi --mode rpc` child per chat (`-e extension`, `--skill skills`,
+    `--session-dir $PSI_HOME/web-sessions`, `--tools read,psi_*` allowlist; `PSI_HOST=omp` → omp with its flag rules;
+    model from `PSI_WEB_MODEL` or request). Strict LF JSONL framing (not readline).
+  - `studio/src/practice-api.ts` — REST over PracticeStore/MemoryStore/StateStore.
+- HTTP API (JSON; every non-GET must send header `X-Psi: 1`, else 403):
+  - `POST /api/chat` {model?, skill?, topic?} → {id}; `GET /api/chat` → saved chats [{id, title, updatedAt}];
+    `GET /api/chat/:id/events` (SSE: every pi stdout record as `data:`); `POST /api/chat/:id/prompt` {message};
+    `POST /api/chat/:id/ui` {id, value?|confirmed?|cancelled?} (answers extension_ui_request); `POST /api/chat/:id/abort`;
+    `DELETE /api/chat/:id`.
+  - `GET /api/skills`, `GET /api/skills/:s` → {plan, progress, challenges}; `GET /api/skills/:s/challenges/:id`;
+    `POST /api/skills/:s/challenges/:id/attempt` {answer, outcome?, hintsUsed?, lesson?} → server uses checkAnswer
+    when it can, else requires outcome (code); returns {attempt, progress, leveledUp, badges};
+    `GET /api/skills/:s/challenges/:id/hint?n=`; `GET /api/packs` (examples/skills list); `POST /api/packs/:slug/import`.
+  - `GET /api/memory` (items + recaps + summary), `POST /api/memory` {kind, text}, `DELETE /api/memory/:id`;
+    `GET /api/state`.
+- Frontend `studio/public/` — vanilla ES modules, no build. Shell = `index.html` + `app.js` + `styles.css`.
+  Modules: `js/api.js` (fetch helpers adding X-Psi), `js/chat.js` + `js/markdown.js` (chat view, streaming, markdown +
+  KaTeX), `js/widgets.js` (inline renderers keyed by tool name: psi_challenge → challenge card, psi_attempt → XP/badge
+  toast, psi_explorable/psi_storyboard → iframe, psi_progress_report → HUD), `js/codelab.js`
+  (`runCode({language, setup, code, tests, expected}) → Promise<{ok, output, error, ms}>` in a Web Worker / iframe sandbox:
+  Pyodide for python, a Worker for javascript, sql.js for sql; 10 s timeout), `js/practice.js` (skills dashboard,
+  challenge runner), `js/memory.js` (memory panel). Libraries only from cdn.jsdelivr.net with exact versions:
+  katex@0.16.11, pyodide@0.26.4, sql.js@1.11.0.
+
 ### visual (`visual/src/index.ts` re-exports) — optional extras
 - `palettes.ts`: `type Palette = { name; bg; fg; muted; accent: string[]; deep; glow }`, `PALETTES`, `paletteFor(style, name?)`
 - `storyboard-html.ts`: `validateStoryboard(sb): string[]`, `renderStoryboardHtml(sb, opts?: { autoplay?: boolean; speech?: boolean }): string`
