@@ -1,6 +1,6 @@
 ---
 name: kurzgesagt-storytelling
-description: Craft warm science narratives with surprising hooks, concrete scale comparisons, and flat vector Storyboards. Use when a psi lesson needs a Kurzgesagt-style explainer with narration, camera beats, and a viewer creature.
+description: "Optional: Craft warm science narratives with surprising hooks, concrete scale comparisons, and flat vector Storyboards. Use when a psi lesson needs a Kurzgesagt-style explainer with narration, camera beats, and a viewer creature."
 ---
 
 # Tell a story across scales

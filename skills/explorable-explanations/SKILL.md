@@ -1,6 +1,6 @@
 ---
 name: explorable-explanations
-description: Design slider-driven psi explorables that teach through prediction and parameter changes. Use when learners need to test a mathematical pattern themselves with one of the six ExplorableSpec templates.
+description: "Optional: Design slider-driven psi explorables that teach through prediction and parameter changes. Use when learners need to test a mathematical pattern themselves with one of the six ExplorableSpec templates."
 ---
 
 # Let the learner change the explanation

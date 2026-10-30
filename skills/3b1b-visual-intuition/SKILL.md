@@ -1,6 +1,6 @@
 ---
 name: 3b1b-visual-intuition
-description: Design mathematical lessons around visual discovery, continuous transformations, and prediction. Use when a learner needs intuition before formulas or when planning a 3Blue1Brown-style psi visual.
+description: "Optional: Design mathematical lessons around visual discovery, continuous transformations, and prediction. Use when a learner needs intuition before formulas or when planning a 3Blue1Brown-style psi visual."
 ---
 
 # Build visual intuition

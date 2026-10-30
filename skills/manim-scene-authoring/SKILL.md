@@ -1,6 +1,6 @@
 ---
 name: manim-scene-authoring
-description: Author mathematical Manim Community scenes using psi_manim helpers, trackers, and linked geometry. Use for continuous derivations, projections, limits, and transformations that need precise animated relationships.
+description: "Optional: Author mathematical Manim Community scenes using psi_manim helpers, trackers, and linked geometry. Use for continuous derivations, projections, limits, and transformations that need precise animated relationships."
 ---
 
 # Write a mathematical scene

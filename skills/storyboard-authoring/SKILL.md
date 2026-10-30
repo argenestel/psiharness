@@ -1,6 +1,6 @@
 ---
 name: storyboard-authoring
-description: Write and review exact psi Storyboard JSON with timed scenes, supported elements, and animations. Use when turning a lesson or narrative visual plan into an HTML-renderable storyboard.
+description: "Optional: Write and review exact psi Storyboard JSON with timed scenes, supported elements, and animations. Use when turning a lesson or narrative visual plan into an HTML-renderable storyboard."
 ---
 
 # Author a psi Storyboard
