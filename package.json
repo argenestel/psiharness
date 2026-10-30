@@ -1,0 +1,34 @@
+{
+  "name": "psi-harness",
+  "version": "0.1.0",
+  "description": "ψ — an agent harness for learning big ideas, 3Blue1Brown/Kurzgesagt style. Built as a pi / oh-my-pi package.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": ["pi-package", "learning", "tutor", "manim", "explainer", "agent"],
+  "repository": { "type": "git", "url": "git+https://github.com/argenestel/psiharness.git" },
+  "engines": { "node": ">=22.18" },
+  "bin": { "psi": "cli/src/psi.ts" },
+  "pi": {
+    "extensions": ["./extension/src/index.ts"],
+    "skills": ["./skills"],
+    "prompts": ["./prompts/*.md"]
+  },
+  "scripts": {
+    "test": "node --test \"core/test/*.test.ts\" \"visual/test/*.test.ts\" \"crew/test/*.test.ts\" \"studio/test/*.test.ts\" \"cli/test/*.test.ts\" \"extension/test/*.test.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "check": "npm run typecheck && npm test",
+    "studio": "node studio/src/server.ts",
+    "psi": "node cli/src/psi.ts"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": { "optional": true }
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^1.1.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.0"
+  }
+}

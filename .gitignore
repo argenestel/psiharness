@@ -1,0 +1,8 @@
+node_modules/
+.psi/
+out/
+media/
+*.log
+__pycache__/
+.venv/
+.DS_Store
