@@ -1,0 +1,243 @@
+{
+	"topic": "exponential-growth",
+	"title": "Exponential growth: the last doubling",
+	"bigIdea": "Constant proportional change turns tiny beginnings into enormous outcomes; doubling times, logarithms, and resource limits reveal when that story applies.",
+	"concepts": [
+		{
+			"id": "last-doubling-fills-the-bottle",
+			"title": "The last doubling fills the bottle",
+			"summary": "A bacterium doubles every 20 minutes in an idealized bottle that is full at noon. The bottle was only half full at 11:40.",
+			"prerequisites": [],
+			"difficulty": 1,
+			"intuition": "Run the film backward and a full bottle becomes half a bottle in just one generation.",
+			"misconceptions": [
+				"Half full means half the total elapsed time has passed.",
+				"An almost empty bottle guarantees plenty of time remains."
+			],
+			"visualHooks": [
+				"A tiny smiling bacterium beside a huge bottle",
+				"A clock jumping from 11:40 to noon"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"last-doubling-fills-the-bottle"
+			]
+		},
+		{
+			"id": "multiplicative-growth",
+			"title": "Multiplication instead of addition",
+			"summary": "Exponential growth multiplies by the same factor over equal time intervals. From 1 cell, five doublings produce 32 cells.",
+			"prerequisites": [
+				"last-doubling-fills-the-bottle"
+			],
+			"difficulty": 1,
+			"intuition": "Each generation copies the entire crowd, so the amount added grows along with the crowd.",
+			"misconceptions": [
+				"Doubling adds two individuals each step.",
+				"A rising straight line and an exponential curve describe the same rule."
+			],
+			"visualHooks": [
+				"Rows of 1, 2, 4, 8 colored cells",
+				"A staircase whose risers double in height"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"multiplicative-growth"
+			]
+		},
+		{
+			"id": "doubling-time",
+			"title": "Doubling time is a clock",
+			"summary": "For N(t)=N0 exp(kt), the doubling time is ln(2)/k. A constant doubling time means a constant proportional growth rate.",
+			"prerequisites": [
+				"multiplicative-growth"
+			],
+			"difficulty": 2,
+			"intuition": "A doubling time counts how long it takes the entire graph to climb to twice its current height.",
+			"misconceptions": [
+				"Doubling time becomes shorter just because there are more cells.",
+				"The rate 0.1 per day means an exact ten-day doubling for continuous growth."
+			],
+			"visualHooks": [
+				"Equal horizontal gaps between heights 10, 20, 40",
+				"A ruler marked in generations rather than cells"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"doubling-time"
+			]
+		},
+		{
+			"id": "compound-interest",
+			"title": "Interest earns interest",
+			"summary": "Compounding applies each new percentage to principal plus accumulated interest. At 10% annually, 100 becomes 121 after two years.",
+			"prerequisites": [
+				"multiplicative-growth"
+			],
+			"difficulty": 2,
+			"intuition": "Interest is a new worker that starts earning interest of its own next year.",
+			"misconceptions": [
+				"Ten percent for two years always gives exactly twenty percent total growth.",
+				"An annual nominal rate determines the outcome without a compounding convention."
+			],
+			"visualHooks": [
+				"Coins sprouting smaller coin trees",
+				"Bars labeled 100, 110, and 121"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"compound-interest"
+			]
+		},
+		{
+			"id": "continuous-growth",
+			"title": "Continuous growth and e",
+			"summary": "Continuous proportional growth satisfies dN/dt=kN and has solution N0 exp(kt). Its rate k is not the same as the effective per-period fractional increase.",
+			"prerequisites": [
+				"doubling-time",
+				"compound-interest"
+			],
+			"difficulty": 3,
+			"intuition": "Zoom into a growth curve until each tiny rise is proportional to the height already there.",
+			"misconceptions": [
+				"A continuous rate k=1 means only 100% total growth in one time unit.",
+				"Discrete and continuous rates with the same numeric value always agree."
+			],
+			"visualHooks": [
+				"A tangent arrow that lengthens with the curve height",
+				"Compounding intervals shrinking toward a smooth curve"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"continuous-growth"
+			]
+		},
+		{
+			"id": "logarithmic-scale",
+			"title": "A log scale turns ratios into distances",
+			"summary": "On a logarithmic vertical axis, equal distances represent equal ratios. A positive exponential becomes a straight line whose slope encodes its growth rate.",
+			"prerequisites": [
+				"doubling-time",
+				"continuous-growth"
+			],
+			"difficulty": 2,
+			"intuition": "A log axis folds each doubling into the same visual step, however enormous the population becomes.",
+			"misconceptions": [
+				"A straight line on a log plot means the population adds a constant number.",
+				"Zero and negative values fit on an ordinary real logarithmic axis."
+			],
+			"visualHooks": [
+				"A ladder labeled 1, 10, 100, 1000",
+				"A curved growth trace straightening on log paper"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"logarithmic-scale"
+			]
+		},
+		{
+			"id": "reproduction-number",
+			"title": "Epidemics as branching generations",
+			"summary": "In a simple generation model, each infected person produces R further infections on average. Early growth can be approximated by I(g)=I0 R^g when conditions remain stable.",
+			"prerequisites": [
+				"multiplicative-growth",
+				"doubling-time"
+			],
+			"difficulty": 3,
+			"intuition": "Follow one branch of transmission and then imagine the same branching rule repeated at every tip.",
+			"misconceptions": [
+				"R0 is a fixed property of a pathogen independent of population and context.",
+				"R0=2 means cases double every day regardless of generation interval."
+			],
+			"visualHooks": [
+				"A transmission tree with two branches per node",
+				"Generation clocks beneath branching clusters"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"reproduction-number"
+			]
+		},
+		{
+			"id": "logistic-saturation",
+			"title": "Resources bend the curve",
+			"summary": "The logistic model dN/dt=kN(1-N/K) slows growth near carrying capacity K. It approximates resource feedback rather than allowing exponential growth forever.",
+			"prerequisites": [
+				"continuous-growth",
+				"reproduction-number"
+			],
+			"difficulty": 3,
+			"intuition": "The crowd still makes new members, but every new member also takes away a little of the room left to grow.",
+			"misconceptions": [
+				"A carrying capacity forces an abrupt universal stop at a fixed time.",
+				"Logistic growth adds the same number at every population size."
+			],
+			"visualHooks": [
+				"A bottle filling while food icons disappear",
+				"An S-curve approaching a dashed capacity line"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"logistic-saturation"
+			]
+		},
+		{
+			"id": "half-life-decay",
+			"title": "Decay uses the same machinery",
+			"summary": "Exponential decay removes a constant fraction in equal time intervals. For N=N0 exp(-λt), half-life is ln(2)/λ.",
+			"prerequisites": [
+				"continuous-growth",
+				"logarithmic-scale"
+			],
+			"difficulty": 2,
+			"intuition": "Rewind a doubling story and each equal tick removes half of whatever remains, not half of the original pile.",
+			"misconceptions": [
+				"A half-life means all material is gone after two half-lives.",
+				"Every individual atom decays at exactly the half-life time."
+			],
+			"visualHooks": [
+				"A pile shrinking from 80 to 40 to 20",
+				"Independent glowing atoms switching off at random times"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"half-life-decay"
+			]
+		},
+		{
+			"id": "limits-and-models",
+			"title": "Know when the model stops working",
+			"summary": "Exponential models are useful over intervals where proportional rates remain roughly stable. Changes in resources, behavior, or mechanisms can change the rate and invalidate extrapolation.",
+			"prerequisites": [
+				"logistic-saturation",
+				"half-life-decay"
+			],
+			"difficulty": 3,
+			"intuition": "A formula is a local story about a mechanism, and its ending changes when the mechanism changes.",
+			"misconceptions": [
+				"An excellent fit to early data guarantees indefinite exponential growth.",
+				"A slowing observed curve uniquely proves logistic resource saturation."
+			],
+			"visualHooks": [
+				"A forecast cone widening beyond observed dots",
+				"A growth engine with a changing rate dial"
+			],
+			"tags": [
+				"growth",
+				"models",
+				"limits-and-models"
+			]
+		}
+	],
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z"
+}

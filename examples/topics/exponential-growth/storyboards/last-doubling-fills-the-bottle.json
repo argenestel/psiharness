@@ -1,0 +1,837 @@
+{
+	"id": "last-doubling-fills-the-bottle",
+	"title": "The last twenty minutes",
+	"topic": "exponential-growth",
+	"conceptId": "last-doubling-fills-the-bottle",
+	"style": "kurzgesagt",
+	"palette": "kurzgesagt-bio",
+	"scenes": [
+		{
+			"id": "one-small-cell",
+			"narration": "Meet one bacterium. In our idealized bottle, every cell divides every twenty minutes. We assume food and space do not slow division before the bottle fills.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "one-small-cell-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "One cell. One rule. Every 20 minutes.",
+						"size": 44,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "one-small-cell-bottle",
+					"kind": "path",
+					"props": {
+						"d": "M 610 230 L 610 310 L 480 420 L 480 790 L 1120 790 L 1120 420 L 990 310 L 990 230 Z",
+						"fill": "none",
+						"stroke": "#33c9ac",
+						"width": 10
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "one-small-cell-founder",
+					"kind": "creature",
+					"props": {
+						"x": 800,
+						"y": 700,
+						"size": 55,
+						"color": "#87e878",
+						"mood": "curious"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.3,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "float",
+						"delay": 1.2,
+						"duration": 2.5
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "copy-the-whole-crowd",
+			"narration": "One becomes two, two become four, and four become eight. We are not adding a fixed number; we are copying the entire population.",
+			"durationSec": 10,
+			"background": "deep",
+			"elements": [
+				{
+					"id": "copy-the-whole-crowd-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "1 → 2 → 4 → 8",
+						"size": 44,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "copy-the-whole-crowd-family",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "copy-the-whole-crowd-parent",
+								"kind": "creature",
+								"props": {
+									"x": 400,
+									"y": 450,
+									"size": 60,
+									"color": "#87e878",
+									"mood": "happy"
+								},
+								"enter": {
+									"type": "pop",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							},
+							{
+								"id": "copy-the-whole-crowd-child-a",
+								"kind": "creature",
+								"props": {
+									"x": 800,
+									"y": 370,
+									"size": 55,
+									"color": "#87e878",
+									"mood": "happy"
+								},
+								"enter": {
+									"type": "pop",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							},
+							{
+								"id": "copy-the-whole-crowd-child-b",
+								"kind": "creature",
+								"props": {
+									"x": 800,
+									"y": 570,
+									"size": 55,
+									"color": "#87e878",
+									"mood": "happy"
+								},
+								"enter": {
+									"type": "pop",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "copy-the-whole-crowd-split-a",
+					"kind": "arrow",
+					"props": {
+						"x1": 480,
+						"y1": 440,
+						"x2": 720,
+						"y2": 380,
+						"stroke": "#f5d569",
+						"width": 7
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "copy-the-whole-crowd-split-b",
+					"kind": "arrow",
+					"props": {
+						"x1": 480,
+						"y1": 470,
+						"x2": 720,
+						"y2": 560,
+						"stroke": "#f5d569",
+						"width": 7
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.1,
+				"x": 850,
+				"y": 460
+			}
+		},
+		{
+			"id": "noon-is-full",
+			"narration": "Suppose the bottle is exactly full at noon. Rather than chase all those cells forward, run the clock backward by one generation.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "noon-is-full-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "12:00 — full",
+						"size": 44,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "noon-is-full-bottle",
+					"kind": "rect",
+					"props": {
+						"x": 450,
+						"y": 260,
+						"w": 700,
+						"h": 500,
+						"rx": 35,
+						"fill": "#124c48",
+						"stroke": "#33c9ac"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "noon-is-full-full-population",
+					"kind": "particles",
+					"props": {
+						"x": 480,
+						"y": 290,
+						"w": 640,
+						"h": 440,
+						"count": 160,
+						"color": "#87e878",
+						"speed": 0.2
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "float",
+						"delay": 1.2,
+						"duration": 2.5
+					}
+				},
+				{
+					"id": "noon-is-full-clock",
+					"kind": "circle",
+					"props": {
+						"x": 1300,
+						"y": 420,
+						"r": 90,
+						"fill": "#092e30",
+						"stroke": "#f5d569"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "noon-is-full-hand",
+					"kind": "vector",
+					"props": {
+						"x": 1300,
+						"y": 420,
+						"dx": 0,
+						"dy": -65,
+						"stroke": "#f5d569",
+						"label": "noon"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 1.2,
+						"duration": 2.5
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.05,
+				"x": 750,
+				"y": 430
+			}
+		},
+		{
+			"id": "half-at-eleven-forty",
+			"narration": "At eleven forty, the bottle was half full. One more doubling fills the remaining half. Half the space remaining does not mean half the time remaining.",
+			"durationSec": 10,
+			"background": "deep",
+			"elements": [
+				{
+					"id": "half-at-eleven-forty-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "11:40 — half full; 20 minutes left",
+						"size": 44,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "half-at-eleven-forty-outline",
+					"kind": "rect",
+					"props": {
+						"x": 450,
+						"y": 260,
+						"w": 700,
+						"h": 500,
+						"fill": "none",
+						"stroke": "#33c9ac"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "half-at-eleven-forty-half",
+					"kind": "rect",
+					"props": {
+						"x": 460,
+						"y": 510,
+						"w": 680,
+						"h": 240,
+						"fill": "#87e878"
+					},
+					"enter": {
+						"type": "slide",
+						"delay": 0.3,
+						"duration": 0.8
+					},
+					"exit": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "half-at-eleven-forty-half-cells",
+					"kind": "particles",
+					"props": {
+						"x": 480,
+						"y": 530,
+						"w": 640,
+						"h": 200,
+						"count": 80,
+						"color": "#f5d569",
+						"speed": 0.1
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "float",
+						"delay": 1.2,
+						"duration": 2.5
+					}
+				},
+				{
+					"id": "half-at-eleven-forty-surprised",
+					"kind": "creature",
+					"props": {
+						"x": 1300,
+						"y": 620,
+						"size": 70,
+						"color": "#ec62b6",
+						"mood": "surprised"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.3,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 1.2,
+						"duration": 2.5
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.15,
+				"x": 820,
+				"y": 500
+			}
+		},
+		{
+			"id": "quarter-before-half",
+			"narration": "Another twenty minutes earlier, at eleven twenty, it was one-quarter full. At eleven, just one-eighth. Most of the visible filling happens near the end.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "quarter-before-half-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "11:00: ⅛    11:20: ¼    11:40: ½",
+						"size": 44,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "quarter-before-half-eighth",
+					"kind": "rect",
+					"props": {
+						"x": 280,
+						"y": 650,
+						"w": 220,
+						"h": 50,
+						"fill": "#33c9ac"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "quarter-before-half-quarter",
+					"kind": "rect",
+					"props": {
+						"x": 690,
+						"y": 600,
+						"w": 220,
+						"h": 100,
+						"fill": "#87e878"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "quarter-before-half-half",
+					"kind": "rect",
+					"props": {
+						"x": 1100,
+						"y": 500,
+						"w": 220,
+						"h": 200,
+						"fill": "#f5d569"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "quarter-before-half-time",
+					"kind": "arrow",
+					"props": {
+						"x1": 260,
+						"y1": 750,
+						"x2": 1340,
+						"y2": 750,
+						"stroke": "#fff5e6",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "the-growth-rule",
+			"narration": "Writing time in minutes after the start, the ideal population is two to the power t over twenty. Each extra twenty minutes doubles the height.",
+			"durationSec": 10,
+			"background": "deep",
+			"elements": [
+				{
+					"id": "the-growth-rule-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "Equal time steps. Equal ratios.",
+						"size": 44,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-growth-rule-formula",
+					"kind": "equation",
+					"props": {
+						"x": 800,
+						"y": 235,
+						"tex": "N(t)=N_0\\,2^{t/20}",
+						"size": 46,
+						"fill": "#f5d569"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-growth-rule-curve",
+					"kind": "graph",
+					"props": {
+						"x": 300,
+						"y": 350,
+						"w": 1000,
+						"h": 380,
+						"fn": "Math.pow(2,x/20)",
+						"domain": [
+							0,
+							100
+						],
+						"range": [
+							0,
+							32
+						],
+						"stroke": "#87e878"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-growth-rule-rate",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 810,
+						"text": "t: minutes     N₀: initial population",
+						"size": 30,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.08,
+				"x": 840,
+				"y": 450
+			}
+		},
+		{
+			"id": "limits-change-the-story",
+			"narration": "Real bacteria cannot divide forever in a sealed bottle. As nutrients run out, the growth rule changes. A capacity is a limit to the model, not permission to keep extrapolating.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "limits-change-the-story-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "A model has a domain of usefulness",
+						"size": 44,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "limits-change-the-story-capacity",
+					"kind": "path",
+					"props": {
+						"d": "M 300 385 L 1300 385",
+						"stroke": "#ec62b6",
+						"width": 6
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "limits-change-the-story-capacity-label",
+					"kind": "text",
+					"props": {
+						"x": 1310,
+						"y": 375,
+						"text": "K",
+						"size": 36,
+						"fill": "#ec62b6"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "limits-change-the-story-logistic",
+					"kind": "graph",
+					"props": {
+						"x": 300,
+						"y": 350,
+						"w": 1000,
+						"h": 380,
+						"fn": "100/(1+99*Math.exp(-0.1*x))",
+						"domain": [
+							0,
+							100
+						],
+						"range": [
+							0,
+							110
+						],
+						"stroke": "#33c9ac"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "limits-change-the-story-hungry",
+					"kind": "creature",
+					"props": {
+						"x": 180,
+						"y": 600,
+						"size": 60,
+						"color": "#f5d569",
+						"mood": "curious"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.3,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "float",
+						"delay": 1.2,
+						"duration": 2.5
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.02,
+				"x": 780,
+				"y": 430
+			}
+		},
+		{
+			"id": "one-clock-many-stories",
+			"narration": "Interest, transmission, and decay all ask about proportional change. Before predicting, identify the multiplier, its time interval, and whether the mechanism can keep going.",
+			"durationSec": 10,
+			"background": "deep",
+			"elements": [
+				{
+					"id": "one-clock-many-stories-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 120,
+						"text": "Ask: multiplier, clock, and limits?",
+						"size": 44,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "one-clock-many-stories-summary",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "one-clock-many-stories-growth",
+								"kind": "equation",
+								"props": {
+									"x": 800,
+									"y": 310,
+									"tex": "N_n=N_0(1+r)^n",
+									"size": 48
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							},
+							{
+								"id": "one-clock-many-stories-half-life",
+								"kind": "equation",
+								"props": {
+									"x": 800,
+									"y": 470,
+									"tex": "N(t)=N_0\\,2^{-t/T_{1/2}}",
+									"size": 48
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							},
+							{
+								"id": "one-clock-many-stories-mascot",
+								"kind": "creature",
+								"props": {
+									"x": 800,
+									"y": 690,
+									"size": 70,
+									"color": "#87e878",
+									"mood": "happy"
+								},
+								"enter": {
+									"type": "pop",
+									"delay": 0.3,
+									"duration": 0.8
+								},
+								"loop": {
+									"type": "float",
+									"delay": 1.2,
+									"duration": 2.5
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "one-clock-many-stories-sparkles",
+					"kind": "particles",
+					"props": {
+						"x": 250,
+						"y": 240,
+						"w": 1100,
+						"h": 500,
+						"count": 25,
+						"color": "#f5d569",
+						"speed": 0.3
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "float",
+						"delay": 1.2,
+						"duration": 2.5
+					},
+					"exit": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		}
+	]
+}

@@ -1,0 +1,44 @@
+{
+	"id": "doubling-laboratory",
+	"title": "One cell, many doublings",
+	"topic": "exponential-growth",
+	"conceptId": "multiplicative-growth",
+	"style": "kurzgesagt",
+	"template": "exponential-growth",
+	"params": {
+		"mode": "doubling"
+	},
+	"sliders": [
+		{
+			"name": "rate",
+			"label": "Doublings per 20-minute step",
+			"min": 0.25,
+			"max": 2,
+			"step": 0.25,
+			"value": 1
+		},
+		{
+			"name": "steps",
+			"label": "Number of 20-minute steps",
+			"min": 1,
+			"max": 12,
+			"step": 1,
+			"value": 6
+		},
+		{
+			"name": "capacity",
+			"label": "Capacity (used only in logistic mode)",
+			"min": 2,
+			"max": 1024,
+			"step": 1,
+			"value": 64
+		}
+	],
+	"prompts": [
+		"Set rate to 1 and compare 5 steps (32 cells) with 6 (64 cells): the last step supplies half the final population.",
+		"At rate 1, read each step as 20 minutes; 6 steps represent two hours.",
+		"Set rate to 0.5: each step multiplies by the square root of 2, so doubling takes two steps.",
+		"Compare the blue reference 1 + rate × steps with the yellow 2^(rate × steps); their initial slopes are not equal.",
+		"Change capacity: in this doubling-mode lab it does not limit growth; the fixed mode parameter must be logistic to use capacity."
+	]
+}

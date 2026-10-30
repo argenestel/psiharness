@@ -1,0 +1,736 @@
+[
+	{
+		"id": "card-last-doubling-fills-the-bottle-1",
+		"topic": "exponential-growth",
+		"conceptId": "last-doubling-fills-the-bottle",
+		"kind": "predict",
+		"prompt": "If the bottle becomes full at noon and doubles every 20 minutes, when was it one-quarter full?",
+		"answer": "11:20: two doubling intervals before noon.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-last-doubling-fills-the-bottle-2",
+		"topic": "exponential-growth",
+		"conceptId": "last-doubling-fills-the-bottle",
+		"kind": "explain",
+		"prompt": "Why does half a bottle at 11:40 leave only 20 minutes, rather than half the morning?",
+		"answer": "The growth adds a fraction of the current population, so one more doubling takes half-full to full.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-last-doubling-fills-the-bottle-3",
+		"topic": "exponential-growth",
+		"conceptId": "last-doubling-fills-the-bottle",
+		"kind": "recall",
+		"prompt": "What idealization makes the bottle puzzle exponential until the final instant?",
+		"answer": "Every bacterium keeps doubling every 20 minutes with no resource limitation before the capacity cutoff.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-last-doubling-fills-the-bottle-4",
+		"topic": "exponential-growth",
+		"conceptId": "last-doubling-fills-the-bottle",
+		"kind": "mcq",
+		"prompt": "At 11:00, what fraction of the noon population is present?",
+		"answer": "1/8",
+		"choices": [
+			"1/8",
+			"1/3",
+			"1/2",
+			"1/16"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-multiplicative-growth-1",
+		"topic": "exponential-growth",
+		"conceptId": "multiplicative-growth",
+		"kind": "predict",
+		"prompt": "Starting with 3 cells and doubling every generation, how many are there after four generations?",
+		"answer": "48 cells: 3 × 2^4.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-multiplicative-growth-2",
+		"topic": "exponential-growth",
+		"conceptId": "multiplicative-growth",
+		"kind": "explain",
+		"prompt": "Compare adding 5 each day with increasing by 50% each day.",
+		"answer": "Adding 5 gives a constant absolute increase; 50% growth adds half the current amount, giving a constant factor 1.5.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-multiplicative-growth-3",
+		"topic": "exponential-growth",
+		"conceptId": "multiplicative-growth",
+		"kind": "recall",
+		"prompt": "Write the discrete growth formula for initial amount N0, per-step fractional growth r, and n steps.",
+		"answer": "N(n) = N0(1+r)^n.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-multiplicative-growth-4",
+		"topic": "exponential-growth",
+		"conceptId": "multiplicative-growth",
+		"kind": "mcq",
+		"prompt": "Which sequence has constant multiplicative growth?",
+		"answer": "3, 6, 12, 24",
+		"choices": [
+			"3, 6, 12, 24",
+			"3, 6, 9, 12",
+			"1, 4, 9, 16"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-doubling-time-1",
+		"topic": "exponential-growth",
+		"conceptId": "doubling-time",
+		"kind": "predict",
+		"prompt": "A population starts at 50 and doubles every 3 hours; what is it after 12 hours?",
+		"answer": "800: four doublings multiply 50 by 16.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-doubling-time-2",
+		"topic": "exponential-growth",
+		"conceptId": "doubling-time",
+		"kind": "explain",
+		"prompt": "Why does the initial population not affect doubling time in an exponential model?",
+		"answer": "The ratio N(t+T)/N(t) = exp(kT) does not depend on N0 or t.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-doubling-time-3",
+		"topic": "exponential-growth",
+		"conceptId": "doubling-time",
+		"kind": "recall",
+		"prompt": "What is the doubling time for continuous rate k = 0.2 per hour?",
+		"answer": "ln(2)/0.2 ≈ 3.47 hours.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-doubling-time-4",
+		"topic": "exponential-growth",
+		"conceptId": "doubling-time",
+		"kind": "mcq",
+		"prompt": "If a constant continuous growth rate doubles, what happens to doubling time?",
+		"answer": "It halves.",
+		"choices": [
+			"It halves.",
+			"It doubles.",
+			"It stays unchanged."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-compound-interest-1",
+		"topic": "exponential-growth",
+		"conceptId": "compound-interest",
+		"kind": "predict",
+		"prompt": "Deposit 200 at 5% effective annual interest for two years, with no deposits or withdrawals. What is the balance?",
+		"answer": "220.50: 200 × 1.05^2.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-compound-interest-2",
+		"topic": "exponential-growth",
+		"conceptId": "compound-interest",
+		"kind": "explain",
+		"prompt": "Why does compounding 100 at 10% annually give 121 rather than 120 after two years?",
+		"answer": "The second year earns 10 on the original 100 and 1 on the first year’s 10 interest.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-compound-interest-3",
+		"topic": "exponential-growth",
+		"conceptId": "compound-interest",
+		"kind": "recall",
+		"prompt": "How does simple interest differ from compound interest for a fixed initial principal?",
+		"answer": "Simple interest applies the percentage only to the initial principal; compound interest applies it to the current balance.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-compound-interest-4",
+		"topic": "exponential-growth",
+		"conceptId": "compound-interest",
+		"kind": "mcq",
+		"prompt": "At 10% effective annually, what is the three-year multiplier?",
+		"answer": "1.331",
+		"choices": [
+			"1.331",
+			"1.3",
+			"3.1"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-continuous-growth-1",
+		"topic": "exponential-growth",
+		"conceptId": "continuous-growth",
+		"kind": "predict",
+		"prompt": "For N0=10 and continuous rate k=ln(2) per hour, what is N after three hours?",
+		"answer": "80: exp(3 ln(2)) = 8.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-continuous-growth-2",
+		"topic": "exponential-growth",
+		"conceptId": "continuous-growth",
+		"kind": "explain",
+		"prompt": "What continuous rate matches an effective 10% increase per year?",
+		"answer": "k = ln(1.1) ≈ 0.09531 per year, because exp(k)=1.1.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-continuous-growth-3",
+		"topic": "exponential-growth",
+		"conceptId": "continuous-growth",
+		"kind": "recall",
+		"prompt": "What differential equation expresses continuous proportional growth?",
+		"answer": "dN/dt = kN.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-continuous-growth-4",
+		"topic": "exponential-growth",
+		"conceptId": "continuous-growth",
+		"kind": "mcq",
+		"prompt": "At k=1 per day, what is the one-day multiplier?",
+		"answer": "e ≈ 2.718",
+		"choices": [
+			"e ≈ 2.718",
+			"2",
+			"1"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-logarithmic-scale-1",
+		"topic": "exponential-growth",
+		"conceptId": "logarithmic-scale",
+		"kind": "predict",
+		"prompt": "On a base-10 log axis, are the distances from 10 to 100 and from 100 to 1000 equal?",
+		"answer": "Yes; both represent multiplication by 10 and a log10 increase of 1.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-logarithmic-scale-2",
+		"topic": "exponential-growth",
+		"conceptId": "logarithmic-scale",
+		"kind": "explain",
+		"prompt": "Why does plotting ln(N) against t straighten N=N0 exp(kt)?",
+		"answer": "Taking logs gives ln(N)=ln(N0)+kt, a line with slope k.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-logarithmic-scale-3",
+		"topic": "exponential-growth",
+		"conceptId": "logarithmic-scale",
+		"kind": "recall",
+		"prompt": "What does a steeper straight line on an ln(population)-versus-time plot mean?",
+		"answer": "A larger continuous proportional growth rate k and a shorter doubling time.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-logarithmic-scale-4",
+		"topic": "exponential-growth",
+		"conceptId": "logarithmic-scale",
+		"kind": "mcq",
+		"prompt": "Which value is undefined on an ordinary real log axis?",
+		"answer": "0",
+		"choices": [
+			"0",
+			"0.1",
+			"1",
+			"10"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-reproduction-number-1",
+		"topic": "exponential-growth",
+		"conceptId": "reproduction-number",
+		"kind": "predict",
+		"prompt": "In a fixed-generation toy model with 10 initial infections and R=2, how many new infections occur in generation 3?",
+		"answer": "80 new infections: 10 × 2^3; this is not the cumulative total.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-reproduction-number-2",
+		"topic": "exponential-growth",
+		"conceptId": "reproduction-number",
+		"kind": "explain",
+		"prompt": "Why does R=2 alone not determine the daily growth rate?",
+		"answer": "The generation interval also matters: doubling per 2-day generation is faster than doubling per 8-day generation.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-reproduction-number-3",
+		"topic": "exponential-growth",
+		"conceptId": "reproduction-number",
+		"kind": "recall",
+		"prompt": "How do R0 and the effective reproduction number Re differ?",
+		"answer": "R0 describes spread in a wholly susceptible population under specified conditions; Re reflects current susceptibility and interventions.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-reproduction-number-4",
+		"topic": "exponential-growth",
+		"conceptId": "reproduction-number",
+		"kind": "mcq",
+		"prompt": "In the simple generation model, which R makes successive generations shrink on average?",
+		"answer": "0.8",
+		"choices": [
+			"0.8",
+			"1",
+			"1.2",
+			"2"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-logistic-saturation-1",
+		"topic": "exponential-growth",
+		"conceptId": "logistic-saturation",
+		"kind": "predict",
+		"prompt": "For logistic growth with K=1000, by what factor does the proportional rate differ from k at N=900?",
+		"answer": "It is multiplied by 1−900/1000=0.1.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-logistic-saturation-2",
+		"topic": "exponential-growth",
+		"conceptId": "logistic-saturation",
+		"kind": "explain",
+		"prompt": "Why does logistic growth initially resemble exponential growth when N is much smaller than K?",
+		"answer": "The factor 1−N/K is close to 1, so dN/dt is approximately kN.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-logistic-saturation-3",
+		"topic": "exponential-growth",
+		"conceptId": "logistic-saturation",
+		"kind": "recall",
+		"prompt": "At what positive population is the absolute logistic growth rate largest when k>0?",
+		"answer": "N=K/2, where N(1−N/K) is maximal.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-logistic-saturation-4",
+		"topic": "exponential-growth",
+		"conceptId": "logistic-saturation",
+		"kind": "mcq",
+		"prompt": "For k>0 and 0<N<K, what happens as N approaches K?",
+		"answer": "The growth rate approaches zero.",
+		"choices": [
+			"The growth rate approaches zero.",
+			"The growth rate diverges.",
+			"The population must instantly drop to zero."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-half-life-decay-1",
+		"topic": "exponential-growth",
+		"conceptId": "half-life-decay",
+		"kind": "predict",
+		"prompt": "An ideal exponentially decaying sample starts at 80 mg with a 6-hour half-life. What remains after 18 hours?",
+		"answer": "10 mg: three half-lives leave 80/8.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-half-life-decay-2",
+		"topic": "exponential-growth",
+		"conceptId": "half-life-decay",
+		"kind": "explain",
+		"prompt": "Why is 25%, rather than 0%, left after two half-lives?",
+		"answer": "The second half-life halves the remaining 50%, leaving 25% of the original amount.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-half-life-decay-3",
+		"topic": "exponential-growth",
+		"conceptId": "half-life-decay",
+		"kind": "recall",
+		"prompt": "How is half-life related to the positive decay constant λ?",
+		"answer": "T_half = ln(2)/λ.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-half-life-decay-4",
+		"topic": "exponential-growth",
+		"conceptId": "half-life-decay",
+		"kind": "mcq",
+		"prompt": "Which discrete per-step multiplier describes a 20% decrease?",
+		"answer": "0.8",
+		"choices": [
+			"0.8",
+			"1.2",
+			"-0.2",
+			"0.2"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-limits-and-models-1",
+		"topic": "exponential-growth",
+		"conceptId": "limits-and-models",
+		"kind": "predict",
+		"prompt": "A culture doubles every hour for 3 hours, then stops dividing for lack of nutrients. Starting at 100, what is its final count in this idealization?",
+		"answer": "800; extending the earlier exponential beyond hour 3 would be incorrect.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-limits-and-models-2",
+		"topic": "exponential-growth",
+		"conceptId": "limits-and-models",
+		"kind": "explain",
+		"prompt": "Why can a slowing epidemic curve have several explanations besides susceptible depletion?",
+		"answer": "Behavior, interventions, seasonality, reporting, and generation-time changes can alter the observed curve; its shape alone does not identify the cause.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-limits-and-models-3",
+		"topic": "exponential-growth",
+		"conceptId": "limits-and-models",
+		"kind": "recall",
+		"prompt": "What assumption should you check before extrapolating an exponential fit?",
+		"answer": "That the proportional growth mechanism and rate remain approximately stable over the forecast interval.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-limits-and-models-4",
+		"topic": "exponential-growth",
+		"conceptId": "limits-and-models",
+		"kind": "mcq",
+		"prompt": "Which observation most directly challenges a constant-rate exponential model?",
+		"answer": "Successive equal-time population ratios steadily decrease.",
+		"choices": [
+			"Successive equal-time population ratios steadily decrease.",
+			"The absolute increases grow larger.",
+			"A log plot is straight."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	}
+]

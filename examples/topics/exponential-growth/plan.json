@@ -1,0 +1,460 @@
+{
+	"topic": "exponential-growth",
+	"goal": "Predict multiplicative change, read doubling and half-life clocks, and distinguish ideal exponential growth from resource-limited reality.",
+	"learnerLevel": "student",
+	"lessons": [
+		{
+			"conceptId": "last-doubling-fills-the-bottle",
+			"objective": "By the end you can work backward from a full bottle to its half-full and quarter-full times.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture a tiny smiling bacterium beside a huge bottle."
+				},
+				{
+					"kind": "question",
+					"text": "If the bottle becomes full at noon and doubles every 20 minutes, when was it one-quarter full?"
+				},
+				{
+					"kind": "build",
+					"text": "A bacterium doubles every 20 minutes in an idealized bottle that is full at noon. The bottle was only half full at 11:40."
+				},
+				{
+					"kind": "reveal",
+					"text": "11:20: two doubling intervals before noon. Run the film backward and a full bottle becomes half a bottle in just one generation."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “Half full means half the total elapsed time has passed.” Use a clock jumping from 11:40 to noon to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: What idealization makes the bottle puzzle exponential until the final instant? Check your reasoning against: Every bacterium keeps doubling every 20 minutes with no resource limitation before the capacity cutoff."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The last doubling fills the bottle",
+					"goal": "Run the film backward and a full bottle becomes half a bottle in just one generation.",
+					"path": "storyboards/last-doubling-fills-the-bottle.json"
+				}
+			],
+			"checks": [
+				"card-last-doubling-fills-the-bottle-1",
+				"card-last-doubling-fills-the-bottle-2",
+				"card-last-doubling-fills-the-bottle-3",
+				"card-last-doubling-fills-the-bottle-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "multiplicative-growth",
+			"objective": "By the end you can distinguish constant differences from constant ratios and predict a population.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture rows of 1, 2, 4, 8 colored cells."
+				},
+				{
+					"kind": "question",
+					"text": "Starting with 3 cells and doubling every generation, how many are there after four generations?"
+				},
+				{
+					"kind": "build",
+					"text": "Exponential growth multiplies by the same factor over equal time intervals. From 1 cell, five doublings produce 32 cells."
+				},
+				{
+					"kind": "reveal",
+					"text": "48 cells: 3 × 2^4. Each generation copies the entire crowd, so the amount added grows along with the crowd."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “Doubling adds two individuals each step.” Use a staircase whose risers double in height to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: Write the discrete growth formula for initial amount N0, per-step fractional growth r, and n steps. Check your reasoning against: N(n) = N0(1+r)^n."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Multiplication instead of addition",
+					"goal": "Each generation copies the entire crowd, so the amount added grows along with the crowd."
+				}
+			],
+			"checks": [
+				"card-multiplicative-growth-1",
+				"card-multiplicative-growth-2",
+				"card-multiplicative-growth-3",
+				"card-multiplicative-growth-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "doubling-time",
+			"objective": "By the end you can calculate doubling times and count elapsed doublings.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture equal horizontal gaps between heights 10, 20, 40."
+				},
+				{
+					"kind": "question",
+					"text": "A population starts at 50 and doubles every 3 hours; what is it after 12 hours?"
+				},
+				{
+					"kind": "build",
+					"text": "For N(t)=N0 exp(kt), the doubling time is ln(2)/k. A constant doubling time means a constant proportional growth rate."
+				},
+				{
+					"kind": "reveal",
+					"text": "800: four doublings multiply 50 by 16. A doubling time counts how long it takes the entire graph to climb to twice its current height."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “Doubling time becomes shorter just because there are more cells.” Use a ruler marked in generations rather than cells to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: What is the doubling time for continuous rate k = 0.2 per hour? Check your reasoning against: ln(2)/0.2 ≈ 3.47 hours."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Doubling time is a clock",
+					"goal": "A doubling time counts how long it takes the entire graph to climb to twice its current height."
+				}
+			],
+			"checks": [
+				"card-doubling-time-1",
+				"card-doubling-time-2",
+				"card-doubling-time-3",
+				"card-doubling-time-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "compound-interest",
+			"objective": "By the end you can compute compound balances and distinguish them from simple interest.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture coins sprouting smaller coin trees."
+				},
+				{
+					"kind": "question",
+					"text": "Deposit 200 at 5% effective annual interest for two years, with no deposits or withdrawals. What is the balance?"
+				},
+				{
+					"kind": "build",
+					"text": "Compounding applies each new percentage to principal plus accumulated interest. At 10% annually, 100 becomes 121 after two years."
+				},
+				{
+					"kind": "reveal",
+					"text": "220.50: 200 × 1.05^2. Interest is a new worker that starts earning interest of its own next year."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “Ten percent for two years always gives exactly twenty percent total growth.” Use bars labeled 100, 110, and 121 to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: How does simple interest differ from compound interest for a fixed initial principal? Check your reasoning against: Simple interest applies the percentage only to the initial principal; compound interest applies it to the current balance."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Interest earns interest",
+					"goal": "Interest is a new worker that starts earning interest of its own next year."
+				}
+			],
+			"checks": [
+				"card-compound-interest-1",
+				"card-compound-interest-2",
+				"card-compound-interest-3",
+				"card-compound-interest-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "continuous-growth",
+			"objective": "By the end you can translate between continuous rates and effective per-period multipliers.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture a tangent arrow that lengthens with the curve height."
+				},
+				{
+					"kind": "question",
+					"text": "For N0=10 and continuous rate k=ln(2) per hour, what is N after three hours?"
+				},
+				{
+					"kind": "build",
+					"text": "Continuous proportional growth satisfies dN/dt=kN and has solution N0 exp(kt). Its rate k is not the same as the effective per-period fractional increase."
+				},
+				{
+					"kind": "reveal",
+					"text": "80: exp(3 ln(2)) = 8. Zoom into a growth curve until each tiny rise is proportional to the height already there."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “A continuous rate k=1 means only 100% total growth in one time unit.” Use compounding intervals shrinking toward a smooth curve to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: What differential equation expresses continuous proportional growth? Check your reasoning against: dN/dt = kN."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Continuous growth and e",
+					"goal": "Zoom into a growth curve until each tiny rise is proportional to the height already there."
+				}
+			],
+			"checks": [
+				"card-continuous-growth-1",
+				"card-continuous-growth-2",
+				"card-continuous-growth-3",
+				"card-continuous-growth-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "logarithmic-scale",
+			"objective": "By the end you can interpret slope and spacing on a logarithmic population plot.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture a ladder labeled 1, 10, 100, 1000."
+				},
+				{
+					"kind": "question",
+					"text": "On a base-10 log axis, are the distances from 10 to 100 and from 100 to 1000 equal?"
+				},
+				{
+					"kind": "build",
+					"text": "On a logarithmic vertical axis, equal distances represent equal ratios. A positive exponential becomes a straight line whose slope encodes its growth rate."
+				},
+				{
+					"kind": "reveal",
+					"text": "Yes; both represent multiplication by 10 and a log10 increase of 1. A log axis folds each doubling into the same visual step, however enormous the population becomes."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “A straight line on a log plot means the population adds a constant number.” Use a curved growth trace straightening on log paper to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: What does a steeper straight line on an ln(population)-versus-time plot mean? Check your reasoning against: A larger continuous proportional growth rate k and a shorter doubling time."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "A log scale turns ratios into distances",
+					"goal": "A log axis folds each doubling into the same visual step, however enormous the population becomes."
+				}
+			],
+			"checks": [
+				"card-logarithmic-scale-1",
+				"card-logarithmic-scale-2",
+				"card-logarithmic-scale-3",
+				"card-logarithmic-scale-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "reproduction-number",
+			"objective": "By the end you can relate generation-to-generation spread to R and the generation interval.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture a transmission tree with two branches per node."
+				},
+				{
+					"kind": "question",
+					"text": "In a fixed-generation toy model with 10 initial infections and R=2, how many new infections occur in generation 3?"
+				},
+				{
+					"kind": "build",
+					"text": "In a simple generation model, each infected person produces R further infections on average. Early growth can be approximated by I(g)=I0 R^g when conditions remain stable."
+				},
+				{
+					"kind": "reveal",
+					"text": "80 new infections: 10 × 2^3; this is not the cumulative total. Follow one branch of transmission and then imagine the same branching rule repeated at every tip."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “R0 is a fixed property of a pathogen independent of population and context.” Use generation clocks beneath branching clusters to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: How do R0 and the effective reproduction number Re differ? Check your reasoning against: R0 describes spread in a wholly susceptible population under specified conditions; Re reflects current susceptibility and interventions."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "Epidemics as branching generations",
+					"goal": "Follow one branch of transmission and then imagine the same branching rule repeated at every tip."
+				}
+			],
+			"checks": [
+				"card-reproduction-number-1",
+				"card-reproduction-number-2",
+				"card-reproduction-number-3",
+				"card-reproduction-number-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "logistic-saturation",
+			"objective": "By the end you can explain why resource feedback bends exponential growth into an S-curve.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture a bottle filling while food icons disappear."
+				},
+				{
+					"kind": "question",
+					"text": "For logistic growth with K=1000, by what factor does the proportional rate differ from k at N=900?"
+				},
+				{
+					"kind": "build",
+					"text": "The logistic model dN/dt=kN(1-N/K) slows growth near carrying capacity K. It approximates resource feedback rather than allowing exponential growth forever."
+				},
+				{
+					"kind": "reveal",
+					"text": "It is multiplied by 1−900/1000=0.1. The crowd still makes new members, but every new member also takes away a little of the room left to grow."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “A carrying capacity forces an abrupt universal stop at a fixed time.” Use an s-curve approaching a dashed capacity line to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: At what positive population is the absolute logistic growth rate largest when k>0? Check your reasoning against: N=K/2, where N(1−N/K) is maximal."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Resources bend the curve",
+					"goal": "The crowd still makes new members, but every new member also takes away a little of the room left to grow."
+				}
+			],
+			"checks": [
+				"card-logistic-saturation-1",
+				"card-logistic-saturation-2",
+				"card-logistic-saturation-3",
+				"card-logistic-saturation-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "half-life-decay",
+			"objective": "By the end you can calculate remaining fractions after several half-lives.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture a pile shrinking from 80 to 40 to 20."
+				},
+				{
+					"kind": "question",
+					"text": "An ideal exponentially decaying sample starts at 80 mg with a 6-hour half-life. What remains after 18 hours?"
+				},
+				{
+					"kind": "build",
+					"text": "Exponential decay removes a constant fraction in equal time intervals. For N=N0 exp(-λt), half-life is ln(2)/λ."
+				},
+				{
+					"kind": "reveal",
+					"text": "10 mg: three half-lives leave 80/8. Rewind a doubling story and each equal tick removes half of whatever remains, not half of the original pile."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “A half-life means all material is gone after two half-lives.” Use independent glowing atoms switching off at random times to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: How is half-life related to the positive decay constant λ? Check your reasoning against: T_half = ln(2)/λ."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Decay uses the same machinery",
+					"goal": "Rewind a doubling story and each equal tick removes half of whatever remains, not half of the original pile."
+				}
+			],
+			"checks": [
+				"card-half-life-decay-1",
+				"card-half-life-decay-2",
+				"card-half-life-decay-3",
+				"card-half-life-decay-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "limits-and-models",
+			"objective": "By the end you can identify when a growth extrapolation has lost its mechanistic justification.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Picture a forecast cone widening beyond observed dots."
+				},
+				{
+					"kind": "question",
+					"text": "A culture doubles every hour for 3 hours, then stops dividing for lack of nutrients. Starting at 100, what is its final count in this idealization?"
+				},
+				{
+					"kind": "build",
+					"text": "Exponential models are useful over intervals where proportional rates remain roughly stable. Changes in resources, behavior, or mechanisms can change the rate and invalidate extrapolation."
+				},
+				{
+					"kind": "reveal",
+					"text": "800; extending the earlier exponential beyond hour 3 would be incorrect. A formula is a local story about a mechanism, and its ending changes when the mechanism changes."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Challenge this tempting claim: “An excellent fit to early data guarantees indefinite exponential growth.” Use a growth engine with a changing rate dial to show what the model actually says."
+				},
+				{
+					"kind": "recap",
+					"text": "Explain without the picture: What assumption should you check before extrapolating an exponential fit? Check your reasoning against: That the proportional growth mechanism and rate remain approximately stable over the forecast interval."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "Know when the model stops working",
+					"goal": "A formula is a local story about a mechanism, and its ending changes when the mechanism changes."
+				}
+			],
+			"checks": [
+				"card-limits-and-models-1",
+				"card-limits-and-models-2",
+				"card-limits-and-models-3",
+				"card-limits-and-models-4"
+			],
+			"status": "planned"
+		}
+	],
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z"
+}
