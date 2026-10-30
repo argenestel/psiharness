@@ -1,0 +1,57 @@
+.psi-chat { display: flex; flex-direction: column; min-width: 0; height: min(82dvh, 960px); min-height: 420px; color: var(--fg); }
+.psi-chat-hud { white-space: pre-wrap; color: var(--mint); font-size: .82rem; padding: 8px 12px; }
+.psi-chat-hud:empty { display: none; }
+.psi-chat-log { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 16px clamp(8px, 3vw, 32px); }
+.psi-message { max-width: 850px; margin: 0 auto 24px; overflow-wrap: anywhere; }
+.psi-message p { color: inherit; white-space: pre-wrap; }
+.psi-user { width: fit-content; max-width: 85%; margin-left: auto; margin-right: 0; padding: 12px 18px; border-radius: 20px 20px 4px 20px; background: var(--panel-high); }
+.psi-markdown > :last-child { margin-bottom: 0; }
+.psi-markdown h1 { font-size: 1.8rem; }
+.psi-markdown h2 { font-size: 1.45rem; }
+.psi-markdown blockquote { border-left: 3px solid var(--purple); margin-left: 0; padding-left: 16px; color: var(--muted); }
+.psi-markdown table { display: block; overflow-x: auto; border-collapse: collapse; margin: 12px 0; }
+.psi-markdown th, .psi-markdown td { padding: 8px 12px; border: 1px solid var(--line); text-align: left; }
+.psi-markdown code, .psi-math { font-family: ui-monospace, monospace; white-space: pre-wrap; }
+.psi-markdown :not(pre) > code { background: var(--panel-high); border-radius: 4px; padding: 2px 5px; }
+.psi-code { margin: 12px 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel); }
+.psi-code figcaption { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; color: var(--muted); font-size: .8rem; background: var(--panel-high); }
+.psi-code button { padding: 4px 10px; }
+.psi-code pre { overflow: auto; padding: 14px; margin: 0; }
+.psi-code pre code { white-space: pre; }
+.psi-syntax { color: var(--coral); }
+.psi-math { overflow-x: auto; max-width: 100%; }
+.psi-thinking { color: var(--muted); margin-bottom: 12px; font-size: .85rem; }
+.psi-thinking pre, .psi-tool pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 320px; overflow: auto; }
+.psi-tool { margin: 8px 0; }
+.psi-tool summary { display: list-item; width: fit-content; max-width: 100%; padding: 5px 12px; background: var(--panel-high); border: 1px solid var(--line); border-radius: 12px; font-size: .82rem; }
+.psi-chat summary { cursor: pointer; }
+.psi-chat-status { min-height: 26px; color: var(--muted); font-size: .8rem; padding: 0 12px; }
+.psi-composer { display: flex; flex-wrap: wrap; gap: 8px; border: 1px solid var(--line); padding: 12px; border-radius: 16px; background: var(--panel); }
+.psi-composer textarea { flex: 1; width: 100%; min-width: 150px; resize: vertical; max-height: 220px; }
+.psi-chat textarea, .psi-chat input { font: inherit; border: 1px solid var(--edge); border-radius: 8px; color: var(--fg); background: var(--bg); padding: 10px; }
+.psi-chat :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.psi-chat [hidden] { display: none !important; }
+.psi-suggestions { display: flex; flex-wrap: wrap; gap: 5px; width: 100%; order: 3; }
+.psi-suggestions:empty { display: none; }
+.psi-suggestions button { font-size: .8rem; padding: 4px 8px; }
+.psi-toasts { position: fixed; bottom: 20px; right: 16px; z-index: 1100; max-width: min(380px, calc(100vw - 32px)); }
+.psi-toast { padding: 12px 18px; background: var(--panel-high); color: var(--fg); border: 1px solid var(--mint); border-radius: 12px; margin-top: 8px; overflow-wrap: anywhere; }
+.psi-modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; background: #0009; z-index: 1000; }
+.psi-modal { background: var(--panel); color: var(--fg); border: 1px solid var(--edge); border-radius: 18px; padding: 24px; width: min(520px, 100%); max-height: 85dvh; overflow: auto; }
+.psi-modal h2 { font-size: 1.3rem; }
+.psi-modal button { margin: 6px 6px 0 0; }
+.psi-modal input, .psi-modal textarea { display: block; width: 100%; }
+.psi-modal textarea { min-height: 180px; }
+.psi-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (prefers-color-scheme: light) {
+	.psi-chat { --bg: #f6f8ff; --panel: #fff; --panel-high: #eaf0fa; --fg: #192841; --muted: #51627e; --line: #ccd6e8; --edge: #91a3c1; --mint: #086855; --purple: #6841b0; --coral: #9c3c24; --gold: #785000; }
+}
+@media (max-width: 520px) {
+	.psi-chat-log { padding: 12px 4px; }
+	.psi-composer { padding: 8px; }
+	.psi-composer textarea { flex-basis: 100%; }
+	.psi-user { max-width: 92%; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.psi-chat *, .psi-chat *::before, .psi-chat *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
