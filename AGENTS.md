@@ -2,8 +2,10 @@
 
 psi is a learning harness built on **pi** (`@earendil-works/pi-coding-agent`) and compatible with
 **oh-my-pi** (`omp`, `@oh-my-pi/pi-coding-agent`, which rewrites `@earendil-works/*` imports to its own
-copies). It teaches big ideas the way 3Blue1Brown and Kurzgesagt do: concept graphs, intuition first,
-animated visuals, and spaced retrieval practice.
+copies). It is a **text-first, practice-first learning agent**: long-term memory of how the learner learns,
+Josh Kaufman's *first 20 hours* skill deconstruction, Mark Rober's *Super Mario effect* (failure is cheap and
+still earns progress), interactive challenges graded in chat, and spaced retrieval. Concept graphs and
+3b1b/Kurzgesagt-style visuals remain available as optional extras.
 
 ## Runtime rules (read before writing code)
 
@@ -66,7 +68,37 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
   - On-disk layout: `$PSI_HOME/topics/<topic>/{graph.json, plan.json, cards.json, learner.json, reviews.jsonl,
     notes.md, storyboards/<id>.json, explorables/<id>.json, artifacts/*}`
 
-### visual (`visual/src/index.ts` re-exports)
+### core — practice-first modules (re-exported from `core/src/index.ts`)
+- On-disk: `$PSI_HOME/memory.json` (LearnerMemory, global), `$PSI_HOME/skills/<skill>/{plan.json, challenges.json,
+  attempts.jsonl, sessions.jsonl, progress.json}`.
+- `memory.ts`: `class MemoryStore` — `new MemoryStore(home = process.env.PSI_HOME ?? ~/.psi)`
+  - `read(): LearnerMemory` (empty default), `setName(name)`
+  - `remember(draft: Pick<MemoryItem,"kind"|"text"> & Partial<Pick<MemoryItem,"topic"|"skill"|"confidence"|"source">>): MemoryItem`
+    (dedupes: same kind + highly similar text (token Jaccard ≥ 0.6) → updates the existing item, bumps confidence)
+  - `update(id, patch): MemoryItem`, `forget(id): boolean`
+  - `recall(q?: { kind?; skill?; topic?; query?; limit? = 12 }): MemoryItem[]` — ranked by keyword overlap, skill/topic match,
+    confidence, recency; marks `lastUsedAt`
+  - `addRecap(draft: Omit<SessionRecap,"id"|"date"> & { date? }): SessionRecap`, `recentRecaps(n = 3): SessionRecap[]`
+  - `summarize(opts?: { skill?; topic?; maxChars? = 1800 }): string` — compact Markdown learner profile for system-prompt
+    injection (name, goals, preferences, struggles/misconceptions, what clicked, last recap + "next"); "" when empty
+- `gamify.ts` (pure): `xpFor(a: { outcome; kind; level; hintsUsed; lesson? }): number` (fail still earns XP; a written
+  `lesson` on a fail earns a bonus; boss ×3), `levelFor(xp): { level; intoLevel; toNext }`,
+  `updateStreak(p: Progress, now?): Progress`, `newBadges(p: Progress, a: Attempt): string[]`
+  (e.g. "first-fail", "comeback", "streak-3", "streak-7", "hour-1", "hour-5", "hour-10", "hour-20", "boss-slayer", "no-hints")
+- `practice.ts`: `class PracticeStore` — same home default
+  - `listSkills(): string[]`, `readPlan(skill)`, `writePlan(plan)`, `nextSubskill(plan): Subskill | undefined`
+    (priority asc, prerequisites solid, not solid), `setSubskillStatus(skill, id, status)`
+  - `addChallenge(draft: Omit<Challenge,"id"|"createdAt"|"hints"> & { hints?: string[] }): Challenge`,
+    `getChallenge(skill, id)`, `listChallenges(skill, opts?: { subskillId?; unattempted? })`
+  - `checkAnswer(c: Challenge, answer: string): Outcome | undefined` — deterministic when `expected` is set
+    (case/space/punctuation-insensitive; `acceptable`; numeric with `tolerance`); `undefined` = needs the tutor to grade
+  - `recordAttempt(draft: Omit<Attempt,"id"|"at"|"xp"|"skill"|"subskillId"> & { at? }): { attempt; progress; leveledUp: boolean; badges: string[] }`
+    (fills skill/subskillId from the challenge, computes XP, updates progress/streak/badges, links to the active session)
+  - `startSession(skill, focus?, now?)`, `activeSession(skill?)`, `endSession(skill, now?): PracticeSession | undefined`
+    (adds minutes to progress.minutesLogged; sessions longer than 3 h are capped)
+  - `progress(skill): Progress`, `hours(skill): { logged: number; goal: number }`
+
+### visual (`visual/src/index.ts` re-exports) — optional extras
 - `palettes.ts`: `type Palette = { name; bg; fg; muted; accent: string[]; deep; glow }`, `PALETTES`, `paletteFor(style, name?)`
 - `storyboard-html.ts`: `validateStoryboard(sb): string[]`, `renderStoryboardHtml(sb, opts?: { autoplay?: boolean; speech?: boolean }): string`
 - `explorable.ts`: `validateExplorable(spec): string[]`, `renderExplorableHtml(spec): string`
@@ -84,3 +116,11 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 ### extension
 - Entry `extension/src/index.ts` default-exports `(pi: ExtensionAPI) => void`.
 - Tool names are prefixed `psi_`; commands are `/learn`, `/map`, `/lesson`, `/quiz`, `/review`, `/visualize`, `/explore`, `/crew`, `/studio`, `/progress`, `/tutor`.
+- Practice-first layer lives in `extension/src/practice/` and is registered via `registerPractice(pi, deps)` from
+  `extension/src/practice/index.ts`:
+  - tools: `psi_memory_remember`, `psi_memory_recall`, `psi_memory_forget`, `psi_recap`, `psi_skill_plan`,
+    `psi_challenge` (create + present), `psi_attempt` (grade/record; uses checkAnswer first), `psi_hint`,
+    `psi_practice_session` (start/stop/status), `psi_progress_report`
+  - commands: `/skill <thing to learn>` (20-hour deconstruction), `/practice [focus] [minutes]`, `/challenge [kind]`,
+    `/boss`, `/quest` (build-to-learn project), `/hint`, `/remember <fact>`, `/memory`, `/forget`, `/recap`, `/hours`, `/streak`
+  - every session: memory summary + active skill + progress injected via `before_agent_start`; "welcome back" on session_start

@@ -301,3 +301,167 @@ export interface CrewResult {
 	durationMs: number;
 	error?: string;
 }
+
+// ═════════════════════════════════════════════ practice-first learning ══
+// psi is a text-first learning agent: long-term learner memory, Josh Kaufman's
+// "first 20 hours" skill deconstruction, and Mark Rober's "Super Mario effect"
+// (failure is cheap and still earns progress) for interactive practice.
+
+// ───────────────────────────────────────────────────────── learner memory ──
+
+export type MemoryKind =
+	| "goal"          // what the learner wants to be able to do, and why
+	| "background"    // what they already know / do
+	| "preference"    // how they like to learn (examples first, short sessions, analogies from cooking…)
+	| "strength"      // things that come easily
+	| "struggle"      // recurring difficulty
+	| "misconception" // a specific wrong mental model observed
+	| "insight"       // an explanation/analogy/drill that clicked
+	| "motivation"    // what keeps them going, what drains them
+	| "constraint";   // time, tools, environment limits
+
+/** One durable fact about the learner. Global across topics and skills. */
+export interface MemoryItem {
+	id: string;
+	kind: MemoryKind;
+	/** One sentence, written so a future tutor can act on it. */
+	text: string;
+	topic?: string;
+	skill?: string;
+	/** 0 … 1; observed facts start lower than learner-stated ones. */
+	confidence: number;
+	source: "learner" | "observed" | "inferred";
+	createdAt: string;
+	updatedAt: string;
+	lastUsedAt?: string;
+}
+
+/** End-of-session recap, the episodic half of memory. */
+export interface SessionRecap {
+	id: string;
+	date: string;
+	skill?: string;
+	topic?: string;
+	minutes: number;
+	summary: string;
+	wins: string[];
+	struggles: string[];
+	/** The very next thing to do when they come back. */
+	next: string;
+}
+
+export interface LearnerMemory {
+	name?: string;
+	items: MemoryItem[];
+	recaps: SessionRecap[];
+	updatedAt: string;
+}
+
+// ─────────────────────────────────────────── skills (first 20 hours) ──
+
+export interface Subskill {
+	/** kebab-case, unique within the skill. */
+	id: string;
+	title: string;
+	/** Why this subskill matters for the target performance. */
+	why: string;
+	/** 1 = core (the vital 20%), 2 = useful, 3 = later. */
+	priority: 1 | 2 | 3;
+	prerequisites: string[];
+	/** How the learner can notice their own mistakes ("learn enough to self-correct"). */
+	selfCorrection: string;
+	/** Drill ideas the tutor can turn into challenges. */
+	drills: string[];
+	status: "locked" | "active" | "practicing" | "solid";
+}
+
+export interface SkillPlan {
+	/** kebab-case slug, e.g. "sql-queries". */
+	skill: string;
+	title: string;
+	/** Concrete, testable "good enough" level, e.g. "write a 3-table JOIN with GROUP BY in under 5 minutes". */
+	targetPerformance: string;
+	whyItMatters: string;
+	subskills: Subskill[];
+	/** 3–5 resources max — just enough to self-correct. */
+	resources: { title: string; url?: string; why: string }[];
+	/** Things that stop practice from starting, and the fix. */
+	barriers: { barrier: string; fix: string; done: boolean }[];
+	/** Default 20. */
+	hoursGoal: number;
+	createdAt: string;
+	updatedAt: string;
+}
+
+// ───────────────────────────────────────────────────────────── practice ──
+
+export type ChallengeKind =
+	| "quickfire" // fast recall/compute, usually auto-gradable
+	| "predict"   // what happens if…?
+	| "debug"     // find and fix the mistake
+	| "apply"     // use the subskill on a fresh problem
+	| "explain"   // teach it back
+	| "build"     // micro-project / quest with milestones (Mark Rober: learn by building)
+	| "boss";     // mixed, harder, end-of-level challenge
+
+export interface Challenge {
+	id: string;
+	skill: string;
+	subskillId?: string;
+	kind: ChallengeKind;
+	/** 1 … 5 */
+	level: 1 | 2 | 3 | 4 | 5;
+	prompt: string;
+	/** For auto-grading: canonical answer. */
+	expected?: string;
+	/** Other accepted answers (normalized comparison). */
+	acceptable?: string[];
+	/** Numeric answers: absolute tolerance. */
+	tolerance?: number;
+	/** For open answers: what a good answer must contain. */
+	rubric?: string[];
+	/** Hint ladder, vaguest first. */
+	hints: string[];
+	createdAt: string;
+}
+
+export type Outcome = "success" | "partial" | "fail" | "skipped";
+
+export interface Attempt {
+	id: string;
+	challengeId: string;
+	skill: string;
+	subskillId?: string;
+	at: string;
+	answer: string;
+	outcome: Outcome;
+	hintsUsed: number;
+	/** For fails: what the learner says they'll try differently (earns bonus XP — Super Mario effect). */
+	lesson?: string;
+	feedback?: string;
+	xp: number;
+}
+
+export interface PracticeSession {
+	id: string;
+	skill: string;
+	focus?: string;
+	startedAt: string;
+	endedAt?: string;
+	minutes?: number;
+	attemptIds: string[];
+}
+
+export interface Progress {
+	skill: string;
+	xp: number;
+	level: number;
+	streakDays: number;
+	lastPracticeDate?: string;
+	minutesLogged: number;
+	attempts: number;
+	successes: number;
+	/** Failures are counted and celebrated, not hidden. */
+	failures: number;
+	badges: string[];
+}
