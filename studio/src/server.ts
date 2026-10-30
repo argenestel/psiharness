@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { createReadStream, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, watch } from "node:fs";
 import type { FSWatcher } from "node:fs";
 import { basename, extname, isAbsolute, join, relative, resolve } from "node:path";
+import { isIP } from "node:net";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { Card, ConceptGraph, LearnerProfile, LessonPlan, Rating } from "../../core/src/types.ts";
 
@@ -68,6 +69,29 @@ function safeFile(root: string, segments: string[]): string {
 	}
 }
 
+const LOOPBACK_NAMES = new Set(["localhost", "127.0.0.1", "::1"]);
+
+/** Hostname from a Host header, without port or IPv6 brackets; undefined when malformed. */
+function hostName(header: string | undefined): string | undefined {
+	const match = /^(?:\[([0-9a-f:.]+)\]|([^:\[\]]+))(?::\d{1,5})?$/i.exec(header?.trim() ?? "");
+	return match ? (match[1] ?? match[2])!.toLowerCase().replace(/\.$/, "") : undefined;
+}
+
+/**
+ * DNS-rebinding guard: a hostile page can point its own domain at 127.0.0.1 and then read the API
+ * same-origin. Only IP literals, localhost names, the bind host and PSI_STUDIO_ALLOWED_HOSTS are accepted.
+ */
+export function allowedHost(
+	header: string | undefined, bindHost: string, extra = process.env.PSI_STUDIO_ALLOWED_HOSTS,
+): boolean {
+	const name = hostName(header);
+	if (!name) return false;
+	if (LOOPBACK_NAMES.has(name) || name.endsWith(".localhost") || isIP(name)) return true;
+	const allowed = new Set([bindHost.toLowerCase().replace(/^\[|\]$/g, ""),
+		...(extra ?? "").split(",").map((h) => h.trim().toLowerCase()).filter(Boolean)]);
+	return allowed.has(name);
+}
+
 function json(res: ServerResponse, data: unknown, status = 200): void {
 	res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
 	res.end(JSON.stringify(data));
@@ -105,13 +129,14 @@ function serveFile(req: IncomingMessage, res: ServerResponse, file: string, arti
 	}
 	let start = 0;
 	let end = size - 1;
-	if (req.headers.range) {
-		const match = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
-		if (!match || (!match[1] && !match[2])) {
-			res.writeHead(416, { "Content-Range": `bytes */${size}` }); res.end(); return;
-		}
-		if (!match[1]) start = Math.max(0, size - Number(match[2]));
-		else { start = Number(match[1]); if (match[2]) end = Math.min(end, Number(match[2])); }
+	// RFC 9110 §14.2: unknown units, malformed or multi-range specs, and conditional If-Range requests
+	// (Studio emits no validators) are ignored and answered with the full file; only a well-formed
+	// single range that cannot be satisfied yields 416.
+	const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range?.trim() ?? "");
+	if (range && (range[1] || range[2]) && !req.headers["if-range"]
+		&& !(range[1] && range[2] && Number(range[2]) < Number(range[1]))) {
+		if (!range[1]) start = Math.max(0, size - Number(range[2]));
+		else { start = Number(range[1]); if (range[2]) end = Math.min(end, Number(range[2])); }
 		if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start > end || start >= size) {
 			res.writeHead(416, { "Content-Range": `bytes */${size}` }); res.end(); return;
 		}
@@ -126,12 +151,17 @@ function serveFile(req: IncomingMessage, res: ServerResponse, file: string, arti
 	stream.pipe(res);
 }
 
+/** A running Studio; `clients()` reports open live-update streams. */
+export interface StudioHandle { url: string; clients(): number; close(): Promise<void> }
+
 /** Start the local Studio HTTP app; port 0 requests an available port. */
 export async function startStudio({
 	port = Number(process.env.PSI_STUDIO_PORT) || 4173,
-	host = process.env.PSI_STUDIO_HOST || process.env.HOST || "127.0.0.1",
+	// Deliberately not the generic HOST variable: shells and containers often export it, which would
+	// silently expose learner data on the network. Opt in with PSI_STUDIO_HOST (e.g. docker compose).
+	host = process.env.PSI_STUDIO_HOST || "127.0.0.1",
 	store,
-}: { port?: number; host?: string; store: StudioStore }): Promise<{ url: string; close(): Promise<void> }> {
+}: { port?: number; host?: string; store: StudioStore }): Promise<StudioHandle> {
 	const core = await import(coreModule).catch((error: NodeJS.ErrnoException) => {
 		if (error.code === "ERR_MODULE_NOT_FOUND" || error.code === "MODULE_NOT_FOUND") return undefined;
 		throw error;
@@ -151,6 +181,7 @@ export async function startStudio({
 		res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; "
 			+ "img-src 'self' data:; frame-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'self'");
 		try {
+			if (!allowedHost(req.headers.host, host)) throw new HttpError(421, "Unrecognized Host header");
 			const p = partsOf(req.url ?? "/");
 			if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "POST") {
 				throw new HttpError(405, "Method not allowed");
@@ -160,7 +191,8 @@ export async function startStudio({
 					res.writeHead(200, { "Content-Type": "text/event-stream", "Connection": "keep-alive",
 						"X-Accel-Buffering": "no" });
 					res.write(": connected\n\n"); clients.add(res);
-					req.on("close", () => clients.delete(res)); return;
+					// The response closes on client disconnect and on server shutdown alike.
+					res.on("close", () => clients.delete(res)); return;
 				}
 				if (p[1] !== "topics") throw new HttpError(404, "API route not found");
 				if (p.length === 2 && req.method === "GET") {
@@ -254,8 +286,9 @@ export async function startStudio({
 			} catch { /* Read-only or removed directories do not prevent serving. */ }
 		};
 		const scanChildren = (dir: string) => {
-			try { for (const ent of readdirSync(dir, { withFileTypes: true })) if (ent.isDirectory()) scan(join(dir, ent.name)); }
-			catch { /* A concurrent writer may remove the directory. */ }
+			try {
+				for (const ent of readdirSync(dir, { withFileTypes: true })) if (ent.isDirectory()) scan(join(dir, ent.name));
+			} catch { /* A concurrent writer may remove the directory. */ }
 		};
 		scan(topicsDir);
 	}
@@ -266,7 +299,7 @@ export async function startStudio({
 	const actualPort = address && typeof address !== "string" ? address.port : port;
 	const url = `http://${host.includes(":") ? `[${host}]` : host}:${actualPort}`;
 	let closing: Promise<void> | undefined;
-	return { url, close() {
+	return { url, clients: () => clients.size, close() {
 		return closing ??= new Promise<void>((resolveClose, reject) => {
 			clearTimeout(debounce); clearInterval(heartbeat);
 			for (const watcher of watchers) watcher.close();

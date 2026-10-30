@@ -232,3 +232,90 @@ test("offline equations stay readable while retaining source for late KaTeX load
 	assert.equal(app.code.textContent, "I ∝ λ⁻⁴");
 	assert.equal(app.equation.dataset.tex, "I \\propto \\lambda^{-4}");
 });
+
+// Record Web Animations calls made by the emitted player for the first scene.
+function animationsFor(sb: Storyboard) {
+	const calls: { id: string; layer: string; frames: Record<string, string>[]; options: Record<string, unknown> }[] = [];
+	const layerNode = (id: string, layer: string, child?: unknown) => ({
+		style: {}, firstElementChild: child, querySelectorAll: () => [],
+		animate(frames: Record<string, string>[], options: Record<string, unknown>) {
+			calls.push({ id, layer, frames, options });
+			return { pause() {}, cancel() {}, currentTime: 0 };
+		},
+	});
+	const elementNodes = (elements: Storyboard["scenes"][number]["elements"]): unknown[] => elements.flatMap((e) => {
+		const loop = layerNode(e.id, "loop"), exit = layerNode(e.id, "exit", loop), enter = layerNode(e.id, "enter", exit);
+		const node = { dataset: { element: e.id }, firstElementChild: enter };
+		return [node, ...(e.kind === "group" ? elementNodes(e.props.children as typeof elements) : [])];
+	});
+	const scenes = sb.scenes.map((scene) => ({ style: {},
+		querySelectorAll: (selector: string) => selector === "[data-element]" ? elementNodes(scene.elements) : [] }));
+	const stub = () => ({ style: {}, textContent: "", addEventListener() {}, setAttribute() {} });
+	const nodes = new Map<string, unknown>(["stage", "play", "scrub", "caption", "clock", "title-card", "prev", "next",
+		"scene-label", "katex-script"].map((id) => [id, stub()]));
+	const html = renderStoryboardHtml(sb);
+	const island = /<script type="application\/json" id="psi-data">([\s\S]*?)<\/script>/.exec(html)![1];
+	nodes.set("psi-data", { textContent: island });
+	runInNewContext(/<script>([\s\S]*?)<\/script>/.exec(html)![1]!, {
+		window: { location: { hash: "" }, addEventListener() {} }, URLSearchParams, performance: { now: () => 0 },
+		requestAnimationFrame() {},
+		document: { getElementById: (id: string) => nodes.get(id), addEventListener() {},
+			querySelectorAll: (selector: string) => selector === ".scene" ? scenes : [] },
+	}, { timeout: 1000 });
+	return calls;
+}
+
+test("orbit rotations spin at constant angular velocity while other motion keeps its ease", () => {
+	const sb = story();
+	sb.scenes[0]!.elements = [
+		{ id: "rotor", kind: "group", props: { x: 0, y: 0, children: [
+			{ id: "arm", kind: "arrow", props: { x1: 0, y1: 0, x2: 100, y2: 0 } },
+		] }, loop: { type: "orbit", duration: 4 } },
+		{ id: "spin-in", kind: "circle", props: { x: 1, y: 1, r: 4 }, enter: { type: "orbit", duration: 1 } },
+		{ id: "bob", kind: "circle", props: { x: 1, y: 1, r: 4 }, loop: { type: "float", duration: 2 } },
+	];
+	const calls = animationsFor(sb);
+	const orbit = calls.find((c) => c.id === "rotor" && c.layer === "loop")!;
+	assert.equal(orbit.options.easing, "linear");
+	assert.equal(orbit.options.iterations, Infinity);
+	assert.equal(orbit.frames.map((f) => f.transform).join(" "), "rotate(0deg) rotate(360deg)");
+	assert.equal(calls.find((c) => c.id === "spin-in" && c.layer === "enter")!.options.easing, "linear");
+	assert.equal(calls.find((c) => c.id === "bob" && c.layer === "loop")!.options.easing, "ease-in-out");
+	assert.equal(calls.find((c) => c.id === "sun" && c.layer === "enter")?.options.easing ?? "ease-in-out", "ease-in-out");
+});
+
+test("kurzgesagt creatures idle-float unless they have their own loop; other styles stay still", () => {
+	const sb = story();
+	sb.scenes[0]!.elements = [
+		{ id: "idle", kind: "creature", props: { x: 0, y: 0 } },
+		{ id: "busy", kind: "creature", props: { x: 0, y: 0 }, loop: { type: "pulse", duration: 1 } },
+	];
+	const loops = animationsFor(sb).filter((c) => c.layer === "loop");
+	assert.deepEqual(loops.map((c) => c.id).sort(), ["busy", "idle"]);
+	assert.match(loops.find((c) => c.id === "idle")!.frames[1]!.transform!, /translateY/);
+	assert.match(loops.find((c) => c.id === "busy")!.frames[1]!.transform!, /scale/);
+	assert.deepEqual(animationsFor({ ...sb, style: "3b1b" }).filter((c) => c.layer === "loop").map((c) => c.id), ["busy"]);
+});
+
+test("creature art is a single rounded body with shading, glossy eyes and mood-specific faces", () => {
+	const sb = story();
+	sb.scenes[0]!.elements = (["happy", "surprised", "curious"] as const).map((mood) => (
+		{ id: mood, kind: "creature" as const, props: { x: 100, y: 100, mood, color: "#22d4c5", size: 80 } }));
+	const html = renderStoryboardHtml(sb);
+	assert.equal((html.match(/class="creature"/g) ?? []).length, 3);
+	assert.match(html, /translate\(100 100\) scale\(0\.8\)/);
+	assert.ok((html.match(/fill="#22d4c5"/g) ?? []).length >= 9);
+	assert.match(html, /Q 0 46 17 30/); // happy smile
+	assert.match(html, /M -48 -62 Q -32 -74 -16 -64/); // surprised brows
+	assert.ok(!html.includes("C 130 110 -100 120 -85 10"), "old lumpy body path is gone");
+});
+
+test("player layout keeps the stage, controls and caption on one screen and scales the title card", () => {
+	const html = renderStoryboardHtml(story());
+	assert.match(html, /max-width:min\(1180px,max\(360px,calc\(\(100dvh - 270px\) \* 16 \/ 9 \+ 48px\)\)\)/);
+	assert.match(html, /container-type:inline-size/);
+	assert.match(html, /h1\{font-size:clamp\(18px,5\.4cqi,56px\)/);
+	assert.match(html, /stop-opacity="\.26"/);
+	assert.match(html, /\.scene text\{paint-order:stroke/);
+	assert.ok(!renderStoryboardHtml({ ...story(), style: "plain" }).includes(".scene text{paint-order"));
+});

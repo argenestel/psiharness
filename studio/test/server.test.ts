@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtemp, rm, writeFile, symlink, appendFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { startStudio } from "../src/server.ts";
+import { request } from "node:http";
+import { allowedHost, startStudio } from "../src/server.ts";
 import type { ConceptGraph } from "../../core/src/types.ts";
 
 const coreModule = "../../core/src/index.ts";
@@ -120,11 +121,22 @@ test("Studio serves learning data, reviews, artifacts and live changes", { timeo
 			assert.equal(Number(response.headers.get("content-length")), body.length);
 			assert.equal(await response.text(), body);
 		}
-		for (const range of ["bytes=20-30", "bytes=5-2", "bytes=-0", "bytes=0-1,5-6", "garbage"]) {
+		for (const range of ["bytes=20-30", "bytes=10-", "bytes=-0", "bytes=99999999999999999999-"]) {
 			const response = await get("/artifacts/t/clip.mp4", { headers: { Range: range } });
-			assert.equal(response.status, 416);
+			assert.equal(response.status, 416, range);
 			assert.equal(response.headers.get("content-range"), "bytes */10");
 		}
+		// Malformed, multi-range, foreign-unit and If-Range requests fall back to the full body (RFC 9110).
+		for (const headers of ([{ Range: "bytes=5-2" }, { Range: "bytes=0-1,5-6" }, { Range: "garbage" },
+			{ Range: "items=0-3" }, { Range: "bytes=0-3", "If-Range": "\"x\"" }] as Record<string, string>[])) {
+			const response = await get("/artifacts/t/clip.mp4", { headers });
+			assert.equal(response.status, 200, JSON.stringify(headers));
+			assert.equal(response.headers.get("content-range"), null);
+			assert.equal(await response.text(), "0123456789");
+		}
+		const headRange = await get("/artifacts/t/clip.mp4", { method: "HEAD", headers: { Range: "bytes=1-2" } });
+		assert.equal(headRange.status, 206);
+		assert.equal(headRange.headers.get("content-length"), "2");
 		const response = await get("/artifacts/t/clip.mp4", { method: "HEAD" });
 		assert.equal(response.headers.get("content-length"), "10");
 		assert.equal(await response.text(), "");
@@ -171,6 +183,34 @@ test("Studio serves learning data, reviews, artifacts and live changes", { timeo
 			assert.match(data, /data: \{\}/);
 			await reader.cancel();
 		} finally { clearTimeout(timeout); controller.abort(); }
+	});
+	await t.test("foreign Host headers are rejected to block DNS rebinding", async () => {
+		const port = new URL(studio.url).port;
+		const raw = (host: string) => new Promise<number>((resolve, reject) => {
+			const req = request({ host: "127.0.0.1", port, path: "/api/topics", headers: { Host: host } }, (res) => {
+				res.resume(); resolve(res.statusCode ?? 0);
+			});
+			req.on("error", reject); req.end();
+		});
+		assert.equal(await raw("evil.example:" + port), 421);
+		assert.equal(await raw("attacker.test"), 421);
+		for (const host of ["localhost:" + port, "127.0.0.1:" + port, "[::1]:" + port, "studio.localhost"]) {
+			assert.equal(await raw(host), 200, host);
+		}
+		assert.equal(allowedHost("box.lan:4173", "0.0.0.0", "box.lan, other"), true);
+		assert.equal(allowedHost("box.lan", "0.0.0.0", ""), false);
+		assert.equal(allowedHost("192.168.1.20:4173", "0.0.0.0", ""), true);
+		assert.equal(allowedHost(undefined, "127.0.0.1", ""), false);
+		assert.equal(allowedHost("a:b:c", "127.0.0.1", ""), false);
+	});
+	await t.test("SSE subscribers are released when the browser disconnects", async () => {
+		const controller = new AbortController();
+		const response = await get("/api/events", { signal: controller.signal });
+		await response.body!.getReader().read();
+		assert.equal(studio.clients(), 1);
+		controller.abort();
+		for (let i = 0; i < 50 && studio.clients(); i++) await new Promise((r) => setTimeout(r, 20));
+		assert.equal(studio.clients(), 0);
 	});
 	await t.test("close is idempotent", async () => { await studio.close(); await studio.close(); });
 });

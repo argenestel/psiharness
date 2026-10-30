@@ -199,7 +199,7 @@
           "kind": "text",
           "props": {
             "x": 800,
-            "y": 120,
+            "y": 165,
             "text": "A molecule redirects light",
             "size": 52,
             "align": "middle"
@@ -231,12 +231,27 @@
           "id": "incoming",
           "kind": "vector",
           "props": {
-            "x": 300,
+            "x": 250,
             "y": 450,
-            "dx": 360,
+            "dx": 400,
             "dy": 0,
-            "stroke": "#fff5e6",
-            "label": "incoming light"
+            "stroke": "#fff5e6"
+          },
+          "enter": {
+            "type": "draw",
+            "duration": 1
+          }
+        },
+        {
+          "id": "incoming-label",
+          "kind": "text",
+          "props": {
+            "x": 450,
+            "y": 420,
+            "text": "incoming light",
+            "size": 30,
+            "align": "middle",
+            "fill": "#fff5e6"
           },
           "enter": {
             "type": "draw",
@@ -249,8 +264,8 @@
           "props": {
             "x": 870,
             "y": 390,
-            "dx": 220,
-            "dy": -170,
+            "dx": 230,
+            "dy": -130,
             "stroke": "#58C4DD",
             "label": "scattered blue"
           },
@@ -269,7 +284,7 @@
             "x2": 1100,
             "y2": 700,
             "stroke": "#58C4DD",
-            "width": 7
+            "width": 4
           },
           "enter": {
             "type": "draw",
@@ -544,8 +559,8 @@
           "kind": "circle",
           "props": {
             "x": 800,
-            "y": 660,
-            "r": 300,
+            "y": 600,
+            "r": 280,
             "fill": "#2f689f"
           },
           "enter": {
@@ -557,8 +572,8 @@
           "kind": "circle",
           "props": {
             "x": 800,
-            "y": 660,
-            "r": 325,
+            "y": 600,
+            "r": 305,
             "fill": "none",
             "stroke": "#58C4DD"
           },
@@ -587,12 +602,12 @@
           "id": "sunset-ray",
           "kind": "arrow",
           "props": {
-            "x1": 180,
-            "y1": 370,
-            "x2": 1390,
-            "y2": 370,
+            "x1": 120,
+            "y1": 308,
+            "x2": 1480,
+            "y2": 308,
             "stroke": "#ff9351",
-            "width": 10
+            "width": 8
           },
           "enter": {
             "type": "draw",

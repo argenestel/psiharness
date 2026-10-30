@@ -26,7 +26,7 @@
 		}
 	],
 	"prompts": [
-		"Press Start and watch the bars approach the yellow expectation.",
+		"Press Start and watch the bars approach the expected curve.",
 		"Change the bias to 0.8."
 	]
 }

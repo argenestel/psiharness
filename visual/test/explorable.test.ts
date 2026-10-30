@@ -145,10 +145,12 @@ function browser(spec: ExplorableSpec, search = "") {
 		getContext() { return context; }
 	}
 	const coordinates: number[] = [];
+	const texts: string[] = [];
 	const context = new Proxy({}, { get(_target, key) {
 		if (["lineTo", "moveTo", "arc", "fillRect"].includes(String(key))) {
 			return (...args: number[]) => { coordinates.push(...args); };
 		}
+		if (key === "fillText") return (text: string) => { texts.push(text); };
 		return () => {};
 	}, set() { return true; } });
 	const canvas = new ElementStub();
@@ -167,7 +169,7 @@ function browser(spec: ExplorableSpec, search = "") {
 		window: { location: { search }, devicePixelRatio: 2, addEventListener: (name: string, fn: () => void) => events.set(name, fn) },
 		requestAnimationFrame: (fn: (time: number) => void) => { frame = fn; },
 	}, { timeout: 3000 });
-	return { nodes, canvas, elements, coordinates, events, tick: (time: number) => frame(time) };
+	return { nodes, canvas, elements, coordinates, texts, events, tick: (time: number) => frame(time) };
 }
 
 for (const template of templates) {
@@ -264,4 +266,44 @@ test("query presets ignore invalid values and clamp and snap to slider steps", (
 		assert.deepEqual(app.elements.filter(el => el.listeners.has("input")).map(el => el.value), expected);
 		assert.ok(app.coordinates.every(Number.isFinite));
 	}
+});
+
+test("growth axes use compact, consistent tick labels instead of mixed raw and exponent forms", () => {
+	const spec = demo("exponential-growth"); spec.params.mode = "doubling";
+	const app = browser(spec, "?rate=1&steps=40");
+	const ticks = app.texts.filter((t) => /^[\d.]+[kMBT]?$/.test(t));
+	assert.ok(ticks.some((t) => /[BT]$/.test(t)), ticks.join(" "));
+	assert.ok(!app.texts.some((t) => /^\d{6,}$/.test(t) || /e\+/.test(t)), app.texts.join(" "));
+	assert.ok(app.texts.includes("Linear") && app.texts.includes("Exponential"));
+});
+
+test("probability axis shows round gridlines and colour-neutral legend text", () => {
+	for (const style of ["plain", "kurzgesagt", "3b1b"] as const) {
+		const spec = demo("probability-sim"); spec.style = style;
+		const app = browser(spec);
+		app.nodes.get("controls")!.children.find((b) => b.textContent === "Start")!.listeners.get("click")!();
+		app.tick(100); app.tick(200);
+		const status = app.nodes.get("status")!.textContent;
+		assert.doesNotMatch(status, /yellow/i);
+		const yLabels = app.texts.filter((t) => /^0(\.\d+)?$/.test(t)).map(Number);
+		assert.ok(yLabels.length >= 3, app.texts.join(" "));
+		assert.ok(yLabels.every((v) => Math.abs(v * 100 - Math.round(v * 100)) < 1e-9), yLabels.join(" "));
+	}
+	assert.doesNotMatch(browser(demo("fourier-epicycles")).nodes.get("status")!.textContent, /yellow/i);
+});
+
+test("a repeated eigenvalue is labelled once", () => {
+	const spec = demo("linear-transform");
+	spec.sliders.forEach((slider, i) => { slider.value = [2, 1, 0, 2][i]!; });
+	const app = browser(spec);
+	assert.match(app.nodes.get("status")!.textContent, /Real eigenvalues: 2 \(repeated\)/);
+	assert.equal(app.texts.filter((t) => t.startsWith("λ")).length, 1);
+	spec.sliders.forEach((slider, i) => { slider.value = [2, 0, 0, 1][i]!; });
+	assert.equal(browser(spec).texts.filter((t) => t.startsWith("λ")).length, 2);
+});
+
+test("pages and canvas use the shared system font stack", () => {
+	const html = renderExplorableHtml(demo());
+	assert.match(html, /font:16px\/1\.5 ui-sans-serif,system-ui,-apple-system/);
+	assert.match(html, /const FONT = "ui-sans-serif/);
 });

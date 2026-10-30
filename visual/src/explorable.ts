@@ -150,6 +150,10 @@ export function validateExplorable(spec: ExplorableSpec | unknown): string[] {
 	return errors;
 }
 
+/** System font stack shared by the page and the canvas. */
+const FONT = ["ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "\"Segoe UI\"", "Roboto",
+	"\"Helvetica Neue\"", "Arial", "sans-serif"].join(",");
+
 function escapeHtml(value: string): string {
 	return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
@@ -165,7 +169,7 @@ export function renderExplorableHtml(spec: ExplorableSpec): string {
 	return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(spec.title)}</title><style>
-*{box-sizing:border-box}body{margin:0;background:${theme.bg};color:${theme.fg};font:16px system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:${theme.bg};color:${theme.fg};font:16px/1.5 ${FONT}}
 main{display:grid;grid-template-columns:minmax(0,1fr) 320px;min-height:100dvh}
 .stage{position:relative;min-width:0;height:100dvh;padding:16px}
 canvas{display:block;width:100%;height:100%;touch-action:none}
@@ -195,6 +199,7 @@ const spec = JSON.parse(document.getElementById("spec").textContent);
 const palette = ${safeJson(theme)};
 const expressionSource = ${expressionSource.toString()};
 const mathMembers = ${safeJson(MATH_MEMBERS)};
+const FONT = ${safeJson(FONT)};
 ${BROWSER_RUNTIME}
 </script></body></html>`;
 }
@@ -208,7 +213,20 @@ let trace = [], particles = [], histogram = [], total = 0, successes = 0, probab
 const accent = palette.accents, tau = Math.PI * 2;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const fmt = v => Number.isFinite(v) ? Number(v.toPrecision(5)).toString() : "undefined";
-const tickLabel = v => fmt(v).length > 7 ? v.toExponential(1) : fmt(v);
+// Axis labels stay short and consistent: 1.2k, 16.8M, 3.4e+15 rather than a mix of 8388600 and 1.7e+7.
+const tickLabel = v => {
+	const a = Math.abs(v);
+	if (!Number.isFinite(v)) return "∞";
+	if (a >= 1e15 || (a > 0 && a < 1e-3)) return v.toExponential(1);
+	for (const [unit, size] of [["T",1e12],["B",1e9],["M",1e6],["k",1e3]]) {
+		if (a >= size) return Number((v / size).toPrecision(3)) + unit;
+	}
+	return String(Number(v.toPrecision(4)));
+};
+const kurz = spec.style === "kurzgesagt";
+/** Soft glow for primary strokes in the Kurzgesagt style; 3b1b and plain stay crisp. */
+function glow(color, blur = 10) { if (kurz) { ctx.shadowColor = color; ctx.shadowBlur = blur; } }
+function noGlow() { ctx.shadowBlur = 0; ctx.shadowColor = "transparent"; }
 function message(text) { if (status.textContent !== text) status.textContent = text; }
 function compile(expr, variables) {
 	const source = expressionSource(expr, variables.concat(names), mathMembers);
@@ -281,7 +299,7 @@ function functionPlot() {
 	ctx.save(); ctx.beginPath(); ctx.rect(view.left,view.top,view.right-view.left,view.bottom-view.top); ctx.clip();
 	for (const [f,color,dash] of [[fn,accent[1],[]],[comparison,accent[0],[7,6]]]) {
 		if (!f) continue;
-		ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.setLineDash(dash);
+		ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.setLineDash(dash); glow(color);
 		let last = null;
 		for (let i=0;i<=1000;i++) {
 			const x=domain[0]+i/1000*(domain[1]-domain[0]), y=Y(f(x)), px=X(x);
@@ -289,7 +307,7 @@ function functionPlot() {
 			if (last === null || Math.abs(y-last)>height) ctx.moveTo(px,y); else ctx.lineTo(px,y);
 			last=y;
 		}
-		ctx.stroke();
+		ctx.stroke(); noGlow();
 	}
 	ctx.restore();
 	if (hover !== null) {
@@ -317,7 +335,9 @@ function linearTransform() {
 	let text="A = [["+fmt(a)+", "+fmt(b)+"], ["+fmt(c)+", "+fmt(d)+"]]";
 	if(p.showDeterminant) text+="\ndet(A) = "+fmt(det)+" (signed area)";
 	if(p.showEigen && discriminant>=0) {
-		const lambdas=[(a+d+Math.sqrt(discriminant))/2,(a+d-Math.sqrt(discriminant))/2];
+		const root=Math.sqrt(discriminant), repeated=root<1e-9;
+		// A repeated eigenvalue has one direction to show (or the whole plane): draw and label it once.
+		const lambdas=repeated?[(a+d)/2]:[(a+d+root)/2,(a+d-root)/2];
 		for(const [i,lambda] of lambdas.entries()) {
 			let vx=b,vy=lambda-a;
 			if(Math.hypot(vx,vy)<1e-8) { vx=lambda-d;vy=c; }
@@ -326,7 +346,7 @@ function linearTransform() {
 			ctx.setLineDash([6,5]);line(X(-vx*20),Y(-vy*20),X(vx*20),Y(vy*20),accent[1]);ctx.setLineDash([]);
 			label("λ = "+fmt(lambda),X(vx*(2+i)),Y(vy*(2+i)),accent[1]);
 		}
-		text+="\nReal eigenvalues: "+lambdas.map(fmt).join(", ");
+		text+="\nReal eigenvalues: "+(repeated?fmt(lambdas[0])+" (repeated)":lambdas.map(fmt).join(", "));
 	} else if(p.showEigen) text+="\nNo real eigenvector directions";
 	message(text);
 }
@@ -402,9 +422,10 @@ function fourier(dt) {
 		line(x,y,nx,ny,accent[0],1.5);x=nx;y=ny;
 	}
 	if(dt>0) { trace.push([x,y]);if(trace.length>2400) trace.shift(); }
-	ctx.beginPath();ctx.strokeStyle=accent[1];ctx.lineWidth=2;
-	trace.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.stroke();circle(x,y,4,accent[3],true);
-	message(n+" rotating Fourier coefficients\nDashed: full reconstruction · yellow: pen trace\nFrequencies retain their signs after sorting by amplitude.");
+	ctx.beginPath();ctx.strokeStyle=accent[1];ctx.lineWidth=2.5;glow(accent[1],12);
+	trace.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.stroke();noGlow();circle(x,y,4.5,accent[3],true);
+	message(n+" rotating Fourier coefficients\nDashed: the finished drawing · bright line: the pen so far\n"+
+		"Circles are sorted largest first; each keeps its own spin direction.");
 }
 /** probability-sim params: experiment:coin|dice|galton; coin is Binomial(1,p), Galton Binomial(10,p). */
 function resetProbability() {
@@ -436,25 +457,31 @@ function probability(dt) {
 		let choose=1;for(let j=1;j<=k;j++) choose*= (levels-j+1)/j;
 		return choose*bias**k*(1-bias)**(levels-k);
 	});
-	const max=Math.max(.1,...expected,...histogram.map(n=>n/Math.max(total,1)))*1.15;
-	const left=48,bottom=height-55,top=45,bar=(width-left-25)/histogram.length;
+	const peak=Math.max(.05,...expected,...histogram.map(n=>n/Math.max(total,1)))*1.12;
+	// Nice gridlines (0.1, 0.2 …) instead of a single odd maximum label.
+	const stepSize=[.01,.02,.05,.1,.2,.25,.5].find(s=>peak/s<=6)||1, max=Math.ceil(peak/stepSize)*stepSize;
+	const left=52,bottom=height-55,top=45,bar=(width-left-25)/histogram.length;
+	for(let v=0;v<=max+1e-9;v+=stepSize) { const y=bottom-v/max*(bottom-top);
+		line(left,y,width-25,y,palette.grid);label(fmt(Number(v.toFixed(3))),6,y+4,palette.fg); }
 	line(left,top,left,bottom,palette.fg);line(left,bottom,width-25,bottom,palette.fg);
-	label("Proportion",left,25);label(fmt(max),3,top+5);label("0",20,bottom);
-	ctx.beginPath();
+	label("Proportion of trials",left,25);
+	ctx.textAlign="center";
 	expected.forEach((v,i)=>{
-		const h=histogram[i]/Math.max(total,1)/max*(bottom-top),x=left+i*bar+bar*.1;
+		const h=histogram[i]/Math.max(total,1)/max*(bottom-top),x=left+i*bar+bar*.12;
 		ctx.fillStyle=accent[0];
-		if(spec.style==="kurzgesagt") { ctx.beginPath();ctx.roundRect(x,bottom-h,bar*.8,h,5);ctx.fill(); }
-		else ctx.fillRect(x,bottom-h,bar*.8,h);
-		label(String(p.experiment==="dice"?i+1:i),x+bar*.3,bottom+22);
+		if(kurz && ctx.roundRect) { ctx.beginPath();ctx.roundRect(x,bottom-h,bar*.76,h,[6,6,0,0]);ctx.fill(); }
+		else ctx.fillRect(x,bottom-h,bar*.76,h);
+		label(String(p.experiment==="dice"?i+1:i),left+(i+.5)*bar,bottom+22);
 	});
+	ctx.textAlign="start";
 	ctx.beginPath();ctx.strokeStyle=accent[1];ctx.lineWidth=3;
 	expected.forEach((v,i)=>{const x=left+(i+.5)*bar,y=bottom-v/max*(bottom-top);
 		if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});ctx.stroke();
 	expected.forEach((v,i)=>circle(left+(i+.5)*bar,bottom-v/max*(bottom-top),4,accent[1],true));
 	message((running?"Running":"Paused")+" · "+total+" trials\n"+
 		(p.experiment==="dice"?"Proportion of sixes: ":"Proportion of right / heads: ")+
-		fmt(total?successes/total:0)+"\nExpected: "+fmt(p.experiment==="dice"?1/6:bias)+"\nYellow: expected distribution");
+		fmt(total?successes/total:0)+"\nExpected: "+fmt(p.experiment==="dice"?1/6:bias)+
+		"\nBars: observed · line with dots: expected");
 }
 /** exponential-growth params: mode:compound|doubling|logistic. Starts at 1; linear=1+r*t;
  * compound=(1+r)^t; doubling=2^(r*t); logistic=K/(1+(K-1)*exp(-r*t)). */
@@ -471,15 +498,18 @@ function growth() {
 	const X=t=>left+t/steps*(right-left),Y=n=>plotBottom-n/maximum*(plotBottom-top);
 	for(let i=0;i<=4;i++) { const n=i/4*maximum,y=Y(n);line(left,y,right,y);label(tickLabel(n),2,y+4);
 		label(fmt(i/4*steps),X(i/4*steps)-5,plotBottom+20); }
-	label("Value",left,22);label("Steps",right-40,plotBottom+38);
+	label("Value",2,22);label("Steps",right-40,plotBottom+38);
 	ctx.save();ctx.beginPath();ctx.rect(left,top,right-left,plotBottom-top);ctx.clip();
 	for(const [f,color] of series) {
-		ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.beginPath();let started=false;
+		ctx.strokeStyle=color;ctx.lineWidth=2.5;glow(color);ctx.beginPath();let started=false;
 		for(let i=0;i<=600;i++) { const t=i/600*steps,n=f(t);if(!Number.isFinite(n)){started=false;continue;}
 			if(started)ctx.lineTo(X(t),Y(n));else ctx.moveTo(X(t),Y(n));started=true; }
-		ctx.stroke();
+		ctx.stroke();noGlow();
 	}ctx.restore();
-	series.forEach((s,i)=>label(s[2],left+i*(right-left)/series.length,top+18,s[1]));
+	// Legend: colour swatch + name, laid out in a row above the plot.
+	let legendX=left+60;
+	for(const [,color,name] of series) { circle(legendX,18,4,color,true);label(name,legendX+9,22,color);
+		const size=ctx.measureText?ctx.measureText(name):null;legendX+=(size&&size.width||60)+30; }
 	const target=p.mode==="logistic"?logistic(steps):exponential(steps);
 	const count=clamp(Math.floor(Number.isFinite(target)?target:1024),0,1024);
 	const cols=Math.max(1,Math.floor((width-70)/10)),dotTop=height*.75;
@@ -492,7 +522,12 @@ function growth() {
 }
 function draw(dt) {
 	ctx.clearRect(0,0,width,height);ctx.fillStyle=palette.bg;ctx.fillRect(0,0,width,height);
-	ctx.font="12px system-ui, sans-serif";ctx.lineCap=spec.style==="kurzgesagt"?"round":"butt";
+	// Layered depth: a soft lit centre for Kurzgesagt; 3b1b and plain stay flat and crisp.
+	const light=kurz&&ctx.createRadialGradient?ctx.createRadialGradient(width/2,height*.45,0,width/2,height*.45,
+		Math.max(width,height)*.7):null;
+	if(light&&light.addColorStop) { light.addColorStop(0,palette.panel);light.addColorStop(1,palette.bg);
+		ctx.fillStyle=light;ctx.fillRect(0,0,width,height); }
+	noGlow();ctx.font="12px "+FONT;ctx.lineCap=kurz?"round":"butt";ctx.lineJoin=kurz?"round":"miter";
 	switch(spec.template) {
 		case "function-plot":functionPlot();break;
 		case "linear-transform":linearTransform();break;

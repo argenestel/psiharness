@@ -3,28 +3,41 @@
 <title>Why is the sky blue?</title>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet">
 <style>
-*{box-sizing:border-box}body{margin:0;background:#080e28;color:#fff5e6;font-family:system-ui,sans-serif}
-main{max-width:1280px;margin:3vh auto;padding:16px}.screen{position:relative;aspect-ratio:16/9;overflow:hidden;
+*{box-sizing:border-box}body{margin:0;background:#080e28;color:#fff5e6;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+/* Keep stage, controls and narration on one desktop screen: the width follows the viewport height. */
+main{max-width:min(1180px,max(360px,calc((100dvh - 270px) * 16 / 9 + 48px)));margin:2vh auto;padding:24px}
+.screen{position:relative;aspect-ratio:16/9;overflow:hidden;container-type:inline-size;
 border-radius:18px;background:#0e1a40;box-shadow:0 18px 70px #0005}svg{display:block;width:100%;height:100%}
-.equation{font-family:monospace;white-space:pre-wrap}
+.equation{font-family:ui-serif,Georgia,serif;white-space:pre-wrap;line-height:1.4;overflow-wrap:anywhere}
+.equation code{font:inherit}.screen{border:1px solid #ffffff18}
+#scene-label{display:block;color:#22d4c5;font-size:11px;font-weight:700;letter-spacing:.18em;margin:0 0 14px}
 #title-card{position:absolute;inset:0;display:grid;place-content:center;
-text-align:center;padding:5%;background:#0e1a40ed}#title-card[hidden]{display:none}
-h1{font-size:clamp(24px,4vw,56px);margin:0 0 12px}
-#title-card p{color:#a4b5d8}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 0}
-button{background:#0e1a40;color:#fff5e6;border:1px solid #a4b5d8;
+text-align:center;padding:5%;background:radial-gradient(ellipse at 50% 40%,#0e1a40ed,#080e28)}#title-card[hidden]{display:none}
+h1{font-size:clamp(18px,5.4cqi,56px);line-height:1.15;margin:0 0 .4em;text-wrap:balance}
+#title-card p{color:#a4b5d8;margin:.3em 0;
+font-size:clamp(11px,1.9cqi,18px)}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 0}
+button{background:#0e1a40;color:#fff5e6;border:1px solid #a4b5d866;min-height:44px;font:inherit;
 padding:10px 18px;border-radius:24px;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:3px solid #22d4c5;outline-offset:3px}
-input{flex:1;min-width:140px;accent-color:#22d4c5}#clock{font-variant-numeric:tabular-nums;font-size:14px}
+button:hover{border-color:#22d4c5}#play{background:#22d4c5;color:#080e28;font-weight:700}
+input{flex:1;min-width:0;accent-color:#22d4c5}#clock{font-variant-numeric:tabular-nums;font-size:14px}
 #caption{min-height:4em;line-height:1.6;font-size:clamp(16px,2vw,21px);margin:0;padding:16px 22px;
-border-left:3px solid #22d4c5;background:#0e1a40;border-radius:6px}text{font-family:system-ui,sans-serif}
-.scene>[data-element]{filter:url(#psi-glow)}
-</style></head><body><main><div class="screen">
+border-left:3px solid #22d4c5;background:#0e1a40;border-radius:6px}text{font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.scene text{paint-order:stroke;stroke:#080e28;stroke-opacity:.5;stroke-width:6px;
+stroke-linejoin:round}
+.scene>[data-element]:has(circle),.scene>[data-element]:has(ellipse){filter:url(#psi-glow)}
+@media(max-width:600px){main{padding:12px;margin:12px auto}.screen{border-radius:12px}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}button{padding:10px 8px}
+#scrub{grid-column:1/-1;width:100%;margin:4px 0;min-height:32px}#clock{grid-column:1/-1;text-align:right}
+#caption{padding:14px 16px;font-size:16px}#scene-label{margin-bottom:10px}}
+@media(prefers-reduced-motion:reduce){button{transition:none}}
+</style></head><body><main><output id="scene-label" aria-label="Scene"></output><div class="screen">
 <svg id="stage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"
 role="img" aria-label="Why is the sky blue?">
 <defs><marker id="psi-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
 orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker>
-<radialGradient id="psi-vignette"><stop offset="40%" stop-color="#000" stop-opacity="0"/>
-<stop offset="100%" stop-color="#000" stop-opacity=".4"/></radialGradient>
+<radialGradient id="psi-vignette"><stop offset="58%" stop-color="#000" stop-opacity="0"/>
+<stop offset="100%" stop-color="#000" stop-opacity=".26"/></radialGradient>
 <filter id="psi-glow" x="-30%" y="-30%" width="160%" height="160%">
 <feFlood flood-color="#ffc582" flood-opacity=".15"/><feComposite in2="SourceAlpha" operator="in"/>
 <feGaussianBlur stdDeviation="5"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -42,19 +55,23 @@ orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke
 		<g data-layer="loop"><path d="M 0 770 Q 360 500 800 790 Q 1250 530 1600 760 L 1600 900 L 0 900 Z" fill="#22b99b" stroke="none"
 			stroke-width="3"/></g></g></g></g>
 <g data-element="observer"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><g transform="translate(800 680) scale(1.4)">
-			<path d="M -85 10 C -120 -100 90 -135 100 -10 C 130 110 -100 120 -85 10"
-			fill="#ff9351"/>
-			<ellipse cx="-65" cy="85" rx="22" ry="12" fill="#ff9351"/>
-			<ellipse cx="65" cy="85" rx="22" ry="12" fill="#ff9351"/>
-			<ellipse cx="-34" cy="-20" rx="28" ry="34" fill="white"/>
-			<ellipse cx="-28" cy="-16" rx="13" ry="19" fill="#182044"/>
-			<circle cx="-24" cy="-24" r="5" fill="white"/><ellipse cx="34" cy="-20" rx="28" ry="34" fill="white"/>
-			<ellipse cx="40" cy="-16" rx="13" ry="19" fill="#182044"/>
-			<circle cx="44" cy="-24" r="5" fill="white"/>
-			<ellipse cx="-65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<ellipse cx="65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<g fill="#182044"><ellipse cx="8" cy="30" rx="9" ry="10"/></g></g></g></g></g></g>
+		<g data-layer="loop"><g transform="translate(800 680) scale(1.4)" class="creature">
+			<ellipse cx="0" cy="104" rx="64" ry="9" fill="#000" opacity=".22"/>
+			<ellipse cx="-38" cy="88" rx="21" ry="12" fill="#ff9351"/><ellipse cx="38" cy="88" rx="21" ry="12" fill="#ff9351"/>
+			<ellipse cx="-38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<ellipse cx="38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<path d="M 0 -92 C 58 -92 92 -52 92 6 C 92 60 52 88 0 88 C -52 88 -92 60 -92 6 C -92 -52 -58 -92 0 -92 Z" fill="#ff9351"/>
+			<path d="M -92 6 C -92 60 -52 88 0 88 C 52 88 92 60 92 6 C 70 54 -70 54 -92 6 Z" fill="#000" opacity=".13"/>
+			<ellipse cx="-40" cy="-58" rx="24" ry="12" transform="rotate(-32 -40 -58)" fill="#fff" opacity=".28"/>
+			<ellipse cx="-30" cy="-20" rx="24" ry="28" fill="#fff"/>
+			<ellipse cx="-26" cy="-15" rx="13" ry="16" fill="#182044"/>
+			<circle cx="-21" cy="-22" r="5.5" fill="#fff"/><circle cx="-31" cy="-8" r="2.4" fill="#fff"/><ellipse cx="30" cy="-20" rx="24" ry="28" fill="#fff"/>
+			<ellipse cx="34" cy="-15" rx="13" ry="16" fill="#182044"/>
+			<circle cx="39" cy="-22" r="5.5" fill="#fff"/><circle cx="29" cy="-8" r="2.4" fill="#fff"/>
+			<path d="M 14 -60 Q 32 -72 50 -60" fill="none" stroke="#182044" stroke-width="5"
+				stroke-linecap="round"/>
+			<ellipse cx="-56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/>
+			<ellipse cx="56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/><ellipse cx="9" cy="36" rx="7" ry="6" fill="#182044"/></g></g></g></g></g>
 <g data-element="hook-title"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop"><text x="800" y="130" font-size="52" fill="#fff5e6"
 			font-weight="500" text-anchor="middle">Why is the sky blue?</text></g></g></g></g></g>
@@ -230,31 +247,38 @@ orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke
 <g class="scene" data-scene="build" style="display:none">
 		<rect x="-100000" y="-100000" width="200000" height="200000" fill="#0e1a40"/>
 		<g data-element="build-title"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><text x="800" y="120" font-size="52" fill="#fff5e6"
+		<g data-layer="loop"><text x="800" y="165" font-size="52" fill="#fff5e6"
 			font-weight="500" text-anchor="middle">A molecule redirects light</text></g></g></g></g>
 <g data-element="molecule"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><g transform="translate(800 450) scale(1)">
-			<path d="M -85 10 C -120 -100 90 -135 100 -10 C 130 110 -100 120 -85 10"
-			fill="#22d4c5"/>
-			<ellipse cx="-65" cy="85" rx="22" ry="12" fill="#22d4c5"/>
-			<ellipse cx="65" cy="85" rx="22" ry="12" fill="#22d4c5"/>
-			<ellipse cx="-34" cy="-20" rx="28" ry="34" fill="white"/>
-			<ellipse cx="-28" cy="-16" rx="13" ry="19" fill="#182044"/>
-			<circle cx="-24" cy="-24" r="5" fill="white"/><ellipse cx="34" cy="-20" rx="28" ry="34" fill="white"/>
-			<ellipse cx="40" cy="-16" rx="13" ry="19" fill="#182044"/>
-			<circle cx="44" cy="-24" r="5" fill="white"/>
-			<ellipse cx="-65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<ellipse cx="65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<g fill="#182044"><ellipse cx="0" cy="32" rx="14" ry="22"/></g></g></g></g></g></g>
+		<g data-layer="loop"><g transform="translate(800 450) scale(1)" class="creature">
+			<ellipse cx="0" cy="104" rx="64" ry="9" fill="#000" opacity=".22"/>
+			<ellipse cx="-38" cy="88" rx="21" ry="12" fill="#22d4c5"/><ellipse cx="38" cy="88" rx="21" ry="12" fill="#22d4c5"/>
+			<ellipse cx="-38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<ellipse cx="38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<path d="M 0 -92 C 58 -92 92 -52 92 6 C 92 60 52 88 0 88 C -52 88 -92 60 -92 6 C -92 -52 -58 -92 0 -92 Z" fill="#22d4c5"/>
+			<path d="M -92 6 C -92 60 -52 88 0 88 C 52 88 92 60 92 6 C 70 54 -70 54 -92 6 Z" fill="#000" opacity=".13"/>
+			<ellipse cx="-40" cy="-58" rx="24" ry="12" transform="rotate(-32 -40 -58)" fill="#fff" opacity=".28"/>
+			<ellipse cx="-30" cy="-20" rx="24" ry="28" fill="#fff"/>
+			<ellipse cx="-26" cy="-15" rx="13" ry="16" fill="#182044"/>
+			<circle cx="-21" cy="-22" r="5.5" fill="#fff"/><circle cx="-31" cy="-8" r="2.4" fill="#fff"/><ellipse cx="30" cy="-20" rx="24" ry="28" fill="#fff"/>
+			<ellipse cx="34" cy="-15" rx="13" ry="16" fill="#182044"/>
+			<circle cx="39" cy="-22" r="5.5" fill="#fff"/><circle cx="29" cy="-8" r="2.4" fill="#fff"/>
+			<path d="M -48 -62 Q -32 -74 -16 -64 M 16 -64 Q 32 -74 48 -62" fill="none" stroke="#182044"
+				stroke-width="5" stroke-linecap="round"/>
+			<ellipse cx="-56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/>
+			<ellipse cx="56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/><ellipse cx="0" cy="38" rx="11" ry="14" fill="#182044"/></g></g></g></g></g>
 <g data-element="incoming"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><path d="M 300 450 L 660 450" fill="none" stroke="#fff5e6"
-		stroke-width="4" marker-end="url(#psi-arrow)"/><text x="676" y="450" fill="#fff5e6" font-size="28">incoming light</text></g></g></g></g>
+		<g data-layer="loop"><path d="M 250 450 L 650 450" fill="none" stroke="#fff5e6"
+		stroke-width="4" marker-end="url(#psi-arrow)"/><text x="666" y="450" fill="#fff5e6" font-size="28"></text></g></g></g></g>
+<g data-element="incoming-label"><g data-layer="enter"><g data-layer="exit">
+		<g data-layer="loop"><text x="450" y="420" font-size="30" fill="#fff5e6"
+			font-weight="500" text-anchor="middle">incoming light</text></g></g></g></g>
 <g data-element="scatter-up"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><path d="M 870 390 L 1090 220" fill="none" stroke="#58C4DD"
-		stroke-width="4" marker-end="url(#psi-arrow)"/><text x="1106" y="220" fill="#58C4DD" font-size="28">scattered blue</text></g></g></g></g>
+		<g data-layer="loop"><path d="M 870 390 L 1100 260" fill="none" stroke="#58C4DD"
+		stroke-width="4" marker-end="url(#psi-arrow)"/><text x="1116" y="260" fill="#58C4DD" font-size="28">scattered blue</text></g></g></g></g>
 <g data-element="scatter-down"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop"><path d="M 850 520 L 1100 700" fill="none" stroke="#58C4DD"
-		stroke-width="7" marker-end="url(#psi-arrow)"/></g></g></g></g>
+		stroke-width="4" marker-end="url(#psi-arrow)"/></g></g></g></g>
 <g data-element="orbit-dot"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop"><g transform="translate(800 450) scale(1) rotate(0)"><g data-element="charge"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop"><circle cx="0" cy="-130" r="16" fill="#ffda66"
@@ -266,7 +290,7 @@ orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke
 			font-weight="500" text-anchor="middle">Shorter waves scatter more</text></g></g></g></g>
 <g data-element="law"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop"><foreignObject x="180" y="236"
-			width="1000" height="180"><div xmlns="http://www.w3.org/1999/xhtml"
+			width="1380" height="180"><div xmlns="http://www.w3.org/1999/xhtml"
 			class="equation" style="font-size:64px;color:#fff5e6"
 			><code>I \propto \lambda^{-4}</code></div></foreignObject></g></g></g></g>
 <g data-element="axes"><g data-layer="enter"><g data-layer="exit">
@@ -304,29 +328,32 @@ orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke
 		<g data-layer="loop"><text x="1130" y="420" font-size="40" fill="#fff5e6"
 			font-weight="500" text-anchor="middle">Stronger perception</text></g></g></g></g>
 <g data-element="happy-eye"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><g transform="translate(800 700) scale(1.1)">
-			<path d="M -85 10 C -120 -100 90 -135 100 -10 C 130 110 -100 120 -85 10"
-			fill="#ffda66"/>
-			<ellipse cx="-65" cy="85" rx="22" ry="12" fill="#ffda66"/>
-			<ellipse cx="65" cy="85" rx="22" ry="12" fill="#ffda66"/>
-			<ellipse cx="-34" cy="-20" rx="28" ry="34" fill="white"/>
-			<ellipse cx="-28" cy="-16" rx="13" ry="19" fill="#182044"/>
-			<circle cx="-24" cy="-24" r="5" fill="white"/><ellipse cx="34" cy="-20" rx="28" ry="34" fill="white"/>
-			<ellipse cx="40" cy="-16" rx="13" ry="19" fill="#182044"/>
-			<circle cx="44" cy="-24" r="5" fill="white"/>
-			<ellipse cx="-65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<ellipse cx="65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<g fill="#182044"><path d="M -24 22 Q 0 52 24 22" fill="none" stroke="#182044" stroke-width="6" stroke-linecap="round"/></g></g></g></g></g></g></g>
+		<g data-layer="loop"><g transform="translate(800 700) scale(1.1)" class="creature">
+			<ellipse cx="0" cy="104" rx="64" ry="9" fill="#000" opacity=".22"/>
+			<ellipse cx="-38" cy="88" rx="21" ry="12" fill="#ffda66"/><ellipse cx="38" cy="88" rx="21" ry="12" fill="#ffda66"/>
+			<ellipse cx="-38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<ellipse cx="38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<path d="M 0 -92 C 58 -92 92 -52 92 6 C 92 60 52 88 0 88 C -52 88 -92 60 -92 6 C -92 -52 -58 -92 0 -92 Z" fill="#ffda66"/>
+			<path d="M -92 6 C -92 60 -52 88 0 88 C 52 88 92 60 92 6 C 70 54 -70 54 -92 6 Z" fill="#000" opacity=".13"/>
+			<ellipse cx="-40" cy="-58" rx="24" ry="12" transform="rotate(-32 -40 -58)" fill="#fff" opacity=".28"/>
+			<ellipse cx="-30" cy="-20" rx="24" ry="28" fill="#fff"/>
+			<ellipse cx="-26" cy="-15" rx="13" ry="16" fill="#182044"/>
+			<circle cx="-21" cy="-22" r="5.5" fill="#fff"/><circle cx="-31" cy="-8" r="2.4" fill="#fff"/><ellipse cx="30" cy="-20" rx="24" ry="28" fill="#fff"/>
+			<ellipse cx="34" cy="-15" rx="13" ry="16" fill="#182044"/>
+			<circle cx="39" cy="-22" r="5.5" fill="#fff"/><circle cx="29" cy="-8" r="2.4" fill="#fff"/>
+			
+			<ellipse cx="-56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/>
+			<ellipse cx="56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/><path d="M -17 30 Q 0 46 17 30" fill="none" stroke="#182044" stroke-width="6" stroke-linecap="round"/></g></g></g></g></g></g>
 <g class="scene" data-scene="zoom-out" style="display:none">
 		<rect x="-100000" y="-100000" width="200000" height="200000" fill="#080e28"/>
 		<g data-element="zoom-title"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop"><text x="800" y="120" font-size="52" fill="#fff5e6"
 			font-weight="500" text-anchor="middle">A planet-wide blue glow</text></g></g></g></g>
 <g data-element="planet"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><circle cx="800" cy="660" r="300" fill="#2f689f"
+		<g data-layer="loop"><circle cx="800" cy="600" r="280" fill="#2f689f"
 			stroke="none"/></g></g></g></g>
 <g data-element="air-shell"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><circle cx="800" cy="660" r="325" fill="none"
+		<g data-layer="loop"><circle cx="800" cy="600" r="305" fill="none"
 			stroke="#58C4DD"/></g></g></g></g>
 <g data-element="air-dots"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop"><g data-drift="5.89" data-speed="1.3">
@@ -571,8 +598,8 @@ orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke
 				<circle cx="1006.98" cy="502.95"
 				r="4.93" fill="#58C4DD" opacity=".65"/></g></g></g></g></g>
 <g data-element="sunset-ray"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><path d="M 180 370 L 1390 370" fill="none" stroke="#ff9351"
-		stroke-width="10" marker-end="url(#psi-arrow)"/></g></g></g></g></g>
+		<g data-layer="loop"><path d="M 120 308 L 1480 308" fill="none" stroke="#ff9351"
+		stroke-width="8" marker-end="url(#psi-arrow)"/></g></g></g></g></g>
 <g class="scene" data-scene="recap" style="display:none">
 		<rect x="-100000" y="-100000" width="200000" height="200000" fill="#0e1a40"/>
 		<g data-element="recap-title"><g data-layer="enter"><g data-layer="exit">
@@ -584,19 +611,22 @@ orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke
 			stroke="none"/></g></g></g></g><g data-element="recap-arrow"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop"><path d="M 110 90 L 450 90" fill="none" stroke="#fff5e6"
 		stroke-width="8" marker-end="url(#psi-arrow)"/></g></g></g></g><g data-element="recap-molecule"><g data-layer="enter"><g data-layer="exit">
-		<g data-layer="loop"><g transform="translate(560 90) scale(0.85)">
-			<path d="M -85 10 C -120 -100 90 -135 100 -10 C 130 110 -100 120 -85 10"
-			fill="#22d4c5"/>
-			<ellipse cx="-65" cy="85" rx="22" ry="12" fill="#22d4c5"/>
-			<ellipse cx="65" cy="85" rx="22" ry="12" fill="#22d4c5"/>
-			<ellipse cx="-34" cy="-20" rx="28" ry="34" fill="white"/>
-			<ellipse cx="-28" cy="-16" rx="13" ry="19" fill="#182044"/>
-			<circle cx="-24" cy="-24" r="5" fill="white"/><ellipse cx="34" cy="-20" rx="28" ry="34" fill="white"/>
-			<ellipse cx="40" cy="-16" rx="13" ry="19" fill="#182044"/>
-			<circle cx="44" cy="-24" r="5" fill="white"/>
-			<ellipse cx="-65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<ellipse cx="65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<g fill="#182044"><path d="M -24 22 Q 0 52 24 22" fill="none" stroke="#182044" stroke-width="6" stroke-linecap="round"/></g></g></g></g></g></g><g data-element="recap-blue"><g data-layer="enter"><g data-layer="exit">
+		<g data-layer="loop"><g transform="translate(560 90) scale(0.85)" class="creature">
+			<ellipse cx="0" cy="104" rx="64" ry="9" fill="#000" opacity=".22"/>
+			<ellipse cx="-38" cy="88" rx="21" ry="12" fill="#22d4c5"/><ellipse cx="38" cy="88" rx="21" ry="12" fill="#22d4c5"/>
+			<ellipse cx="-38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<ellipse cx="38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<path d="M 0 -92 C 58 -92 92 -52 92 6 C 92 60 52 88 0 88 C -52 88 -92 60 -92 6 C -92 -52 -58 -92 0 -92 Z" fill="#22d4c5"/>
+			<path d="M -92 6 C -92 60 -52 88 0 88 C 52 88 92 60 92 6 C 70 54 -70 54 -92 6 Z" fill="#000" opacity=".13"/>
+			<ellipse cx="-40" cy="-58" rx="24" ry="12" transform="rotate(-32 -40 -58)" fill="#fff" opacity=".28"/>
+			<ellipse cx="-30" cy="-20" rx="24" ry="28" fill="#fff"/>
+			<ellipse cx="-26" cy="-15" rx="13" ry="16" fill="#182044"/>
+			<circle cx="-21" cy="-22" r="5.5" fill="#fff"/><circle cx="-31" cy="-8" r="2.4" fill="#fff"/><ellipse cx="30" cy="-20" rx="24" ry="28" fill="#fff"/>
+			<ellipse cx="34" cy="-15" rx="13" ry="16" fill="#182044"/>
+			<circle cx="39" cy="-22" r="5.5" fill="#fff"/><circle cx="29" cy="-8" r="2.4" fill="#fff"/>
+			
+			<ellipse cx="-56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/>
+			<ellipse cx="56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/><path d="M -17 30 Q 0 46 17 30" fill="none" stroke="#182044" stroke-width="6" stroke-linecap="round"/></g></g></g></g></g><g data-element="recap-blue"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop"><path d="M 650 120 L 880 310" fill="none" stroke="#58C4DD"
 		stroke-width="4" marker-end="url(#psi-arrow)"/><text x="896" y="310" fill="#58C4DD" font-size="28">a blue detour</text></g></g></g></g></g></g></g></g></g>
 <g data-element="recap-line"><g data-layer="enter"><g data-layer="exit">
@@ -612,7 +642,7 @@ orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke
 <datalist id="scene-ticks"><option value="0"></option><option value="9"></option><option value="18"></option><option value="27"></option><option value="36"></option><option value="45"></option><option value="54"></option></datalist><output id="clock"></output></div>
 <p id="caption" aria-live="polite">Every clear day, an ocean of blue hangs above us. But sunlight arrives with a whole rainbow of colors, so where does the blue come from?</p>
 <noscript><p>Every clear day, an ocean of blue hangs above us. But sunlight arrives with a whole rainbow of colors, so where does the blue come from?</p><p>Sunlight looks white because it contains many wavelengths. When it reaches Earth, it meets a thin atmosphere full of tiny gas molecules.</p><p>Zoom in on a molecule: its electric charges respond to passing light and reradiate some of it in new directions. This is scattering, and short wavelengths scatter much more strongly.</p><p>Rayleigh scattering grows roughly as one over wavelength to the fourth power. Blue light has a shorter wavelength than red, so it is scattered several times more strongly.</p><p>Violet light scatters even more strongly than blue. But our eyes are less sensitive to violet, and sunlight contains less of it: the mix we perceive is blue.</p><p>Across the whole sky, molecules send scattered blue light toward us from every direction. Near sunset, sunlight travels farther through the air, leaving more reds and oranges in the direct beam.</p><p>Sunlight brings the colors; tiny molecules scatter the shorter waves more strongly; our eyes turn that scattered mixture into a blue sky. Next time you look up, you are seeing light take a detour.</p></noscript></main>
-<script type="application/json" id="psi-data">{"storyboard":{"id":"why-the-sky-is-blue","title":"Why is the sky blue?","topic":"light-and-scattering","conceptId":"rayleigh-scattering","style":"kurzgesagt","palette":"kurzgesagt","scenes":[{"id":"hook","durationSec":9,"narration":"Every clear day, an ocean of blue hangs above us. But sunlight arrives with a whole rainbow of colors, so where does the blue come from?","elements":[{"id":"sky","kind":"rect","props":{"x":0,"y":0,"w":1600,"h":900,"fill":"#235fc0"},"enter":{"type":"fade"}},{"id":"sun","kind":"circle","props":{"x":1260,"y":200,"r":100,"fill":"#ffda66"},"enter":{"type":"pop"},"loop":{"type":"pulse","duration":4}},{"id":"hill","kind":"path","props":{"d":"M 0 770 Q 360 500 800 790 Q 1250 530 1600 760 L 1600 900 L 0 900 Z","fill":"#22b99b","stroke":"none"}},{"id":"observer","kind":"creature","props":{"x":800,"y":680,"size":140,"color":"#ff9351","mood":"curious"},"enter":{"type":"pop"},"loop":{"type":"float","duration":3}},{"id":"hook-title","kind":"text","props":{"x":800,"y":130,"text":"Why is the sky blue?","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}}]},{"id":"question","durationSec":9,"narration":"Sunlight looks white because it contains many wavelengths. When it reaches Earth, it meets a thin atmosphere full of tiny gas molecules.","elements":[{"id":"question-title","kind":"text","props":{"x":800,"y":130,"text":"White light. Tiny molecules.","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"sunlight","kind":"arrow","props":{"x1":150,"y1":400,"x2":850,"y2":400,"stroke":"#fff5e6","width":16},"enter":{"type":"draw","duration":1.4}},{"id":"atmosphere","kind":"particles","props":{"x":800,"y":220,"w":620,"h":430,"count":75,"color":"#22d4c5","speed":0.7},"enter":{"type":"fade","delay":0.5}},{"id":"earth","kind":"circle","props":{"x":1180,"y":1080,"r":510,"fill":"#326abb"},"enter":{"type":"slide","from":"bottom"}},{"id":"spectrum","kind":"group","props":{"x":250,"y":520,"scale":1,"rotate":-8,"children":[{"id":"red-wave","kind":"path","props":{"d":"M 0 0 Q 80 -65 160 0 T 320 0","stroke":"#FC6255","width":9}},{"id":"blue-wave","kind":"path","props":{"d":"M 0 100 Q 30 55 60 100 T 120 100 T 180 100 T 240 100 T 300 100","stroke":"#58C4DD","width":9}}]},"enter":{"type":"fade","delay":1}}]},{"id":"build","durationSec":9,"narration":"Zoom in on a molecule: its electric charges respond to passing light and reradiate some of it in new directions. This is scattering, and short wavelengths scatter much more strongly.","elements":[{"id":"build-title","kind":"text","props":{"x":800,"y":120,"text":"A molecule redirects light","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"molecule","kind":"creature","props":{"x":800,"y":450,"size":100,"color":"#22d4c5","mood":"surprised"},"enter":{"type":"grow"},"loop":{"type":"pulse","duration":2}},{"id":"incoming","kind":"vector","props":{"x":300,"y":450,"dx":360,"dy":0,"stroke":"#fff5e6","label":"incoming light"},"enter":{"type":"draw","duration":1}},{"id":"scatter-up","kind":"vector","props":{"x":870,"y":390,"dx":220,"dy":-170,"stroke":"#58C4DD","label":"scattered blue"},"enter":{"type":"draw","delay":1,"duration":1}},{"id":"scatter-down","kind":"arrow","props":{"x1":850,"y1":520,"x2":1100,"y2":700,"stroke":"#58C4DD","width":7},"enter":{"type":"draw","delay":1.4}},{"id":"orbit-dot","kind":"group","props":{"x":800,"y":450,"children":[{"id":"charge","kind":"circle","props":{"x":0,"y":-130,"r":16,"fill":"#ffda66"}}]},"loop":{"type":"orbit","duration":4}}],"camera":{"zoom":1.25,"x":800,"y":450}},{"id":"reveal","durationSec":9,"narration":"Rayleigh scattering grows roughly as one over wavelength to the fourth power. Blue light has a shorter wavelength than red, so it is scattered several times more strongly.","elements":[{"id":"reveal-title","kind":"text","props":{"x":800,"y":120,"text":"Shorter waves scatter more","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"law","kind":"equation","props":{"x":180,"y":300,"tex":"I \\propto \\lambda^{-4}","size":64}},{"id":"axes","kind":"path","props":{"d":"M 650 220 L 650 650 L 1400 650","stroke":"#a4b5d8","width":3},"enter":{"type":"draw"}},{"id":"rayleigh","kind":"graph","props":{"x":670,"y":240,"w":680,"h":390,"fn":"1/Math.pow(x,4)","domain":[0.4,0.7],"range":[0,40],"stroke":"#58C4DD"},"enter":{"type":"draw","duration":2,"delay":0.5}},{"id":"x-label","kind":"text","props":{"x":1000,"y":715,"text":"wavelength (micrometers)","size":28,"align":"middle"}},{"id":"y-label","kind":"text","props":{"x":700,"y":205,"text":"relative scattering","size":28}},{"id":"blue-label","kind":"text","props":{"x":700,"y":770,"text":"blue: shorter","fill":"#58C4DD","size":32}},{"id":"red-label","kind":"text","props":{"x":1150,"y":770,"text":"red: longer","fill":"#FC6255","size":32}}],"camera":{"zoom":1,"x":800,"y":450}},{"id":"violet","durationSec":9,"narration":"Violet light scatters even more strongly than blue. But our eyes are less sensitive to violet, and sunlight contains less of it: the mix we perceive is blue.","elements":[{"id":"violet-title","kind":"text","props":{"x":800,"y":140,"text":"Then why not violet?","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"violet-card","kind":"rect","props":{"x":200,"y":260,"w":500,"h":320,"rx":36,"fill":"#8163d5"},"enter":{"type":"slide","from":"left"},"exit":{"type":"fade","duration":0.8}},{"id":"blue-card","kind":"rect","props":{"x":880,"y":260,"w":500,"h":320,"rx":36,"fill":"#3286d6"},"enter":{"type":"slide","from":"right"}},{"id":"violet-text","kind":"text","props":{"x":450,"y":420,"text":"More scattering","size":40,"align":"middle"}},{"id":"blue-text","kind":"text","props":{"x":1130,"y":420,"text":"Stronger perception","size":40,"align":"middle"}},{"id":"happy-eye","kind":"creature","props":{"x":800,"y":700,"size":110,"color":"#ffda66","mood":"happy"},"enter":{"type":"pop","delay":1}}]},{"id":"zoom-out","durationSec":9,"narration":"Across the whole sky, molecules send scattered blue light toward us from every direction. Near sunset, sunlight travels farther through the air, leaving more reds and oranges in the direct beam.","elements":[{"id":"zoom-title","kind":"text","props":{"x":800,"y":120,"text":"A planet-wide blue glow","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"planet","kind":"circle","props":{"x":800,"y":660,"r":300,"fill":"#2f689f"},"enter":{"type":"grow"}},{"id":"air-shell","kind":"circle","props":{"x":800,"y":660,"r":325,"fill":"none","stroke":"#58C4DD"},"enter":{"type":"fade"},"loop":{"type":"pulse","duration":5}},{"id":"air-dots","kind":"particles","props":{"x":360,"y":200,"w":880,"h":320,"count":120,"color":"#58C4DD","speed":1.3}},{"id":"sunset-ray","kind":"arrow","props":{"x1":180,"y1":370,"x2":1390,"y2":370,"stroke":"#ff9351","width":10},"enter":{"type":"draw","duration":2}}],"camera":{"zoom":0.85,"x":820,"y":440},"background":"deep"},{"id":"recap","durationSec":9,"narration":"Sunlight brings the colors; tiny molecules scatter the shorter waves more strongly; our eyes turn that scattered mixture into a blue sky. Next time you look up, you are seeing light take a detour.","elements":[{"id":"recap-title","kind":"text","props":{"x":800,"y":140,"text":"Blue sky = light taking a detour","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"recap-group","kind":"group","props":{"x":250,"y":320,"scale":1,"rotate":0,"children":[{"id":"recap-sun","kind":"circle","props":{"x":0,"y":90,"r":75,"fill":"#ffda66"}},{"id":"recap-arrow","kind":"arrow","props":{"x1":110,"y1":90,"x2":450,"y2":90,"stroke":"#fff5e6","width":8}},{"id":"recap-molecule","kind":"creature","props":{"x":560,"y":90,"size":85,"color":"#22d4c5","mood":"happy"}},{"id":"recap-blue","kind":"vector","props":{"x":650,"y":120,"dx":230,"dy":190,"stroke":"#58C4DD","label":"a blue detour"}}]},"enter":{"type":"pop","duration":1}},{"id":"recap-line","kind":"text","props":{"x":800,"y":780,"text":"Sunlight + molecules + your eyes","size":40,"align":"middle"},"enter":{"type":"typewriter","delay":1,"duration":2}}],"camera":{"zoom":1,"x":800,"y":450}}]},"autoplay":false,"speech":false}</script>
+<script type="application/json" id="psi-data">{"storyboard":{"id":"why-the-sky-is-blue","title":"Why is the sky blue?","topic":"light-and-scattering","conceptId":"rayleigh-scattering","style":"kurzgesagt","palette":"kurzgesagt","scenes":[{"id":"hook","durationSec":9,"narration":"Every clear day, an ocean of blue hangs above us. But sunlight arrives with a whole rainbow of colors, so where does the blue come from?","elements":[{"id":"sky","kind":"rect","props":{"x":0,"y":0,"w":1600,"h":900,"fill":"#235fc0"},"enter":{"type":"fade"}},{"id":"sun","kind":"circle","props":{"x":1260,"y":200,"r":100,"fill":"#ffda66"},"enter":{"type":"pop"},"loop":{"type":"pulse","duration":4}},{"id":"hill","kind":"path","props":{"d":"M 0 770 Q 360 500 800 790 Q 1250 530 1600 760 L 1600 900 L 0 900 Z","fill":"#22b99b","stroke":"none"}},{"id":"observer","kind":"creature","props":{"x":800,"y":680,"size":140,"color":"#ff9351","mood":"curious"},"enter":{"type":"pop"},"loop":{"type":"float","duration":3}},{"id":"hook-title","kind":"text","props":{"x":800,"y":130,"text":"Why is the sky blue?","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}}]},{"id":"question","durationSec":9,"narration":"Sunlight looks white because it contains many wavelengths. When it reaches Earth, it meets a thin atmosphere full of tiny gas molecules.","elements":[{"id":"question-title","kind":"text","props":{"x":800,"y":130,"text":"White light. Tiny molecules.","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"sunlight","kind":"arrow","props":{"x1":150,"y1":400,"x2":850,"y2":400,"stroke":"#fff5e6","width":16},"enter":{"type":"draw","duration":1.4}},{"id":"atmosphere","kind":"particles","props":{"x":800,"y":220,"w":620,"h":430,"count":75,"color":"#22d4c5","speed":0.7},"enter":{"type":"fade","delay":0.5}},{"id":"earth","kind":"circle","props":{"x":1180,"y":1080,"r":510,"fill":"#326abb"},"enter":{"type":"slide","from":"bottom"}},{"id":"spectrum","kind":"group","props":{"x":250,"y":520,"scale":1,"rotate":-8,"children":[{"id":"red-wave","kind":"path","props":{"d":"M 0 0 Q 80 -65 160 0 T 320 0","stroke":"#FC6255","width":9}},{"id":"blue-wave","kind":"path","props":{"d":"M 0 100 Q 30 55 60 100 T 120 100 T 180 100 T 240 100 T 300 100","stroke":"#58C4DD","width":9}}]},"enter":{"type":"fade","delay":1}}]},{"id":"build","durationSec":9,"narration":"Zoom in on a molecule: its electric charges respond to passing light and reradiate some of it in new directions. This is scattering, and short wavelengths scatter much more strongly.","elements":[{"id":"build-title","kind":"text","props":{"x":800,"y":165,"text":"A molecule redirects light","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"molecule","kind":"creature","props":{"x":800,"y":450,"size":100,"color":"#22d4c5","mood":"surprised"},"enter":{"type":"grow"},"loop":{"type":"pulse","duration":2}},{"id":"incoming","kind":"vector","props":{"x":250,"y":450,"dx":400,"dy":0,"stroke":"#fff5e6"},"enter":{"type":"draw","duration":1}},{"id":"incoming-label","kind":"text","props":{"x":450,"y":420,"text":"incoming light","size":30,"align":"middle","fill":"#fff5e6"},"enter":{"type":"draw","duration":1}},{"id":"scatter-up","kind":"vector","props":{"x":870,"y":390,"dx":230,"dy":-130,"stroke":"#58C4DD","label":"scattered blue"},"enter":{"type":"draw","delay":1,"duration":1}},{"id":"scatter-down","kind":"arrow","props":{"x1":850,"y1":520,"x2":1100,"y2":700,"stroke":"#58C4DD","width":4},"enter":{"type":"draw","delay":1.4}},{"id":"orbit-dot","kind":"group","props":{"x":800,"y":450,"children":[{"id":"charge","kind":"circle","props":{"x":0,"y":-130,"r":16,"fill":"#ffda66"}}]},"loop":{"type":"orbit","duration":4}}],"camera":{"zoom":1.25,"x":800,"y":450}},{"id":"reveal","durationSec":9,"narration":"Rayleigh scattering grows roughly as one over wavelength to the fourth power. Blue light has a shorter wavelength than red, so it is scattered several times more strongly.","elements":[{"id":"reveal-title","kind":"text","props":{"x":800,"y":120,"text":"Shorter waves scatter more","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"law","kind":"equation","props":{"x":180,"y":300,"tex":"I \\propto \\lambda^{-4}","size":64}},{"id":"axes","kind":"path","props":{"d":"M 650 220 L 650 650 L 1400 650","stroke":"#a4b5d8","width":3},"enter":{"type":"draw"}},{"id":"rayleigh","kind":"graph","props":{"x":670,"y":240,"w":680,"h":390,"fn":"1/Math.pow(x,4)","domain":[0.4,0.7],"range":[0,40],"stroke":"#58C4DD"},"enter":{"type":"draw","duration":2,"delay":0.5}},{"id":"x-label","kind":"text","props":{"x":1000,"y":715,"text":"wavelength (micrometers)","size":28,"align":"middle"}},{"id":"y-label","kind":"text","props":{"x":700,"y":205,"text":"relative scattering","size":28}},{"id":"blue-label","kind":"text","props":{"x":700,"y":770,"text":"blue: shorter","fill":"#58C4DD","size":32}},{"id":"red-label","kind":"text","props":{"x":1150,"y":770,"text":"red: longer","fill":"#FC6255","size":32}}],"camera":{"zoom":1,"x":800,"y":450}},{"id":"violet","durationSec":9,"narration":"Violet light scatters even more strongly than blue. But our eyes are less sensitive to violet, and sunlight contains less of it: the mix we perceive is blue.","elements":[{"id":"violet-title","kind":"text","props":{"x":800,"y":140,"text":"Then why not violet?","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"violet-card","kind":"rect","props":{"x":200,"y":260,"w":500,"h":320,"rx":36,"fill":"#8163d5"},"enter":{"type":"slide","from":"left"},"exit":{"type":"fade","duration":0.8}},{"id":"blue-card","kind":"rect","props":{"x":880,"y":260,"w":500,"h":320,"rx":36,"fill":"#3286d6"},"enter":{"type":"slide","from":"right"}},{"id":"violet-text","kind":"text","props":{"x":450,"y":420,"text":"More scattering","size":40,"align":"middle"}},{"id":"blue-text","kind":"text","props":{"x":1130,"y":420,"text":"Stronger perception","size":40,"align":"middle"}},{"id":"happy-eye","kind":"creature","props":{"x":800,"y":700,"size":110,"color":"#ffda66","mood":"happy"},"enter":{"type":"pop","delay":1}}]},{"id":"zoom-out","durationSec":9,"narration":"Across the whole sky, molecules send scattered blue light toward us from every direction. Near sunset, sunlight travels farther through the air, leaving more reds and oranges in the direct beam.","elements":[{"id":"zoom-title","kind":"text","props":{"x":800,"y":120,"text":"A planet-wide blue glow","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"planet","kind":"circle","props":{"x":800,"y":600,"r":280,"fill":"#2f689f"},"enter":{"type":"grow"}},{"id":"air-shell","kind":"circle","props":{"x":800,"y":600,"r":305,"fill":"none","stroke":"#58C4DD"},"enter":{"type":"fade"},"loop":{"type":"pulse","duration":5}},{"id":"air-dots","kind":"particles","props":{"x":360,"y":200,"w":880,"h":320,"count":120,"color":"#58C4DD","speed":1.3}},{"id":"sunset-ray","kind":"arrow","props":{"x1":120,"y1":308,"x2":1480,"y2":308,"stroke":"#ff9351","width":8},"enter":{"type":"draw","duration":2}}],"camera":{"zoom":0.85,"x":820,"y":440},"background":"deep"},{"id":"recap","durationSec":9,"narration":"Sunlight brings the colors; tiny molecules scatter the shorter waves more strongly; our eyes turn that scattered mixture into a blue sky. Next time you look up, you are seeing light take a detour.","elements":[{"id":"recap-title","kind":"text","props":{"x":800,"y":140,"text":"Blue sky = light taking a detour","size":52,"align":"middle"},"enter":{"type":"typewriter","duration":1.3}},{"id":"recap-group","kind":"group","props":{"x":250,"y":320,"scale":1,"rotate":0,"children":[{"id":"recap-sun","kind":"circle","props":{"x":0,"y":90,"r":75,"fill":"#ffda66"}},{"id":"recap-arrow","kind":"arrow","props":{"x1":110,"y1":90,"x2":450,"y2":90,"stroke":"#fff5e6","width":8}},{"id":"recap-molecule","kind":"creature","props":{"x":560,"y":90,"size":85,"color":"#22d4c5","mood":"happy"}},{"id":"recap-blue","kind":"vector","props":{"x":650,"y":120,"dx":230,"dy":190,"stroke":"#58C4DD","label":"a blue detour"}}]},"enter":{"type":"pop","duration":1}},{"id":"recap-line","kind":"text","props":{"x":800,"y":780,"text":"Sunlight + molecules + your eyes","size":40,"align":"middle"},"enter":{"type":"typewriter","delay":1,"duration":2}}],"camera":{"zoom":1,"x":800,"y":450}}]},"autoplay":false,"speech":false,"idle":true}</script>
 <script id="katex-script" src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" async></script>
 <script>
 (() => {
@@ -636,10 +666,13 @@ function speak(index) {
   try { speech.speak(new SpeechSynthesisUtterance(sb.scenes[index].narration)); } catch (_) {}
  }
 }
-function addAnimation(node, frames, offset, duration, loop) {
+// Rotations must spin at constant angular velocity (a per-cycle ease would make epicycles lurch);
+// everything else eases for a soft, organic feel.
+const EASING = { orbit: "linear", draw: "ease-in-out" };
+function addAnimation(node, frames, offset, duration, loop, easing) {
  if (!node.animate) return;
  const animation = node.animate(frames, { duration: Math.max(1, duration * 1000),
-  iterations: loop ? Infinity : 1, fill: "both", easing: "ease-in-out" });
+  iterations: loop ? Infinity : 1, fill: "both", easing: easing || "ease-in-out" });
  animation.pause(); animations.push({ animation, offset });
 }
 function animate(node, anim, phase, sceneDuration) {
@@ -674,7 +707,7 @@ function animate(node, anim, phase, sceneDuration) {
  }
  node.style.transformBox = "fill-box"; node.style.transformOrigin = "center";
  if (phase === "exit") frames.reverse();
- addAnimation(node, frames, offset, duration, phase === "loop");
+ addAnimation(node, frames, offset, duration, phase === "loop", EASING[a.type]);
 }
 function activate(index) {
  animations.forEach(a => a.animation.cancel()); animations = [];
@@ -688,6 +721,11 @@ function activate(index) {
    animate(enter, e.enter, "enter", scene.durationSec);
    if (e.exit) animate(enter.firstElementChild, e.exit, "exit", scene.durationSec);
    if (e.loop) animate(enter.firstElementChild.firstElementChild, e.loop, "loop", scene.durationSec);
+   // Kurzgesagt-style characters are never perfectly still: give unanimated creatures a gentle idle bob.
+   else if (data.idle && e.kind === "creature") {
+    const idle = {type:"float", delay:.6, duration:3.4};
+    animate(enter.firstElementChild.firstElementChild, idle, "loop", scene.durationSec);
+   }
    if (e.kind === "group") visit(e.props.children);
   });
  }
@@ -697,7 +735,9 @@ function activate(index) {
   addAnimation(n, [{transform:"translate(0,0)"},{transform:"translate(" + d + "px,-18px)"},
    {transform:"translate(0,0)"}], 0, Number(n.dataset.drift), true);
  });
- caption.textContent = scene.narration; speak(index);
+ caption.textContent = scene.narration;
+ document.getElementById("scene-label").textContent = "SCENE " + (index + 1) + " / " + scenes.length;
+ speak(index);
 }
 // Camera x/y are absolute canvas centers when supplied; absent centers use (800,450).
 // Thus the default camera produces viewBox 0 0 1600 900, and zoom z gives 1600/z by 900/z.
@@ -725,6 +765,20 @@ function seek(value) {
  cancelSpeech(); time=Math.max(0,Math.min(total,value)); started=true;
  update(); if (playing) { cancelSpeech(); speak(active); }
 }
+// Public links use one-based scene numbers and seconds within that scene.
+function applyHash() {
+ const params = new URLSearchParams(window.location.hash.slice(1));
+ if (!params.has("scene") && !params.has("t")) return false;
+ const number = (key, fallback) => {
+  const raw = params.get(key);
+  return raw !== null && raw.trim() && Number.isFinite(Number(raw)) ? Number(raw) : fallback;
+ };
+ const index = Math.max(0, Math.min(scenes.length - 1, Math.trunc(number("scene", 1)) - 1));
+ const local = Math.max(0, Math.min(sb.scenes[index].durationSec - .000001, number("t", 0)));
+ playing = false; seek(starts[index] + local);
+ return true;
+}
+window.addEventListener("hashchange", applyHash);
 function move(delta) {
  seek(starts[Math.max(0,Math.min(sb.scenes.length-1,active+delta))]);
 }
@@ -750,13 +804,21 @@ window.addEventListener("pagehide", cancelSpeech);
 function typeset() {
  if (!window.katex) return;
  document.querySelectorAll(".equation").forEach(node => {
-  const tex=node.textContent;
+  const tex=node.dataset.tex || node.textContent;
   try { window.katex.render(tex,node,{throwOnError:false,trust:false}); } catch (_) { node.textContent=tex; }
  });
 }
+// Keep readable mathematics when the optional CDN is unavailable; preserve TeX for late loading.
+document.querySelectorAll(".equation").forEach(node => {
+ node.dataset.tex = node.textContent;
+ node.querySelector("code").textContent = node.textContent
+  .replace(/\\+/g, "\\").replace(/\\propto/g, "∝").replace(/\\lambda/g, "λ")
+  .replace(/\\times/g, "×").replace(/\\cdot/g, "·")
+  .replace(/\^\{(-?\d+)\}/g, (_, digits) => Array.from(digits, c => "⁰¹²³⁴⁵⁶⁷⁸⁹"[Number(c)] || "⁻").join(""));
+});
 const katexScript=document.getElementById("katex-script");
 katexScript.addEventListener("load", typeset); typeset();
 update(); requestAnimationFrame(frame);
-if(data.autoplay) setPlaying(true);
+if(!applyHash() && data.autoplay) setPlaying(true);
 })();
 </script></body></html>

@@ -216,20 +216,32 @@ function renderElement(e: StoryElement, palette: Palette): string {
 		case "group": body = `<g transform="translate(${x} ${y}) scale(${n("scale", 1)}) rotate(${n("rotate")})">` +
 			(p.children as StoryElement[]).map((child) => renderElement(child, palette)).join("") + "</g>"; break;
 		case "creature": {
-			const mouth = p.mood === "surprised" ? '<ellipse cx="0" cy="32" rx="14" ry="22"/>' :
-				p.mood === "curious" ? '<ellipse cx="8" cy="30" rx="9" ry="10"/>' :
-				'<path d="M -24 22 Q 0 52 24 22" fill="none" stroke="#182044" stroke-width="6" stroke-linecap="round"/>';
-			body = `<g transform="translate(${x} ${y}) scale(${n("size", 100) / 100})">
-			<path d="M -85 10 C -120 -100 90 -135 100 -10 C 130 110 -100 120 -85 10"
-			fill="${color("color", palette.accent[0]!)}"/>
-			<ellipse cx="-65" cy="85" rx="22" ry="12" fill="${color("color", palette.accent[0]!)}"/>
-			<ellipse cx="65" cy="85" rx="22" ry="12" fill="${color("color", palette.accent[0]!)}"/>
-			${[-34, 34].map((cx) => `<ellipse cx="${cx}" cy="-20" rx="28" ry="34" fill="white"/>
-			<ellipse cx="${cx + 6}" cy="-16" rx="13" ry="19" fill="#182044"/>
-			<circle cx="${cx + 10}" cy="-24" r="5" fill="white"/>`).join("")}
-			<ellipse cx="-65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<ellipse cx="65" cy="22" rx="18" ry="9" fill="#f465a9" opacity=".65"/>
-			<g fill="#182044">${mouth}</g></g>`;
+			// Kurzgesagt-like blob: one soft rounded body, a darker belly for depth, a sheen highlight,
+			// big glossy eyes and blush. Everything is drawn around (0,0) at size 100.
+			const ink = "#182044", skin = color("color", palette.accent[0]!);
+			const mouth = p.mood === "surprised" ? `<ellipse cx="0" cy="38" rx="11" ry="14" fill="${ink}"/>` :
+				p.mood === "curious" ? `<ellipse cx="9" cy="36" rx="7" ry="6" fill="${ink}"/>` :
+				`<path d="M -17 30 Q 0 46 17 30" fill="none" stroke="${ink}" stroke-width="6" stroke-linecap="round"/>`;
+			const brows = p.mood === "surprised"
+				? `<path d="M -48 -62 Q -32 -74 -16 -64 M 16 -64 Q 32 -74 48 -62" fill="none" stroke="${ink}"
+				stroke-width="5" stroke-linecap="round"/>`
+				: p.mood === "curious" ? `<path d="M 14 -60 Q 32 -72 50 -60" fill="none" stroke="${ink}" stroke-width="5"
+				stroke-linecap="round"/>` : "";
+			const blob = "M 0 -92 C 58 -92 92 -52 92 6 C 92 60 52 88 0 88 C -52 88 -92 60 -92 6 C -92 -52 -58 -92 0 -92 Z";
+			body = `<g transform="translate(${x} ${y}) scale(${n("size", 100) / 100})" class="creature">
+			<ellipse cx="0" cy="104" rx="64" ry="9" fill="#000" opacity=".22"/>
+			<ellipse cx="-38" cy="88" rx="21" ry="12" fill="${skin}"/><ellipse cx="38" cy="88" rx="21" ry="12" fill="${skin}"/>
+			<ellipse cx="-38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<ellipse cx="38" cy="92" rx="17" ry="7" fill="#000" opacity=".15"/>
+			<path d="${blob}" fill="${skin}"/>
+			<path d="M -92 6 C -92 60 -52 88 0 88 C 52 88 92 60 92 6 C 70 54 -70 54 -92 6 Z" fill="#000" opacity=".13"/>
+			<ellipse cx="-40" cy="-58" rx="24" ry="12" transform="rotate(-32 -40 -58)" fill="#fff" opacity=".28"/>
+			${[-30, 30].map((cx) => `<ellipse cx="${cx}" cy="-20" rx="24" ry="28" fill="#fff"/>
+			<ellipse cx="${cx + 4}" cy="-15" rx="13" ry="16" fill="${ink}"/>
+			<circle cx="${cx + 9}" cy="-22" r="5.5" fill="#fff"/><circle cx="${cx - 1}" cy="-8" r="2.4" fill="#fff"/>`).join("")}
+			${brows}
+			<ellipse cx="-56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/>
+			<ellipse cx="56" cy="16" rx="13" ry="7" fill="#f465a9" opacity=".5"/>${mouth}</g>`;
 			break;
 		}
 		case "particles": {
@@ -247,6 +259,10 @@ function renderElement(e: StoryElement, palette: Palette): string {
 	return `<g data-element="${h(e.id)}"><g data-layer="enter"><g data-layer="exit">
 		<g data-layer="loop">${body}</g></g></g></g>`;
 }
+
+/** System font stack: no web-font download, crisp on every platform. */
+const FONT = ["ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "\"Segoe UI\"", "Roboto",
+	"\"Helvetica Neue\"", "Arial", "sans-serif"].join(",");
 
 const CLIENT = String.raw`
 (() => {
@@ -270,10 +286,13 @@ function speak(index) {
   try { speech.speak(new SpeechSynthesisUtterance(sb.scenes[index].narration)); } catch (_) {}
  }
 }
-function addAnimation(node, frames, offset, duration, loop) {
+// Rotations must spin at constant angular velocity (a per-cycle ease would make epicycles lurch);
+// everything else eases for a soft, organic feel.
+const EASING = { orbit: "linear", draw: "ease-in-out" };
+function addAnimation(node, frames, offset, duration, loop, easing) {
  if (!node.animate) return;
  const animation = node.animate(frames, { duration: Math.max(1, duration * 1000),
-  iterations: loop ? Infinity : 1, fill: "both", easing: "ease-in-out" });
+  iterations: loop ? Infinity : 1, fill: "both", easing: easing || "ease-in-out" });
  animation.pause(); animations.push({ animation, offset });
 }
 function animate(node, anim, phase, sceneDuration) {
@@ -308,7 +327,7 @@ function animate(node, anim, phase, sceneDuration) {
  }
  node.style.transformBox = "fill-box"; node.style.transformOrigin = "center";
  if (phase === "exit") frames.reverse();
- addAnimation(node, frames, offset, duration, phase === "loop");
+ addAnimation(node, frames, offset, duration, phase === "loop", EASING[a.type]);
 }
 function activate(index) {
  animations.forEach(a => a.animation.cancel()); animations = [];
@@ -322,6 +341,11 @@ function activate(index) {
    animate(enter, e.enter, "enter", scene.durationSec);
    if (e.exit) animate(enter.firstElementChild, e.exit, "exit", scene.durationSec);
    if (e.loop) animate(enter.firstElementChild.firstElementChild, e.loop, "loop", scene.durationSec);
+   // Kurzgesagt-style characters are never perfectly still: give unanimated creatures a gentle idle bob.
+   else if (data.idle && e.kind === "creature") {
+    const idle = {type:"float", delay:.6, duration:3.4};
+    animate(enter.firstElementChild.firstElementChild, idle, "loop", scene.durationSec);
+   }
    if (e.kind === "group") visit(e.props.children);
   });
  }
@@ -441,23 +465,28 @@ export function renderStoryboardHtml(sb: Storyboard, opts: { autoplay?: boolean;
 <title>${h(sb.title)}</title>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet">
 <style>
-*{box-sizing:border-box}body{margin:0;background:${h(p.deep)};color:${h(p.fg)};font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-main{max-width:1180px;margin:2vh auto;padding:24px}.screen{position:relative;aspect-ratio:16/9;overflow:hidden;
+*{box-sizing:border-box}body{margin:0;background:${h(p.deep)};color:${h(p.fg)};font-family:${FONT}}
+/* Keep stage, controls and narration on one desktop screen: the width follows the viewport height. */
+main{max-width:min(1180px,max(360px,calc((100dvh - 270px) * 16 / 9 + 48px)));margin:2vh auto;padding:24px}
+.screen{position:relative;aspect-ratio:16/9;overflow:hidden;container-type:inline-size;
 border-radius:18px;background:${h(p.bg)};box-shadow:0 18px 70px #0005}svg{display:block;width:100%;height:100%}
 .equation{font-family:ui-serif,Georgia,serif;white-space:pre-wrap;line-height:1.4;overflow-wrap:anywhere}
 .equation code{font:inherit}.screen{border:1px solid #ffffff18}
 #scene-label{display:block;color:${h(p.accent[0])};font-size:11px;font-weight:700;letter-spacing:.18em;margin:0 0 14px}
 #title-card{position:absolute;inset:0;display:grid;place-content:center;
 text-align:center;padding:5%;background:radial-gradient(ellipse at 50% 40%,${h(p.bg)}ed,${h(p.deep)})}#title-card[hidden]{display:none}
-h1{font-size:clamp(24px,4vw,56px);margin:0 0 12px}
-#title-card p{color:${h(p.muted)}}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 0}
+h1{font-size:clamp(18px,5.4cqi,56px);line-height:1.15;margin:0 0 .4em;text-wrap:balance}
+#title-card p{color:${h(p.muted)};margin:.3em 0;
+font-size:clamp(11px,1.9cqi,18px)}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 0}
 button{background:${h(p.bg)};color:${h(p.fg)};border:1px solid ${h(p.muted)}66;min-height:44px;font:inherit;
 padding:10px 18px;border-radius:24px;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:3px solid ${h(p.accent[0])};outline-offset:3px}
 button:hover{border-color:${h(p.accent[0])}}#play{background:${h(p.accent[0])};color:${h(p.deep)};font-weight:700}
 input{flex:1;min-width:0;accent-color:${h(p.accent[0])}}#clock{font-variant-numeric:tabular-nums;font-size:14px}
 #caption{min-height:4em;line-height:1.6;font-size:clamp(16px,2vw,21px);margin:0;padding:16px 22px;
-border-left:3px solid ${h(p.accent[0])};background:${h(p.bg)};border-radius:6px}text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+border-left:3px solid ${h(p.accent[0])};background:${h(p.bg)};border-radius:6px}text{font-family:${FONT}}
+${sb.style === "plain" ? "" : `.scene text{paint-order:stroke;stroke:${h(p.deep)};stroke-opacity:.5;stroke-width:6px;
+stroke-linejoin:round}`}
 ${kurz ? '.scene>[data-element]:has(circle),.scene>[data-element]:has(ellipse){filter:url(#psi-glow)}' : ''}
 @media(max-width:600px){main{padding:12px;margin:12px auto}.screen{border-radius:12px}
 .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}button{padding:10px 8px}
@@ -469,8 +498,8 @@ ${kurz ? '.scene>[data-element]:has(circle),.scene>[data-element]:has(ellipse){f
 role="img" aria-label="${h(sb.title)}">
 <defs><marker id="psi-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
 orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker>
-<radialGradient id="psi-vignette"><stop offset="40%" stop-color="#000" stop-opacity="0"/>
-<stop offset="100%" stop-color="#000" stop-opacity=".4"/></radialGradient>
+<radialGradient id="psi-vignette"><stop offset="58%" stop-color="#000" stop-opacity="0"/>
+<stop offset="100%" stop-color="#000" stop-opacity=".26"/></radialGradient>
 <filter id="psi-glow" x="-30%" y="-30%" width="160%" height="160%">
 <feFlood flood-color="${h(p.glow)}" flood-opacity=".15"/><feComposite in2="SourceAlpha" operator="in"/>
 <feGaussianBlur stdDeviation="5"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -488,7 +517,7 @@ ${kurz ? `<svg aria-hidden="true" viewBox="0 0 1600 900" style="position:absolut
 <p id="caption" aria-live="polite">${h(sb.scenes[0]!.narration)}</p>
 <noscript>${sb.scenes.map((s) => `<p>${h(s.narration)}</p>`).join("")}</noscript></main>
 <script type="application/json" id="psi-data">${safeJson({
-	storyboard: sb, autoplay: !!opts.autoplay, speech: !!opts.speech,
+	storyboard: sb, autoplay: !!opts.autoplay, speech: !!opts.speech, idle: kurz,
 })}</script>
 <script id="katex-script" src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" async></script>
 <script>${CLIENT}</script></body></html>`;
