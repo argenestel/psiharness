@@ -1,0 +1,890 @@
+[
+	{
+		"id": "card-descending-loss-valley-1",
+		"topic": "backpropagation",
+		"conceptId": "descending-loss-valley",
+		"kind": "recall",
+		"prompt": "In the loss-landscape picture, what do position and height represent?",
+		"answer": "Position is one setting of all the model's parameters; height is the loss (error) at that setting.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-descending-loss-valley-2",
+		"topic": "backpropagation",
+		"conceptId": "descending-loss-valley",
+		"kind": "mcq",
+		"prompt": "What does training try to do in the loss landscape?",
+		"answer": "Move the parameters step by step toward lower loss.",
+		"choices": [
+			"Move the parameters step by step toward lower loss.",
+			"Climb to the highest point.",
+			"Jump straight to the global minimum in one move.",
+			"Change the training data until the loss is zero."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-descending-loss-valley-3",
+		"topic": "backpropagation",
+		"conceptId": "descending-loss-valley",
+		"kind": "predict",
+		"prompt": "A model takes one small downhill step on its loss landscape. Has it found the best possible weights?",
+		"answer": "Almost certainly not. One step only lowers the loss locally; many steps are needed, and they may settle in a local minimum or a flat region rather than the global best.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-descending-loss-valley-4",
+		"topic": "backpropagation",
+		"conceptId": "descending-loss-valley",
+		"kind": "explain",
+		"prompt": "Why is the landscape a metaphor rather than something the model can see?",
+		"answer": "The model can only evaluate the loss and its local slope at its current point; it never sees the whole surface, which has as many dimensions as there are weights. It navigates by local measurements, like walking downhill in fog.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-loss-1",
+		"topic": "backpropagation",
+		"conceptId": "loss",
+		"kind": "recall",
+		"prompt": "What does a loss function produce?",
+		"answer": "A single scalar score of how wrong the model's predictions are compared with the targets, usually averaged over examples.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-loss-2",
+		"topic": "backpropagation",
+		"conceptId": "loss",
+		"kind": "predict",
+		"prompt": "A prediction is ŷ = 1 and the target is y = 3. What is the squared-error loss ½(ŷ − y)²?",
+		"answer": "2, because ½(1 − 3)² = ½ · 4.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-loss-3",
+		"topic": "backpropagation",
+		"conceptId": "loss",
+		"kind": "mcq",
+		"prompt": "A model reaches very low training loss. What does that guarantee?",
+		"answer": "Nothing about new data: it can still overfit and generalize poorly.",
+		"choices": [
+			"Nothing about new data: it can still overfit and generalize poorly.",
+			"Perfect accuracy on new examples.",
+			"That the learning rate was optimal.",
+			"That the chosen loss was the right objective."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-loss-4",
+		"topic": "backpropagation",
+		"conceptId": "loss",
+		"kind": "explain",
+		"prompt": "Why must the loss be a single number rather than a list of per-example errors?",
+		"answer": "Going downhill needs one height to compare: a scalar says whether one set of weights is better or worse than another and gives a single gradient direction. Per-example errors are summed or averaged into that scalar.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-composition-1",
+		"topic": "backpropagation",
+		"conceptId": "composition",
+		"kind": "recall",
+		"prompt": "What does f(g(x)) mean?",
+		"answer": "Apply g to x first, then feed g's output into f.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-composition-2",
+		"topic": "backpropagation",
+		"conceptId": "composition",
+		"kind": "mcq",
+		"prompt": "With g(x) = x + 1 and f(u) = 2u, what is f(g(3))?",
+		"answer": "8",
+		"choices": [
+			"8",
+			"7",
+			"6",
+			"9"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-composition-3",
+		"topic": "backpropagation",
+		"conceptId": "composition",
+		"kind": "predict",
+		"prompt": "With g(x) = x + 1 and f(u) = 2u, is g(f(3)) the same as f(g(3))?",
+		"answer": "No: g(f(3)) = 7 while f(g(3)) = 8. The order of composition matters.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-composition-4",
+		"topic": "backpropagation",
+		"conceptId": "composition",
+		"kind": "explain",
+		"prompt": "In what sense is a neural network plus its loss one composition of functions?",
+		"answer": "Each layer consumes the previous layer's output (for example h = σ(W₁x), then ŷ = W₂h), and the loss is applied last, so the whole pipeline is one nested function L(f₂(f₁(x))).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-derivatives-1",
+		"topic": "backpropagation",
+		"conceptId": "derivatives",
+		"kind": "recall",
+		"prompt": "What does the derivative f′(a) measure?",
+		"answer": "The local rate of change of f at a: the slope of the tangent line, i.e. how much the output changes per tiny change of the input.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-derivatives-2",
+		"topic": "backpropagation",
+		"conceptId": "derivatives",
+		"kind": "predict",
+		"prompt": "f(x) = x² at x = 3. If x increases by 0.01, approximately how much does f change?",
+		"answer": "About 0.06: f′(3) = 6, so Δf ≈ 6 × 0.01.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-derivatives-3",
+		"topic": "backpropagation",
+		"conceptId": "derivatives",
+		"kind": "mcq",
+		"prompt": "The derivative of the loss with respect to a weight is negative. What happens if that weight increases slightly?",
+		"answer": "The loss decreases.",
+		"choices": [
+			"The loss decreases.",
+			"The loss increases.",
+			"The loss stays exactly the same.",
+			"The weight becomes negative."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-derivatives-4",
+		"topic": "backpropagation",
+		"conceptId": "derivatives",
+		"kind": "explain",
+		"prompt": "Why is a derivative a local statement rather than a description of the whole graph?",
+		"answer": "It is the limit of slopes over shrinking intervals around one point, so it only predicts the effect of tiny nudges there; elsewhere the slope can be different or even opposite.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-chain-rule-1",
+		"topic": "backpropagation",
+		"conceptId": "chain-rule",
+		"kind": "recall",
+		"prompt": "State the chain rule for y = f(g(x)).",
+		"answer": "dy/dx = f′(g(x)) · g′(x): the outer derivative, evaluated at the inner output, times the inner derivative.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-chain-rule-2",
+		"topic": "backpropagation",
+		"conceptId": "chain-rule",
+		"kind": "predict",
+		"prompt": "A tiny change passes through a stage that triples it and then a stage that halves it. What is the overall derivative?",
+		"answer": "1.5 = 3 × 0.5: local sensitivities multiply along the route.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-chain-rule-3",
+		"topic": "backpropagation",
+		"conceptId": "chain-rule",
+		"kind": "mcq",
+		"prompt": "If y = (3x + 1)², what is dy/dx at x = 1?",
+		"answer": "24",
+		"choices": [
+			"24",
+			"8",
+			"16",
+			"12"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-chain-rule-4",
+		"topic": "backpropagation",
+		"conceptId": "chain-rule",
+		"kind": "explain",
+		"prompt": "Why does the chain rule multiply derivatives instead of adding them?",
+		"answer": "Each stage scales a small change: g turns Δx into g′·Δx, and f turns that into f′·(g′·Δx). The total scale factor is the product f′·g′.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-partial-derivatives-1",
+		"topic": "backpropagation",
+		"conceptId": "partial-derivatives",
+		"kind": "recall",
+		"prompt": "What does ∂L/∂w₁ measure?",
+		"answer": "How L changes when w₁ changes slightly while every other input is held fixed.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-partial-derivatives-2",
+		"topic": "backpropagation",
+		"conceptId": "partial-derivatives",
+		"kind": "predict",
+		"prompt": "L(w₁, w₂) = w₁ · w₂. At (2, 5), what are ∂L/∂w₁ and ∂L/∂w₂?",
+		"answer": "∂L/∂w₁ = w₂ = 5 and ∂L/∂w₂ = w₁ = 2.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-partial-derivatives-3",
+		"topic": "backpropagation",
+		"conceptId": "partial-derivatives",
+		"kind": "mcq",
+		"prompt": "When computing ∂f/∂x for f(x, y) = x² + 3xy, how is y treated?",
+		"answer": "As a constant.",
+		"choices": [
+			"As a constant.",
+			"As another variable that changes along with x.",
+			"As zero.",
+			"It is removed from the function."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-partial-derivatives-4",
+		"topic": "backpropagation",
+		"conceptId": "partial-derivatives",
+		"kind": "explain",
+		"prompt": "Why are partial derivatives the natural tool for a network with millions of weights?",
+		"answer": "They isolate each weight's individual effect on the scalar loss, answering one 'what if this weight moved?' question per weight. Together they form the gradient.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-gradient-1",
+		"topic": "backpropagation",
+		"conceptId": "gradient",
+		"kind": "recall",
+		"prompt": "What is the gradient ∇L?",
+		"answer": "The vector of all partial derivatives of L, one per parameter. It points in the direction of steepest local increase.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-gradient-2",
+		"topic": "backpropagation",
+		"conceptId": "gradient",
+		"kind": "mcq",
+		"prompt": "Which direction gives the steepest local decrease of the loss?",
+		"answer": "−∇L",
+		"choices": [
+			"−∇L",
+			"∇L",
+			"Perpendicular to ∇L",
+			"Whichever single coordinate has the largest value"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-gradient-3",
+		"topic": "backpropagation",
+		"conceptId": "gradient",
+		"kind": "predict",
+		"prompt": "At some point, ∇L = (−1, −4). If you may nudge only one weight by a tiny amount, which nudge lowers L most?",
+		"answer": "Increase w₂. Its partial is −4, so a small increase in w₂ lowers L about four times as much as the same increase in w₁.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-gradient-4",
+		"topic": "backpropagation",
+		"conceptId": "gradient",
+		"kind": "explain",
+		"prompt": "Why does the gradient point uphill rather than downhill?",
+		"answer": "It collects rates of increase: a positive partial says that increasing that coordinate raises L. The vector of partials therefore points toward the fastest increase, and descent follows its negative.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-gradient-descent-1",
+		"topic": "backpropagation",
+		"conceptId": "gradient-descent",
+		"kind": "recall",
+		"prompt": "Write the gradient-descent update rule.",
+		"answer": "θ ← θ − η ∇L(θ), where η is the learning rate.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-gradient-descent-2",
+		"topic": "backpropagation",
+		"conceptId": "gradient-descent",
+		"kind": "predict",
+		"prompt": "On L(w) = ½w², gradient descent uses learning rate η = 2.5, starting from w = 1. What happens?",
+		"answer": "It diverges. Each step gives w ← w − 2.5w = −1.5w, so w goes 1, −1.5, 2.25, … bouncing farther from the minimum.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-gradient-descent-3",
+		"topic": "backpropagation",
+		"conceptId": "gradient-descent",
+		"kind": "mcq",
+		"prompt": "On L(w) = ½w² (curvature 1), which learning rates make gradient descent converge?",
+		"answer": "Any η with 0 < η < 2",
+		"choices": [
+			"Any η with 0 < η < 2",
+			"Any positive η",
+			"Only η < 0.1",
+			"Only η = 1"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-gradient-descent-4",
+		"topic": "backpropagation",
+		"conceptId": "gradient-descent",
+		"kind": "explain",
+		"prompt": "Why does gradient descent recompute the gradient after every step?",
+		"answer": "The gradient is local: after a move, the slope is different. Recomputing lets each step adapt to the new position, so the path bends with the landscape instead of following a stale direction.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-computation-graph-1",
+		"topic": "backpropagation",
+		"conceptId": "computation-graph",
+		"kind": "recall",
+		"prompt": "What are the nodes and edges of a computation graph?",
+		"answer": "Nodes are inputs, parameters, and elementary operations; edges carry each value to the operations that use it.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-computation-graph-2",
+		"topic": "backpropagation",
+		"conceptId": "computation-graph",
+		"kind": "mcq",
+		"prompt": "Why does a computation graph keep intermediate values?",
+		"answer": "The backward pass needs them to evaluate local derivatives.",
+		"choices": [
+			"The backward pass needs them to evaluate local derivatives.",
+			"To slow down the forward pass.",
+			"Because the loss depends only on the weights.",
+			"It does not; they are discarded immediately."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-computation-graph-3",
+		"topic": "backpropagation",
+		"conceptId": "computation-graph",
+		"kind": "predict",
+		"prompt": "An intermediate value h feeds two later operations. In the backward pass, how are the two sensitivities arriving at h combined?",
+		"answer": "They are added: ∂L/∂h is the sum of the contributions from every path that uses h.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-computation-graph-4",
+		"topic": "backpropagation",
+		"conceptId": "computation-graph",
+		"kind": "explain",
+		"prompt": "Draw L = ½(w₂ · (w₁ · x) − y)² as a computation graph in words.",
+		"answer": "Inputs x and y, weights w₁ and w₂. Node h = w₁ · x; node ŷ = w₂ · h; node e = ŷ − y; node L = ½e². Edges follow those dependencies from the inputs to the loss.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-forward-pass-1",
+		"topic": "backpropagation",
+		"conceptId": "forward-pass",
+		"kind": "recall",
+		"prompt": "What does the forward pass compute?",
+		"answer": "Every intermediate value from input to prediction to loss, caching them for the backward pass. It does not change any weights.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-forward-pass-2",
+		"topic": "backpropagation",
+		"conceptId": "forward-pass",
+		"kind": "predict",
+		"prompt": "With x = 1, w₁ = 2, w₂ = 0.5, y = 3, h = w₁x, ŷ = w₂h and L = ½(ŷ − y)², what are h, ŷ and L?",
+		"answer": "h = 2, ŷ = 1, L = ½(1 − 3)² = 2.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-forward-pass-3",
+		"topic": "backpropagation",
+		"conceptId": "forward-pass",
+		"kind": "mcq",
+		"prompt": "Which statement about the forward pass is true?",
+		"answer": "It records activations so the backward pass can reuse them.",
+		"choices": [
+			"It records activations so the backward pass can reuse them.",
+			"It updates the weights.",
+			"It runs from the loss back to the input.",
+			"Only the final prediction needs to be kept."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-forward-pass-4",
+		"topic": "backpropagation",
+		"conceptId": "forward-pass",
+		"kind": "explain",
+		"prompt": "Why must the forward pass happen before the backward pass?",
+		"answer": "Local derivatives depend on actual values, for example ∂ŷ/∂w₂ = h. Those values exist only after the forward pass computes them, and the loss must be known before blame can flow back from it.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-backward-pass-1",
+		"topic": "backpropagation",
+		"conceptId": "backward-pass",
+		"kind": "recall",
+		"prompt": "What value does the backward pass start with at the loss node?",
+		"answer": "∂L/∂L = 1: one unit of sensitivity, which is multiplied by local derivatives as it flows backward.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-backward-pass-2",
+		"topic": "backpropagation",
+		"conceptId": "backward-pass",
+		"kind": "predict",
+		"prompt": "For h = w₁x, ŷ = w₂h, L = ½(ŷ − y)² with x = 1, w₁ = 2, w₂ = 0.5, y = 3, what are ∂L/∂w₂ and ∂L/∂w₁?",
+		"answer": "∂L/∂ŷ = ŷ − y = −2. Then ∂L/∂w₂ = −2 · h = −4, ∂L/∂h = −2 · w₂ = −1, and ∂L/∂w₁ = −1 · x = −1.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-backward-pass-3",
+		"topic": "backpropagation",
+		"conceptId": "backward-pass",
+		"kind": "mcq",
+		"prompt": "Why is reverse mode efficient for training neural networks?",
+		"answer": "One backward pass gives the derivative of the scalar loss with respect to every weight.",
+		"choices": [
+			"One backward pass gives the derivative of the scalar loss with respect to every weight.",
+			"It avoids the chain rule entirely.",
+			"It reruns the network once per weight.",
+			"It feeds the data through the network in reverse to make new predictions."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-backward-pass-4",
+		"topic": "backpropagation",
+		"conceptId": "backward-pass",
+		"kind": "explain",
+		"prompt": "Explain backpropagation in terms of blame.",
+		"answer": "The loss starts with one unit of blame. Each node passes blame to its inputs, multiplied by how sensitive it is to them (its local derivative), and blame from several paths adds. The blame that reaches a weight is ∂L/∂w: how much the loss would change if that weight were nudged.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-weight-updates-1",
+		"topic": "backpropagation",
+		"conceptId": "weight-updates",
+		"kind": "recall",
+		"prompt": "What is the update for one weight w with gradient g and learning rate η?",
+		"answer": "w ← w − η · g.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-weight-updates-2",
+		"topic": "backpropagation",
+		"conceptId": "weight-updates",
+		"kind": "predict",
+		"prompt": "w₁ = 2 with ∂L/∂w₁ = −1 and w₂ = 0.5 with ∂L/∂w₂ = −4. With η = 0.1, what are the new weights, and what happens to the loss (originally 2) for x = 1, y = 3?",
+		"answer": "w₁ = 2.1 and w₂ = 0.9. The new prediction is 0.9 × 2.1 = 1.89, so L = ½(1.89 − 3)² ≈ 0.62.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-weight-updates-3",
+		"topic": "backpropagation",
+		"conceptId": "weight-updates",
+		"kind": "mcq",
+		"prompt": "A weight's gradient is positive. Which way does gradient descent move it?",
+		"answer": "Down, because the update subtracts η times a positive number.",
+		"choices": [
+			"Down, because the update subtracts η times a positive number.",
+			"Up, because the gradient is positive.",
+			"It stays where it is.",
+			"It depends only on the input."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-weight-updates-4",
+		"topic": "backpropagation",
+		"conceptId": "weight-updates",
+		"kind": "explain",
+		"prompt": "What goes wrong if the learning rate is far too large, or far too small?",
+		"answer": "Too large: steps overshoot the valley, so the loss oscillates or diverges. Too small: each step barely moves, so training crawls and can stall on plateaus.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	}
+]

@@ -1,0 +1,641 @@
+{
+	"topic": "entropy-information",
+	"goal": "Move from the felt uncertainty of a coin flip to the information measures that explain compression, prediction, dependence, model mismatch, and reliable communication.",
+	"learnerLevel": "student",
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z",
+	"lessons": [
+		{
+			"conceptId": "coin-flips",
+			"objective": "By the end you can describe a coin flip as a random experiment with possible outcomes and explain why a short run need not alternate.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A coin is suspended between heads and tails. Before it lands, there are two live possibilities, and a single answer will remove that uncertainty."
+				},
+				{
+					"kind": "question",
+					"text": "If ten flips happen to contain seven heads, does the next flip owe us tails, or can it still be independent?"
+				},
+				{
+					"kind": "build",
+					"text": "Label each outcome and collect many independent flips. The labels stay unpredictable one at a time while the running fraction begins to reveal a stable distribution."
+				},
+				{
+					"kind": "reveal",
+					"text": "Random does not mean patternless: probability describes the long-run weighting of outcomes without dictating the next result."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "A coin is a tiny information source. Every message it emits will later be measured by how much uncertainty it removes."
+				},
+				{
+					"kind": "recap",
+					"text": "Keep two ideas: a random variable has possible outcomes with probabilities, and independent trials do not compensate for earlier luck."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The two-door coin",
+					"goal": "Make two live possibilities and independent short runs intuitive.",
+					"path": "storyboards/surprise-is-information.json"
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Flip tree",
+					"goal": "Draw a binary branch for each successive flip."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Coin-flip information lab",
+					"goal": "Compare empirical frequencies for fair and biased coins.",
+					"path": "explorables/coin-flip-information-lab.json"
+				}
+			],
+			"checks": [
+				"card-coin-flips-1",
+				"card-coin-flips-2",
+				"card-coin-flips-3",
+				"card-coin-flips-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "probability",
+			"objective": "By the end you can assign and interpret probabilities that sum to one and distinguish a long-run frequency from a guarantee about a short run.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Two coins look alike, but one is balanced and one is weighted. Their labels are the same; their probability distributions are different."
+				},
+				{
+					"kind": "question",
+					"text": "What does p(heads)=0.7 actually promise, and what does it leave open about the next ten flips?"
+				},
+				{
+					"kind": "build",
+					"text": "Place probability mass into mutually exclusive buckets and require the buckets to add to one. Simulate trials and watch the observed fraction wobble around its target."
+				},
+				{
+					"kind": "reveal",
+					"text": "Probability weights possibilities before an observation; frequency is evidence collected after many observations. A probability is not a countdown to an exact quota."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Once possibilities have weights, we can ask a sharper question: how much information arrives when one weighted possibility is selected?"
+				},
+				{
+					"kind": "recap",
+					"text": "A probability lies between zero and one, exclusive outcomes sum to one, and repeated frequencies tend to reflect the assigned probabilities."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "Probability pie",
+					"goal": "Show probability as weighted possibility mass.",
+					"path": "storyboards/surprise-is-information.json"
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Mass conservation",
+					"goal": "Keep the total probability at one while moving weight between outcomes."
+				}
+			],
+			"checks": [
+				"card-probability-1",
+				"card-probability-2",
+				"card-probability-3",
+				"card-probability-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "surprise",
+			"objective": "By the end you can compute an outcome's surprise as -log₂ p and explain why rarer outcomes carry more bits.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A friend says the sun rose today. Another says a six-digit secret code matched by chance. Both are true, but they do not feel equally informative."
+				},
+				{
+					"kind": "question",
+					"text": "What numerical rule turns a probability into a quantity of information while making independent surprises add?"
+				},
+				{
+					"kind": "build",
+					"text": "Imagine locating an outcome by asking fair yes-or-no questions. An event with probability one needs no questions; an event with probability one-half needs one on average."
+				},
+				{
+					"kind": "reveal",
+					"text": "The rule is I(x) = -log₂ p(x). Halving probability adds one bit, so probability one-eighth means three bits of surprise."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "The logarithm changes multiplication of independent probabilities into addition of information, matching how question counts concatenate."
+				},
+				{
+					"kind": "recap",
+					"text": "Surprise belongs to an outcome, equals -log₂ of its probability, is zero for certainty, and grows as the outcome becomes rare."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The rare-message ladder",
+					"goal": "Make -log₂ p feel like the number of binary questions required.",
+					"path": "storyboards/surprise-is-information.json"
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Question tree",
+					"goal": "Show one extra binary fork for each halving of probability."
+				}
+			],
+			"checks": [
+				"card-surprise-1",
+				"card-surprise-2",
+				"card-surprise-3",
+				"card-surprise-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "expected-surprise",
+			"objective": "By the end you can calculate expected surprise by weighting each outcome's surprise by how often it occurs.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A source sometimes whispers a common word and rarely shouts an extraordinary one. The shout is more surprising, but the whisper happens more often."
+				},
+				{
+					"kind": "question",
+					"text": "What should we call the average number of information bits delivered per message over a long stream?"
+				},
+				{
+					"kind": "build",
+					"text": "Write each outcome's surprise beside its probability, multiply the two, and add all products. Frequent outcomes contribute repeatedly; rare outcomes contribute a large amount when they appear."
+				},
+				{
+					"kind": "reveal",
+					"text": "Expected surprise is E[I(X)] = Σ p(x)(-log₂ p(x)). It is a probability-weighted average, not simply the largest surprise."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "The same expectation will become entropy when the outcome variable is named X: uncertainty can be averaged before or after we call it information."
+				},
+				{
+					"kind": "recap",
+					"text": "To average surprise, multiply each surprise by its probability and sum. The result predicts long-run information per emitted symbol."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The weighted surprise scale",
+					"goal": "Show why common and rare outcomes both matter to an average.",
+					"path": "storyboards/surprise-is-information.json"
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Probability-weighted bars",
+					"goal": "Compare p(x) with I(x) before multiplying them."
+				}
+			],
+			"checks": [
+				"card-expected-surprise-1",
+				"card-expected-surprise-2",
+				"card-expected-surprise-3",
+				"card-expected-surprise-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "entropy",
+			"objective": "By the end you can compute Shannon entropy and explain why a uniform distribution has the greatest uncertainty for a fixed number of outcomes.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Two boxes each contain one of four symbols. In one box every symbol is equally likely; in the other, one symbol dominates. Which box is harder to predict?"
+				},
+				{
+					"kind": "question",
+					"text": "Can one number capture the average uncertainty of an entire probability distribution rather than one observed event?"
+				},
+				{
+					"kind": "build",
+					"text": "Reuse the expected-surprise calculation for a random variable X: H(X) = -Σ p(x)log₂ p(x). Move probability mass while keeping the number of labels fixed."
+				},
+				{
+					"kind": "reveal",
+					"text": "Entropy peaks when mass is spread uniformly and falls when mass concentrates. The formula is expected surprise measured in binary questions."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Entropy is a property of a distribution, not of a single outcome. It predicts the average coding effort before the next symbol is seen."
+				},
+				{
+					"kind": "recap",
+					"text": "Entropy is expected surprise, uses -Σp log₂p, and reaches its maximum when all allowed outcomes are equally likely."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "Uncertainty landscapes",
+					"goal": "Contrast concentrated and uniform probability mass.",
+					"path": "storyboards/surprise-is-information.json"
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Entropy surface",
+					"goal": "Plot entropy of a binary source as p moves from 0 to 1."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Coin-flip information lab",
+					"goal": "Bias the coin and connect each outcome's frequency and surprise to the entropy of the source.",
+					"path": "explorables/coin-flip-information-lab.json"
+				}
+			],
+			"checks": [
+				"card-entropy-1",
+				"card-entropy-2",
+				"card-entropy-3",
+				"card-entropy-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "bits",
+			"objective": "By the end you can interpret a bit as one fair binary choice and convert between bits of entropy and average binary decisions.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A single yes-or-no answer chooses one branch of a fork. That fork is the smallest useful measuring stick for information."
+				},
+				{
+					"kind": "question",
+					"text": "Why does base 2 make the unit of entropy a bit, and why is a fair coin exactly one bit?"
+				},
+				{
+					"kind": "build",
+					"text": "Build a binary decision tree. One level separates two equally likely outcomes; two levels separate four; each level adds one binary decision."
+				},
+				{
+					"kind": "reveal",
+					"text": "A bit is one binary digit and one fair binary choice. A fair coin has H = -2(1/2)log₂(1/2) = 1 bit per flip."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Choosing another logarithm base changes the unit, while the underlying uncertainty stays the same; base 2 is natural for digital codes."
+				},
+				{
+					"kind": "recap",
+					"text": "Bits count binary alternatives. One fair binary choice carries one bit, and entropy in base 2 predicts average bits per symbol."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "One fork, one bit",
+					"goal": "Connect binary branches to the unit of information.",
+					"path": "storyboards/surprise-is-information.json"
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Binary question tree",
+					"goal": "Count tree depth as bits of information."
+				}
+			],
+			"checks": [
+				"card-bits-1",
+				"card-bits-2",
+				"card-bits-3",
+				"card-bits-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "cross-entropy",
+			"objective": "By the end you can explain cross-entropy as the average number of bits assigned by a model Q to data generated by P.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A weather forecaster predicts tomorrow using the wrong climate model. Even when the forecast is plausible, its code words may be longer than necessary."
+				},
+				{
+					"kind": "question",
+					"text": "How can we score predictions when reality follows P but the predictor assigns probabilities Q?"
+				},
+				{
+					"kind": "build",
+					"text": "For each outcome, charge -log₂ Q(x), then average those charges using the real source probabilities p(x). The scorer asks how surprised Q is by P's messages."
+				},
+				{
+					"kind": "reveal",
+					"text": "Cross-entropy H(P,Q) = Eₚ[-log₂Q(x)]. It is the expected code length when a Q-shaped code is used on P-shaped data."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Using Q=P gives ordinary entropy. Any mismatch makes the average bill no smaller, with severe punishment for predictions that assign nearly zero probability to events that occur."
+				},
+				{
+					"kind": "recap",
+					"text": "Cross-entropy uses P to average and Q inside the surprise. It measures predictive or coding cost under a possibly wrong model."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The forecast bill",
+					"goal": "Make cross-entropy an average prediction cost."
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Two coding trees",
+					"goal": "Compare ideal P code lengths with Q-assigned lengths."
+				}
+			],
+			"checks": [
+				"card-cross-entropy-1",
+				"card-cross-entropy-2",
+				"card-cross-entropy-3",
+				"card-cross-entropy-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "joint-entropy",
+			"objective": "By the end you can read joint entropy as the average information needed to identify a pair of outcomes together.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A weather report has two fields: sky and wind. Reading both together creates a larger answer than reading either field alone."
+				},
+				{
+					"kind": "question",
+					"text": "How many bits are needed on average to identify the row and column of a paired outcome?"
+				},
+				{
+					"kind": "build",
+					"text": "Lay joint probabilities into a grid. Each cell is one pair (x,y), and the entropy formula treats those cells as the outcomes of one larger random variable."
+				},
+				{
+					"kind": "reveal",
+					"text": "H(X,Y) = -Σ p(x,y)log₂p(x,y). It is symmetric in X and Y and can be smaller than H(X)+H(Y) when the variables share structure."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "A pair can be identified in stages: ask about X, then ask what remains about Y. That staged view leads directly to conditional entropy and the chain rule."
+				},
+				{
+					"kind": "recap",
+					"text": "Joint entropy treats pairs as combined outcomes, counts bits to identify both, and reflects dependence through the joint probabilities."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The probability grid",
+					"goal": "Turn paired outcomes into cells whose entropy can be counted."
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Joint distribution grid",
+					"goal": "Compare independent and diagonal joint distributions."
+				}
+			],
+			"checks": [
+				"card-joint-entropy-1",
+				"card-joint-entropy-2",
+				"card-joint-entropy-3",
+				"card-joint-entropy-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "conditional-entropy",
+			"objective": "By the end you can interpret H(Y|X) as uncertainty remaining after X is observed and use the chain rule for a pair.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A clue reveals the weather at noon. The wind is still uncertain, but less of the original possibility cloud remains."
+				},
+				{
+					"kind": "question",
+					"text": "How many more bits are needed to identify Y after the receiver already knows X?"
+				},
+				{
+					"kind": "build",
+					"text": "For each value of X, inspect the conditional distribution of Y. Compute its entropy, then average those entropies according to how often each X occurs."
+				},
+				{
+					"kind": "reveal",
+					"text": "H(Y|X) is the uncertainty left in Y after X. The chain rule H(X,Y)=H(X)+H(Y|X) adds the first-stage and remaining questions."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Conditioning cannot increase average uncertainty: a clue can leave the same fog or remove some, but it cannot make the original prediction harder in expectation."
+				},
+				{
+					"kind": "recap",
+					"text": "Conditional entropy is leftover uncertainty, is generally directional, and completes joint entropy through the chain rule."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The clue that clears fog",
+					"goal": "Show uncertainty shrinking after a condition is known."
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Conditional question tree",
+					"goal": "Separate H(X) from the remaining H(Y|X)."
+				}
+			],
+			"checks": [
+				"card-conditional-entropy-1",
+				"card-conditional-entropy-2",
+				"card-conditional-entropy-3",
+				"card-conditional-entropy-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "mutual-information",
+			"objective": "By the end you can calculate mutual information as the uncertainty about one variable removed by observing the other.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Two screens show related events. Looking at one screen lets you predict something about the other, so their uncertainty clouds overlap."
+				},
+				{
+					"kind": "question",
+					"text": "How many bits about Y do we gain, on average, when X is revealed?"
+				},
+				{
+					"kind": "build",
+					"text": "Start with H(Y), then subtract the uncertainty that remains, H(Y|X). Equivalently compare H(X)+H(Y) with the joint entropy H(X,Y)."
+				},
+				{
+					"kind": "reveal",
+					"text": "I(X;Y)=H(Y)-H(Y|X). It is symmetric despite the conditional expression, nonnegative, and zero when X and Y are independent."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Mutual information is the reusable currency of a communication link: it quantifies shared predictive content without requiring a linear relationship."
+				},
+				{
+					"kind": "recap",
+					"text": "Mutual information measures shared bits, equals entropy removed by a clue, and can be written H(X)+H(Y)-H(X,Y)."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "Shared bits",
+					"goal": "Make mutual information the overlap between two uncertainty sets."
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Information Venn",
+					"goal": "Track H(Y), H(Y|X), and their difference."
+				}
+			],
+			"checks": [
+				"card-mutual-information-1",
+				"card-mutual-information-2",
+				"card-mutual-information-3",
+				"card-mutual-information-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "kl-divergence",
+			"objective": "By the end you can explain KL divergence as the extra average bits paid when coding P-generated data with Q.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A map uses the wrong scale: every route is still possible, but the traveler repeatedly takes detours because the model's weights are off."
+				},
+				{
+					"kind": "question",
+					"text": "Can the cost of a wrong probability model be isolated from the source's unavoidable entropy?"
+				},
+				{
+					"kind": "build",
+					"text": "Compare the cross-entropy bill H(P,Q) with the ideal entropy H(P). Their difference is the average penalty for Q's mismatch."
+				},
+				{
+					"kind": "reveal",
+					"text": "Dₖₗ(P‖Q)=H(P,Q)-H(P)=Σp(x)log₂[p(x)/q(x)]. It is nonnegative, zero only when P and Q agree, and asymmetric."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "KL divergence is not a geometric distance, but it is a precise model-improvement signal: lower divergence means fewer wasted bits under the real source."
+				},
+				{
+					"kind": "recap",
+					"text": "Subtract ideal entropy from cross-entropy to get extra bits. Keep the order P‖Q: reality supplies the average, Q supplies the code."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The wrong-map detour",
+					"goal": "Show KL as wasted coding effort due to a model mismatch."
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "P versus Q cost",
+					"goal": "Decompose cross-entropy into entropy plus divergence."
+				}
+			],
+			"checks": [
+				"card-kl-divergence-1",
+				"card-kl-divergence-2",
+				"card-kl-divergence-3",
+				"card-kl-divergence-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "channel-coding-intuition",
+			"objective": "By the end you can explain why redundancy helps a receiver correct noise and why reliable communication has a capacity limit.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A message crosses a shaking tube. A few beads land in the wrong places, but a patterned message gives the receiver clues about what was intended."
+				},
+				{
+					"kind": "question",
+					"text": "How can extra structure protect information, and why can no clever code make an arbitrarily noisy channel perfect?"
+				},
+				{
+					"kind": "build",
+					"text": "Separate compression from error correction: first remove predictable redundancy, then add carefully chosen redundancy so valid codewords remain distinguishable after noise."
+				},
+				{
+					"kind": "reveal",
+					"text": "A channel has a capacity: below the mutual-information limit, sufficiently long codes can make error probability small; above it, reliable transmission is impossible."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Entropy sets how much a source needs to say, mutual information measures what the channel conveys, and coding matches the rate to the channel's safe region."
+				},
+				{
+					"kind": "recap",
+					"text": "Redundancy buys recoverability, noise consumes capacity, and Shannon's insight is an achievable reliable rate rather than a guarantee for every finite code."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The noisy message pipe",
+					"goal": "Make redundancy and channel capacity intuitive."
+				},
+				{
+					"kind": "diagram",
+					"style": "3b1b",
+					"title": "Codewords through noise",
+					"goal": "Separate source bits, added redundancy, channel errors, and decoding."
+				}
+			],
+			"checks": [
+				"card-channel-coding-intuition-1",
+				"card-channel-coding-intuition-2",
+				"card-channel-coding-intuition-3",
+				"card-channel-coding-intuition-4"
+			],
+			"status": "planned"
+		}
+	]
+}

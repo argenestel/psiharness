@@ -1,0 +1,890 @@
+[
+	{
+		"id": "card-coin-flips-1",
+		"topic": "entropy-information",
+		"conceptId": "coin-flips",
+		"kind": "predict",
+		"prompt": "A fair coin has landed heads 7 times in its last 10 flips. What is the probability that the next flip is tails?",
+		"answer": "Still 1/2. Independent flips have no memory, so earlier luck creates no debt for the coin to repay.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-coin-flips-2",
+		"topic": "entropy-information",
+		"conceptId": "coin-flips",
+		"kind": "mcq",
+		"prompt": "Which statement best describes a fair coin flip before it lands?",
+		"answer": "Two outcomes are still possible, each with probability 1/2.",
+		"choices": [
+			"Two outcomes are still possible, each with probability 1/2.",
+			"The outcome has no probability because it is random.",
+			"Heads and tails must alternate over a short run.",
+			"Tails is due if heads came up last time."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-coin-flips-3",
+		"topic": "entropy-information",
+		"conceptId": "coin-flips",
+		"kind": "explain",
+		"prompt": "Why can a short run of fair flips look streaky without the coin being biased?",
+		"answer": "Short runs fluctuate a lot, and streaks like HHHH are common in genuinely random sequences. Only the long-run fraction settles toward 1/2, and it settles by dilution over many flips, not by later flips compensating.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-coin-flips-4",
+		"topic": "entropy-information",
+		"conceptId": "coin-flips",
+		"kind": "recall",
+		"prompt": "In information terms, what does a coin flip do at the moment it lands?",
+		"answer": "It answers a question: it removes the uncertainty between two possible outcomes by closing one branch of the fork.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-probability-1",
+		"topic": "entropy-information",
+		"conceptId": "probability",
+		"kind": "recall",
+		"prompt": "What must the probabilities of a complete set of mutually exclusive outcomes add up to?",
+		"answer": "Exactly 1.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-probability-2",
+		"topic": "entropy-information",
+		"conceptId": "probability",
+		"kind": "predict",
+		"prompt": "A coin has p(heads) = 0.7. Will exactly 70 of the next 100 flips be heads?",
+		"answer": "Probably not exactly. 70 is the expected count, but the actual count typically wobbles by about 4 or 5 (standard deviation √21 ≈ 4.6). Over many more flips the fraction tends toward 0.7.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-probability-3",
+		"topic": "entropy-information",
+		"conceptId": "probability",
+		"kind": "mcq",
+		"prompt": "A fair six-sided die is rolled. What is the probability of rolling a number greater than 4?",
+		"answer": "1/3",
+		"choices": [
+			"1/3",
+			"1/2",
+			"1/6",
+			"2/3"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-probability-4",
+		"topic": "entropy-information",
+		"conceptId": "probability",
+		"kind": "explain",
+		"prompt": "Explain the difference between a probability and an observed frequency.",
+		"answer": "A probability is a weight a model assigns before the trials; a frequency is a count measured after them. Over many independent trials the frequency tends toward the probability, but in any short run it need not match.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-surprise-1",
+		"topic": "entropy-information",
+		"conceptId": "surprise",
+		"kind": "recall",
+		"prompt": "What is the surprise (self-information) of an outcome with probability p, in bits?",
+		"answer": "I = −log₂ p bits, equivalently log₂(1/p).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-surprise-2",
+		"topic": "entropy-information",
+		"conceptId": "surprise",
+		"kind": "predict",
+		"prompt": "An outcome's probability is halved from 1/4 to 1/8. How does its surprise change?",
+		"answer": "It rises by exactly one bit, from 2 bits to 3 bits: each halving of probability adds one yes-or-no question.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-surprise-3",
+		"topic": "entropy-information",
+		"conceptId": "surprise",
+		"kind": "mcq",
+		"prompt": "How many bits of surprise does rolling a 6 on a fair die carry?",
+		"answer": "About 2.58 bits",
+		"choices": [
+			"About 2.58 bits",
+			"6 bits",
+			"1/6 of a bit",
+			"1 bit"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-surprise-4",
+		"topic": "entropy-information",
+		"conceptId": "surprise",
+		"kind": "explain",
+		"prompt": "Why does information use the logarithm of probability rather than the probability itself?",
+		"answer": "Independent events multiply their probabilities, but their information should add. The logarithm turns products into sums: two fair coins have probability 1/4 and carry 1 + 1 = 2 bits, matching the two yes-or-no questions needed.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-expected-surprise-1",
+		"topic": "entropy-information",
+		"conceptId": "expected-surprise",
+		"kind": "recall",
+		"prompt": "Write the expected surprise of a source X in terms of its probabilities.",
+		"answer": "E[I(X)] = Σ p(x) · (−log₂ p(x)): each outcome's surprise weighted by how often it occurs.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-expected-surprise-2",
+		"topic": "entropy-information",
+		"conceptId": "expected-surprise",
+		"kind": "predict",
+		"prompt": "A coin lands heads with probability 0.9. Heads carries about 0.15 bits and tails about 3.32 bits. Roughly what is the average surprise per flip?",
+		"answer": "About 0.47 bits: 0.9 × 0.152 + 0.1 × 3.32 ≈ 0.14 + 0.33.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-expected-surprise-3",
+		"topic": "entropy-information",
+		"conceptId": "expected-surprise",
+		"kind": "mcq",
+		"prompt": "Why isn't the average surprise of the 0.9/0.1 coin equal to its largest surprise, 3.32 bits?",
+		"answer": "The surprising outcome happens only 10% of the time, so it is weighted by 0.1.",
+		"choices": [
+			"The surprising outcome happens only 10% of the time, so it is weighted by 0.1.",
+			"Averaged surprise can never exceed 1 bit.",
+			"The common outcome carries exactly zero information.",
+			"Averages ignore rare outcomes."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-expected-surprise-4",
+		"topic": "entropy-information",
+		"conceptId": "expected-surprise",
+		"kind": "explain",
+		"prompt": "Explain why both common and rare outcomes matter to the average surprise.",
+		"answer": "Common outcomes contribute a small surprise many times; rare outcomes contribute a large surprise occasionally. The product p · (−log₂ p) captures both frequency and size, so neither can be ignored.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-entropy-1",
+		"topic": "entropy-information",
+		"conceptId": "entropy",
+		"kind": "recall",
+		"prompt": "What is Shannon entropy H(X)?",
+		"answer": "H(X) = −Σ p(x) log₂ p(x): the expected surprise of X, the average number of bits (fair yes-or-no questions) needed per outcome.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-entropy-2",
+		"topic": "entropy-information",
+		"conceptId": "entropy",
+		"kind": "mcq",
+		"prompt": "Which four-outcome distribution has the highest entropy?",
+		"answer": "(1/4, 1/4, 1/4, 1/4)",
+		"choices": [
+			"(1/4, 1/4, 1/4, 1/4)",
+			"(1/2, 1/4, 1/8, 1/8)",
+			"(0.97, 0.01, 0.01, 0.01)",
+			"(1, 0, 0, 0)"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-entropy-3",
+		"topic": "entropy-information",
+		"conceptId": "entropy",
+		"kind": "predict",
+		"prompt": "A coin is made more and more biased, from p(heads) = 0.5 toward p(heads) = 1. What happens to its entropy?",
+		"answer": "It falls from 1 bit toward 0 bits. The outcome becomes predictable, so each flip resolves less uncertainty.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-entropy-4",
+		"topic": "entropy-information",
+		"conceptId": "entropy",
+		"kind": "explain",
+		"prompt": "Why doesn't adding more possible outcomes always increase entropy?",
+		"answer": "Entropy depends on how probability is spread, not on how many labels exist. A 100-outcome source where one outcome has probability 0.99 has about 0.15 bits, far less than a fair coin's 1 bit.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-bits-1",
+		"topic": "entropy-information",
+		"conceptId": "bits",
+		"kind": "recall",
+		"prompt": "What is one bit of information?",
+		"answer": "The information in one fair binary choice: the answer to a yes-or-no question whose two answers were equally likely.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-bits-2",
+		"topic": "entropy-information",
+		"conceptId": "bits",
+		"kind": "mcq",
+		"prompt": "How many bits of entropy does a uniform choice among 8 outcomes have?",
+		"answer": "3 bits",
+		"choices": [
+			"3 bits",
+			"8 bits",
+			"4 bits",
+			"1 bit"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-bits-3",
+		"topic": "entropy-information",
+		"conceptId": "bits",
+		"kind": "predict",
+		"prompt": "A biased coin still has two labels, but p(heads) = 0.9. Does it carry 1 bit of entropy per flip?",
+		"answer": "No, about 0.47 bits. Two labels set a maximum of 1 bit, reached only when both outcomes are equally likely.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-bits-4",
+		"topic": "entropy-information",
+		"conceptId": "bits",
+		"kind": "explain",
+		"prompt": "Why does base 2 make entropy come out in bits, and what changes if you use the natural log?",
+		"answer": "log₂ counts halvings, which are binary questions, so the unit is the bit. Using ln measures the same uncertainty in nats (1 nat ≈ 1.443 bits). Only the unit changes, not the uncertainty.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-cross-entropy-1",
+		"topic": "entropy-information",
+		"conceptId": "cross-entropy",
+		"kind": "recall",
+		"prompt": "Define the cross-entropy H(P, Q).",
+		"answer": "H(P, Q) = −Σ p(x) log₂ q(x): the average surprise that model Q assigns to outcomes that actually follow P.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-cross-entropy-2",
+		"topic": "entropy-information",
+		"conceptId": "cross-entropy",
+		"kind": "predict",
+		"prompt": "Reality is a fair coin, P = (1/2, 1/2), but your model says Q = (0.9, 0.1). What is the cross-entropy?",
+		"answer": "About 1.74 bits: ½(−log₂ 0.9) + ½(−log₂ 0.1) ≈ ½(0.152) + ½(3.32). That is more than the true entropy of 1 bit.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-cross-entropy-3",
+		"topic": "entropy-information",
+		"conceptId": "cross-entropy",
+		"kind": "mcq",
+		"prompt": "A model assigns probability 0 to an outcome that then happens. What is its cross-entropy penalty for that outcome?",
+		"answer": "Infinite, because −log₂ 0 is unbounded.",
+		"choices": [
+			"Infinite, because −log₂ 0 is unbounded.",
+			"Zero, because the model was confident.",
+			"Exactly 1 bit.",
+			"It depends only on how many outcomes exist."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-cross-entropy-4",
+		"topic": "entropy-information",
+		"conceptId": "cross-entropy",
+		"kind": "explain",
+		"prompt": "Why is cross-entropy a natural training loss for classifiers?",
+		"answer": "It charges −log q(true label), so the model pays little when it gives the truth high probability and a lot when it is confidently wrong. Minimizing the average pushes Q toward the data distribution P.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-joint-entropy-1",
+		"topic": "entropy-information",
+		"conceptId": "joint-entropy",
+		"kind": "recall",
+		"prompt": "Define the joint entropy H(X, Y).",
+		"answer": "H(X, Y) = −Σ p(x, y) log₂ p(x, y): the entropy of the pair treated as one combined outcome.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-joint-entropy-2",
+		"topic": "entropy-information",
+		"conceptId": "joint-entropy",
+		"kind": "predict",
+		"prompt": "X and Y are two independent fair coins. What is H(X, Y)?",
+		"answer": "2 bits: four equally likely pairs. For independent variables H(X, Y) = H(X) + H(Y) = 1 + 1.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-joint-entropy-3",
+		"topic": "entropy-information",
+		"conceptId": "joint-entropy",
+		"kind": "mcq",
+		"prompt": "Y is always an exact copy of a fair coin X. What is H(X, Y)?",
+		"answer": "1 bit",
+		"choices": [
+			"1 bit",
+			"2 bits",
+			"0 bits",
+			"0.5 bits"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-joint-entropy-4",
+		"topic": "entropy-information",
+		"conceptId": "joint-entropy",
+		"kind": "explain",
+		"prompt": "Why can H(X, Y) be smaller than H(X) + H(Y)?",
+		"answer": "When the variables share structure, some pairs are rare or impossible, so fewer questions identify the pair. The sum H(X) + H(Y) double-counts the shared part; equality holds only for independent variables.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-conditional-entropy-1",
+		"topic": "entropy-information",
+		"conceptId": "conditional-entropy",
+		"kind": "recall",
+		"prompt": "State the chain rule for the entropy of a pair.",
+		"answer": "H(X, Y) = H(X) + H(Y | X): the bits to identify X plus the bits still needed for Y once X is known.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-conditional-entropy-2",
+		"topic": "entropy-information",
+		"conceptId": "conditional-entropy",
+		"kind": "predict",
+		"prompt": "If Y is completely determined by X, what is H(Y | X)?",
+		"answer": "0 bits: once X is known, nothing about Y remains uncertain.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-conditional-entropy-3",
+		"topic": "entropy-information",
+		"conceptId": "conditional-entropy",
+		"kind": "mcq",
+		"prompt": "On average, what does learning X do to the uncertainty about Y?",
+		"answer": "It reduces it or leaves it unchanged, never increases it: H(Y | X) ≤ H(Y).",
+		"choices": [
+			"It reduces it or leaves it unchanged, never increases it: H(Y | X) ≤ H(Y).",
+			"It always increases it.",
+			"It always removes it completely.",
+			"It has no effect unless X and Y are identical."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-conditional-entropy-4",
+		"topic": "entropy-information",
+		"conceptId": "conditional-entropy",
+		"kind": "explain",
+		"prompt": "Explain how to compute H(Y | X) from conditional distributions.",
+		"answer": "For each value x, compute the entropy of Y's conditional distribution p(y | x), then average those entropies weighted by p(x): H(Y | X) = Σ p(x) H(Y | X = x).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-mutual-information-1",
+		"topic": "entropy-information",
+		"conceptId": "mutual-information",
+		"kind": "recall",
+		"prompt": "Give two equivalent formulas for the mutual information I(X; Y).",
+		"answer": "I(X; Y) = H(Y) − H(Y | X) = H(X) + H(Y) − H(X, Y).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-mutual-information-2",
+		"topic": "entropy-information",
+		"conceptId": "mutual-information",
+		"kind": "mcq",
+		"prompt": "What is I(X; Y) for two independent fair coins?",
+		"answer": "0 bits",
+		"choices": [
+			"0 bits",
+			"1 bit",
+			"2 bits",
+			"0.5 bits"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-mutual-information-3",
+		"topic": "entropy-information",
+		"conceptId": "mutual-information",
+		"kind": "predict",
+		"prompt": "Y is an exact copy of a fair coin X. How many bits does seeing X tell you about Y?",
+		"answer": "1 bit: H(Y) = 1 and H(Y | X) = 0, so I(X; Y) = 1. All of Y's uncertainty is shared with X.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-mutual-information-4",
+		"topic": "entropy-information",
+		"conceptId": "mutual-information",
+		"kind": "explain",
+		"prompt": "How can two variables have zero correlation but positive mutual information?",
+		"answer": "Correlation detects only linear relationships; mutual information detects any dependence. If X is symmetric around 0 and Y = X², their correlation is zero, yet knowing X determines Y exactly.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-kl-divergence-1",
+		"topic": "entropy-information",
+		"conceptId": "kl-divergence",
+		"kind": "recall",
+		"prompt": "How is KL divergence related to cross-entropy and entropy?",
+		"answer": "D_KL(P ‖ Q) = H(P, Q) − H(P): the extra bits paid for coding P's data with Q's code.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-kl-divergence-2",
+		"topic": "entropy-information",
+		"conceptId": "kl-divergence",
+		"kind": "predict",
+		"prompt": "Reality is a fair coin and the model is Q = (0.9, 0.1). What is D_KL(P ‖ Q)?",
+		"answer": "About 0.74 bits: the cross-entropy of about 1.74 bits minus the true entropy of 1 bit.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-kl-divergence-3",
+		"topic": "entropy-information",
+		"conceptId": "kl-divergence",
+		"kind": "mcq",
+		"prompt": "Which property does KL divergence NOT have in general?",
+		"answer": "Symmetry: D(P ‖ Q) = D(Q ‖ P)",
+		"choices": [
+			"Symmetry: D(P ‖ Q) = D(Q ‖ P)",
+			"Non-negativity",
+			"Being zero when P = Q",
+			"Measuring extra bits under a mismatched code"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-kl-divergence-4",
+		"topic": "entropy-information",
+		"conceptId": "kl-divergence",
+		"kind": "explain",
+		"prompt": "Why can KL divergence never be negative?",
+		"answer": "No code can beat the source's true entropy on average (Gibbs' inequality). Coding with Q instead of P can only match the ideal cost, when Q = P, or exceed it, so H(P, Q) − H(P) ≥ 0.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-channel-coding-intuition-1",
+		"topic": "entropy-information",
+		"conceptId": "channel-coding-intuition",
+		"kind": "recall",
+		"prompt": "What is channel capacity?",
+		"answer": "The highest rate, in bits per channel use, at which information can be sent with arbitrarily small error probability. It equals the maximum mutual information between channel input and output.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-channel-coding-intuition-2",
+		"topic": "entropy-information",
+		"conceptId": "channel-coding-intuition",
+		"kind": "predict",
+		"prompt": "Every bit is sent three times and decoded by majority vote over a channel that flips each bit with probability 0.1. Roughly what is the error rate per decoded bit?",
+		"answer": "About 2.8%: an error needs at least two of the three copies flipped, 3(0.1²)(0.9) + 0.1³ = 0.028. Reliability improves, but the rate drops to 1/3.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-channel-coding-intuition-3",
+		"topic": "entropy-information",
+		"conceptId": "channel-coding-intuition",
+		"kind": "mcq",
+		"prompt": "What does Shannon's noisy-channel coding theorem promise for rates below capacity?",
+		"answer": "Long enough codes can make the error probability as small as desired.",
+		"choices": [
+			"Long enough codes can make the error probability as small as desired.",
+			"Any code with repetition gives zero errors.",
+			"Errors vanish if you transmit faster.",
+			"Compression alone removes channel noise."
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-channel-coding-intuition-4",
+		"topic": "entropy-information",
+		"conceptId": "channel-coding-intuition",
+		"kind": "explain",
+		"prompt": "Compression removes redundancy and error correction adds it. Why do they still work together?",
+		"answer": "Compression strips predictable redundancy so the source costs about H bits per symbol; channel coding then adds structured redundancy so codewords stay distinguishable after noise. Separating the two jobs lets each be optimized.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	}
+]

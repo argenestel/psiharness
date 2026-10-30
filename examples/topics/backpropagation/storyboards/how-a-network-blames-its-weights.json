@@ -1,0 +1,2969 @@
+{
+	"id": "how-a-network-blames-its-weights",
+	"title": "How a network blames its weights",
+	"topic": "backpropagation",
+	"conceptId": "backward-pass",
+	"style": "3b1b",
+	"palette": "3b1b",
+	"scenes": [
+		{
+			"id": "a-tiny-network",
+			"narration": "Here is a whole neural network, shrunk to the bone: an input x, a hidden value h, a prediction y-hat, and a loss L that scores how wrong the prediction is. Two weights, w-one and w-two, are the only knobs we can turn.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "a-tiny-network-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "A network small enough to hold in your head",
+						"size": 46,
+						"align": "middle",
+						"fill": "#dedede",
+						"weight": 600
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-tiny-network-node-x",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "a-tiny-network-node-x-c",
+								"kind": "circle",
+								"props": {
+									"x": 230,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "a-tiny-network-node-x-t",
+								"kind": "text",
+								"props": {
+									"x": 230,
+									"y": 436,
+									"text": "x",
+									"size": 48,
+									"align": "middle",
+									"fill": "#dedede",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.2,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "a-tiny-network-node-h",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "a-tiny-network-node-h-c",
+								"kind": "circle",
+								"props": {
+									"x": 610,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "a-tiny-network-node-h-t",
+								"kind": "text",
+								"props": {
+									"x": 610,
+									"y": 436,
+									"text": "h",
+									"size": 48,
+									"align": "middle",
+									"fill": "#dedede",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.45,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "a-tiny-network-node-yhat",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "a-tiny-network-node-yhat-c",
+								"kind": "circle",
+								"props": {
+									"x": 990,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "a-tiny-network-node-yhat-t",
+								"kind": "text",
+								"props": {
+									"x": 990,
+									"y": 436,
+									"text": "ŷ",
+									"size": 48,
+									"align": "middle",
+									"fill": "#dedede",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.7,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "a-tiny-network-node-L",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "a-tiny-network-node-L-c",
+								"kind": "circle",
+								"props": {
+									"x": 1370,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#FC6255"
+								}
+							},
+							{
+								"id": "a-tiny-network-node-L-t",
+								"kind": "text",
+								"props": {
+									"x": 1370,
+									"y": 436,
+									"text": "L",
+									"size": 48,
+									"align": "middle",
+									"fill": "#dedede",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.95,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "a-tiny-network-edge-0",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 420,
+						"x2": 540,
+						"y2": 420,
+						"stroke": "#dedede",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.35,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "a-tiny-network-edge-0-l",
+					"kind": "text",
+					"props": {
+						"x": 420.0,
+						"y": 394,
+						"text": "×w₁",
+						"size": 32,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.5,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-tiny-network-edge-1",
+					"kind": "arrow",
+					"props": {
+						"x1": 680,
+						"y1": 420,
+						"x2": 920,
+						"y2": 420,
+						"stroke": "#dedede",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.6,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "a-tiny-network-edge-1-l",
+					"kind": "text",
+					"props": {
+						"x": 800.0,
+						"y": 394,
+						"text": "×w₂",
+						"size": 32,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.75,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-tiny-network-edge-2",
+					"kind": "arrow",
+					"props": {
+						"x1": 1060,
+						"y1": 420,
+						"x2": 1300,
+						"y2": 420,
+						"stroke": "#dedede",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.85,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "a-tiny-network-edge-2-l",
+					"kind": "text",
+					"props": {
+						"x": 1180.0,
+						"y": 394,
+						"text": "½(ŷ−y)²",
+						"size": 32,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-tiny-network-knobs",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 590,
+						"text": "two knobs: w₁ and w₂",
+						"size": 34,
+						"align": "middle",
+						"fill": "#999999"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.8,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-tiny-network-model",
+					"kind": "equation",
+					"props": {
+						"x": 330,
+						"y": 760,
+						"tex": "h = w_1 x,\\qquad \\hat y = w_2 h,\\qquad L = \\tfrac12(\\hat y - y)^2",
+						"size": 44,
+						"fill": "#dedede"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.4,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "forward-pass",
+			"narration": "Run it forward with x equal to 1, w-one equal to 2 and w-two equal to one half. The hidden value is 2, the prediction is 1, but the target was 3. The loss is one half times minus-two squared: 2. Every intermediate value is cached for later.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "forward-pass-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Forward: numbers flow left to right",
+						"size": 46,
+						"align": "middle",
+						"fill": "#dedede",
+						"weight": 600
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "forward-pass-node-x",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "forward-pass-node-x-c",
+								"kind": "circle",
+								"props": {
+									"x": 230,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "forward-pass-node-x-t",
+								"kind": "text",
+								"props": {
+									"x": 230,
+									"y": 436,
+									"text": "x",
+									"size": 48,
+									"align": "middle",
+									"fill": "#dedede",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.2,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-node-h",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "forward-pass-node-h-c",
+								"kind": "circle",
+								"props": {
+									"x": 610,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "forward-pass-node-h-t",
+								"kind": "text",
+								"props": {
+									"x": 610,
+									"y": 436,
+									"text": "h",
+									"size": 48,
+									"align": "middle",
+									"fill": "#dedede",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.45,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-node-yhat",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "forward-pass-node-yhat-c",
+								"kind": "circle",
+								"props": {
+									"x": 990,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "forward-pass-node-yhat-t",
+								"kind": "text",
+								"props": {
+									"x": 990,
+									"y": 436,
+									"text": "ŷ",
+									"size": 48,
+									"align": "middle",
+									"fill": "#dedede",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.7,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-node-L",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "forward-pass-node-L-c",
+								"kind": "circle",
+								"props": {
+									"x": 1370,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#FC6255"
+								}
+							},
+							{
+								"id": "forward-pass-node-L-t",
+								"kind": "text",
+								"props": {
+									"x": 1370,
+									"y": 436,
+									"text": "L",
+									"size": 48,
+									"align": "middle",
+									"fill": "#dedede",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.95,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-edge-0",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 420,
+						"x2": 540,
+						"y2": 420,
+						"stroke": "#dedede",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.35,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-edge-0-l",
+					"kind": "text",
+					"props": {
+						"x": 420.0,
+						"y": 394,
+						"text": "×w₁",
+						"size": 32,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.5,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "forward-pass-edge-1",
+					"kind": "arrow",
+					"props": {
+						"x1": 680,
+						"y1": 420,
+						"x2": 920,
+						"y2": 420,
+						"stroke": "#dedede",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.6,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-edge-1-l",
+					"kind": "text",
+					"props": {
+						"x": 800.0,
+						"y": 394,
+						"text": "×w₂",
+						"size": 32,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.75,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "forward-pass-edge-2",
+					"kind": "arrow",
+					"props": {
+						"x1": 1060,
+						"y1": 420,
+						"x2": 1300,
+						"y2": 420,
+						"stroke": "#dedede",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.85,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-edge-2-l",
+					"kind": "text",
+					"props": {
+						"x": 1180.0,
+						"y": 394,
+						"text": "½(ŷ−y)²",
+						"size": 32,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "forward-pass-flow-0",
+					"kind": "vector",
+					"props": {
+						"x": 310,
+						"y": 310,
+						"dx": 220,
+						"dy": 0,
+						"stroke": "#58C4DD",
+						"label": ""
+					},
+					"enter": {
+						"type": "slide",
+						"delay": 0.6,
+						"duration": 0.6,
+						"from": "left"
+					}
+				},
+				{
+					"id": "forward-pass-flow-1",
+					"kind": "vector",
+					"props": {
+						"x": 690,
+						"y": 310,
+						"dx": 220,
+						"dy": 0,
+						"stroke": "#58C4DD",
+						"label": ""
+					},
+					"enter": {
+						"type": "slide",
+						"delay": 1.2999999999999998,
+						"duration": 0.6,
+						"from": "left"
+					}
+				},
+				{
+					"id": "forward-pass-flow-2",
+					"kind": "vector",
+					"props": {
+						"x": 1070,
+						"y": 310,
+						"dx": 220,
+						"dy": 0,
+						"stroke": "#58C4DD",
+						"label": ""
+					},
+					"enter": {
+						"type": "slide",
+						"delay": 2.0,
+						"duration": 0.6,
+						"from": "left"
+					}
+				},
+				{
+					"id": "forward-pass-val-x",
+					"kind": "text",
+					"props": {
+						"x": 230,
+						"y": 540,
+						"text": "x = 1",
+						"size": 34,
+						"align": "middle",
+						"fill": "#58C4DD"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.4,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-val-h",
+					"kind": "text",
+					"props": {
+						"x": 610,
+						"y": 540,
+						"text": "h = 2",
+						"size": 34,
+						"align": "middle",
+						"fill": "#58C4DD"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.1,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-val-w1",
+					"kind": "text",
+					"props": {
+						"x": 420,
+						"y": 480,
+						"text": "w₁ = 2",
+						"size": 34,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.8,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-val-yhat",
+					"kind": "text",
+					"props": {
+						"x": 990,
+						"y": 540,
+						"text": "ŷ = 1",
+						"size": 34,
+						"align": "middle",
+						"fill": "#58C4DD"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.8,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-val-w2",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 480,
+						"text": "w₂ = 0.5",
+						"size": 34,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.5,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-val-L",
+					"kind": "text",
+					"props": {
+						"x": 1370,
+						"y": 540,
+						"text": "L = 2",
+						"size": 34,
+						"align": "middle",
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.5,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-val-y",
+					"kind": "text",
+					"props": {
+						"x": 1180,
+						"y": 480,
+						"text": "y = 3",
+						"size": 34,
+						"align": "middle",
+						"fill": "#83C167"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.2,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "forward-pass-loss",
+					"kind": "equation",
+					"props": {
+						"x": 500,
+						"y": 760,
+						"tex": "L = \\tfrac12(1 - 3)^2 = 2",
+						"size": 48,
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.0,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "loss-as-a-landscape",
+			"narration": "Freeze w-one and slide w-two. The loss traces a valley. Our current weight sits on its left wall, where the slope is minus four: nudging w-two up would push the loss down four times as fast. That slope is exactly the number we need, for every weight.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "loss-as-a-landscape-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Freeze w₁, slide w₂: a loss valley",
+						"size": 46,
+						"align": "middle",
+						"fill": "#dedede",
+						"weight": 600
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-x-axis",
+					"kind": "arrow",
+					"props": {
+						"x1": 260,
+						"y1": 760,
+						"x2": 1300,
+						"y2": 760,
+						"stroke": "#999999",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.2,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-y-axis",
+					"kind": "arrow",
+					"props": {
+						"x1": 510.0,
+						"y1": 760,
+						"x2": 510.0,
+						"y2": 210,
+						"stroke": "#999999",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.2,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-x-l",
+					"kind": "text",
+					"props": {
+						"x": 1300,
+						"y": 810,
+						"text": "w₂",
+						"size": 34,
+						"align": "end",
+						"fill": "#999999"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-y-l",
+					"kind": "text",
+					"props": {
+						"x": 530.0,
+						"y": 220,
+						"text": "L",
+						"size": 34,
+						"align": "start",
+						"fill": "#999999"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-curve",
+					"kind": "graph",
+					"props": {
+						"x": 260,
+						"y": 240,
+						"w": 1000,
+						"h": 520,
+						"fn": "0.5*(2*x-3)**2",
+						"domain": [
+							-1.0,
+							3.0
+						],
+						"range": [
+							0.0,
+							8.0
+						],
+						"stroke": "#58C4DD"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.6,
+						"duration": 1.4
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-tangent",
+					"kind": "path",
+					"props": {
+						"d": "M 510.0 500.0 L 760.0 760.0",
+						"stroke": "#FFFF8A",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.2,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-point",
+					"kind": "circle",
+					"props": {
+						"x": 635.0,
+						"y": 630.0,
+						"r": 13,
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.8,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-slope",
+					"kind": "text",
+					"props": {
+						"x": 675.0,
+						"y": 470,
+						"text": "slope = ∂L/∂w₂ = −4",
+						"size": 32,
+						"align": "start",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.8,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-step",
+					"kind": "vector",
+					"props": {
+						"x": 635.0,
+						"y": 800,
+						"dx": 140,
+						"dy": 0,
+						"stroke": "#83C167",
+						"label": "nudge w₂ up"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 3.4,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-min",
+					"kind": "circle",
+					"props": {
+						"x": 885.0,
+						"y": 760.0,
+						"r": 9,
+						"fill": "#83C167"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 3.8,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "loss-as-a-landscape-eq",
+					"kind": "equation",
+					"props": {
+						"x": 930,
+						"y": 330,
+						"tex": "L(w_2) = \\tfrac12(2w_2 - 3)^2",
+						"size": 42,
+						"fill": "#dedede"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 4.2,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.0,
+				"x": 800,
+				"y": 470
+			}
+		},
+		{
+			"id": "blame-starts-at-the-loss",
+			"narration": "Now run it backward. Start at the loss with one unit of blame: the loss changes one-for-one with itself. Step back to the prediction. The loss depends on y-hat with local slope y-hat minus y, which is minus two. The prediction is too low.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "blame-starts-at-the-loss-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Backward: start with one unit of blame",
+						"size": 46,
+						"align": "middle",
+						"fill": "#dedede",
+						"weight": 600
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-node-x",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "blame-starts-at-the-loss-node-x-c",
+								"kind": "circle",
+								"props": {
+									"x": 230,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "blame-starts-at-the-loss-node-x-t",
+								"kind": "text",
+								"props": {
+									"x": 230,
+									"y": 436,
+									"text": "x",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.2,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-node-h",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "blame-starts-at-the-loss-node-h-c",
+								"kind": "circle",
+								"props": {
+									"x": 610,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "blame-starts-at-the-loss-node-h-t",
+								"kind": "text",
+								"props": {
+									"x": 610,
+									"y": 436,
+									"text": "h",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.45,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-node-yhat",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "blame-starts-at-the-loss-node-yhat-c",
+								"kind": "circle",
+								"props": {
+									"x": 990,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "blame-starts-at-the-loss-node-yhat-t",
+								"kind": "text",
+								"props": {
+									"x": 990,
+									"y": 436,
+									"text": "ŷ",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.7,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-node-L",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "blame-starts-at-the-loss-node-L-c",
+								"kind": "circle",
+								"props": {
+									"x": 1370,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "blame-starts-at-the-loss-node-L-t",
+								"kind": "text",
+								"props": {
+									"x": 1370,
+									"y": 436,
+									"text": "L",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.95,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-edge-0",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 420,
+						"x2": 540,
+						"y2": 420,
+						"stroke": "#999999",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.35,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-edge-1",
+					"kind": "arrow",
+					"props": {
+						"x1": 680,
+						"y1": 420,
+						"x2": 920,
+						"y2": 420,
+						"stroke": "#999999",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.6,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-edge-2",
+					"kind": "arrow",
+					"props": {
+						"x1": 1060,
+						"y1": 420,
+						"x2": 1300,
+						"y2": 420,
+						"stroke": "#999999",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.85,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-glow",
+					"kind": "circle",
+					"props": {
+						"x": 1370,
+						"y": 420,
+						"r": 74,
+						"fill": "none",
+						"stroke": "#FC6255"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.6,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 1.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-val-one",
+					"kind": "text",
+					"props": {
+						"x": 1370,
+						"y": 550,
+						"text": "∂L/∂L = 1",
+						"size": 34,
+						"align": "middle",
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.0,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-back",
+					"kind": "vector",
+					"props": {
+						"x": 1300,
+						"y": 320,
+						"dx": -240,
+						"dy": 0,
+						"stroke": "#FC6255",
+						"label": ""
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.8,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-val-yhat",
+					"kind": "text",
+					"props": {
+						"x": 990,
+						"y": 550,
+						"text": "∂L/∂ŷ = −2",
+						"size": 34,
+						"align": "middle",
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.6,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-starts-at-the-loss-eq",
+					"kind": "equation",
+					"props": {
+						"x": 430,
+						"y": 760,
+						"tex": "\\frac{\\partial L}{\\partial \\hat y} = \\hat y - y = 1 - 3 = -2",
+						"size": 46,
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.2,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "the-chain-rule",
+			"narration": "How much is w-two to blame? The blame arriving at y-hat is multiplied by y-hat's local sensitivity to w-two, which is the cached value h, equal to 2. Minus two times two: minus four. That is the chain rule: sensitivities multiply along the route.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "the-chain-rule-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Chain rule: multiply along the route",
+						"size": 46,
+						"align": "middle",
+						"fill": "#dedede",
+						"weight": 600
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-chain-rule-node-x",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "the-chain-rule-node-x-c",
+								"kind": "circle",
+								"props": {
+									"x": 230,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "the-chain-rule-node-x-t",
+								"kind": "text",
+								"props": {
+									"x": 230,
+									"y": 436,
+									"text": "x",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.2,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-chain-rule-node-h",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "the-chain-rule-node-h-c",
+								"kind": "circle",
+								"props": {
+									"x": 610,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "the-chain-rule-node-h-t",
+								"kind": "text",
+								"props": {
+									"x": 610,
+									"y": 436,
+									"text": "h",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.45,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-chain-rule-node-yhat",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "the-chain-rule-node-yhat-c",
+								"kind": "circle",
+								"props": {
+									"x": 990,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "the-chain-rule-node-yhat-t",
+								"kind": "text",
+								"props": {
+									"x": 990,
+									"y": 436,
+									"text": "ŷ",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.7,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-chain-rule-node-L",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "the-chain-rule-node-L-c",
+								"kind": "circle",
+								"props": {
+									"x": 1370,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "the-chain-rule-node-L-t",
+								"kind": "text",
+								"props": {
+									"x": 1370,
+									"y": 436,
+									"text": "L",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.95,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-chain-rule-edge-0",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 420,
+						"x2": 540,
+						"y2": 420,
+						"stroke": "#999999",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.35,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-chain-rule-edge-1",
+					"kind": "arrow",
+					"props": {
+						"x1": 680,
+						"y1": 420,
+						"x2": 920,
+						"y2": 420,
+						"stroke": "#999999",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.6,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-chain-rule-edge-2",
+					"kind": "arrow",
+					"props": {
+						"x1": 1060,
+						"y1": 420,
+						"x2": 1300,
+						"y2": 420,
+						"stroke": "#999999",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.85,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-chain-rule-w2",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "the-chain-rule-w2-c",
+								"kind": "circle",
+								"props": {
+									"x": 780,
+									"y": 600,
+									"r": 44,
+									"fill": "#161616",
+									"stroke": "#FFFF8A"
+								}
+							},
+							{
+								"id": "the-chain-rule-w2-t",
+								"kind": "text",
+								"props": {
+									"x": 780,
+									"y": 612,
+									"text": "w₂",
+									"size": 36,
+									"align": "middle",
+									"fill": "#FFFF8A"
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-chain-rule-feed",
+					"kind": "arrow",
+					"props": {
+						"x1": 815,
+						"y1": 570,
+						"x2": 935,
+						"y2": 470,
+						"stroke": "#999999",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.8,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-chain-rule-blame",
+					"kind": "arrow",
+					"props": {
+						"x1": 1010,
+						"y1": 500,
+						"x2": 840,
+						"y2": 620,
+						"stroke": "#FC6255",
+						"width": 6
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.6,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "the-chain-rule-blame-l",
+					"kind": "text",
+					"props": {
+						"x": 960,
+						"y": 610,
+						"text": "−2 × h",
+						"size": 32,
+						"align": "start",
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-chain-rule-cached",
+					"kind": "text",
+					"props": {
+						"x": 610,
+						"y": 550,
+						"text": "cached h = 2",
+						"size": 30,
+						"align": "middle",
+						"fill": "#58C4DD"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.2,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-chain-rule-eq",
+					"kind": "equation",
+					"props": {
+						"x": 230,
+						"y": 780,
+						"tex": "\\frac{\\partial L}{\\partial w_2} = \\frac{\\partial L}{\\partial \\hat y}\\cdot\\frac{\\partial \\hat y}{\\partial w_2} = (-2)\\cdot h = (-2)(2) = -4",
+						"size": 42,
+						"fill": "#dedede"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.4,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "blame-keeps-flowing",
+			"narration": "Keep walking backward. The blame on h is minus two times w-two: minus one. And w-one's share is that times x: minus one. One backward sweep, reusing cached values, and every weight has its gradient.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "blame-keeps-flowing-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Keep passing blame backward",
+						"size": 46,
+						"align": "middle",
+						"fill": "#dedede",
+						"weight": 600
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-node-x",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "blame-keeps-flowing-node-x-c",
+								"kind": "circle",
+								"props": {
+									"x": 230,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "blame-keeps-flowing-node-x-t",
+								"kind": "text",
+								"props": {
+									"x": 230,
+									"y": 436,
+									"text": "x",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.2,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-node-h",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "blame-keeps-flowing-node-h-c",
+								"kind": "circle",
+								"props": {
+									"x": 610,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "blame-keeps-flowing-node-h-t",
+								"kind": "text",
+								"props": {
+									"x": 610,
+									"y": 436,
+									"text": "h",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.45,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-node-yhat",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "blame-keeps-flowing-node-yhat-c",
+								"kind": "circle",
+								"props": {
+									"x": 990,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "blame-keeps-flowing-node-yhat-t",
+								"kind": "text",
+								"props": {
+									"x": 990,
+									"y": 436,
+									"text": "ŷ",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.7,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-node-L",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "blame-keeps-flowing-node-L-c",
+								"kind": "circle",
+								"props": {
+									"x": 1370,
+									"y": 420,
+									"r": 62,
+									"fill": "#161616",
+									"stroke": "#999999"
+								}
+							},
+							{
+								"id": "blame-keeps-flowing-node-L-t",
+								"kind": "text",
+								"props": {
+									"x": 1370,
+									"y": 436,
+									"text": "L",
+									"size": 48,
+									"align": "middle",
+									"fill": "#999999",
+									"weight": 500
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.95,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-edge-0",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 420,
+						"x2": 540,
+						"y2": 420,
+						"stroke": "#999999",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.35,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-edge-1",
+					"kind": "arrow",
+					"props": {
+						"x1": 680,
+						"y1": 420,
+						"x2": 920,
+						"y2": 420,
+						"stroke": "#999999",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.6,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-edge-2",
+					"kind": "arrow",
+					"props": {
+						"x1": 1060,
+						"y1": 420,
+						"x2": 1300,
+						"y2": 420,
+						"stroke": "#999999",
+						"width": 4
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.85,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-back-0",
+					"kind": "vector",
+					"props": {
+						"x": 1300,
+						"y": 320,
+						"dx": -240,
+						"dy": 0,
+						"stroke": "#FC6255",
+						"label": ""
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.5,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-back-1",
+					"kind": "vector",
+					"props": {
+						"x": 920,
+						"y": 320,
+						"dx": -240,
+						"dy": 0,
+						"stroke": "#FC6255",
+						"label": ""
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.3,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-back-2",
+					"kind": "vector",
+					"props": {
+						"x": 540,
+						"y": 320,
+						"dx": -240,
+						"dy": 0,
+						"stroke": "#FC6255",
+						"label": ""
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.4,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-val-yhat",
+					"kind": "text",
+					"props": {
+						"x": 990,
+						"y": 550,
+						"text": "∂L/∂ŷ = −2",
+						"size": 34,
+						"align": "middle",
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.6,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-val-h",
+					"kind": "text",
+					"props": {
+						"x": 610,
+						"y": 550,
+						"text": "∂L/∂h = (−2)(w₂) = −1",
+						"size": 34,
+						"align": "middle",
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.6,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-val-w2",
+					"kind": "text",
+					"props": {
+						"x": 1180,
+						"y": 620,
+						"text": "∂L/∂w₂ = −4",
+						"size": 34,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.0,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-val-w1",
+					"kind": "text",
+					"props": {
+						"x": 420,
+						"y": 620,
+						"text": "∂L/∂w₁ = (−1)(x) = −1",
+						"size": 34,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.8,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "blame-keeps-flowing-grad",
+					"kind": "equation",
+					"props": {
+						"x": 480,
+						"y": 790,
+						"tex": "\\nabla L = \\left(\\tfrac{\\partial L}{\\partial w_1}, \\tfrac{\\partial L}{\\partial w_2}\\right) = (-1, -4)",
+						"size": 44,
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.6,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "the-gradient-vector",
+			"narration": "Stack the two blames into one vector, the gradient: minus one, minus four. It points uphill in weight space. Flip it and you get the steepest way down, mostly along w-two, the weight that carried the most blame, toward the valley floor where w-one times w-two equals three.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "the-gradient-vector-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "The gradient: an arrow in weight space",
+						"size": 46,
+						"align": "middle",
+						"fill": "#dedede",
+						"weight": 600
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-gradient-vector-w1-axis",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 800,
+						"x2": 1420,
+						"y2": 800,
+						"stroke": "#999999",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.2,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-gradient-vector-w2-axis",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 800,
+						"x2": 300,
+						"y2": 220,
+						"stroke": "#999999",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.2,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-gradient-vector-w1-l",
+					"kind": "text",
+					"props": {
+						"x": 1420,
+						"y": 850,
+						"text": "w₁",
+						"size": 34,
+						"align": "end",
+						"fill": "#999999"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-gradient-vector-w2-l",
+					"kind": "text",
+					"props": {
+						"x": 280,
+						"y": 240,
+						"text": "w₂",
+						"size": 34,
+						"align": "end",
+						"fill": "#999999"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-gradient-vector-valley",
+					"kind": "graph",
+					"props": {
+						"x": 360.0,
+						"y": 250.0,
+						"w": 990.0,
+						"h": 550.0,
+						"fn": "3/x",
+						"domain": [
+							0.6,
+							10.5
+						],
+						"range": [
+							0,
+							5.5
+						],
+						"stroke": "#83C167"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.6,
+						"duration": 1.2
+					}
+				},
+				{
+					"id": "the-gradient-vector-valley-l",
+					"kind": "text",
+					"props": {
+						"x": 920.0,
+						"y": 690.0,
+						"text": "valley floor: w₁w₂ = 3, L = 0",
+						"size": 30,
+						"align": "start",
+						"fill": "#83C167"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-gradient-vector-here",
+					"kind": "circle",
+					"props": {
+						"x": 500,
+						"y": 750.0,
+						"r": 12,
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.4,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-gradient-vector-here-l",
+					"kind": "text",
+					"props": {
+						"x": 520,
+						"y": 790.0,
+						"text": "(2, 0.5)",
+						"size": 28,
+						"align": "start",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.5,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-gradient-vector-uphill",
+					"kind": "vector",
+					"props": {
+						"x": 500,
+						"y": 750.0,
+						"dx": -22,
+						"dy": 88,
+						"stroke": "#FC6255",
+						"label": "∇L"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "the-gradient-vector-downhill",
+					"kind": "vector",
+					"props": {
+						"x": 500,
+						"y": 750.0,
+						"dx": 50,
+						"dy": -200,
+						"stroke": "#83C167",
+						"label": "−∇L = (1, 4)"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.8,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-gradient-vector-eq",
+					"kind": "equation",
+					"props": {
+						"x": 820,
+						"y": 330,
+						"tex": "\\nabla L = (-1,-4)\\ \\text{points uphill}",
+						"size": 40,
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.6,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "take-a-step",
+			"narration": "Take a small step against the gradient with learning rate 0.1. w-one moves from 2 to 2.1, w-two from 0.5 to 0.9. Run forward again: the prediction is 1.89, and the loss falls from 2 to about 0.62. Then repeat: forward, backward, step.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "take-a-step-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Step against the gradient, then repeat",
+						"size": 46,
+						"align": "middle",
+						"fill": "#dedede",
+						"weight": 600
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "take-a-step-rule",
+					"kind": "equation",
+					"props": {
+						"x": 250,
+						"y": 280,
+						"tex": "w \\leftarrow w - \\eta\\,\\nabla L,\\quad \\eta = 0.1",
+						"size": 46,
+						"fill": "#dedede"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "take-a-step-w1",
+					"kind": "equation",
+					"props": {
+						"x": 250,
+						"y": 420,
+						"tex": "w_1:\\ 2 - 0.1(-1) = 2.1",
+						"size": 40,
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "take-a-step-w2",
+					"kind": "equation",
+					"props": {
+						"x": 250,
+						"y": 520,
+						"tex": "w_2:\\ 0.5 - 0.1(-4) = 0.9",
+						"size": 40,
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "take-a-step-new",
+					"kind": "equation",
+					"props": {
+						"x": 250,
+						"y": 640,
+						"tex": "\\hat y = 0.9 \\times 2.1 = 1.89,\\quad L \\approx 0.62",
+						"size": 40,
+						"fill": "#58C4DD"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.4,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "take-a-step-before",
+					"kind": "rect",
+					"props": {
+						"x": 1080,
+						"y": 300,
+						"w": 110,
+						"h": 400,
+						"rx": 6,
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 3.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "take-a-step-after",
+					"kind": "rect",
+					"props": {
+						"x": 1260,
+						"y": 577,
+						"w": 110,
+						"h": 123,
+						"rx": 6,
+						"fill": "#83C167"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 3.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "take-a-step-before-l",
+					"kind": "text",
+					"props": {
+						"x": 1135,
+						"y": 745,
+						"text": "L = 2",
+						"size": 32,
+						"align": "middle",
+						"fill": "#FC6255"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "take-a-step-after-l",
+					"kind": "text",
+					"props": {
+						"x": 1315,
+						"y": 745,
+						"text": "L ≈ 0.62",
+						"size": 32,
+						"align": "middle",
+						"fill": "#83C167"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "take-a-step-loop",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 820,
+						"text": "forward → backward → step → repeat",
+						"size": 36,
+						"align": "middle",
+						"fill": "#999999"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 4.4,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "millions-of-weights",
+			"narration": "Real networks have millions of weights, but the recipe is identical. One forward pass caches the values; one backward pass multiplies local slopes from the loss back to every weight, at a cost comparable to the forward pass itself. That is backpropagation: the chain rule, organized as blame flowing backward.",
+			"durationSec": 12,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "millions-of-weights-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Every weight gets its share of the blame",
+						"size": 46,
+						"align": "middle",
+						"fill": "#dedede",
+						"weight": 600
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "millions-of-weights-wires",
+					"kind": "path",
+					"props": {
+						"d": "M 330 295 L 630 205 M 330 295 L 630 295 M 330 295 L 630 385 M 330 295 L 630 475 M 330 295 L 630 565 M 330 295 L 630 655 M 330 385 L 630 205 M 330 385 L 630 295 M 330 385 L 630 385 M 330 385 L 630 475 M 330 385 L 630 565 M 330 385 L 630 655 M 330 475 L 630 205 M 330 475 L 630 295 M 330 475 L 630 385 M 330 475 L 630 475 M 330 475 L 630 565 M 330 475 L 630 655 M 330 565 L 630 205 M 330 565 L 630 295 M 330 565 L 630 385 M 330 565 L 630 475 M 330 565 L 630 565 M 330 565 L 630 655 M 630 205 L 930 205 M 630 205 L 930 295 M 630 205 L 930 385 M 630 205 L 930 475 M 630 205 L 930 565 M 630 205 L 930 655 M 630 295 L 930 205 M 630 295 L 930 295 M 630 295 L 930 385 M 630 295 L 930 475 M 630 295 L 930 565 M 630 295 L 930 655 M 630 385 L 930 205 M 630 385 L 930 295 M 630 385 L 930 385 M 630 385 L 930 475 M 630 385 L 930 565 M 630 385 L 930 655 M 630 475 L 930 205 M 630 475 L 930 295 M 630 475 L 930 385 M 630 475 L 930 475 M 630 475 L 930 565 M 630 475 L 930 655 M 630 565 L 930 205 M 630 565 L 930 295 M 630 565 L 930 385 M 630 565 L 930 475 M 630 565 L 930 565 M 630 565 L 930 655 M 630 655 L 930 205 M 630 655 L 930 295 M 630 655 L 930 385 M 630 655 L 930 475 M 630 655 L 930 565 M 630 655 L 930 655 M 930 205 L 1230 340 M 930 205 L 1230 430 M 930 205 L 1230 520 M 930 295 L 1230 340 M 930 295 L 1230 430 M 930 295 L 1230 520 M 930 385 L 1230 340 M 930 385 L 1230 430 M 930 385 L 1230 520 M 930 475 L 1230 340 M 930 475 L 1230 430 M 930 475 L 1230 520 M 930 565 L 1230 340 M 930 565 L 1230 430 M 930 565 L 1230 520 M 930 655 L 1230 340 M 930 655 L 1230 430 M 930 655 L 1230 520",
+						"stroke": "#3a3a3a",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 1.2
+					}
+				},
+				{
+					"id": "millions-of-weights-nodes",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "millions-of-weights-n-0-0",
+								"kind": "circle",
+								"props": {
+									"x": 330,
+									"y": 295,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-0-1",
+								"kind": "circle",
+								"props": {
+									"x": 330,
+									"y": 385,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-0-2",
+								"kind": "circle",
+								"props": {
+									"x": 330,
+									"y": 475,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-0-3",
+								"kind": "circle",
+								"props": {
+									"x": 330,
+									"y": 565,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-1-0",
+								"kind": "circle",
+								"props": {
+									"x": 630,
+									"y": 205,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-1-1",
+								"kind": "circle",
+								"props": {
+									"x": 630,
+									"y": 295,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-1-2",
+								"kind": "circle",
+								"props": {
+									"x": 630,
+									"y": 385,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-1-3",
+								"kind": "circle",
+								"props": {
+									"x": 630,
+									"y": 475,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-1-4",
+								"kind": "circle",
+								"props": {
+									"x": 630,
+									"y": 565,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-1-5",
+								"kind": "circle",
+								"props": {
+									"x": 630,
+									"y": 655,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-2-0",
+								"kind": "circle",
+								"props": {
+									"x": 930,
+									"y": 205,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-2-1",
+								"kind": "circle",
+								"props": {
+									"x": 930,
+									"y": 295,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-2-2",
+								"kind": "circle",
+								"props": {
+									"x": 930,
+									"y": 385,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-2-3",
+								"kind": "circle",
+								"props": {
+									"x": 930,
+									"y": 475,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-2-4",
+								"kind": "circle",
+								"props": {
+									"x": 930,
+									"y": 565,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-2-5",
+								"kind": "circle",
+								"props": {
+									"x": 930,
+									"y": 655,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#58C4DD"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-3-0",
+								"kind": "circle",
+								"props": {
+									"x": 1230,
+									"y": 340,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#FC6255"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-3-1",
+								"kind": "circle",
+								"props": {
+									"x": 1230,
+									"y": 430,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#FC6255"
+								}
+							},
+							{
+								"id": "millions-of-weights-n-3-2",
+								"kind": "circle",
+								"props": {
+									"x": 1230,
+									"y": 520,
+									"r": 22,
+									"fill": "#161616",
+									"stroke": "#FC6255"
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "millions-of-weights-loss",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "millions-of-weights-loss-c",
+								"kind": "circle",
+								"props": {
+									"x": 1440,
+									"y": 430,
+									"r": 48,
+									"fill": "#161616",
+									"stroke": "#FC6255"
+								}
+							},
+							{
+								"id": "millions-of-weights-loss-t",
+								"kind": "text",
+								"props": {
+									"x": 1440,
+									"y": 444,
+									"text": "L",
+									"size": 40,
+									"align": "middle",
+									"fill": "#dedede"
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.4,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 2.0,
+						"duration": 1.2
+					}
+				},
+				{
+					"id": "millions-of-weights-loss-in",
+					"kind": "arrow",
+					"props": {
+						"x1": 1260,
+						"y1": 430,
+						"x2": 1385,
+						"y2": 430,
+						"stroke": "#dedede",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.2,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "millions-of-weights-blame-1",
+					"kind": "vector",
+					"props": {
+						"x": 1380,
+						"y": 730,
+						"dx": -260,
+						"dy": 0,
+						"stroke": "#FC6255",
+						"label": ""
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "millions-of-weights-blame-2",
+					"kind": "vector",
+					"props": {
+						"x": 1080,
+						"y": 730,
+						"dx": -260,
+						"dy": 0,
+						"stroke": "#FC6255",
+						"label": ""
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.8,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "millions-of-weights-blame-3",
+					"kind": "vector",
+					"props": {
+						"x": 780,
+						"y": 730,
+						"dx": -260,
+						"dy": 0,
+						"stroke": "#FC6255",
+						"label": ""
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 3.4,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "millions-of-weights-sparks",
+					"kind": "particles",
+					"props": {
+						"x": 300,
+						"y": 705,
+						"w": 1150,
+						"h": 50,
+						"count": 40,
+						"color": "#FC6255",
+						"speed": 1.5
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "millions-of-weights-cost",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 840,
+						"text": "one forward pass + one backward pass → the whole gradient",
+						"size": 36,
+						"align": "middle",
+						"fill": "#FFFF8A"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 4.0,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		}
+	]
+}

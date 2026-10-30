@@ -1,0 +1,643 @@
+{
+	"topic": "backpropagation",
+	"goal": "Trace how a scalar loss becomes weight-wise gradients through the chain rule, then use the learning rate to update a model.",
+	"learnerLevel": "student",
+	"lessons": [
+		{
+			"conceptId": "descending-loss-valley",
+			"objective": "By the end you can describe training as taking small parameter steps toward lower loss on a landscape.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A model can be wrong in a thousand ways; picture each possible setting as a place with a different height."
+				},
+				{
+					"kind": "question",
+					"text": "If height means error, which direction should the model move when it wants to improve?"
+				},
+				{
+					"kind": "build",
+					"text": "Place a point on a bowl-shaped loss curve and compare a step uphill with a step downhill."
+				},
+				{
+					"kind": "reveal",
+					"text": "Lower loss is downhill, but the model needs a local signal to choose a useful direction and step size."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "With many parameters the bowl becomes a high-dimensional landscape, yet the walking idea still guides the algorithm."
+				},
+				{
+					"kind": "recap",
+					"text": "Learning is a sequence of informed downhill moves through parameter space."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "The explorer enters the loss valley",
+					"goal": "Make high loss, low loss, and a downhill direction visible before introducing formulas."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "One gradient step on a loss curve",
+					"goal": "Let the learner inspect the loss curve and compare one gradient step from a chosen starting point.",
+					"path": "explorables/gradient-step-loss.json"
+				}
+			],
+			"checks": [
+				"card-descending-loss-valley-1",
+				"card-descending-loss-valley-2",
+				"card-descending-loss-valley-3",
+				"card-descending-loss-valley-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "loss",
+			"objective": "By the end you can explain what a loss function measures and why training optimizes the chosen scalar objective.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Before choosing a direction, the model needs a scoreboard that says how wrong its prediction is."
+				},
+				{
+					"kind": "question",
+					"text": "What single quantity should improve when predictions become closer to their targets?"
+				},
+				{
+					"kind": "build",
+					"text": "Compare a prediction with its target, turn their discrepancy into a scalar, and repeat across examples."
+				},
+				{
+					"kind": "reveal",
+					"text": "Loss is a designed objective: lower values mean better agreement according to that chosen measure."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "The gradient only has meaning relative to this objective, so changing the loss changes the landscape."
+				},
+				{
+					"kind": "recap",
+					"text": "Loss supplies the height of the landscape and gives the gradient something to reduce."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "The loss scoreboard",
+					"goal": "Show predictions becoming targets and the scalar loss falling."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "The loss scoreboard in motion",
+					"goal": "Show predictions becoming targets and the scalar loss falling."
+				}
+			],
+			"checks": [
+				"card-loss-1",
+				"card-loss-2",
+				"card-loss-3",
+				"card-loss-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "composition",
+			"objective": "By the end you can write a model as nested functions and trace which output depends on which intermediate.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "One tiny input can pass through several transformations before a prediction appears."
+				},
+				{
+					"kind": "question",
+					"text": "How can we name the route an input takes through a multi-stage model?"
+				},
+				{
+					"kind": "build",
+					"text": "Build f(g(x)) from boxes, then change the inner output and watch the outer input change."
+				},
+				{
+					"kind": "reveal",
+					"text": "Composition means feeding one function's output into the next; order is part of the meaning."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Neural networks are long compositions, so a useful derivative must travel through every stage."
+				},
+				{
+					"kind": "recap",
+					"text": "Writing the pipeline explicitly prepares us to measure how changes propagate."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "A model as a function pipeline",
+					"goal": "Show nested transformations and preserve the order of dependencies."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "A model as a function pipeline in motion",
+					"goal": "Show nested transformations and preserve the order of dependencies."
+				}
+			],
+			"checks": [
+				"card-composition-1",
+				"card-composition-2",
+				"card-composition-3",
+				"card-composition-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "derivatives",
+			"objective": "By the end you can interpret a derivative as the local rate of change and read its sign from a curve.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "At one point a curve can feel flat, steep, uphill, or downhill even when its global shape is complicated."
+				},
+				{
+					"kind": "question",
+					"text": "What number would tell us the immediate effect of nudging the input?"
+				},
+				{
+					"kind": "build",
+					"text": "Shrink a secant interval around one point until the line becomes a tangent."
+				},
+				{
+					"kind": "reveal",
+					"text": "The derivative is the tangent slope: positive means output rises locally, negative means it falls."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Backpropagation will use these local slopes as the small gears that carry sensitivity through a network."
+				},
+				{
+					"kind": "recap",
+					"text": "A derivative answers: if this input moves a little right now, how does the output respond?"
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "From secant to tangent",
+					"goal": "Make local slope and its sign concrete at a single point."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "From secant to tangent in motion",
+					"goal": "Make local slope and its sign concrete at a single point."
+				}
+			],
+			"checks": [
+				"card-derivatives-1",
+				"card-derivatives-2",
+				"card-derivatives-3",
+				"card-derivatives-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "chain-rule",
+			"objective": "By the end you can apply the chain rule to multiply local derivatives through a composition.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A change entering a pipeline may be stretched at one gate and shrunk at another."
+				},
+				{
+					"kind": "question",
+					"text": "How can we predict the final change without treating the whole pipeline as a black box?"
+				},
+				{
+					"kind": "build",
+					"text": "Track a tiny input change through an inner function and then an outer function."
+				},
+				{
+					"kind": "reveal",
+					"text": "Each stage contributes a local multiplier, and the total derivative is their product."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "The chain rule is the mathematical reason a backward pass can reuse local information."
+				},
+				{
+					"kind": "recap",
+					"text": "To find a global sensitivity, multiply the sensitivities encountered along the route."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "Sensitivity through chained gates",
+					"goal": "Show a perturbation being multiplied by each stage's local derivative."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "Sensitivity through chained gates in motion",
+					"goal": "Show a perturbation being multiplied by each stage's local derivative."
+				}
+			],
+			"checks": [
+				"card-chain-rule-1",
+				"card-chain-rule-2",
+				"card-chain-rule-3",
+				"card-chain-rule-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "partial-derivatives",
+			"objective": "By the end you can compute the partial derivative for one coordinate while holding the others fixed.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A loss surface has many knobs, and moving two knobs at once hides who caused the change."
+				},
+				{
+					"kind": "question",
+					"text": "How do we isolate one weight's contribution to a multivariable loss?"
+				},
+				{
+					"kind": "build",
+					"text": "Freeze every coordinate except one and slice the surface along that direction."
+				},
+				{
+					"kind": "reveal",
+					"text": "The resulting slope is a partial derivative: one coordinate changes while the rest stay fixed."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Collecting one partial per weight turns a scalar loss surface into a vector of coordinate-wise clues."
+				},
+				{
+					"kind": "recap",
+					"text": "Partial derivatives let us ask one precise 'what if this weight moved?' question at a time."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "Slicing a loss surface one coordinate at a time",
+					"goal": "Show frozen coordinates and the slope measured along one free coordinate."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "Slicing a loss surface one coordinate at a time in motion",
+					"goal": "Show frozen coordinates and the slope measured along one free coordinate."
+				}
+			],
+			"checks": [
+				"card-partial-derivatives-1",
+				"card-partial-derivatives-2",
+				"card-partial-derivatives-3",
+				"card-partial-derivatives-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "gradient",
+			"objective": "By the end you can assemble partial derivatives into a gradient and explain why its negative points downhill locally.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Every coordinate has its own slope, but a model needs one direction for all weights together."
+				},
+				{
+					"kind": "question",
+					"text": "How can several one-coordinate measurements become a single navigation arrow?"
+				},
+				{
+					"kind": "build",
+					"text": "Place the partial derivatives into a vector and compare candidate directions on contour lines."
+				},
+				{
+					"kind": "reveal",
+					"text": "The gradient points toward steepest local increase, so negative gradient points toward steepest local decrease."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Gradient descent uses that arrow as a compass, then tempers it with a learning rate."
+				},
+				{
+					"kind": "recap",
+					"text": "The gradient is an uphill compass assembled from partial derivatives; reverse it to descend."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "The gradient as an uphill compass",
+					"goal": "Connect coordinate slopes to one vector and its reversed downhill direction."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "The gradient as an uphill compass in motion",
+					"goal": "Connect coordinate slopes to one vector and its reversed downhill direction."
+				}
+			],
+			"checks": [
+				"card-gradient-1",
+				"card-gradient-2",
+				"card-gradient-3",
+				"card-gradient-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "gradient-descent",
+			"objective": "By the end you can use the gradient descent update and predict how learning rate changes a step.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A downhill arrow is useful only when it becomes an actual move through parameter space."
+				},
+				{
+					"kind": "question",
+					"text": "What happens if we subtract the gradient once, twice, or with a much larger multiplier?"
+				},
+				{
+					"kind": "build",
+					"text": "Write theta-new equals theta minus learning-rate times gradient and compare step lengths."
+				},
+				{
+					"kind": "reveal",
+					"text": "Gradient descent recomputes the slope at the new point and repeats; the learning rate scales each move."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Small steps can be slow, while very large steps can overshoot a valley or become unstable."
+				},
+				{
+					"kind": "recap",
+					"text": "Direction comes from the negative gradient; distance comes from the learning rate."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "Repeated steps down the bowl",
+					"goal": "Animate recomputed downhill steps and make learning-rate scaling visible."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "Repeated steps down the bowl in motion",
+					"goal": "Animate recomputed downhill steps and make learning-rate scaling visible."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Gradient steps down a loss curve",
+					"goal": "Vary the learning rate and curvature to see gradient steps converge, overshoot, or diverge.",
+					"path": "explorables/gradient-step-loss.json"
+				}
+			],
+			"checks": [
+				"card-gradient-descent-1",
+				"card-gradient-descent-2",
+				"card-gradient-descent-3",
+				"card-gradient-descent-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "computation-graph",
+			"objective": "By the end you can turn a nested calculation into a computation graph with explicit intermediate dependencies.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A long formula hides the small places where values and sensitivities are created."
+				},
+				{
+					"kind": "question",
+					"text": "How could we give every operation a station that remembers what passed through it?"
+				},
+				{
+					"kind": "build",
+					"text": "Split a calculation into nodes for inputs, operations, and the final loss, then connect data arrows."
+				},
+				{
+					"kind": "reveal",
+					"text": "A computation graph records dependencies and creates a route for both forward values and backward sensitivities."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Shared intermediates can fan out, so the graph also tells us where contributions must be combined."
+				},
+				{
+					"kind": "recap",
+					"text": "The graph is a navigable map of the calculation, not merely a decorative diagram."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "The calculation becomes a graph",
+					"goal": "Expose operation nodes, cached intermediates, and dependency arrows."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "The calculation becomes a graph in motion",
+					"goal": "Expose operation nodes, cached intermediates, and dependency arrows."
+				}
+			],
+			"checks": [
+				"card-computation-graph-1",
+				"card-computation-graph-2",
+				"card-computation-graph-3",
+				"card-computation-graph-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "forward-pass",
+			"objective": "By the end you can trace a forward pass from input through activations to prediction and loss.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Training starts with an example moving through the model exactly as it would at inference time."
+				},
+				{
+					"kind": "question",
+					"text": "What values must be known before we can say how wrong the prediction is?"
+				},
+				{
+					"kind": "build",
+					"text": "Send an input left to right through each node and leave a checkpoint at every intermediate."
+				},
+				{
+					"kind": "reveal",
+					"text": "The forward pass computes the prediction and loss while caching values needed by differentiation."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "It does not update weights; it creates the evidence that the backward pass will use."
+				},
+				{
+					"kind": "recap",
+					"text": "Forward propagation answers what the current weights do on this example."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "A signal travels forward",
+					"goal": "Show input, activations, prediction, loss, and cached intermediate values in order."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "A signal travels forward in motion",
+					"goal": "Show input, activations, prediction, loss, and cached intermediate values in order."
+				}
+			],
+			"checks": [
+				"card-forward-pass-1",
+				"card-forward-pass-2",
+				"card-forward-pass-3",
+				"card-forward-pass-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "backward-pass",
+			"objective": "By the end you can explain reverse-mode differentiation as chain-rule sensitivities flowing from loss back to weights.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "The loss is one scalar, but many upstream operations helped create it."
+				},
+				{
+					"kind": "question",
+					"text": "How can one output error tell every weight how its own nudge would change the loss?"
+				},
+				{
+					"kind": "build",
+					"text": "Start with sensitivity one at the loss, then multiply by each local derivative while moving backward."
+				},
+				{
+					"kind": "reveal",
+					"text": "Reverse mode fans one scalar sensitivity backward and accumulates a gradient for every upstream parameter."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Cached forward values make the local derivatives available without recomputing a separate forward run for every weight."
+				},
+				{
+					"kind": "recap",
+					"text": "Backpropagation is the chain rule organized as a reverse walk through the computation graph."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "How a network blames its weights",
+					"goal": "Show one unit of blame at the loss multiplying through cached local derivatives until every weight has its gradient, then use it for one update.",
+					"path": "storyboards/how-a-network-blames-its-weights.json"
+				},
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "Blame flows backward",
+					"goal": "Make one loss sensitivity fan out into parameter gradients through cached nodes."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "Blame flows backward in motion",
+					"goal": "Make one loss sensitivity fan out into parameter gradients through cached nodes."
+				}
+			],
+			"checks": [
+				"card-backward-pass-1",
+				"card-backward-pass-2",
+				"card-backward-pass-3",
+				"card-backward-pass-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "weight-updates",
+			"objective": "By the end you can calculate one weight update and explain the role of the learning rate.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "After the backward pass, every weight has a direction and the optimizer must turn it into a move."
+				},
+				{
+					"kind": "question",
+					"text": "Given a weight, gradient, and learning rate, what should the next weight be?"
+				},
+				{
+					"kind": "build",
+					"text": "Substitute values into weight-new equals weight minus learning-rate times gradient and compare rates."
+				},
+				{
+					"kind": "reveal",
+					"text": "The gradient supplies direction and the learning rate supplies distance; a positive gradient usually lowers loss when subtracted."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Repeat forward pass, backward pass, and update to train across many examples."
+				},
+				{
+					"kind": "recap",
+					"text": "Backpropagation finds the local directions; weight updates use those directions to walk the loss landscape."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "diagram",
+					"style": "kurzgesagt",
+					"title": "From gradients to new weights",
+					"goal": "Connect each gradient to a scaled parameter move and a repeated training loop."
+				},
+				{
+					"kind": "manim",
+					"style": "3b1b",
+					"title": "From gradients to new weights in motion",
+					"goal": "Connect each gradient to a scaled parameter move and a repeated training loop."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Gradient steps down a loss curve",
+					"goal": "Vary the learning rate and curvature to see gradient steps converge, overshoot, or diverge.",
+					"path": "explorables/gradient-step-loss.json"
+				}
+			],
+			"checks": [
+				"card-weight-updates-1",
+				"card-weight-updates-2",
+				"card-weight-updates-3",
+				"card-weight-updates-4"
+			],
+			"status": "planned"
+		}
+	],
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z"
+}

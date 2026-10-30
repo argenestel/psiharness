@@ -1,0 +1,237 @@
+{
+	"topic": "entropy-information",
+	"title": "Entropy and information",
+	"bigIdea": "Information measures how much uncertainty an outcome removes, while entropy is the average surprise of a source; the same ideas explain compression, dependence, model mismatch, and reliable communication.",
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z",
+	"concepts": [
+		{
+			"id": "coin-flips",
+			"title": "Coin flips as a playground for uncertainty",
+			"summary": "A coin flip has outcomes with probabilities, and a fair flip leaves two equally plausible possibilities before it lands. Repeating flips gives us a concrete source whose uncertainty we can count.",
+			"prerequisites": [],
+			"difficulty": 1,
+			"intuition": "A flip is a tiny question asked by nature: before the answer arrives, the possible answers share a limited amount of uncertainty.",
+			"misconceptions": [
+				"A random outcome has no structure or probability at all.",
+				"A fair coin must alternate heads and tails over a short run.",
+				"A run that looks unusual makes the next independent flip compensate for it."
+			],
+			"visualHooks": [
+				"A two-door fork that closes to one door when the coin lands.",
+				"A growing tray of flips whose heads and tails settle toward their probabilities.",
+				"A curious blob choosing between two equally bright planets."
+			],
+			"tags": ["hook", "probability", "randomness", "coin"]
+		},
+		{
+			"id": "probability",
+			"title": "Probability assigns weight to possibilities",
+			"summary": "Probability is a number from 0 to 1 that describes how often an outcome is expected in repeated trials or how strongly a model weights that outcome. All mutually exclusive outcomes together have total probability 1.",
+			"prerequisites": ["coin-flips"],
+			"difficulty": 1,
+			"intuition": "Probability is the share of a possibility pie that an outcome owns before the experiment reveals it.",
+			"misconceptions": [
+				"A probability of 0.7 guarantees exactly 70 successes in the next 100 trials.",
+				"Probability is only a subjective feeling and cannot describe repeatable frequencies.",
+				"If one outcome becomes less likely, every other named outcome must become equally likely."
+			],
+			"visualHooks": [
+				"Slices of a unit circle becoming a weighted coin.",
+				"A stream of trials with a running frequency line approaching a target.",
+				"Buckets of probability mass that always add to one."
+			],
+			"tags": ["probability", "sample-space", "frequency", "model"]
+		},
+		{
+			"id": "surprise",
+			"title": "Surprise is minus log probability",
+			"summary": "The information or surprise of an outcome with probability p is I(x) = -log₂ p(x). Certain outcomes carry 0 bits, while rarer outcomes carry more bits because they eliminate more plausible alternatives.",
+			"prerequisites": ["probability"],
+			"difficulty": 2,
+			"intuition": "Surprise is the number of fair yes-or-no questions needed to single out an outcome that had probability p.",
+			"misconceptions": [
+			"A rare outcome is intrinsically more important than a common outcome.",
+			"Surprise should be proportional to p, so a likely outcome should feel more informative.",
+			"The logarithm is an arbitrary decoration rather than the rule that makes independent surprises add."
+			],
+			"visualHooks": [
+				"A rare door requiring a tall stack of binary questions to locate.",
+				"A probability slider whose surprise meter rises as its outcome becomes rare.",
+				"Two independent question trees joining end-to-end to show log addition."
+			],
+			"tags": ["information", "surprise", "logarithm", "bits"]
+		},
+		{
+			"id": "expected-surprise",
+			"title": "Expected surprise averages outcomes",
+			"summary": "A source's expected surprise is the probability-weighted average of its outcome surprises: E[I(X)] = Σ p(x)(-log₂ p(x)). Common outcomes count often and rare outcomes count a lot per occurrence.",
+			"prerequisites": ["surprise"],
+			"difficulty": 2,
+			"intuition": "Expected surprise asks what the long-run information per message will be when the source keeps speaking.",
+			"misconceptions": [
+				"The most surprising possible outcome is the source's average information.",
+				"A rare event can be ignored because it hardly ever appears.",
+				"Averages should weight each named outcome equally even when their probabilities differ."
+			],
+			"visualHooks": [
+				"A balance scale with each outcome's probability as its weight and surprise as its height.",
+				"A long stream of messages whose cumulative bits settle to an average slope.",
+				"A roulette of outcomes feeding a running weighted sum."
+			],
+			"tags": ["expectation", "average", "information", "source"]
+		},
+		{
+			"id": "entropy",
+			"title": "Entropy is average uncertainty",
+			"summary": "Entropy H(X) = -Σ p(x) log₂ p(x) is the expected surprise of a random variable. It is largest when the possible outcomes are equally likely and smaller when probability is concentrated.",
+			"prerequisites": ["expected-surprise"],
+			"difficulty": 2,
+			"intuition": "Entropy is the source's uncertainty budget per symbol, measured by how many binary decisions its messages require on average.",
+			"misconceptions": [
+				"Entropy is the surprise of one particular outcome.",
+				"A source with more named outcomes must always have more entropy.",
+				"Entropy measures disorder in a physical object rather than uncertainty in a probability distribution."
+			],
+			"visualHooks": [
+				"A probability landscape flattening to its highest uncertainty at uniformity.",
+				"A pile of binary questions whose average height is labeled H(X).",
+				"Two coins, one fair and one heavily biased, compared by their uncertainty clouds."
+			],
+			"tags": ["entropy", "uncertainty", "expectation", "distribution"]
+		},
+		{
+			"id": "bits",
+			"title": "Bits count binary alternatives",
+			"summary": "A bit is one binary digit and also the information in one fair binary choice. Entropy measured with log₂ is measured in bits, so a fair coin has entropy 1 bit per flip.",
+			"prerequisites": ["entropy"],
+			"difficulty": 2,
+			"intuition": "One bit is one clean fork with two equally plausible branches; many bits are a path through many such forks.",
+			"misconceptions": [
+				"A bit always means a physical transistor or a single stored 0/1 value.",
+				"A biased coin still has exactly one bit of entropy because it has two labels.",
+				"Bits and bytes are interchangeable units."
+			],
+			"visualHooks": [
+				"A binary question tree with one level labeled one bit.",
+				"A tape of fair-flip answers turning into a stream of 0s and 1s.",
+				"A measuring ruler marked in binary forks rather than centimeters."
+			],
+			"tags": ["bits", "binary", "units", "coding"]
+		},
+		{
+			"id": "cross-entropy",
+			"title": "Cross-entropy scores a predictive model",
+			"summary": "Cross-entropy H(P,Q) = Eₚ[-log₂ Q(x)] is the average code length or surprise assigned by model Q when reality follows P. It rewards assigning high probability to what actually occurs.",
+			"prerequisites": ["surprise", "entropy"],
+			"difficulty": 3,
+			"intuition": "Cross-entropy is the bill for using someone else's probability forecast to describe messages generated by the real source.",
+			"misconceptions": [
+				"Cross-entropy compares only the names of outcomes and ignores their probabilities.",
+				"A model can assign zero probability to an event and receive a finite penalty when that event occurs.",
+				"Cross-entropy is always symmetric between P and Q."
+			],
+			"visualHooks": [
+				"A messenger using a mismatched question tree and paying extra binary questions.",
+				"Two probability bars, P and Q, with Q's predictions tested by P's outcomes.",
+				"A scoreboard of average bits per symbol under different forecasts."
+			],
+			"tags": ["cross-entropy", "prediction", "loss", "coding"]
+		},
+		{
+			"id": "joint-entropy",
+			"title": "Joint entropy counts pairs together",
+			"summary": "Joint entropy H(X,Y) is the entropy of the pair, H(X,Y) = -Σ p(x,y) log₂ p(x,y). It counts the average information needed to identify both variables together.",
+			"prerequisites": ["entropy"],
+			"difficulty": 3,
+			"intuition": "A pair is one larger outcome space: joint entropy measures how many binary questions identify the row-and-column answer together.",
+			"misconceptions": [
+				"Joint entropy is always the sum of the two individual entropies.",
+				"Knowing one variable can never change how much information the pair needs.",
+				"The order of the variables changes the value of H(X,Y)."
+			],
+			"visualHooks": [
+				"A grid of paired outcomes with probability mass painted into each cell.",
+				"Two answer cards stapled together and counted as one combined symbol.",
+				"A branching tree that first asks X and then asks Y."
+			],
+			"tags": ["joint", "entropy", "random-variables", "dependence"]
+		},
+		{
+			"id": "conditional-entropy",
+			"title": "Conditional entropy is uncertainty left over",
+			"summary": "Conditional entropy H(Y|X) is the average uncertainty in Y after X is known. The chain rule H(X,Y) = H(X) + H(Y|X) separates the questions needed for X from those still needed for Y.",
+			"prerequisites": ["joint-entropy"],
+			"difficulty": 3,
+			"intuition": "Conditional entropy is the part of a question that remains after a clue has already crossed out some possibilities.",
+			"misconceptions": [
+				"Conditioning on any extra variable must increase uncertainty.",
+				"H(Y|X) and H(X|Y) are generally the same number.",
+				"If X and Y are correlated, conditional entropy must be zero."
+			],
+			"visualHooks": [
+				"A foggy possibility cloud shrinking after a clue reveals X.",
+				"A two-stage question tree with the remaining depth highlighted.",
+				"Several conditional distributions, one for each observed X, averaged together."
+			],
+			"tags": ["conditional", "chain-rule", "uncertainty", "clue"]
+		},
+		{
+			"id": "mutual-information",
+			"title": "Mutual information measures shared knowledge",
+			"summary": "Mutual information I(X;Y) = H(Y) - H(Y|X) = H(X) + H(Y) - H(X,Y) measures how many bits knowing one variable tells us about the other. It is zero for independent variables.",
+			"prerequisites": ["conditional-entropy", "entropy"],
+			"difficulty": 3,
+			"intuition": "Mutual information is the overlap between two uncertainty clouds: the bits one observation reliably predicts about the other.",
+			"misconceptions": [
+				"Mutual information is a directional amount like H(Y|X) and must differ when X and Y swap.",
+				"A high correlation coefficient is the only way variables can share information.",
+				"Zero mutual information means the variables have no relationship of any kind in every setting."
+			],
+			"visualHooks": [
+				"Two translucent entropy circles whose overlap is labeled shared bits.",
+				"A clue about X erasing a measured amount of uncertainty about Y.",
+				"A scatter of paired outcomes collapsing from a rectangle to a diagonal when dependence grows."
+			],
+			"tags": ["mutual-information", "dependence", "shared-information", "communication"]
+		},
+		{
+			"id": "kl-divergence",
+			"title": "KL divergence is the cost of a wrong model",
+			"summary": "Kullback–Leibler divergence Dₖₗ(P‖Q) = Σ p(x) log₂(p(x)/q(x)) equals H(P,Q) - H(P): the extra average bits paid when coding P-generated data with model Q. It is nonnegative and generally asymmetric.",
+			"prerequisites": ["cross-entropy", "entropy"],
+			"difficulty": 3,
+			"intuition": "KL divergence is the wasted coding room caused by believing the source follows Q when it actually follows P.",
+			"misconceptions": [
+				"KL divergence is a true distance and must be symmetric.",
+				"A negative KL divergence is a normal result when Q predicts a frequent outcome too strongly.",
+				"The divergence is zero whenever P and Q have the same set of possible labels, even if weights differ."
+			],
+			"visualHooks": [
+				"An ideal question tree beside a mismatched tree, with the extra branches highlighted.",
+				"P probability mass walking through Q's forecast and leaving a trail of wasted bits.",
+				"An asymmetric arrow between distributions, showing that direction matters."
+			],
+			"tags": ["kl-divergence", "model-mismatch", "cross-entropy", "coding"]
+		},
+		{
+			"id": "channel-coding-intuition",
+			"title": "Redundancy can defeat a noisy channel",
+			"summary": "A communication channel can flip or erase symbols, but carefully designed redundancy lets a receiver infer the intended message. Shannon's channel capacity is the maximum reliable information rate, expressed through mutual information.",
+			"prerequisites": ["bits", "mutual-information"],
+			"difficulty": 4,
+			"intuition": "A noisy channel is a blurry pipe: send slowly enough and add the right structure, and the receiver can recover the message despite individual errors.",
+			"misconceptions": [
+				"Repeating every bit many times always reaches perfect reliability at no cost.",
+				"More noise can always be overcome by sending more symbols per second.",
+				"Compression and error correction are the same operation with different names."
+			],
+			"visualHooks": [
+				"A message of colored beads crossing a shaking tube, then being restored by a patterned code.",
+				"A noisy scatter plot of received symbols with decision regions around codewords.",
+				"A capacity speed limit sign separating reliable from unreliable communication rates."
+			],
+			"tags": ["channel", "noise", "capacity", "redundancy", "shannon"]
+		}
+	]
+}

@@ -1,0 +1,290 @@
+{
+	"topic": "backpropagation",
+	"title": "Backpropagation: finding the downhill direction",
+	"bigIdea": "Training a neural network is a repeated walk through a landscape of loss: a forward pass measures how wrong the current weights are, and reverse-mode differentiation sends the local slope backward so each weight can move downhill by a controlled amount.",
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z",
+	"concepts": [
+		{
+			"id": "descending-loss-valley",
+			"title": "The descending loss valley",
+			"summary": "Imagine every possible set of model parameters as a location with a height equal to its error. Learning is the search for parameter changes that descend toward lower loss.",
+			"prerequisites": [],
+			"difficulty": 1,
+			"intuition": "A model learns by taking small, informed steps down a landscape whose height is its error.",
+			"misconceptions": [
+				"The picture is a physical landscape that the model can see directly.",
+				"Any downhill step reaches the global best answer in one move."
+			],
+			"visualHooks": [
+				"A tiny explorer walking from a high ridge toward a glowing valley floor.",
+				"Contour lines turning a many-parameter error surface into a map of heights."
+			],
+			"tags": [
+				"intuition",
+				"loss",
+				"optimization"
+			]
+		},
+		{
+			"id": "loss",
+			"title": "Loss as the training objective",
+			"summary": "A loss function turns a model's prediction and the target into a scalar score of wrongness. Training tries to reduce that score over the data the model should handle.",
+			"prerequisites": [
+				"descending-loss-valley"
+			],
+			"difficulty": 2,
+			"intuition": "Loss is the scoreboard that tells learning whether a proposed set of weights is making predictions better or worse.",
+			"misconceptions": [
+				"Loss is the model's confidence rather than a chosen error objective.",
+				"A lower training loss guarantees perfect performance on new examples."
+			],
+			"visualHooks": [
+				"A scoreboard dropping as predictions move closer to targets.",
+				"A height gauge attached to every point in parameter space."
+			],
+			"tags": [
+				"objective",
+				"error",
+				"training"
+			]
+		},
+		{
+			"id": "composition",
+			"title": "Composition of functions",
+			"summary": "A neural network is a composition: one function transforms an input, the next transforms that result, and so on. Writing the nesting clearly makes the dependency structure visible.",
+			"prerequisites": [
+				"descending-loss-valley"
+			],
+			"difficulty": 1,
+			"intuition": "A pipeline of functions is a chain of transformations where each stage consumes the previous stage's output.",
+			"misconceptions": [
+				"Composition means adding functions instead of feeding one function into another.",
+				"The order of composed functions can be swapped without changing the result."
+			],
+			"visualHooks": [
+				"Nested boxes passing a colored signal from input to output.",
+				"A row of conveyor belts where each belt changes the package before the next one."
+			],
+			"tags": [
+				"functions",
+				"pipeline",
+				"foundations"
+			]
+		},
+		{
+			"id": "derivatives",
+			"title": "Derivatives as local slope",
+			"summary": "A derivative measures how rapidly a scalar output changes when its input changes a little. On a graph, it is the slope of the tangent line at one point.",
+			"prerequisites": [
+				"composition"
+			],
+			"difficulty": 2,
+			"intuition": "The derivative is a local speedometer for a function: it says which way and how fast the output changes right here.",
+			"misconceptions": [
+				"A derivative is the same thing as the function's output.",
+				"The derivative always describes the average slope over the whole graph."
+			],
+			"visualHooks": [
+				"A secant line squeezing into a tangent line as two points merge.",
+				"A cyclist's speedometer attached to a curve being traced."
+			],
+			"tags": [
+				"calculus",
+				"slope",
+				"local-change"
+			]
+		},
+		{
+			"id": "chain-rule",
+			"title": "The chain rule",
+			"summary": "For a composition, a small change travels through every stage. The derivative of the whole composition is the product of each stage's local derivative.",
+			"prerequisites": [
+				"derivatives",
+				"composition"
+			],
+			"difficulty": 2,
+			"intuition": "A change passes through a pipeline, multiplying by the sensitivity of each gate along its route.",
+			"misconceptions": [
+				"The derivative of a composition is just the derivative of the outer function.",
+				"The order of the factors in the chain can be ignored when variables are vectors."
+			],
+			"visualHooks": [
+				"A signal carrying a tiny change through gates that each stretch or shrink it.",
+				"Multipliers written above arrows in a function pipeline, then combined into one arrow."
+			],
+			"tags": [
+				"calculus",
+				"composition",
+				"sensitivity"
+			]
+		},
+		{
+			"id": "partial-derivatives",
+			"title": "Partial derivatives",
+			"summary": "A partial derivative measures change in one input while holding the other inputs fixed. It lets a multivariable function reveal one coordinate's contribution at a time.",
+			"prerequisites": [
+				"derivatives"
+			],
+			"difficulty": 2,
+			"intuition": "Freeze every dial except one, then measure how the output responds when that single dial moves.",
+			"misconceptions": [
+				"A partial derivative changes all variables at once.",
+				"A partial derivative is only useful when the function has exactly two inputs."
+			],
+			"visualHooks": [
+				"A landscape with all but one coordinate locked while a single slider moves.",
+				"Slices through a surface along the x and y directions, each with its own slope."
+			],
+			"tags": [
+				"calculus",
+				"multivariable",
+				"coordinates"
+			]
+		},
+		{
+			"id": "gradient",
+			"title": "The gradient",
+			"summary": "The gradient collects all partial derivatives into a vector. It points in the direction of steepest local increase, so its negative is the local downhill direction.",
+			"prerequisites": [
+				"chain-rule",
+				"partial-derivatives"
+			],
+			"difficulty": 3,
+			"intuition": "The gradient is a compass whose arrow points uphill most steeply; reverse it to walk downhill fastest locally.",
+			"misconceptions": [
+				"The gradient points downhill by definition.",
+				"A larger gradient always means the best possible update is to take a larger step."
+			],
+			"visualHooks": [
+				"Arrows radiating across a contour map, with each arrow pointing uphill.",
+				"A compass flipped around to turn the steepest ascent arrow into a descent arrow."
+			],
+			"tags": [
+				"vectors",
+				"calculus",
+				"optimization"
+			]
+		},
+		{
+			"id": "gradient-descent",
+			"title": "Gradient descent",
+			"summary": "Gradient descent repeatedly subtracts a scaled gradient from the parameters. Each update uses the current local slope to seek a lower value of the loss.",
+			"prerequisites": [
+				"loss",
+				"gradient"
+			],
+			"difficulty": 3,
+			"intuition": "Read the uphill arrow, reverse it, choose a step size, and repeat after the landscape changes.",
+			"misconceptions": [
+				"Gradient descent always moves directly toward the global minimum.",
+				"The learning rate only changes how quickly the model finishes, never whether it overshoots."
+			],
+			"visualHooks": [
+				"A sequence of dots zigzagging down a bowl as each arrow is recomputed.",
+				"A hiker choosing stride length from a local slope indicator."
+			],
+			"tags": [
+				"optimization",
+				"updates",
+				"learning-rate"
+			]
+		},
+		{
+			"id": "computation-graph",
+			"title": "Computation graphs",
+			"summary": "A computation graph writes a complicated calculation as small operations connected by data dependencies. Each node can cache the value and local derivative needed later.",
+			"prerequisites": [
+				"composition",
+				"loss"
+			],
+			"difficulty": 3,
+			"intuition": "A computation graph is a map of the calculation, so forward values and backward sensitivities have explicit routes to follow.",
+			"misconceptions": [
+				"A computation graph is only a drawing and cannot store intermediate values.",
+				"Every graph must be a tree with no shared intermediate values."
+			],
+			"visualHooks": [
+				"Colored marbles flowing through operation nodes connected by arrows.",
+				"A subway map whose stations remember both the arriving value and a local transfer rate."
+			],
+			"tags": [
+				"graphs",
+				"autodiff",
+				"dependencies"
+			]
+		},
+		{
+			"id": "forward-pass",
+			"title": "The forward pass",
+			"summary": "The forward pass evaluates the computation graph from inputs to prediction and then to loss. It records intermediate values that make later differentiation possible.",
+			"prerequisites": [
+				"computation-graph"
+			],
+			"difficulty": 3,
+			"intuition": "Forward propagation carries actual numbers from the data through every operation until the loss appears at the end.",
+			"misconceptions": [
+				"The forward pass already changes the weights.",
+				"Only the final prediction matters; intermediate activations are disposable."
+			],
+			"visualHooks": [
+				"A bright signal traveling left to right through a row of nodes.",
+				"Checkpoints appearing beside each operation as the input becomes a prediction."
+			],
+			"tags": [
+				"neural-networks",
+				"inference",
+				"activations"
+			]
+		},
+		{
+			"id": "backward-pass",
+			"title": "The backward pass and reverse mode",
+			"summary": "The backward pass applies the chain rule from the loss back through the graph. Reverse mode accumulates how the final scalar loss changes with respect to every upstream value and weight.",
+			"prerequisites": [
+				"forward-pass",
+				"chain-rule",
+				"gradient"
+			],
+			"difficulty": 4,
+			"intuition": "Start with one unit of blame at the loss and pass sensitivities backward, multiplying by each local derivative on the way.",
+			"misconceptions": [
+				"Backward means the data is fed through the model in reverse to make a new prediction.",
+				"Reverse mode computes only one weight's derivative and has to rerun the whole network for each weight."
+			],
+			"visualHooks": [
+				"A red blame signal flowing backward while cached forward values glow at each node.",
+				"A single output sensitivity fanning out into many parameter gradients."
+			],
+			"tags": [
+				"backpropagation",
+				"reverse-mode",
+				"chain-rule"
+			]
+		},
+		{
+			"id": "weight-updates",
+			"title": "Weight updates and learning rate",
+			"summary": "Once the backward pass supplies a gradient for each weight, the optimizer updates the weights by subtracting learning rate times gradient. The learning rate controls the size of that move.",
+			"prerequisites": [
+				"backward-pass",
+				"gradient-descent"
+			],
+			"difficulty": 3,
+			"intuition": "The gradient gives each weight a direction and the learning rate turns that direction into a step with a chosen length.",
+			"misconceptions": [
+				"Weights move in the direction of the gradient because the gradient points downhill.",
+				"A learning rate of zero still lets gradients improve weights through some hidden mechanism."
+			],
+			"visualHooks": [
+				"Many sliders nudging by arrows whose lengths are scaled by one shared knob.",
+				"A before-and-after overlay showing a cautious step versus an overshooting step."
+			],
+			"tags": [
+				"parameters",
+				"optimization",
+				"learning-rate"
+			]
+		}
+	]
+}

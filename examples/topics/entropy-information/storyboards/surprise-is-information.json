@@ -1,0 +1,2249 @@
+{
+	"id": "surprise-is-information",
+	"title": "Surprise is information",
+	"topic": "entropy-information",
+	"conceptId": "surprise",
+	"style": "kurzgesagt",
+	"palette": "kurzgesagt",
+	"scenes": [
+		{
+			"id": "two-live-possibilities",
+			"narration": "Flip a coin. While it spins, two futures are still alive: heads and tails. Nature is about to answer a question, and right now we do not know the answer.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "two-live-possibilities-stars",
+					"kind": "particles",
+					"props": {
+						"x": 60,
+						"y": 60,
+						"w": 1480,
+						"h": 780,
+						"count": 45,
+						"color": "#a4b5d8",
+						"speed": 0.2
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 1.2
+					}
+				},
+				{
+					"id": "two-live-possibilities-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Before it lands, two worlds are possible",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "two-live-possibilities-fork",
+					"kind": "path",
+					"props": {
+						"d": "M 800 390 C 800 450 550 430 550 500 M 800 390 C 800 450 1050 430 1050 500",
+						"stroke": "#ffda66",
+						"width": 6
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.9,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "two-live-possibilities-heads",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "two-live-possibilities-heads-frame",
+								"kind": "rect",
+								"props": {
+									"x": 420,
+									"y": 500,
+									"w": 260,
+									"h": 300,
+									"rx": 18,
+									"fill": "none",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "two-live-possibilities-heads-knob",
+								"kind": "circle",
+								"props": {
+									"x": 646,
+									"y": 650.0,
+									"r": 9,
+									"fill": "#22d4c5"
+								}
+							},
+							{
+								"id": "two-live-possibilities-heads-label",
+								"kind": "text",
+								"props": {
+									"x": 550.0,
+									"y": 664.0,
+									"text": "HEADS",
+									"size": 38,
+									"align": "middle",
+									"fill": "#22d4c5",
+									"weight": 700
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.4,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "two-live-possibilities-tails",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "two-live-possibilities-tails-frame",
+								"kind": "rect",
+								"props": {
+									"x": 920,
+									"y": 500,
+									"w": 260,
+									"h": 300,
+									"rx": 18,
+									"fill": "none",
+									"stroke": "#f465a9"
+								}
+							},
+							{
+								"id": "two-live-possibilities-tails-knob",
+								"kind": "circle",
+								"props": {
+									"x": 1146,
+									"y": 650.0,
+									"r": 9,
+									"fill": "#f465a9"
+								}
+							},
+							{
+								"id": "two-live-possibilities-tails-label",
+								"kind": "text",
+								"props": {
+									"x": 1050.0,
+									"y": 664.0,
+									"text": "TAILS",
+									"size": 38,
+									"align": "middle",
+									"fill": "#f465a9",
+									"weight": 700
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.6,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "two-live-possibilities-coin",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "two-live-possibilities-coin-face",
+								"kind": "circle",
+								"props": {
+									"x": 800,
+									"y": 300,
+									"r": 72,
+									"fill": "#ffda66",
+									"stroke": "#ff9351"
+								}
+							},
+							{
+								"id": "two-live-possibilities-coin-mark",
+								"kind": "text",
+								"props": {
+									"x": 800,
+									"y": 322,
+									"text": "?",
+									"size": 70,
+									"align": "middle",
+									"fill": "#7a4b12",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.4,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "float",
+						"delay": 1.2,
+						"duration": 2.0
+					}
+				},
+				{
+					"id": "two-live-possibilities-half-heads",
+					"kind": "text",
+					"props": {
+						"x": 520,
+						"y": 465,
+						"text": "p = ½",
+						"size": 30,
+						"align": "end",
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.2,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "two-live-possibilities-half-tails",
+					"kind": "text",
+					"props": {
+						"x": 1080,
+						"y": 465,
+						"text": "p = ½",
+						"size": 30,
+						"align": "start",
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.4,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "two-live-possibilities-watcher",
+					"kind": "creature",
+					"props": {
+						"x": 200,
+						"y": 700,
+						"size": 70,
+						"color": "#ff9351",
+						"mood": "curious"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.6,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "float",
+						"delay": 3.4,
+						"duration": 2.5
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "one-door-closes",
+			"narration": "It lands heads. One of two equally likely doors just closed. That answer is worth exactly one bit: the information in one fair yes-or-no question.",
+			"durationSec": 10,
+			"background": "deep",
+			"elements": [
+				{
+					"id": "one-door-closes-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "The answer closes one door",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "one-door-closes-heads",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "one-door-closes-heads-frame",
+								"kind": "rect",
+								"props": {
+									"x": 420,
+									"y": 400,
+									"w": 260,
+									"h": 300,
+									"rx": 18,
+									"fill": "#14425a",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "one-door-closes-heads-knob",
+								"kind": "circle",
+								"props": {
+									"x": 646,
+									"y": 550.0,
+									"r": 9,
+									"fill": "#22d4c5"
+								}
+							},
+							{
+								"id": "one-door-closes-heads-label",
+								"kind": "text",
+								"props": {
+									"x": 550.0,
+									"y": 564.0,
+									"text": "HEADS",
+									"size": 38,
+									"align": "middle",
+									"fill": "#22d4c5",
+									"weight": 700
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.2,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "one-door-closes-tails",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "one-door-closes-tails-frame",
+								"kind": "rect",
+								"props": {
+									"x": 920,
+									"y": 400,
+									"w": 260,
+									"h": 300,
+									"rx": 18,
+									"fill": "#1b2a5c",
+									"stroke": "#a4b5d8"
+								}
+							},
+							{
+								"id": "one-door-closes-tails-knob",
+								"kind": "circle",
+								"props": {
+									"x": 1146,
+									"y": 550.0,
+									"r": 9,
+									"fill": "#a4b5d8"
+								}
+							},
+							{
+								"id": "one-door-closes-tails-label",
+								"kind": "text",
+								"props": {
+									"x": 1050.0,
+									"y": 564.0,
+									"text": "TAILS",
+									"size": 38,
+									"align": "middle",
+									"fill": "#5b6a94",
+									"weight": 700
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.2,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "one-door-closes-cross",
+					"kind": "path",
+					"props": {
+						"d": "M 950 430 L 1150 670 M 1150 430 L 950 670",
+						"stroke": "#f465a9",
+						"width": 10
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "one-door-closes-coin",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "one-door-closes-coin-face",
+								"kind": "circle",
+								"props": {
+									"x": 550,
+									"y": 290,
+									"r": 60,
+									"fill": "#ffda66",
+									"stroke": "#ff9351"
+								}
+							},
+							{
+								"id": "one-door-closes-coin-mark",
+								"kind": "text",
+								"props": {
+									"x": 550,
+									"y": 312,
+									"text": "H",
+									"size": 60,
+									"align": "middle",
+									"fill": "#7a4b12",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "slide",
+						"delay": 0.6,
+						"duration": 0.8,
+						"from": "top"
+					}
+				},
+				{
+					"id": "one-door-closes-bit",
+					"kind": "equation",
+					"props": {
+						"x": 470,
+						"y": 800,
+						"tex": "-\\log_2 \\tfrac{1}{2} = 1\\ \\text{bit}",
+						"size": 50,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "one-door-closes-happy",
+					"kind": "creature",
+					"props": {
+						"x": 1380,
+						"y": 640,
+						"size": 65,
+						"color": "#22d4c5",
+						"mood": "happy"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.4,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 3.0,
+						"duration": 1.6
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.04,
+				"x": 800,
+				"y": 480
+			}
+		},
+		{
+			"id": "six-doors",
+			"narration": "Roll a fair die and six doors are open, each with probability one-sixth. Learning that it landed on six rules out five doors at once, so that answer carries more information: about 2.58 bits.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "six-doors-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "A die opens six doors",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "six-doors-face-1",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "six-doors-face-1-box",
+								"kind": "rect",
+								"props": {
+									"x": 215,
+									"y": 330,
+									"w": 170,
+									"h": 220,
+									"rx": 20,
+									"fill": "#1b2a5c",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "six-doors-face-1-n",
+								"kind": "text",
+								"props": {
+									"x": 300,
+									"y": 465,
+									"text": "1",
+									"size": 72,
+									"align": "middle",
+									"fill": "#22d4c5",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.5,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "six-doors-face-2",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "six-doors-face-2-box",
+								"kind": "rect",
+								"props": {
+									"x": 415,
+									"y": 330,
+									"w": 170,
+									"h": 220,
+									"rx": 20,
+									"fill": "#1b2a5c",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "six-doors-face-2-n",
+								"kind": "text",
+								"props": {
+									"x": 500,
+									"y": 465,
+									"text": "2",
+									"size": 72,
+									"align": "middle",
+									"fill": "#22d4c5",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.65,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "six-doors-face-3",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "six-doors-face-3-box",
+								"kind": "rect",
+								"props": {
+									"x": 615,
+									"y": 330,
+									"w": 170,
+									"h": 220,
+									"rx": 20,
+									"fill": "#1b2a5c",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "six-doors-face-3-n",
+								"kind": "text",
+								"props": {
+									"x": 700,
+									"y": 465,
+									"text": "3",
+									"size": 72,
+									"align": "middle",
+									"fill": "#22d4c5",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.8,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "six-doors-face-4",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "six-doors-face-4-box",
+								"kind": "rect",
+								"props": {
+									"x": 815,
+									"y": 330,
+									"w": 170,
+									"h": 220,
+									"rx": 20,
+									"fill": "#1b2a5c",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "six-doors-face-4-n",
+								"kind": "text",
+								"props": {
+									"x": 900,
+									"y": 465,
+									"text": "4",
+									"size": 72,
+									"align": "middle",
+									"fill": "#22d4c5",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.95,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "six-doors-face-5",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "six-doors-face-5-box",
+								"kind": "rect",
+								"props": {
+									"x": 1015,
+									"y": 330,
+									"w": 170,
+									"h": 220,
+									"rx": 20,
+									"fill": "#1b2a5c",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "six-doors-face-5-n",
+								"kind": "text",
+								"props": {
+									"x": 1100,
+									"y": 465,
+									"text": "5",
+									"size": 72,
+									"align": "middle",
+									"fill": "#22d4c5",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.1,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "six-doors-face-6",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "six-doors-face-6-box",
+								"kind": "rect",
+								"props": {
+									"x": 1215,
+									"y": 330,
+									"w": 170,
+									"h": 220,
+									"rx": 20,
+									"fill": "#f2e3c6",
+									"stroke": "#ff9351"
+								}
+							},
+							{
+								"id": "six-doors-face-6-n",
+								"kind": "text",
+								"props": {
+									"x": 1300,
+									"y": 465,
+									"text": "6",
+									"size": 72,
+									"align": "middle",
+									"fill": "#7a3a12",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.25,
+						"duration": 0.5
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 2.6,
+						"duration": 1.2
+					}
+				},
+				{
+					"id": "six-doors-each",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 620,
+						"text": "each door: p = 1/6",
+						"size": 34,
+						"align": "middle",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "six-doors-bits",
+					"kind": "equation",
+					"props": {
+						"x": 470,
+						"y": 780,
+						"tex": "-\\log_2 \\tfrac{1}{6} \\approx 2.58\\ \\text{bits}",
+						"size": 52,
+						"fill": "#ff9351"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.4,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "six-doors-roller",
+					"kind": "creature",
+					"props": {
+						"x": 1420,
+						"y": 760,
+						"size": 55,
+						"color": "#f465a9",
+						"mood": "happy"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.8,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "float",
+						"delay": 3.4,
+						"duration": 2.4
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "rare-is-loud",
+			"narration": "Now imagine 1,024 equally likely possibilities, and one of them happens. Pinning it down takes ten halvings, ten yes-or-no questions: ten bits. The rarer the outcome, the louder the news.",
+			"durationSec": 10,
+			"background": "deep",
+			"elements": [
+				{
+					"id": "rare-is-loud-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Rare news carries more bits",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "rare-is-loud-crowd",
+					"kind": "particles",
+					"props": {
+						"x": 200,
+						"y": 220,
+						"w": 1000,
+						"h": 520,
+						"count": 300,
+						"color": "#5b6a94",
+						"speed": 0.15
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "rare-is-loud-chosen",
+					"kind": "circle",
+					"props": {
+						"x": 860,
+						"y": 470,
+						"r": 26,
+						"fill": "#f465a9",
+						"stroke": "#ffda66"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.6,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 2.4,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "rare-is-loud-pointer",
+					"kind": "arrow",
+					"props": {
+						"x1": 1040,
+						"y1": 380,
+						"x2": 900,
+						"y2": 450,
+						"stroke": "#ffda66",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "rare-is-loud-odds",
+					"kind": "text",
+					"props": {
+						"x": 1060,
+						"y": 360,
+						"text": "1 of 1,024",
+						"size": 36,
+						"align": "start",
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "rare-is-loud-bits",
+					"kind": "equation",
+					"props": {
+						"x": 420,
+						"y": 830,
+						"tex": "-\\log_2 \\tfrac{1}{1024} = 10\\ \\text{bits}",
+						"size": 52,
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.8,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "rare-is-loud-shocked",
+					"kind": "creature",
+					"props": {
+						"x": 1380,
+						"y": 650,
+						"size": 80,
+						"color": "#ff9351",
+						"mood": "surprised"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 3.2,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 3.8,
+						"duration": 1.2
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.05,
+				"x": 800,
+				"y": 470
+			}
+		},
+		{
+			"id": "the-surprise-curve",
+			"narration": "Each halving of probability adds one bit. Probability one: zero bits, no news at all. One half: one bit. One quarter: two. One eighth: three. That rule is surprise: minus log base two of p.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "the-surprise-curve-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Halve the probability, add one bit",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "the-surprise-curve-x-axis",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 760,
+						"x2": 1340,
+						"y2": 760,
+						"stroke": "#a4b5d8",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.2,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "the-surprise-curve-y-axis",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 760,
+						"x2": 300,
+						"y2": 210,
+						"stroke": "#a4b5d8",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.2,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "the-surprise-curve-x-label",
+					"kind": "text",
+					"props": {
+						"x": 1340,
+						"y": 810,
+						"text": "probability p",
+						"size": 28,
+						"align": "end",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-surprise-curve-y-label",
+					"kind": "text",
+					"props": {
+						"x": 320,
+						"y": 220,
+						"text": "surprise (bits)",
+						"size": 28,
+						"align": "start",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-surprise-curve-curve",
+					"kind": "graph",
+					"props": {
+						"x": 300,
+						"y": 240,
+						"w": 1000,
+						"h": 520,
+						"fn": "-Math.log2(x)",
+						"domain": [
+							0.01,
+							1.0
+						],
+						"range": [
+							0.0,
+							7.0
+						],
+						"stroke": "#f465a9"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.8,
+						"duration": 1.4
+					}
+				},
+				{
+					"id": "the-surprise-curve-dot-0",
+					"kind": "circle",
+					"props": {
+						"x": 1300.0,
+						"y": 760.0,
+						"r": 13,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.8,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-surprise-curve-dot-0-label",
+					"kind": "text",
+					"props": {
+						"x": 1322.0,
+						"y": 738.0,
+						"text": "p = 1 → 0 bits",
+						"size": 28,
+						"align": "start",
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.9,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-surprise-curve-dot-1",
+					"kind": "circle",
+					"props": {
+						"x": 794.9,
+						"y": 685.7,
+						"r": 13,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.4,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-surprise-curve-dot-1-label",
+					"kind": "text",
+					"props": {
+						"x": 816.9,
+						"y": 663.7,
+						"text": "½ → 1 bit",
+						"size": 28,
+						"align": "start",
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.5,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-surprise-curve-dot-2",
+					"kind": "circle",
+					"props": {
+						"x": 542.4,
+						"y": 611.4,
+						"r": 13,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 3.0,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-surprise-curve-dot-2-label",
+					"kind": "text",
+					"props": {
+						"x": 564.4,
+						"y": 589.4,
+						"text": "¼ → 2 bits",
+						"size": 28,
+						"align": "start",
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.0999999999999996,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-surprise-curve-dot-3",
+					"kind": "circle",
+					"props": {
+						"x": 416.2,
+						"y": 537.1,
+						"r": 13,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 3.5999999999999996,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-surprise-curve-dot-3-label",
+					"kind": "text",
+					"props": {
+						"x": 438.2,
+						"y": 515.1,
+						"text": "⅛ → 3 bits",
+						"size": 28,
+						"align": "start",
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.6999999999999997,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-surprise-curve-rule",
+					"kind": "equation",
+					"props": {
+						"x": 820,
+						"y": 380,
+						"tex": "I(x) = -\\log_2 p(x)",
+						"size": 54,
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 4.4,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.02,
+				"x": 810,
+				"y": 470
+			}
+		},
+		{
+			"id": "surprises-add",
+			"narration": "Flip two coins. Their probabilities multiply to one quarter, but the logarithm turns that product into a sum: one bit plus one bit is two bits. Two levels of a question tree, two questions.",
+			"durationSec": 10,
+			"background": "deep",
+			"elements": [
+				{
+					"id": "surprises-add-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Independent surprises add",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "surprises-add-coin-a",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "surprises-add-coin-a-face",
+								"kind": "circle",
+								"props": {
+									"x": 330,
+									"y": 360,
+									"r": 60,
+									"fill": "#ffda66",
+									"stroke": "#ff9351"
+								}
+							},
+							{
+								"id": "surprises-add-coin-a-mark",
+								"kind": "text",
+								"props": {
+									"x": 330,
+									"y": 382,
+									"text": "H",
+									"size": 56,
+									"align": "middle",
+									"fill": "#7a4b12",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "surprises-add-coin-b",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "surprises-add-coin-b-face",
+								"kind": "circle",
+								"props": {
+									"x": 530,
+									"y": 360,
+									"r": 60,
+									"fill": "#ffda66",
+									"stroke": "#ff9351"
+								}
+							},
+							{
+								"id": "surprises-add-coin-b-mark",
+								"kind": "text",
+								"props": {
+									"x": 530,
+									"y": 382,
+									"text": "H",
+									"size": 56,
+									"align": "middle",
+									"fill": "#7a4b12",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "surprises-add-product",
+					"kind": "equation",
+					"props": {
+						"x": 200,
+						"y": 560,
+						"tex": "p = \\tfrac12 \\cdot \\tfrac12 = \\tfrac14",
+						"size": 46,
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.2,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "surprises-add-sum",
+					"kind": "equation",
+					"props": {
+						"x": 200,
+						"y": 720,
+						"tex": "-\\log_2 \\tfrac14 = 1 + 1 = 2\\ \\text{bits}",
+						"size": 46,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "surprises-add-tree",
+					"kind": "path",
+					"props": {
+						"d": "M 1150 300 L 1000 450 M 1150 300 L 1300 450 M 1000 450 L 930 600 M 1000 450 L 1070 600 M 1300 450 L 1230 600 M 1300 450 L 1370 600",
+						"stroke": "#22d4c5",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.0,
+						"duration": 1.2
+					}
+				},
+				{
+					"id": "surprises-add-root",
+					"kind": "circle",
+					"props": {
+						"x": 1150,
+						"y": 300,
+						"r": 20,
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.9,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "surprises-add-leaf-0",
+					"kind": "circle",
+					"props": {
+						"x": 930,
+						"y": 600,
+						"r": 22,
+						"fill": "#ff9351",
+						"stroke": "#ff9351"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.6,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "surprises-add-leaf-1",
+					"kind": "circle",
+					"props": {
+						"x": 1070,
+						"y": 600,
+						"r": 22,
+						"fill": "#1b2a5c",
+						"stroke": "#ff9351"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.7200000000000002,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "surprises-add-leaf-2",
+					"kind": "circle",
+					"props": {
+						"x": 1230,
+						"y": 600,
+						"r": 22,
+						"fill": "#1b2a5c",
+						"stroke": "#ff9351"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.84,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "surprises-add-leaf-3",
+					"kind": "circle",
+					"props": {
+						"x": 1370,
+						"y": 600,
+						"r": 22,
+						"fill": "#1b2a5c",
+						"stroke": "#ff9351"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.96,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "surprises-add-q1",
+					"kind": "text",
+					"props": {
+						"x": 1420,
+						"y": 390,
+						"text": "question 1",
+						"size": 26,
+						"align": "start",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "surprises-add-q2",
+					"kind": "text",
+					"props": {
+						"x": 1420,
+						"y": 540,
+						"text": "question 2",
+						"size": 26,
+						"align": "start",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.3,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		},
+		{
+			"id": "a-loaded-coin",
+			"narration": "Load the coin so heads comes up ninety percent of the time. Heads is barely news: 0.15 bits. Tails is a shock: 3.32 bits. But the shock is rare. Weight each surprise by how often it happens and the average is just 0.47 bits per flip.",
+			"durationSec": 10,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "a-loaded-coin-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "A loaded coin: weigh each surprise",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "a-loaded-coin-often",
+					"kind": "text",
+					"props": {
+						"x": 420,
+						"y": 230,
+						"text": "how often",
+						"size": 32,
+						"align": "middle",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-surprising",
+					"kind": "text",
+					"props": {
+						"x": 1180,
+						"y": 230,
+						"text": "how surprising",
+						"size": 32,
+						"align": "middle",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-p-heads",
+					"kind": "rect",
+					"props": {
+						"x": 270,
+						"y": 320,
+						"w": 130,
+						"h": 360,
+						"rx": 10,
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 0.5,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-p-tails",
+					"kind": "rect",
+					"props": {
+						"x": 440,
+						"y": 640,
+						"w": 130,
+						"h": 40,
+						"rx": 10,
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 0.7,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-p-heads-l",
+					"kind": "text",
+					"props": {
+						"x": 335,
+						"y": 725,
+						"text": "H: 0.9",
+						"size": 30,
+						"align": "middle",
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-p-tails-l",
+					"kind": "text",
+					"props": {
+						"x": 505,
+						"y": 725,
+						"text": "T: 0.1",
+						"size": 30,
+						"align": "middle",
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-i-heads",
+					"kind": "rect",
+					"props": {
+						"x": 1030,
+						"y": 662,
+						"w": 130,
+						"h": 18,
+						"rx": 6,
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 1.4,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-i-tails",
+					"kind": "rect",
+					"props": {
+						"x": 1200,
+						"y": 282,
+						"w": 130,
+						"h": 398,
+						"rx": 10,
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "grow",
+						"delay": 1.7,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-i-heads-l",
+					"kind": "text",
+					"props": {
+						"x": 1095,
+						"y": 725,
+						"text": "0.15 bits",
+						"size": 30,
+						"align": "middle",
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-i-tails-l",
+					"kind": "text",
+					"props": {
+						"x": 1265,
+						"y": 725,
+						"text": "3.32 bits",
+						"size": 30,
+						"align": "middle",
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-times",
+					"kind": "arrow",
+					"props": {
+						"x1": 640,
+						"y1": 470,
+						"x2": 960,
+						"y2": 470,
+						"stroke": "#ffda66",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "a-loaded-coin-times-l",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 450,
+						"text": "multiply, then add",
+						"size": 28,
+						"align": "middle",
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.4,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "a-loaded-coin-avg",
+					"kind": "equation",
+					"props": {
+						"x": 290,
+						"y": 840,
+						"tex": "0.9(0.15) + 0.1(3.32) \\approx 0.47\\ \\text{bits per flip}",
+						"size": 44,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.2,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.0,
+				"x": 800,
+				"y": 460
+			}
+		},
+		{
+			"id": "the-entropy-hill",
+			"narration": "Do this for every possible bias and you get the entropy curve. It peaks at one bit when heads and tails are equally likely, and falls to zero when the outcome is certain. Entropy is the average surprise of a source: how many yes-or-no questions its messages need.",
+			"durationSec": 10,
+			"background": "deep",
+			"elements": [
+				{
+					"id": "the-entropy-hill-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Entropy is the average surprise",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "the-entropy-hill-x-axis",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 740,
+						"x2": 1340,
+						"y2": 740,
+						"stroke": "#a4b5d8",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.2,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "the-entropy-hill-y-axis",
+					"kind": "arrow",
+					"props": {
+						"x1": 300,
+						"y1": 740,
+						"x2": 300,
+						"y2": 220,
+						"stroke": "#a4b5d8",
+						"width": 3
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.2,
+						"duration": 0.7
+					}
+				},
+				{
+					"id": "the-entropy-hill-x-label",
+					"kind": "text",
+					"props": {
+						"x": 1340,
+						"y": 790,
+						"text": "p(heads)",
+						"size": 28,
+						"align": "end",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-entropy-hill-y-label",
+					"kind": "text",
+					"props": {
+						"x": 320,
+						"y": 230,
+						"text": "H (bits)",
+						"size": 28,
+						"align": "start",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-entropy-hill-curve",
+					"kind": "graph",
+					"props": {
+						"x": 300,
+						"y": 260,
+						"w": 1000,
+						"h": 480,
+						"fn": "-x*Math.log2(x)-(1-x)*Math.log2(1-x)",
+						"domain": [
+							0.001,
+							0.999
+						],
+						"range": [
+							0.0,
+							1.2
+						],
+						"stroke": "#22d4c5"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.7,
+						"duration": 1.6
+					}
+				},
+				{
+					"id": "the-entropy-hill-peak",
+					"kind": "circle",
+					"props": {
+						"x": 800.0,
+						"y": 340.0,
+						"r": 14,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.2,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-entropy-hill-peak-l",
+					"kind": "text",
+					"props": {
+						"x": 800.0,
+						"y": 220.0,
+						"text": "fair coin: 1 bit",
+						"size": 30,
+						"align": "middle",
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.3,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-entropy-hill-climber",
+					"kind": "creature",
+					"props": {
+						"x": 800.0,
+						"y": 280.0,
+						"size": 40,
+						"color": "#ff9351",
+						"mood": "happy"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.6,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "float",
+						"delay": 3.2,
+						"duration": 2.2
+					}
+				},
+				{
+					"id": "the-entropy-hill-loaded",
+					"kind": "circle",
+					"props": {
+						"x": 1200.8,
+						"y": 552.4,
+						"r": 12,
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 3.0,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "the-entropy-hill-loaded-l",
+					"kind": "text",
+					"props": {
+						"x": 1224.8,
+						"y": 534.4,
+						"text": "p = 0.9: 0.47 bits",
+						"size": 28,
+						"align": "start",
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.1,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "the-entropy-hill-formula",
+					"kind": "equation",
+					"props": {
+						"x": 330,
+						"y": 850,
+						"tex": "H(X) = -\\sum_x p(x)\\,\\log_2 p(x)",
+						"size": 46,
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.8,
+						"duration": 0.8
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1.0,
+				"x": 800,
+				"y": 470
+			}
+		},
+		{
+			"id": "every-source-has-a-budget",
+			"narration": "Coins, dice, English text, the jiggling molecules of a gas: anything with uncertain outcomes has an average surprise. Shannon showed that this number is a hard floor for compression, and it is the starting point for prediction, dependence, and communication.",
+			"durationSec": 12,
+			"background": "bg",
+			"elements": [
+				{
+					"id": "every-source-has-a-budget-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Every uncertain source has an entropy",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "every-source-has-a-budget-box",
+					"kind": "rect",
+					"props": {
+						"x": 170,
+						"y": 300,
+						"w": 360,
+						"h": 360,
+						"rx": 24,
+						"fill": "none",
+						"stroke": "#22d4c5"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.4,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "every-source-has-a-budget-gas",
+					"kind": "particles",
+					"props": {
+						"x": 195,
+						"y": 325,
+						"w": 310,
+						"h": 310,
+						"count": 90,
+						"color": "#22d4c5",
+						"speed": 1.2
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.6,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "every-source-has-a-budget-gas-l",
+					"kind": "text",
+					"props": {
+						"x": 350,
+						"y": 720,
+						"text": "a gas",
+						"size": 30,
+						"align": "middle",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.8,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "every-source-has-a-budget-letters",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 500,
+						"text": "t h e _ q u i c k _ b",
+						"size": 50,
+						"align": "middle",
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 1.0,
+						"duration": 1.6
+					}
+				},
+				{
+					"id": "every-source-has-a-budget-text-l",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 720,
+						"text": "a stream of text",
+						"size": 30,
+						"align": "middle",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.4,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "every-source-has-a-budget-coin",
+					"kind": "group",
+					"props": {
+						"children": [
+							{
+								"id": "every-source-has-a-budget-coin-face",
+								"kind": "circle",
+								"props": {
+									"x": 1250,
+									"y": 480,
+									"r": 90,
+									"fill": "#ffda66",
+									"stroke": "#ff9351"
+								}
+							},
+							{
+								"id": "every-source-has-a-budget-coin-mark",
+								"kind": "text",
+								"props": {
+									"x": 1250,
+									"y": 508,
+									"text": "H",
+									"size": 80,
+									"align": "middle",
+									"fill": "#7a4b12",
+									"weight": 800
+								},
+								"enter": {
+									"type": "fade",
+									"delay": 0.3,
+									"duration": 0.8
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.8,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "orbit",
+						"delay": 2.4,
+						"duration": 6.0
+					}
+				},
+				{
+					"id": "every-source-has-a-budget-coin-l",
+					"kind": "text",
+					"props": {
+						"x": 1250,
+						"y": 720,
+						"text": "a coin",
+						"size": 30,
+						"align": "middle",
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "every-source-has-a-budget-floor",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 820,
+						"text": "average code length ≥ H bits per symbol",
+						"size": 38,
+						"align": "middle",
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "every-source-has-a-budget-guide",
+					"kind": "creature",
+					"props": {
+						"x": 1460,
+						"y": 250,
+						"size": 55,
+						"color": "#f465a9",
+						"mood": "happy"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 3.4,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "float",
+						"delay": 4.0,
+						"duration": 2.5
+					}
+				}
+			],
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			}
+		}
+	]
+}
