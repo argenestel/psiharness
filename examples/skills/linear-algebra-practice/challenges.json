@@ -1,0 +1,453 @@
+[
+	{
+		"id": "linear-algebra-practice-length",
+		"skill": "linear-algebra-practice",
+		"subskillId": "vectors",
+		"kind": "apply",
+		"level": 1,
+		"format": "number",
+		"prompt": "Predict whether $(3,4)$ is longer than $4$, then compute its length.",
+		"hints": [
+			"Sketch a right triangle with legs $3$ and $4$.",
+			"Length is $\\sqrt{3^2+4^2}$.",
+			"$9+16=25$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "5",
+		"tolerance": 0
+	},
+	{
+		"id": "linear-algebra-practice-dot",
+		"skill": "linear-algebra-practice",
+		"subskillId": "vectors",
+		"kind": "apply",
+		"level": 1,
+		"format": "number",
+		"prompt": "Predict the sign, then compute $(1,2)\\cdot(3,-1)$.",
+		"hints": [
+			"One component product is positive and one is negative.",
+			"Multiply matching components: $1\\cdot3$ and $2\\cdot(-1)$.",
+			"Add the two products."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "1",
+		"tolerance": 0
+	},
+	{
+		"id": "linear-algebra-practice-combination",
+		"skill": "linear-algebra-practice",
+		"subskillId": "span",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "In $a(1,0)+b(1,1)=(5,2)$, predict which weight alone sets the height, then submit $a$.",
+		"hints": [
+			"Only $(1,1)$ has a vertical component.",
+			"The second coordinate gives $b=2$.",
+			"Then $a+b=5$ for the first coordinate."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "3",
+		"tolerance": 0
+	},
+	{
+		"id": "linear-algebra-practice-map-x",
+		"skill": "linear-algebra-practice",
+		"subskillId": "transform",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "A map has columns $(2,0)$ and $(1,3)$. Predict where $(1,2)$ lands by combining the columns, then submit the output x-coordinate.",
+		"hints": [
+			"The input $(1,2)$ means: $1$ of the first column plus $2$ of the second.",
+			"$1\\cdot(2,0)+2\\cdot(1,3)$.",
+			"Read only the first coordinate of that sum."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "4",
+		"tolerance": 0
+	},
+	{
+		"id": "linear-algebra-practice-compose-x",
+		"skill": "linear-algebra-practice",
+		"subskillId": "compose",
+		"kind": "apply",
+		"level": 3,
+		"format": "number",
+		"prompt": "Apply $B=\\operatorname{diag}(2,1)$ first, then $A=\\begin{pmatrix}1&1\\\\0&1\\end{pmatrix}$, to $(1,2)$. Predict whether the final x-coordinate exceeds $3$, then submit it.",
+		"hints": [
+			"The stretch acts first on the original arrow.",
+			"After $B$ the arrow is $(2,2)$.",
+			"The shear adds the height to the x-coordinate: $2+2$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "4",
+		"tolerance": 0
+	},
+	{
+		"id": "linear-algebra-practice-det",
+		"skill": "linear-algebra-practice",
+		"subskillId": "determinant",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "Predict whether $\\begin{pmatrix}2&1\\\\1&3\\end{pmatrix}$ preserves or flips orientation, then compute its signed determinant.",
+		"hints": [
+			"Compare the two diagonal products.",
+			"Main diagonal $2\\cdot3$; off-diagonal $1\\cdot1$.",
+			"Subtract the off-diagonal product from the main one."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "5",
+		"tolerance": 0
+	},
+	{
+		"id": "linear-algebra-practice-area",
+		"skill": "linear-algebra-practice",
+		"subskillId": "determinant",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "A region has area $7$. A linear map has determinant $-3$. Predict the new area, then compute it.",
+		"hints": [
+			"A negative determinant reverses orientation, not the sign of a physical area.",
+			"Area scales by $|\\det|=3$.",
+			"Multiply $7$ by $3$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "21",
+		"tolerance": 0,
+		"unit": "square units"
+	},
+	{
+		"id": "linear-algebra-practice-inverse-coordinate",
+		"skill": "linear-algebra-practice",
+		"subskillId": "inverse",
+		"kind": "apply",
+		"level": 3,
+		"format": "number",
+		"prompt": "The map $A=\\operatorname{diag}(2,4)$ sends $v$ to $(6,8)$. Predict whether $v$ is shorter or longer than $(6,8)$, then submit the x-coordinate of $v$.",
+		"hints": [
+			"Undo the horizontal stretch.",
+			"$A$ doubled the first coordinate.",
+			"Divide $6$ by $2$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "3",
+		"tolerance": 0
+	},
+	{
+		"id": "linear-algebra-practice-eigenvalue",
+		"skill": "linear-algebra-practice",
+		"subskillId": "eigen",
+		"kind": "apply",
+		"level": 3,
+		"format": "number",
+		"prompt": "For $A=\\begin{pmatrix}3&1\\\\0&2\\end{pmatrix}$ and $v=(1,0)$, predict whether $Av$ stays on the x-axis, then compute $\\lambda$ in $Av=\\lambda v$.",
+		"hints": [
+			"Apply the map to the supplied direction.",
+			"$Av$ is the first column of $A$.",
+			"$(3,0)=\\lambda(1,0)$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "3",
+		"tolerance": 0
+	},
+	{
+		"id": "linear-algebra-practice-eigen-other",
+		"skill": "linear-algebra-practice",
+		"subskillId": "eigen",
+		"kind": "apply",
+		"level": 4,
+		"format": "number",
+		"prompt": "For $A=\\begin{pmatrix}2&1\\\\1&2\\end{pmatrix}$, predict whether $(1,-1)$ flips, then submit its eigenvalue.",
+		"hints": [
+			"Compute the image rather than guessing from the diagonal.",
+			"$A(1,-1)=(2-1,\\,1-2)$.",
+			"The image equals $(1,-1)$ itself; what multiple is that?"
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "1",
+		"tolerance": 0
+	},
+	{
+		"id": "linear-algebra-practice-boss",
+		"skill": "linear-algebra-practice",
+		"subskillId": "models",
+		"kind": "boss",
+		"level": 5,
+		"format": "number",
+		"prompt": "BOSS: One pipeline pass applies $B=\\operatorname{diag}(2,1)$ and then $A=\\begin{pmatrix}1&1\\\\0&1\\end{pmatrix}$. A triangle of area $6$ goes through the complete pipeline three times. First predict: does orientation ever flip, and does the direction $(1,0)$ stay on its own line? Then submit the final area.",
+		"hints": [
+			"Area scales by $|\\det|$ of one full pass, and passes multiply.",
+			"$\\det(AB)=\\det A\\cdot\\det B=1\\cdot2$.",
+			"Three passes multiply area by $2^3$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "48",
+		"tolerance": 0,
+		"unit": "square units"
+	},
+	{
+		"id": "linear-algebra-practice-vector-expression",
+		"skill": "linear-algebra-practice",
+		"subskillId": "vectors",
+		"kind": "apply",
+		"level": 2,
+		"format": "math",
+		"prompt": "Predict how the length of $(x,2x)$ changes when $x$ doubles, then give its squared length as a polynomial in $x$.",
+		"hints": [
+			"Squared length is the sum of squared components.",
+			"$x^2+(2x)^2$.",
+			"$(2x)^2=4x^2$; combine like terms."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "5x^2",
+		"acceptable": [
+			"5*x^2",
+			"5x^{2}",
+			"x^2+4x^2"
+		]
+	},
+	{
+		"id": "linear-algebra-practice-shear-expression",
+		"skill": "linear-algebra-practice",
+		"subskillId": "transform",
+		"kind": "apply",
+		"level": 2,
+		"format": "math",
+		"prompt": "Predict which input coordinate leaks into the output x-coordinate, then give the output x-coordinate when $\\begin{pmatrix}1&2\\\\0&1\\end{pmatrix}$ acts on $(x,y)$.",
+		"hints": [
+			"The first row of the matrix builds the output x-coordinate.",
+			"Dot the row $(1,2)$ with $(x,y)$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "x+2y",
+		"acceptable": [
+			"x+2*y",
+			"2y+x",
+			"2*y+x"
+		]
+	},
+	{
+		"id": "linear-algebra-practice-det-expression",
+		"skill": "linear-algebra-practice",
+		"subskillId": "determinant",
+		"kind": "apply",
+		"level": 3,
+		"format": "math",
+		"prompt": "Predict for which $x$ the map squashes area to zero, then give the determinant of $\\begin{pmatrix}x&1\\\\2&x\\end{pmatrix}$ as a polynomial.",
+		"hints": [
+			"Main diagonal product minus off-diagonal product.",
+			"$x\\cdot x-1\\cdot2$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "x^2-2",
+		"acceptable": [
+			"x*x-2",
+			"x^{2}-2",
+			"-2+x^2"
+		]
+	},
+	{
+		"id": "linear-algebra-practice-inverse-expression",
+		"skill": "linear-algebra-practice",
+		"subskillId": "inverse",
+		"kind": "apply",
+		"level": 3,
+		"format": "math",
+		"prompt": "For nonzero $x$, the map $\\operatorname{diag}(x,2)$ sends $v$ to $(1,0)$. Predict whether a large $x$ makes $v$ short or long, then give the first component of $v$.",
+		"hints": [
+			"The map stretches the first coordinate by $x$; undo it.",
+			"Solve $x\\cdot v_1=1$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "1/x",
+		"acceptable": [
+			"\\frac{1}{x}",
+			"x^{-1}"
+		]
+	},
+	{
+		"id": "linear-algebra-practice-characteristic",
+		"skill": "linear-algebra-practice",
+		"subskillId": "eigen",
+		"kind": "apply",
+		"level": 4,
+		"format": "math",
+		"prompt": "Predict the eigenvalues of $A=\\operatorname{diag}(2,3)$ by inspection. Then, using $x$ for the candidate eigenvalue, give $\\det(A-xI)$ expanded.",
+		"hints": [
+			"For a diagonal matrix, $A-xI$ is still diagonal.",
+			"$\\det(A-xI)=(2-x)(3-x)$.",
+			"Expand and order by powers of $x$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "x^2-5x+6",
+		"acceptable": [
+			"x^2-5*x+6",
+			"6-5x+x^2",
+			"(x-2)(x-3)",
+			"(2-x)(3-x)"
+		]
+	},
+	{
+		"id": "linear-algebra-practice-span-line",
+		"skill": "linear-algebra-practice",
+		"subskillId": "span",
+		"kind": "predict",
+		"level": 2,
+		"format": "choice",
+		"prompt": "Predict whether $(1,2)$ and $(2,4)$ point in different directions. What is their span?",
+		"hints": [
+			"Compare $(2,4)$ with $2\\cdot(1,2)$.",
+			"Every combination $a(1,2)+b(2,4)$ equals $(a+2b)(1,2)$.",
+			"Multiples of one nonzero vector sweep out a line through the origin."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"A line through the origin",
+			"The whole plane",
+			"Only the zero vector"
+		],
+		"expected": "A line through the origin"
+	},
+	{
+		"id": "linear-algebra-practice-singular",
+		"skill": "linear-algebra-practice",
+		"subskillId": "inverse",
+		"kind": "predict",
+		"level": 2,
+		"format": "choice",
+		"prompt": "A $2\\times2$ map sends an entire line to zero. Can it have an inverse?",
+		"hints": [
+			"If a line of inputs all land on $0$, can you tell those inputs apart from the output?",
+			"An inverse would have to send $0$ back to many different inputs at once.",
+			"Such a map has determinant $0$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"Yes, every square matrix does",
+			"Yes, if we swap its columns",
+			"No, distinct inputs have the same output"
+		],
+		"expected": "No, distinct inputs have the same output"
+	},
+	{
+		"id": "linear-algebra-practice-rotation-eigen",
+		"skill": "linear-algebra-practice",
+		"subskillId": "eigen",
+		"kind": "predict",
+		"level": 4,
+		"format": "choice",
+		"prompt": "Predict whether any arrow stays on its own line under a $90^\\circ$ rotation of the real plane. Which claim is true?",
+		"hints": [
+			"An eigenvector keeps its line: the output is a multiple of the input.",
+			"A $90^\\circ$ rotation turns every nonzero arrow perpendicular to itself.",
+			"Its characteristic polynomial $\\lambda^2+1$ has no real roots."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"Its only eigenvalue is one",
+			"It has no nonzero real eigenvector",
+			"Every vector is an eigenvector"
+		],
+		"expected": "It has no nonzero real eigenvector"
+	},
+	{
+		"id": "linear-algebra-practice-explain-order",
+		"skill": "linear-algebra-practice",
+		"subskillId": "compose",
+		"kind": "explain",
+		"level": 3,
+		"format": "text",
+		"prompt": "Explain why a stretch followed by a shear can differ from a shear followed by a stretch, even though $\\det(AB)=\\det(BA)$.",
+		"hints": [
+			"Track one concrete arrow, such as $(0,1)$, through both orders.",
+			"The second map acts on arrows the first map already moved.",
+			"Determinants are numbers, and numbers commute: $\\det A\\det B=\\det B\\det A$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Tracks the first map before the second.",
+			"Distinguishes vector output from signed area.",
+			"Explains why determinant products agree."
+		]
+	},
+	{
+		"id": "linear-algebra-practice-explain-eigen",
+		"skill": "linear-algebra-practice",
+		"subskillId": "eigen",
+		"kind": "explain",
+		"level": 3,
+		"format": "text",
+		"prompt": "Explain what stays the same when $Av=\\lambda v$ and $v\\ne0$, including when $\\lambda<0$.",
+		"hints": [
+			"Picture the line through the origin along $v$.",
+			"Where does $Av$ sit relative to that line, and how long is it?",
+			"What changes when $\\lambda$ is negative, and why must $v\\ne0$?"
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Uses the same line rather than always the same direction.",
+			"Handles negative eigenvalues.",
+			"Requires a nonzero eigenvector."
+		]
+	},
+	{
+		"id": "linear-algebra-practice-matvec-code",
+		"skill": "linear-algebra-practice",
+		"subskillId": "transform",
+		"kind": "apply",
+		"level": 4,
+		"format": "code",
+		"prompt": "Predict the image of $(1,0)$ under $\\begin{pmatrix}2&1\\\\0&3\\end{pmatrix}$. Then implement `matvec(A, v)` with loops, returning a list with one entry per row of the rectangular matrix `A`. Inputs are nonempty and sizes match.",
+		"hints": [
+			"Work one tiny input by hand: each output entry comes from one row.",
+			"Output entry $i$ is the dot product of row $i$ with $v$.",
+			"Loop over rows; inside, accumulate `row[k] * v[k]`."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"language": "python",
+		"setup": "import math\n",
+		"starterCode": "def matvec(A, v):\n    # Replace this stub with your implementation.\n    return None\n",
+		"tests": "assert matvec([[2, 1], [0, 3]], [1, 2]) == [4, 6], \"square matrix\"\nassert matvec([[1, 2, 3]], [2, 0, -1]) == [-1], \"one row gives one output\"\nassert matvec([[0], [2]], [3]) == [0, 6], \"one column scales a single input\"\n"
+	},
+	{
+		"id": "linear-algebra-practice-multiply-code",
+		"skill": "linear-algebra-practice",
+		"subskillId": "compose",
+		"kind": "apply",
+		"level": 4,
+		"format": "code",
+		"prompt": "Predict how many rows and columns the product of a $1\\times3$ and a $3\\times1$ matrix has. Then implement `matmul(A, B)` with loops, returning a list of rows; assume nonempty compatible rectangular matrices.",
+		"hints": [
+			"The product has as many rows as $A$ and as many columns as $B$.",
+			"Entry $(i,j)$ is row $i$ of $A$ dotted with column $j$ of $B$.",
+			"Use three nested loops over $i$, $j$, and the shared index $k$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"language": "python",
+		"setup": "import math\n",
+		"starterCode": "def matmul(A, B):\n    # Replace this stub with your implementation.\n    return None\n",
+		"tests": "assert matmul([[1, 1], [0, 1]], [[2, 0], [0, 1]]) == [[2, 1], [0, 1]], \"shear times stretch\"\nassert matmul([[1, 2, 3]], [[1], [0], [-1]]) == [[-2]], \"1x3 times 3x1 is 1x1\"\nassert matmul([[1, 0], [0, 1]], [[3, 4], [5, 6]]) == [[3, 4], [5, 6]], \"identity leaves B unchanged\"\n"
+	},
+	{
+		"id": "linear-algebra-practice-build",
+		"skill": "linear-algebra-practice",
+		"subskillId": "models",
+		"kind": "build",
+		"level": 5,
+		"format": "code",
+		"prompt": "BUILD a 2D graphics pipeline: implement transform_points(A,B,points), applying $B$ then $A$ to each point. Use hand-written loops, no NumPy. Return a list of two-element lists; empty points returns []. Predict a basis image before running it.",
+		"hints": [
+			"Predict where $(1,0)$ and $(0,1)$ land before writing code.",
+			"Write a helper that applies one $2\\times2$ matrix to one point.",
+			"For each point, apply $B$ first and then $A$ to the result."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"language": "python",
+		"setup": "import math\n",
+		"starterCode": "def transform_points(A, B, points):\n    # Replace this stub with your implementation.\n    return None\n",
+		"tests": "assert transform_points([[1, 0], [0, 1]], [[1, 0], [0, 1]], []) == [], \"no points\"\nassert transform_points([[1, 1], [0, 1]], [[2, 0], [0, 1]], [[1, 2], [0, 1]]) == [[4, 2], [1, 1]], \"stretch first, then shear\"\nassert transform_points([[1, 0], [0, 1]], [[0, -1], [1, 0]], [[1, 0]]) == [[0, 1]], \"a 90-degree rotation sends (1,0) to (0,1)\"\n"
+	}
+]

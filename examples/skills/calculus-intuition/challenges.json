@@ -1,0 +1,462 @@
+[
+	{
+		"id": "calculus-intuition-average-rate",
+		"skill": "calculus-intuition",
+		"subskillId": "rates",
+		"kind": "apply",
+		"level": 1,
+		"format": "number",
+		"prompt": "A cart's position $s$ rises from $3$ m to $15$ m over $4$ s. Predict the sign of its average velocity, then compute $\\frac{\\Delta s}{\\Delta t}$.",
+		"hints": [
+			"Think change per second, not final position.",
+			"$\\Delta s = 15-3$ m and $\\Delta t = 4$ s.",
+			"Divide the change in position by the elapsed time."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "3",
+		"tolerance": 0,
+		"unit": "m/s"
+	},
+	{
+		"id": "calculus-intuition-secant",
+		"skill": "calculus-intuition",
+		"subskillId": "rates",
+		"kind": "apply",
+		"level": 1,
+		"format": "number",
+		"prompt": "For $f(x)=x^2$, guess whether the average slope on $[2,3]$ is nearer $4$ or $6$, then compute the secant slope $\\frac{f(3)-f(2)}{3-2}$.",
+		"hints": [
+			"Compare the heights at both ends.",
+			"$f(3)=9$ and $f(2)=4$.",
+			"Divide $9-4$ by the interval width $1$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "5",
+		"tolerance": 0
+	},
+	{
+		"id": "calculus-intuition-hole",
+		"skill": "calculus-intuition",
+		"subskillId": "limits",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "Let $g(x)=\\frac{x^2-1}{x-1}$. Predict what $g(x)$ approaches as $x\\to1$, then compute $g(1.01)$ exactly.",
+		"hints": [
+			"Factor the numerator before substituting.",
+			"$x^2-1=(x-1)(x+1)$, so away from $x=1$ the quotient equals $x+1$.",
+			"Substitute $x=1.01$ into $x+1$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "2.01",
+		"tolerance": 1e-09
+	},
+	{
+		"id": "calculus-intuition-tangent",
+		"skill": "calculus-intuition",
+		"subskillId": "derivative",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "Zoom into $f(x)=x^2$ at $x=3$. Secant slopes on $[3,3.1]$ and $[3,3.01]$ are $6.1$ and $6.01$. What tangent slope do they approach?",
+		"hints": [
+			"Imagine a very small positive change $h$ in $x$.",
+			"The secant slope on $[3,3+h]$ simplifies to $6+h$.",
+			"Let $h$ shrink to zero."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "6",
+		"tolerance": 0
+	},
+	{
+		"id": "calculus-intuition-centered",
+		"skill": "calculus-intuition",
+		"subskillId": "derivative",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "Estimate first, then compute the centered slope $\\frac{f(2.1)-f(1.9)}{0.2}$ for $f(x)=x^2$.",
+		"hints": [
+			"Use equal offsets on opposite sides of the center.",
+			"$f(2.1)=4.41$ and $f(1.9)=3.61$.",
+			"Subtract the two heights, then divide by the full width $0.2$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "4",
+		"tolerance": 1e-09
+	},
+	{
+		"id": "calculus-intuition-power-at-point",
+		"skill": "calculus-intuition",
+		"subskillId": "power",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "For $f(x)=x^3$, predict the sign of $f'(2)$ and whether it is bigger than $f'(1)$, then compute $f'(2)$.",
+		"hints": [
+			"A cube grows faster at larger positive inputs.",
+			"The power rule gives $f'(x)=3x^2$.",
+			"Evaluate $3\\cdot2^2$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "12",
+		"tolerance": 0
+	},
+	{
+		"id": "calculus-intuition-product-at-point",
+		"skill": "calculus-intuition",
+		"subskillId": "product-chain",
+		"kind": "apply",
+		"level": 3,
+		"format": "number",
+		"prompt": "For $f(x)=x(x+2)$, estimate $f'(3)$ from the values $f(3)=15$ and $f(3.01)\\approx15.08$, then compute it exactly.",
+		"hints": [
+			"Both factors change as $x$ changes.",
+			"Product rule: $f'(x)=1\\cdot(x+2)+x\\cdot1$.",
+			"Evaluate both terms at $x=3$ and add."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "8",
+		"tolerance": 0
+	},
+	{
+		"id": "calculus-intuition-rectangle",
+		"skill": "calculus-intuition",
+		"subskillId": "optimization",
+		"kind": "apply",
+		"level": 4,
+		"format": "number",
+		"prompt": "A rectangle has perimeter $20$ m. Predict its best shape, then give its maximum area.",
+		"hints": [
+			"With a fixed perimeter, compare a long thin rectangle with a square.",
+			"If one side is $x$, the other is $10-x$, so $A(x)=x(10-x)$.",
+			"$A'(x)=10-2x$ is zero at $x=5$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "25",
+		"tolerance": 0,
+		"unit": "m^2"
+	},
+	{
+		"id": "calculus-intuition-triangle-area",
+		"skill": "calculus-intuition",
+		"subskillId": "area",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "A flow rate rises linearly from $0$ to $6$ L/s over $4$ s. Estimate the volume (more or less than $24$ L?), then compute the accumulated volume.",
+		"hints": [
+			"Sketch rate against time; volume is the area under that graph.",
+			"The region is a triangle with base $4$ s and height $6$ L/s.",
+			"Area $=\\tfrac12\\cdot4\\cdot6$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "12",
+		"tolerance": 0,
+		"unit": "L"
+	},
+	{
+		"id": "calculus-intuition-signed-area",
+		"skill": "calculus-intuition",
+		"subskillId": "area",
+		"kind": "apply",
+		"level": 3,
+		"format": "number",
+		"prompt": "Predict cancellation, then compute $\\int_{-1}^{1}x\\,dx$.",
+		"hints": [
+			"Sketch $y=x$ on $[-1,1]$ and compare the negative and positive halves.",
+			"The two triangles have equal area and opposite signs.",
+			"Signed areas add: $-\\tfrac12+\\tfrac12$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "0",
+		"tolerance": 0
+	},
+	{
+		"id": "calculus-intuition-boss",
+		"skill": "calculus-intuition",
+		"subskillId": "ftc",
+		"kind": "boss",
+		"level": 5,
+		"format": "number",
+		"prompt": "BOSS: A tank starts with $10$ L and net inflow is $r(t)=6-2t$ L/min on $0\\le t\\le4$. Predict when volume peaks, sketch accumulated change, then submit the maximum volume (not the final volume).",
+		"hints": [
+			"A maximum occurs where inflow changes from positive to negative.",
+			"$r(t)=6-2t$ is zero at $t=3$, so the peak is at $t=3$ min.",
+			"Add $\\int_0^3(6-2t)\\,dt = 18-9$ to the initial $10$ L."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "19",
+		"tolerance": 0,
+		"unit": "L"
+	},
+	{
+		"id": "calculus-intuition-power-rule",
+		"skill": "calculus-intuition",
+		"subskillId": "power",
+		"kind": "apply",
+		"level": 3,
+		"format": "math",
+		"prompt": "Predict the degree of the answer, then differentiate $x^4$.",
+		"hints": [
+			"Differentiating a power lowers the degree by one.",
+			"Bring the exponent down as a coefficient.",
+			"$\\frac{d}{dx}x^n = nx^{n-1}$ with $n=4$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "4x^3",
+		"acceptable": [
+			"4*x^3",
+			"4x^{3}",
+			"4\\cdot x^3"
+		]
+	},
+	{
+		"id": "calculus-intuition-product-rule",
+		"skill": "calculus-intuition",
+		"subskillId": "product-chain",
+		"kind": "apply",
+		"level": 3,
+		"format": "math",
+		"prompt": "Predict the degree of the answer, then differentiate $x^2(x+1)$. Give the expanded polynomial.",
+		"hints": [
+			"$x^2(x+1)$ has degree $3$, so its derivative has degree $2$.",
+			"Product rule: $2x\\cdot(x+1)+x^2\\cdot1$, or expand to $x^3+x^2$ first.",
+			"Collect like terms."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "3x^2+2x",
+		"acceptable": [
+			"3*x^2+2*x",
+			"2x+3x^2",
+			"2*x+3*x^2",
+			"3x^{2}+2x"
+		]
+	},
+	{
+		"id": "calculus-intuition-chain-rule",
+		"skill": "calculus-intuition",
+		"subskillId": "product-chain",
+		"kind": "apply",
+		"level": 3,
+		"format": "math",
+		"prompt": "Predict how the inner $2x$ scales the rate, then differentiate $(2x+1)^2$. Give the expanded polynomial.",
+		"hints": [
+			"Both the outer square and the inner $2x+1$ change.",
+			"Outer derivative $2(2x+1)$, times inner derivative $2$.",
+			"Expand $4(2x+1)$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "8x+4",
+		"acceptable": [
+			"8*x+4",
+			"4+8x",
+			"4+8*x"
+		]
+	},
+	{
+		"id": "calculus-intuition-antiderivative",
+		"skill": "calculus-intuition",
+		"subskillId": "area",
+		"kind": "apply",
+		"level": 3,
+		"format": "math",
+		"prompt": "The area under $y=t$ from $0$ to $x$ is a triangle. Use that picture to find the antiderivative $F(x)$ of $x$ with $F(0)=0$.",
+		"hints": [
+			"The region under $y=t$ from $0$ to $x$ is a right triangle.",
+			"Its base is $x$ and its height is $x$.",
+			"Triangle area is $\\tfrac12\\cdot$base$\\cdot$height; check by differentiating."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "x^2/2",
+		"acceptable": [
+			"\\frac{1}{2}x^2",
+			"\\frac{x^2}{2}",
+			"0.5x^2",
+			"0.5*x^2",
+			"(1/2)x^2",
+			"x^2*0.5"
+		]
+	},
+	{
+		"id": "calculus-intuition-ftc-chain",
+		"skill": "calculus-intuition",
+		"subskillId": "ftc",
+		"kind": "apply",
+		"level": 4,
+		"format": "math",
+		"prompt": "Predict the two sources of change, then find $F\\prime(x)$ for $F(x)=\\int_0^{x^2}t\\,dt$.",
+		"hints": [
+			"Two things change: the integrand's height at the upper limit and how fast that limit moves.",
+			"At the upper limit $t=x^2$, and the limit moves at rate $\\frac{d}{dx}x^2=2x$.",
+			"Multiply: $x^2\\cdot2x$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "2x^3",
+		"acceptable": [
+			"2*x^3",
+			"2x^{3}",
+			"x^2\\cdot2x"
+		]
+	},
+	{
+		"id": "calculus-intuition-corner",
+		"skill": "calculus-intuition",
+		"subskillId": "derivative",
+		"kind": "predict",
+		"level": 2,
+		"format": "choice",
+		"prompt": "For $f(x)=|x|$, predict what you see when you zoom in at $x=0$. What happens to the tangent there?",
+		"hints": [
+			"Zoom in at $0$: does the graph ever look like one straight line?",
+			"Compare slopes just left and just right of $0$.",
+			"The left slope is $-1$ and the right slope is $+1$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"No single derivative exists",
+			"The derivative is zero",
+			"The derivative is one"
+		],
+		"expected": "No single derivative exists"
+	},
+	{
+		"id": "calculus-intuition-limit-hole",
+		"skill": "calculus-intuition",
+		"subskillId": "limits",
+		"kind": "predict",
+		"level": 2,
+		"format": "choice",
+		"prompt": "If $f(x)=x+1$ for $x\\ne1$ but $f(1)=99$, what is $\\lim_{x\\to1}f(x)$?",
+		"hints": [
+			"A limit asks where values head as $x$ approaches $1$, not what happens at $x=1$.",
+			"Try $x=0.99$ and $x=1.01$ in $x+1$.",
+			"The single value $f(1)=99$ does not affect nearby values."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"99",
+			"The limit does not exist",
+			"2"
+		],
+		"expected": "2"
+	},
+	{
+		"id": "calculus-intuition-negative-flow",
+		"skill": "calculus-intuition",
+		"subskillId": "ftc",
+		"kind": "predict",
+		"level": 2,
+		"format": "choice",
+		"prompt": "An accumulated amount $A(x)$ has $A'(x)=-3$ on an interval. Predict how $A$ behaves there.",
+		"hints": [
+			"A derivative is the rate at which the total changes.",
+			"A negative rate removes $3$ units per unit of $x$.",
+			"Removing amount says nothing about whether the total itself is positive."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"It is constant",
+			"It decreases",
+			"It is negative everywhere"
+		],
+		"expected": "It decreases"
+	},
+	{
+		"id": "calculus-intuition-explain-zoom",
+		"skill": "calculus-intuition",
+		"subskillId": "derivative",
+		"kind": "explain",
+		"level": 3,
+		"format": "text",
+		"prompt": "Explain why zooming in near a smooth point makes $f'(a)$ useful for predicting $f(a+h)$ for small $h$.",
+		"hints": [
+			"Picture zooming into the graph near $x=a$ until it looks straight.",
+			"That straight line has slope $f'(a)$; how much does it rise over a run of $h$?",
+			"Say what happens to the error compared with $h$ as $h$ shrinks."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Connects derivative to tangent slope.",
+			"Uses local linear change for small h.",
+			"Distinguishes approximation from a global identity."
+		]
+	},
+	{
+		"id": "calculus-intuition-explain-ftc",
+		"skill": "calculus-intuition",
+		"subskillId": "ftc",
+		"kind": "explain",
+		"level": 3,
+		"format": "text",
+		"prompt": "Explain why $A(x)=\\int_0^x r(t)\\,dt$ has $A'(x)=r(x)$ when $r$ is continuous.",
+		"hints": [
+			"Picture the area under $r$ from $0$ to $x$, then nudge $x$ to $x+h$.",
+			"The new sliver is almost a rectangle; what are its width and height?",
+			"Divide the sliver's area by $h$ and let $h\\to0$; where is continuity used?"
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Describes a thin added strip.",
+			"Divides area change by width.",
+			"Uses continuity for the limiting height."
+		]
+	},
+	{
+		"id": "calculus-intuition-slope-code",
+		"skill": "calculus-intuition",
+		"subskillId": "derivative",
+		"kind": "apply",
+		"level": 4,
+		"format": "code",
+		"prompt": "Predict the slope of $x^3$ at $x=2$. Then implement `derivative(f, x, h)` returning the centered-difference estimate of $f'(x)$ from points $h$ on either side of $x$. Assume $h>0$.",
+		"hints": [
+			"Sample the function an equal distance $h$ on both sides of $x$.",
+			"The rise is $f(x+h)-f(x-h)$; what is the run?",
+			"Return $\\frac{f(x+h)-f(x-h)}{2h}$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"language": "python",
+		"setup": "import math\n",
+		"starterCode": "def derivative(f, x, h):\n    # Replace this stub with your implementation.\n    return None\n",
+		"tests": "assert derivative(lambda x: 5 * x - 7, -2, .01) is not None, \"return a number\"\nassert abs(derivative(lambda x: x**3, 2, 1e-4) - 12) < 1e-5, \"x^3 at 2 should be about 12 (a one-sided difference is too inaccurate)\"\nassert abs(derivative(lambda x: 5 * x - 7, -2, .01) - 5) < 1e-9, \"a line has the same slope everywhere\"\nassert abs(derivative(lambda x: x * x, 0, .1)) < 1e-12, \"x^2 is flat at 0\"\n"
+	},
+	{
+		"id": "calculus-intuition-midpoint-code",
+		"skill": "calculus-intuition",
+		"subskillId": "area",
+		"kind": "apply",
+		"level": 4,
+		"format": "code",
+		"prompt": "Estimate $\\int_0^1 x^2\\,dx$ first: more or less than $\\tfrac12$? Then implement `midpoint(f, a, b, n)` using $n$ equal strips sampled at their midpoints. Assume integer $n>0$ and allow $b<a$ (the result changes sign).",
+		"hints": [
+			"Split $[a,b]$ into $n$ strips of width $\\Delta x=\\frac{b-a}{n}$, which is negative when $b<a$.",
+			"The $i$-th midpoint is $a+(i+\\tfrac12)\\Delta x$ for $i=0,\\dots,n-1$.",
+			"Sum $f(\\text{midpoint})\\cdot\\Delta x$ over all strips."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"language": "python",
+		"setup": "import math\n",
+		"starterCode": "def midpoint(f, a, b, n):\n    # Replace this stub with your implementation.\n    return None\n",
+		"tests": "assert midpoint(lambda x: 3, 2, 5, 7) is not None, \"return a number\"\nassert abs(midpoint(lambda x: x * x, 0, 1, 1000) - 1 / 3) < 1e-6, \"x^2 on [0,1] should be about 1/3\"\nassert abs(midpoint(lambda x: 3, 2, 5, 7) - 9) < 1e-10, \"a constant rate 3 over width 3 gives 9\"\nassert abs(midpoint(lambda x: x, 2, 0, 20) + 2) < 1e-10, \"reversed bounds flip the sign\"\n"
+	},
+	{
+		"id": "calculus-intuition-build",
+		"skill": "calculus-intuition",
+		"subskillId": "ftc",
+		"kind": "build",
+		"level": 5,
+		"format": "code",
+		"prompt": "BUILD a tank accumulator: implement `volumes(initial, rates, dt)`, returning a list that starts with the initial volume, followed by the volume after each constant-rate interval of length $dt$. Rates may be negative; assume $dt>0$. Predict whether each step rises or falls before testing.",
+		"hints": [
+			"Start a list containing only the initial volume.",
+			"Each interval adds $\\text{rate}\\cdot dt$ to the latest volume.",
+			"Append after every rate; an empty rate list returns just `[initial]`."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"language": "python",
+		"setup": "import math\n",
+		"starterCode": "def volumes(initial, rates, dt):\n    # Replace this stub with your implementation.\n    return None\n",
+		"tests": "assert volumes(4, [], 1) == [4], \"no intervals leaves only the initial volume\"\nassert volumes(10, [6, 2, -2], .5) == [10, 13, 14, 13], \"rise, rise, then fall\"\nassert volumes(0, [1, 1], 2) == [0, 2, 4], \"each interval adds rate times dt\"\n"
+	}
+]

@@ -1,0 +1,169 @@
+{
+	"skill": "calculus-intuition",
+	"title": "Calculus intuition",
+	"targetPerformance": "By hour 20, solve at least 16 of 20 fresh rate, derivative, optimization, and accumulation questions in 45 minutes; justify units and signs, and implement a derivative estimator and an area accumulator that pass their assertions.",
+	"whyItMatters": "Use local change and accumulated totals to reason about motion, flow, and best-case choices.",
+	"subskills": [
+		{
+			"id": "rates",
+			"title": "Rates of change",
+			"why": "Read slope as change per unit input.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Check output units divided by input units.",
+			"drills": [
+				"Estimate a secant slope.",
+				"Compare rates over different intervals."
+			],
+			"status": "active"
+		},
+		{
+			"id": "limits",
+			"title": "Limits by numbers",
+			"why": "Separate a nearby trend from the value at a hole.",
+			"priority": 1,
+			"prerequisites": [
+				"rates"
+			],
+			"selfCorrection": "Approach from both sides and never divide by zero.",
+			"drills": [
+				"Tabulate offsets 0.1 and 0.01.",
+				"Compare one-sided limits."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "derivative",
+			"title": "Slope under a microscope",
+			"why": "See a curve as locally straight.",
+			"priority": 1,
+			"prerequisites": [
+				"limits"
+			],
+			"selfCorrection": "Halve the step and compare the estimated slope.",
+			"drills": [
+				"Zoom into a quadratic.",
+				"Compare a tangent and a secant."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "power",
+			"title": "Power rule",
+			"why": "Translate scaling into local growth.",
+			"priority": 1,
+			"prerequisites": [
+				"derivative"
+			],
+			"selfCorrection": "Check a derivative at zero and at one.",
+			"drills": [
+				"Differentiate powers and sums.",
+				"Undo a power derivative."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "product-chain",
+			"title": "Product and chain rules",
+			"why": "Track two changing factors and nested changes.",
+			"priority": 2,
+			"prerequisites": [
+				"power"
+			],
+			"selfCorrection": "Keep both product terms and the inner derivative.",
+			"drills": [
+				"Differentiate a product.",
+				"Differentiate a shifted square."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "optimization",
+			"title": "Optimization",
+			"why": "Turn a maximum into a sign change.",
+			"priority": 2,
+			"prerequisites": [
+				"product-chain"
+			],
+			"selfCorrection": "Check endpoints and whether slope changes positive to negative.",
+			"drills": [
+				"Optimize a fenced rectangle.",
+				"Find a velocity turning point."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "area",
+			"title": "Accumulated area",
+			"why": "Add small contributions with units.",
+			"priority": 1,
+			"prerequisites": [
+				"rates"
+			],
+			"selfCorrection": "Check rectangle bounds and signed area.",
+			"drills": [
+				"Sum strips.",
+				"Integrate a linear rate."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "ftc",
+			"title": "Fundamental theorem",
+			"why": "Connect accumulation back to instantaneous rate.",
+			"priority": 2,
+			"prerequisites": [
+				"area",
+				"power"
+			],
+			"selfCorrection": "Differentiate an accumulated total to recover its rate.",
+			"drills": [
+				"Evaluate endpoint differences.",
+				"Differentiate an integral with moving upper bound."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "3Blue1Brown — Essence of calculus",
+			"url": "https://www.3blue1brown.com/topics/calculus",
+			"why": "Visual lessons on local change and accumulation; watch one chapter after attempting its challenges."
+		},
+		{
+			"title": "Khan Academy — Calculus 1",
+			"url": "https://www.khanacademy.org/math/calculus-1",
+			"why": "Short videos and instantly checked exercises for limits, derivatives, and rules."
+		},
+		{
+			"title": "OpenStax — Calculus Volume 1",
+			"url": "https://openstax.org/details/books/calculus-volume-1",
+			"why": "Free textbook with worked examples and odd-numbered answers for self-correction."
+		},
+		{
+			"title": "MIT OpenCourseWare — 18.01SC Single Variable Calculus",
+			"url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
+			"why": "Problem sets with full solutions for optimization and the fundamental theorem."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Watching replaces doing",
+			"fix": "Attempt one prompt before consulting one short resource section.",
+			"done": false
+		},
+		{
+			"barrier": "Symbols hide the meaning",
+			"fix": "Sketch or describe the quantities, predict sign and scale, then compute.",
+			"done": false
+		},
+		{
+			"barrier": "One wrong answer feels final",
+			"fix": "Record the failed assumption, use the next hint, and retry with changed numbers.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

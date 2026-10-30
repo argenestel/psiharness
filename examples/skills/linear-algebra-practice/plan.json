@@ -1,0 +1,166 @@
+{
+	"skill": "linear-algebra-practice",
+	"title": "Linear algebra practice",
+	"targetPerformance": "By hour 20, solve at least 16 of 20 fresh 2D vector and 2x2 matrix tasks in 45 minutes, predict orientation and area changes, verify an eigenpair, and write loop-based transformation functions that pass all assertions.",
+	"whyItMatters": "Read matrix operations as changes to space and check small models without a black-box library.",
+	"subskills": [
+		{
+			"id": "vectors",
+			"title": "Vectors as arrows",
+			"why": "Separate direction from length.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Sketch the arrow and check component signs.",
+			"drills": [
+				"Add two arrows.",
+				"Compute a length and a dot product."
+			],
+			"status": "active"
+		},
+		{
+			"id": "span",
+			"title": "Linear combinations and span",
+			"why": "See which destinations can be reached.",
+			"priority": 1,
+			"prerequisites": [
+				"vectors"
+			],
+			"selfCorrection": "Test whether candidate directions are parallel.",
+			"drills": [
+				"Solve for two weights.",
+				"Identify line versus plane span."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "transform",
+			"title": "Matrices as transformations",
+			"why": "Read columns as transformed basis arrows.",
+			"priority": 1,
+			"prerequisites": [
+				"span"
+			],
+			"selfCorrection": "Apply the matrix to each unit basis vector.",
+			"drills": [
+				"Stretch and shear a square.",
+				"Map a single vector."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "compose",
+			"title": "Composition and multiplication",
+			"why": "Track the order of two transformations.",
+			"priority": 1,
+			"prerequisites": [
+				"transform"
+			],
+			"selfCorrection": "Apply the rightmost transformation first.",
+			"drills": [
+				"Compare AB and BA.",
+				"Multiply by hand with rows and columns."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "determinant",
+			"title": "Determinant as signed area scale",
+			"why": "Distinguish collapse from reversal.",
+			"priority": 1,
+			"prerequisites": [
+				"transform"
+			],
+			"selfCorrection": "Check area magnitude separately from orientation.",
+			"drills": [
+				"Compute a 2x2 determinant.",
+				"Find the area of a transformed region."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "inverse",
+			"title": "Inverse transformations",
+			"why": "Undo only maps that preserve information.",
+			"priority": 2,
+			"prerequisites": [
+				"compose",
+				"determinant"
+			],
+			"selfCorrection": "Multiply the candidate inverse back to identity.",
+			"drills": [
+				"Undo a diagonal map.",
+				"Solve a two-equation system."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "eigen",
+			"title": "Eigenvectors and eigenvalues",
+			"why": "Find directions that stay on their own line.",
+			"priority": 2,
+			"prerequisites": [
+				"transform",
+				"determinant"
+			],
+			"selfCorrection": "Check Av=lambda v with a nonzero v.",
+			"drills": [
+				"Test candidate directions.",
+				"Find eigenvalues of triangular matrices."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "models",
+			"title": "Build transformation models",
+			"why": "Combine geometry and computation.",
+			"priority": 2,
+			"prerequisites": [
+				"inverse",
+				"eigen"
+			],
+			"selfCorrection": "Check basis vectors and an independent test point.",
+			"drills": [
+				"Write loop-based multiplication.",
+				"Compose a tiny graphics pipeline."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "3Blue1Brown — Essence of linear algebra",
+			"url": "https://www.3blue1brown.com/topics/linear-algebra",
+			"why": "Geometric lessons on basis vectors, determinants, and eigenvectors; watch after attempting each subskill."
+		},
+		{
+			"title": "Khan Academy — Linear algebra",
+			"url": "https://www.khanacademy.org/math/linear-algebra",
+			"why": "Free videos and exercises for vectors, matrix products, and inverses."
+		},
+		{
+			"title": "MIT OpenCourseWare — 18.06SC Linear Algebra",
+			"url": "https://ocw.mit.edu/courses/18-06sc-linear-algebra-fall-2011/",
+			"why": "Problem-solving videos and problem sets with solutions for determinants and eigenvalues."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Watching replaces doing",
+			"fix": "Attempt one prompt before consulting one short resource section.",
+			"done": false
+		},
+		{
+			"barrier": "Symbols hide the meaning",
+			"fix": "Sketch or describe the quantities, predict sign and scale, then compute.",
+			"done": false
+		},
+		{
+			"barrier": "One wrong answer feels final",
+			"fix": "Record the failed assumption, use the next hint, and retry with changed numbers.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

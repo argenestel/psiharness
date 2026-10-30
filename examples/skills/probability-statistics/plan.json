@@ -1,0 +1,172 @@
+{
+	"skill": "probability-statistics",
+	"title": "Probability and statistics",
+	"targetPerformance": "By hour 20, solve at least 16 of 20 fresh counting, conditional-probability, expectation, binomial, and z-score tasks in 45 minutes; explain a sampling-distribution prediction and build a reproducible simulation that passes its tests.",
+	"whyItMatters": "Distinguish chance variation from evidence and check uncertain claims against explicit sample spaces.",
+	"subskills": [
+		{
+			"id": "counting",
+			"title": "Count the sample space",
+			"why": "Choose whether order and replacement matter.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "List a tiny example before choosing a counting formula.",
+			"drills": [
+				"Count ordered draws.",
+				"Choose an unordered pair."
+			],
+			"status": "active"
+		},
+		{
+			"id": "rules",
+			"title": "Probability rules",
+			"why": "Use disjoint pieces and complements.",
+			"priority": 1,
+			"prerequisites": [
+				"counting"
+			],
+			"selfCorrection": "Keep probabilities in [0,1] and subtract overlap once.",
+			"drills": [
+				"Compute a union.",
+				"Use a complement for at least one."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "conditional",
+			"title": "Conditional probability and Bayes",
+			"why": "Shrink the sample space to the evidence.",
+			"priority": 1,
+			"prerequisites": [
+				"rules"
+			],
+			"selfCorrection": "State the conditioning group and include base rates.",
+			"drills": [
+				"Count conditional cases.",
+				"Reverse a diagnostic probability."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "moments",
+			"title": "Expectation and variance",
+			"why": "Separate center from squared spread.",
+			"priority": 1,
+			"prerequisites": [
+				"rules"
+			],
+			"selfCorrection": "Check variance is nonnegative and has squared units.",
+			"drills": [
+				"Compute a weighted mean.",
+				"Use E(X squared) minus E(X) squared."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "binomial",
+			"title": "Binomial models",
+			"why": "Count successes in independent fixed trials.",
+			"priority": 2,
+			"prerequisites": [
+				"counting",
+				"moments"
+			],
+			"selfCorrection": "Check fixed n, common p, and independence before applying the model.",
+			"drills": [
+				"Compute exactly k successes.",
+				"Compare mean and variance."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "normal",
+			"title": "Normal distribution and z-scores",
+			"why": "Measure distance in standard deviations.",
+			"priority": 2,
+			"prerequisites": [
+				"moments"
+			],
+			"selfCorrection": "Check the sign of x minus mean and distinguish SD from variance.",
+			"drills": [
+				"Standardize an observation.",
+				"Use symmetry and the standard normal CDF."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "sampling",
+			"title": "Sampling and CLT",
+			"why": "Distinguish a population from means of samples.",
+			"priority": 2,
+			"prerequisites": [
+				"normal",
+				"moments"
+			],
+			"selfCorrection": "Check independence and divide SD by sqrt(n), not n.",
+			"drills": [
+				"Predict spread as sample size grows.",
+				"Compare raw observations and sample means."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "simulation",
+			"title": "Simulation and model checks",
+			"why": "Compare long-run experiments with exact predictions.",
+			"priority": 2,
+			"prerequisites": [
+				"conditional",
+				"binomial",
+				"sampling"
+			],
+			"selfCorrection": "Use a fixed local random seed and compare with analytic scale.",
+			"drills": [
+				"Simulate fair dice.",
+				"Inspect variation across batches."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "Seeing Theory",
+			"url": "https://seeing-theory.brown.edu/",
+			"why": "Interactive views of probability, distributions, and sampling; use it to check a prediction visually."
+		},
+		{
+			"title": "Khan Academy — Statistics and probability",
+			"url": "https://www.khanacademy.org/math/statistics-probability",
+			"why": "Short videos and instantly checked exercises for counting, conditional probability, and z-scores."
+		},
+		{
+			"title": "OpenStax — Introductory Statistics 2e",
+			"url": "https://openstax.org/details/books/introductory-statistics-2e",
+			"why": "Free worked examples for probability and introductory inference."
+		},
+		{
+			"title": "MIT OpenCourseWare — 18.05 Introduction to Probability and Statistics",
+			"url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/",
+			"why": "Reading questions and problem sets with solutions for Bayes, expectation, and the CLT."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Watching replaces doing",
+			"fix": "Attempt one prompt before consulting one short resource section.",
+			"done": false
+		},
+		{
+			"barrier": "Symbols hide the meaning",
+			"fix": "Sketch or describe the quantities, predict sign and scale, then compute.",
+			"done": false
+		},
+		{
+			"barrier": "One wrong answer feels final",
+			"fix": "Record the failed assumption, use the next hint, and retry with changed numbers.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

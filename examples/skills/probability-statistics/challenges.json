@@ -1,0 +1,452 @@
+[
+	{
+		"id": "probability-statistics-ordered",
+		"skill": "probability-statistics",
+		"subskillId": "counting",
+		"kind": "apply",
+		"level": 1,
+		"format": "number",
+		"prompt": "Predict the scale (tens or hundreds?), then count the ordered outcomes for $2$ rolls of a six-sided die.",
+		"hints": [
+			"Each first roll pairs with every possible second roll.",
+			"There are $6$ choices for each roll.",
+			"Multiply $6\\cdot6$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "36",
+		"tolerance": 0
+	},
+	{
+		"id": "probability-statistics-choose",
+		"skill": "probability-statistics",
+		"subskillId": "counting",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "From $5$ people, predict whether there are more or fewer than $20$ unordered pairs, then count the pairs chosen without replacement.",
+		"hints": [
+			"Ordered selection counts each pair twice (AB and BA).",
+			"Ordered pairs: $5\\cdot4=20$.",
+			"Divide by $2$, i.e. $\\binom52$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "10",
+		"tolerance": 0
+	},
+	{
+		"id": "probability-statistics-union",
+		"skill": "probability-statistics",
+		"subskillId": "rules",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "If $P(A)=0.4$, $P(B)=0.3$, and $P(A\\cap B)=0.1$, estimate then compute $P(A\\cup B)$.",
+		"hints": [
+			"Adding both probabilities counts the overlap twice.",
+			"$P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$.",
+			"$0.4+0.3-0.1$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "0.6",
+		"tolerance": 1e-12
+	},
+	{
+		"id": "probability-statistics-complement",
+		"skill": "probability-statistics",
+		"subskillId": "rules",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "Predict whether it is likely, then compute the probability of at least one head in $3$ independent fair coin flips.",
+		"hints": [
+			"The complement of 'at least one head' is 'no heads'.",
+			"$P(\\text{three tails})=(\\tfrac12)^3$.",
+			"Subtract that from $1$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "0.875",
+		"tolerance": 1e-12
+	},
+	{
+		"id": "probability-statistics-conditional-count",
+		"skill": "probability-statistics",
+		"subskillId": "conditional",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "In a group, $12$ people wear glasses and $3$ of those are left-handed. Predict whether the answer depends on the group's total size, then compute $P(\\text{left-handed}\\mid\\text{glasses})$.",
+		"hints": [
+			"Conditioning restricts attention to the glasses wearers.",
+			"The denominator is $12$, not the whole group.",
+			"$3/12$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "0.25",
+		"tolerance": 1e-12
+	},
+	{
+		"id": "probability-statistics-bayes",
+		"skill": "probability-statistics",
+		"subskillId": "conditional",
+		"kind": "apply",
+		"level": 4,
+		"format": "number",
+		"prompt": "A condition has prevalence $0.1$; a test has sensitivity $0.8$ and false-positive rate $0.2$. Predict whether a positive result makes the condition more likely than not, then compute $P(\\mathrm{condition}\\mid+)$ as a fraction or a decimal to at least $3$ places.",
+		"hints": [
+			"Imagine $1000$ people: $100$ have the condition and $900$ do not.",
+			"True positives $0.8\\cdot100=80$; false positives $0.2\\cdot900=180$.",
+			"Divide true positives by all positives: $\\frac{80}{80+180}$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "4/13",
+		"tolerance": 0.0005,
+		"acceptable": [
+			"0.3077"
+		]
+	},
+	{
+		"id": "probability-statistics-expectation",
+		"skill": "probability-statistics",
+		"subskillId": "moments",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "A payout is $0$ coins with probability $0.75$ and $8$ coins otherwise. Estimate then compute expected payout.",
+		"hints": [
+			"An expectation averages payouts weighted by probability.",
+			"$0\\cdot0.75+8\\cdot0.25$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "2",
+		"tolerance": 0,
+		"unit": "coins"
+	},
+	{
+		"id": "probability-statistics-variance",
+		"skill": "probability-statistics",
+		"subskillId": "moments",
+		"kind": "apply",
+		"level": 3,
+		"format": "number",
+		"prompt": "For the same payout, $P(X=0)=0.75$ and $P(X=8)=0.25$. Predict whether the variance is larger than the mean $2$, then compute it.",
+		"hints": [
+			"Compute the second moment before subtracting the squared mean.",
+			"$E[X^2]=64\\cdot0.25=16$.",
+			"$\\operatorname{Var}(X)=E[X^2]-E[X]^2=16-2^2$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "12",
+		"tolerance": 0,
+		"unit": "coins^2"
+	},
+	{
+		"id": "probability-statistics-binomial-exact",
+		"skill": "probability-statistics",
+		"subskillId": "binomial",
+		"kind": "apply",
+		"level": 3,
+		"format": "number",
+		"prompt": "For $X\\sim\\mathrm{Binomial}(4,0.5)$, predict the most likely count, then compute $P(X=2)$.",
+		"hints": [
+			"Count which two of the four trials succeed.",
+			"There are $\\binom42=6$ such arrangements.",
+			"Each four-flip sequence has probability $0.5^4=\\tfrac1{16}$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "0.375",
+		"tolerance": 1e-12
+	},
+	{
+		"id": "probability-statistics-zscore",
+		"skill": "probability-statistics",
+		"subskillId": "normal",
+		"kind": "apply",
+		"level": 2,
+		"format": "number",
+		"prompt": "A population has mean $70$ and SD $8$. Predict the sign, then compute the z-score of $86$.",
+		"hints": [
+			"Count how many standard deviations $86$ is above the mean.",
+			"$86-70=16$.",
+			"Divide by the standard deviation $8$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "2",
+		"tolerance": 0
+	},
+	{
+		"id": "probability-statistics-boss",
+		"skill": "probability-statistics",
+		"subskillId": "sampling",
+		"kind": "boss",
+		"level": 5,
+		"format": "number",
+		"prompt": "BOSS: Independent observations are normal with mean $100$ and SD $12$. For samples of $n=36$, predict whether sample means vary less than single observations, then compute $P(\\bar X>104)$ using the exact normal model (not the 68–95–99.7 rule). Give $3$ significant figures.",
+		"hints": [
+			"The sample mean has standard error $12/\\sqrt{36}=2$.",
+			"Standardize: $z=(104-100)/2=2$.",
+			"Use the upper standard-normal tail $1-\\Phi(2)$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "0.0228",
+		"tolerance": 0.0003
+	},
+	{
+		"id": "probability-statistics-bernoulli-mean",
+		"skill": "probability-statistics",
+		"subskillId": "moments",
+		"kind": "apply",
+		"level": 2,
+		"format": "math",
+		"prompt": "Let $X=1$ with probability $p$ and $0$ otherwise. Predict $E[X]$ when $p=0.3$, then express $E[X]$ in terms of $p$.",
+		"hints": [
+			"Weight each value by its probability.",
+			"$E[X]=1\\cdot p+0\\cdot(1-p)$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "p"
+	},
+	{
+		"id": "probability-statistics-bernoulli-variance",
+		"skill": "probability-statistics",
+		"subskillId": "moments",
+		"kind": "apply",
+		"level": 3,
+		"format": "math",
+		"prompt": "For a Bernoulli variable with success probability $p$, predict which $p$ makes the variance largest, then express the variance as an expanded polynomial in $p$.",
+		"hints": [
+			"Use $\\operatorname{Var}(X)=E[X^2]-E[X]^2$.",
+			"Since $X^2=X$, $E[X^2]=p$.",
+			"Subtract $p^2$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "p-p^2",
+		"acceptable": [
+			"p*(1-p)",
+			"p(1-p)",
+			"p-p*p",
+			"-p^2+p"
+		]
+	},
+	{
+		"id": "probability-statistics-binomial-mean",
+		"skill": "probability-statistics",
+		"subskillId": "binomial",
+		"kind": "apply",
+		"level": 2,
+		"format": "math",
+		"prompt": "For $n$ independent Bernoulli trials with common success probability $p$, predict the expected count for $n=10$, $p=0.3$, then give the expected total count in general.",
+		"hints": [
+			"Each trial contributes its own expected value.",
+			"Each trial's expectation is $p$; expectations add."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "np",
+		"acceptable": [
+			"n*p",
+			"pn",
+			"p*n"
+		]
+	},
+	{
+		"id": "probability-statistics-standard-error",
+		"skill": "probability-statistics",
+		"subskillId": "sampling",
+		"kind": "apply",
+		"level": 3,
+		"format": "math",
+		"prompt": "For independent observations with population SD $s$ and sample size $n>0$, predict what happens to the spread of sample means when $n$ quadruples, then give the SD of the sample mean.",
+		"hints": [
+			"Variances of independent observations add.",
+			"$\\operatorname{Var}(\\bar X)=\\frac{s^2}{n}$.",
+			"Take the square root."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "s/sqrt(n)",
+		"acceptable": [
+			"\\frac{s}{\\sqrt{n}}",
+			"s*n^(-1/2)"
+		]
+	},
+	{
+		"id": "probability-statistics-bayes-expression",
+		"skill": "probability-statistics",
+		"subskillId": "conditional",
+		"kind": "apply",
+		"level": 4,
+		"format": "math",
+		"prompt": "A disease has prior probability $p$, sensitivity $a$, and false-positive probability $b$. Predict what happens to $P(D\\mid+)$ as $b\\to0$, then give $P(D\\mid+)$; assume $ap+b(1-p)>0$.",
+		"hints": [
+			"Positives come from diseased and healthy people.",
+			"$P(+\\cap D)=ap$ and $P(+\\cap\\text{healthy})=b(1-p)$.",
+			"Divide the diseased positives by all positives."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "ap/(ap+b(1-p))",
+		"acceptable": [
+			"\\frac{ap}{ap+b(1-p)}",
+			"a*p/(a*p+b*(1-p))",
+			"ap/(ap+b-bp)",
+			"pa/(pa+b(1-p))"
+		]
+	},
+	{
+		"id": "probability-statistics-independent",
+		"skill": "probability-statistics",
+		"subskillId": "conditional",
+		"kind": "predict",
+		"level": 2,
+		"format": "choice",
+		"prompt": "For independent events $A,B$ with $P(B)>0$, predict whether learning $B$ happened should change your belief in $A$. What is $P(A\\mid B)$?",
+		"hints": [
+			"Independence means knowing $B$ tells you nothing about $A$.",
+			"$P(A\\mid B)=\\frac{P(A\\cap B)}{P(B)}$.",
+			"For independent events, $P(A\\cap B)=P(A)P(B)$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"P(A)",
+			"P(B)",
+			"P(A) + P(B)"
+		],
+		"expected": "P(A)"
+	},
+	{
+		"id": "probability-statistics-clt",
+		"skill": "probability-statistics",
+		"subskillId": "sampling",
+		"kind": "predict",
+		"level": 3,
+		"format": "choice",
+		"prompt": "For a skewed population with finite variance, what does the CLT suggest as independent sample size $n$ becomes large?",
+		"hints": [
+			"The CLT talks about averages, not individual observations.",
+			"Individual observations keep the population's shape.",
+			"Standardized sample means become approximately normal."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"The original population becomes normal",
+			"Every observation approaches the population mean",
+			"The distribution of standardized sample means approaches normal"
+		],
+		"expected": "The distribution of standardized sample means approaches normal"
+	},
+	{
+		"id": "probability-statistics-sample-size",
+		"skill": "probability-statistics",
+		"subskillId": "sampling",
+		"kind": "predict",
+		"level": 2,
+		"format": "choice",
+		"prompt": "If sample size grows from $25$ to $100$ with the same population SD, what happens to standard error?",
+		"hints": [
+			"Standard error is $s/\\sqrt n$.",
+			"$n$ grows by a factor of $4$.",
+			"$\\sqrt4=2$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"choices": [
+			"It doubles",
+			"It halves",
+			"It quarters"
+		],
+		"expected": "It halves"
+	},
+	{
+		"id": "probability-statistics-explain-base-rate",
+		"skill": "probability-statistics",
+		"subskillId": "conditional",
+		"kind": "explain",
+		"level": 3,
+		"format": "text",
+		"prompt": "Explain why $P(+\\mid D)$ alone cannot determine $P(D\\mid+)$.",
+		"hints": [
+			"Picture $1000$ people split into diseased and healthy groups.",
+			"Positives come from both groups; which numbers set each group's count?",
+			"Compare a rare disease with a common one at the same sensitivity."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Distinguishes the two conditional directions.",
+			"Includes prevalence.",
+			"Includes false positives from the healthy group."
+		]
+	},
+	{
+		"id": "probability-statistics-explain-clt",
+		"skill": "probability-statistics",
+		"subskillId": "sampling",
+		"kind": "explain",
+		"level": 3,
+		"format": "text",
+		"prompt": "Explain why a histogram of individual fair-die rolls stays discrete uniform while averages of many independent rolls cluster near $3.5$.",
+		"hints": [
+			"Picture a histogram of single rolls next to a histogram of $30$-roll averages.",
+			"Within one average, high and low rolls tend to cancel.",
+			"How do the mean and the variance of an average of $n$ rolls compare with a single roll?"
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Separates individual rolls from averages.",
+			"Keeps the same mean.",
+			"Connects independent averaging to smaller variance and CLT."
+		]
+	},
+	{
+		"id": "probability-statistics-exact-dice-code",
+		"skill": "probability-statistics",
+		"subskillId": "counting",
+		"kind": "apply",
+		"level": 4,
+		"format": "code",
+		"prompt": "Predict $P(\\text{sum}=7)$ for two fair dice. Then implement `dice_probability(total)` by enumerating all $36$ ordered pairs. Return $0$ for impossible integer totals.",
+		"hints": [
+			"Work one tiny case by hand: which pairs sum to $2$?",
+			"Loop over both dice values $1$ to $6$ and count pairs whose sum matches.",
+			"Divide the count by $36$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"language": "python",
+		"setup": "import math\n",
+		"starterCode": "def dice_probability(total):\n    # Replace this stub with your implementation.\n    return None\n",
+		"tests": "assert dice_probability(13) == 0, \"13 is impossible\"\nassert abs(dice_probability(7) - 1 / 6) < 1e-12, \"six of 36 ordered pairs sum to 7\"\nassert abs(dice_probability(2) - 1 / 36) < 1e-12, \"only (1, 1) sums to 2\"\nassert abs(sum(dice_probability(t) for t in range(2, 13)) - 1) < 1e-12, \"probabilities sum to 1\"\n"
+	},
+	{
+		"id": "probability-statistics-moments-code",
+		"skill": "probability-statistics",
+		"subskillId": "moments",
+		"kind": "apply",
+		"level": 4,
+		"format": "code",
+		"prompt": "Predict the mean and variance of a value that is $-1$ or $1$ with equal probability. Then implement `moments(values, probabilities)` returning the tuple $(E[X],\\operatorname{Var}(X))$. Assume finite nonempty matching lists of nonnegative probabilities summing to one.",
+		"hints": [
+			"Work the $\\pm1$ example by hand first.",
+			"$E[X]=\\sum x_ip_i$.",
+			"$\\operatorname{Var}(X)=\\sum p_i(x_i-E[X])^2$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"language": "python",
+		"setup": "import math\n",
+		"starterCode": "def moments(values, probabilities):\n    # Replace this stub with your implementation.\n    return None\n",
+		"tests": "assert moments([3], [1]) is not None, \"return a (mean, variance) tuple\"\nmu, var = moments([0, 8], [.75, .25])\nassert abs(mu - 2) < 1e-12 and abs(var - 12) < 1e-12, \"payout example: mean 2, variance 12\"\nmu, var = moments([3], [1])\nassert abs(mu - 3) < 1e-12 and abs(var) < 1e-12, \"a constant has zero variance\"\nmu, var = moments([-1, 1], [.5, .5])\nassert abs(mu) < 1e-12 and abs(var - 1) < 1e-12, \"symmetric +-1 has mean 0 and variance 1\"\n"
+	},
+	{
+		"id": "probability-statistics-build",
+		"skill": "probability-statistics",
+		"subskillId": "simulation",
+		"kind": "build",
+		"level": 5,
+		"format": "code",
+		"prompt": "BUILD a reproducible dice experiment: implement `simulate_means(seed, batches, n)`. Create one local `random.Random(seed)`, then batch by batch draw $n$ fair die rolls with `randint(1, 6)` and return the list of batch means. Assume integers $batches\\ge0$ and $n>0$. Predict their center and how they narrow as $n$ grows before testing.",
+		"hints": [
+			"Predict: what should the average of many batch means be?",
+			"Create the generator once, outside the batch loop, so batches differ.",
+			"For each batch, sum $n$ calls of `rng.randint(1, 6)` and divide by $n$."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"language": "python",
+		"setup": "import math\nimport random\n",
+		"starterCode": "def simulate_means(seed, batches, n):\n    # Replace this stub with your implementation.\n    return None\n",
+		"tests": "import random\nrng=random.Random(17)\nexpected=[sum(rng.randint(1,6) for _ in range(4))/4 for _ in range(5)]\nassert simulate_means(17,5,4)==expected\nassert simulate_means(2,0,3)==[]\nmeans=simulate_means(123,2000,36)\nassert len(means)==2000 and all(1<=x<=6 for x in means)\nassert abs(sum(means)/len(means)-3.5)<.06\nassert simulate_means(8,4,2)==simulate_means(8,4,2)"
+	}
+]

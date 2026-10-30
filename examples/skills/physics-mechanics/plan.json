@@ -1,0 +1,169 @@
+{
+	"skill": "physics-mechanics",
+	"title": "Physics mechanics",
+	"targetPerformance": "By hour 20, solve at least 16 of 20 fresh introductory mechanics problems in 50 minutes with a labeled force or motion sketch, consistent SI units, and a sign check; implement and test a no-drag projectile model.",
+	"whyItMatters": "Turn a physical situation into a model with explicit forces, units, and testable predictions.",
+	"subskills": [
+		{
+			"id": "units",
+			"title": "Units and estimation",
+			"why": "Make dimensional mistakes visible.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Write units before substituting and estimate powers of ten.",
+			"drills": [
+				"Convert km/h to m/s.",
+				"Check a force dimension."
+			],
+			"status": "active"
+		},
+		{
+			"id": "kinematics-1d",
+			"title": "One-dimensional motion",
+			"why": "Separate position, velocity, and acceleration.",
+			"priority": 1,
+			"prerequisites": [
+				"units"
+			],
+			"selfCorrection": "Choose a positive direction and distinguish distance from displacement.",
+			"drills": [
+				"Compute a constant-acceleration displacement.",
+				"Predict velocity at the top of a throw."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "kinematics-2d",
+			"title": "Two-dimensional motion",
+			"why": "Treat horizontal and vertical motion separately.",
+			"priority": 2,
+			"prerequisites": [
+				"kinematics-1d"
+			],
+			"selfCorrection": "Use the same elapsed time for both components.",
+			"drills": [
+				"Resolve launch velocity.",
+				"Compute a no-drag flight time."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "forces",
+			"title": "Newton and free-body reasoning",
+			"why": "Tie acceleration to net force, not motion alone.",
+			"priority": 1,
+			"prerequisites": [
+				"kinematics-1d"
+			],
+			"selfCorrection": "Draw only forces acting on the selected object.",
+			"drills": [
+				"Sum opposite horizontal forces.",
+				"Identify normal and weight."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "friction",
+			"title": "Friction",
+			"why": "Distinguish a static bound from sliding friction.",
+			"priority": 2,
+			"prerequisites": [
+				"forces"
+			],
+			"selfCorrection": "Static friction adjusts up to its maximum; kinetic friction opposes sliding.",
+			"drills": [
+				"Compute a static threshold.",
+				"Subtract kinetic friction from a pull."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "energy",
+			"title": "Work and energy",
+			"why": "Track transfers without solving every instant.",
+			"priority": 1,
+			"prerequisites": [
+				"forces"
+			],
+			"selfCorrection": "Define the system and check the sign of work.",
+			"drills": [
+				"Convert height into speed.",
+				"Compare kinetic energies."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "momentum",
+			"title": "Momentum and collisions",
+			"why": "Track a conserved vector in isolated collisions.",
+			"priority": 2,
+			"prerequisites": [
+				"forces"
+			],
+			"selfCorrection": "Check external impulse and whether the collision sticks.",
+			"drills": [
+				"Compute impulse.",
+				"Solve a sticking collision."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "circular",
+			"title": "Circular motion",
+			"why": "Recognize inward acceleration at constant speed.",
+			"priority": 3,
+			"prerequisites": [
+				"forces",
+				"energy"
+			],
+			"selfCorrection": "Identify the force supplying the inward net component.",
+			"drills": [
+				"Compute v squared over radius.",
+				"Check the effect of doubling speed."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "OpenStax — University Physics Volume 1",
+			"url": "https://openstax.org/details/books/university-physics-volume-1",
+			"why": "Free mechanics chapters with force diagrams and worked examples."
+		},
+		{
+			"title": "Khan Academy — Physics",
+			"url": "https://www.khanacademy.org/science/physics",
+			"why": "Short explanations and practice on motion, forces, and energy."
+		},
+		{
+			"title": "MIT OpenCourseWare — 8.01SC Classical Mechanics",
+			"url": "https://ocw.mit.edu/courses/8-01sc-classical-mechanics-fall-2016/",
+			"why": "Worked examples and problem sets with solutions for momentum, energy, and circular motion."
+		},
+		{
+			"title": "PhET — Projectile Motion",
+			"url": "https://phet.colorado.edu/en/simulations/projectile-motion",
+			"why": "Free simulation to test projectile predictions before and after coding the model."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Watching replaces doing",
+			"fix": "Attempt one prompt before consulting one short resource section.",
+			"done": false
+		},
+		{
+			"barrier": "Symbols hide the meaning",
+			"fix": "Sketch or describe the quantities, predict sign and scale, then compute.",
+			"done": false
+		},
+		{
+			"barrier": "One wrong answer feels final",
+			"fix": "Record the failed assumption, use the next hint, and retry with changed numbers.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}
