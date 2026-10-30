@@ -1,0 +1,73 @@
+.psi-widget {
+	padding: 20px; margin-block: 14px; min-width: 0; border: 1px solid var(--line);
+	border-radius: 16px; background: var(--panel); color: var(--fg); overflow-wrap: anywhere;
+}
+.psi-chip, .psi-memory-chip {
+	display: inline-block; padding: 3px 10px; margin: 3px 6px 3px 0; border: 1px solid var(--line);
+	border-radius: 20px; background: var(--panel-high); color: var(--purple); font-size: .8rem;
+}
+.psi-memory-chip { color: var(--muted); }
+.psi-prompt { margin-block: 16px; white-space: pre-wrap; }
+.psi-prompt > :last-child { margin-bottom: 0; }
+.psi-answer-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.psi-answer-fields legend { color: var(--muted); margin-bottom: 8px; font-size: .85rem; }
+.psi-answer-input, .psi-code-input {
+	font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+	border-radius: 8px; padding: 10px; max-width: 100%; width: 100%;
+}
+textarea.psi-answer-input { min-height: 90px; resize: vertical; }
+.psi-answer-fields:disabled { opacity: .75; }
+.psi-unit { display: block; color: var(--muted); font-size: .85rem; }
+.psi-choice { display: flex; align-items: baseline; gap: 12px; padding: 10px; cursor: pointer; }
+.psi-choice:has(input:checked) { background: var(--panel-high); border-radius: 8px; }
+.psi-choice input { accent-color: var(--mint); }
+.psi-math-preview { min-height: 40px; padding-block: 10px; overflow-x: auto; color: var(--mint); }
+.psi-widget-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-block: 14px; }
+.psi-hints p { border-left: 2px solid var(--gold); padding-left: 12px; }
+.psi-code-editor {
+	display: grid; grid-template-columns: auto minmax(0, 1fr); border: 1px solid var(--line);
+	border-radius: 8px; overflow: hidden; background: var(--bg); height: 260px; min-width: 0;
+}
+.psi-code-gutter, .psi-code-input {
+	font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .9rem; line-height: 1.6;
+	tab-size: 4; padding: 12px; margin: 0; border: 0; border-radius: 0; height: 100%;
+}
+.psi-code-gutter {
+	text-align: right; color: var(--muted); background: var(--panel-high); user-select: none;
+	overflow: hidden; min-width: 3ch;
+}
+.psi-code-input { resize: none; white-space: pre; overflow: auto; }
+.psi-run-output, .psi-graph pre {
+	background: var(--bg); padding: 12px; border: 1px solid var(--line); border-radius: 8px;
+	white-space: pre-wrap; overflow-wrap: anywhere; max-height: 320px; overflow: auto;
+	font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.psi-run-output.is-ok { border-color: var(--mint); }
+.psi-run-output.is-error { border-color: var(--coral); }
+.psi-result { border-color: var(--mint); }
+.psi-result > strong { display: block; }
+.psi-xp { display: inline-block; color: var(--gold); font-weight: 700; margin-block: 8px; }
+.psi-level-up { color: var(--gold); animation: psi-burst .65s ease-out; transform-origin: left center; }
+.psi-streak { display: block; color: var(--muted); margin-top: 8px; }
+.psi-lesson { display: grid; gap: 8px; margin-block: 16px; }
+.psi-progress-label { display: block; font-size: .85rem; color: var(--muted); margin-block: 8px; }
+.psi-progress-bar { accent-color: var(--mint); }
+.psi-progress-bar::-webkit-progress-value { background: var(--mint); }
+.psi-progress-bar::-moz-progress-bar { background: var(--mint); }
+.psi-progress-report + .psi-progress-report { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
+.psi-skill-checklist { list-style: none; padding: 0; margin-bottom: 0; }
+.psi-skill-checklist li { display: flex; align-items: baseline; gap: 10px; padding-block: 8px; flex-wrap: wrap; }
+.psi-skill-checklist input { accent-color: var(--mint); }
+.psi-graph summary { cursor: pointer; color: var(--mint); }
+.psi-artifact { display: flex; flex-direction: column; gap: 12px; }
+.psi-artifact > button { align-self: flex-end; }
+.psi-artifact iframe { width: 100%; height: 420px; border: 1px solid var(--line); border-radius: 8px; }
+.psi-artifact.is-expanded { position: fixed; inset: 16px; z-index: 1000; margin: 0; background: var(--bg); }
+.psi-artifact.is-expanded iframe { flex: 1; min-height: 0; }
+@keyframes psi-burst { 0% { transform: scale(.8); opacity: .4; } 55% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .psi-level-up { animation: none; } }
+@media (max-width: 540px) {
+	.psi-widget { padding: 14px; }
+	.psi-artifact iframe { height: 300px; }
+	.psi-artifact.is-expanded { inset: 8px; }
+}
