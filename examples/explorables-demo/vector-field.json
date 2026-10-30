@@ -1,0 +1,33 @@
+{
+	"id": "flow",
+	"title": "A whirlpool of vectors",
+	"topic": "demo",
+	"style": "kurzgesagt",
+	"template": "vector-field",
+	"params": {
+		"fx": "-a*y-b*x",
+		"fy": "a*x-b*y"
+	},
+	"sliders": [
+		{
+			"name": "a",
+			"label": "Rotation",
+			"min": -2,
+			"max": 2,
+			"step": 0.1,
+			"value": 1
+		},
+		{
+			"name": "b",
+			"label": "Inward pull",
+			"min": -0.5,
+			"max": 0.5,
+			"step": 0.05,
+			"value": 0.1
+		}
+	],
+	"prompts": [
+		"Reverse the rotation.",
+		"Set the inward pull to zero, then make it negative."
+	]
+}

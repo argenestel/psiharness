@@ -1,0 +1,41 @@
+{
+	"id": "waves",
+	"title": "Waves: amplitude and frequency",
+	"topic": "demo",
+	"style": "3b1b",
+	"template": "function-plot",
+	"params": {
+		"fn": "a*Math.sin(b*x)",
+		"compare": "Math.sin(x)",
+		"domain": [
+			-7,
+			7
+		],
+		"range": [
+			-4,
+			4
+		]
+	},
+	"sliders": [
+		{
+			"name": "a",
+			"label": "Amplitude",
+			"min": -3,
+			"max": 3,
+			"step": 0.1,
+			"value": 1
+		},
+		{
+			"name": "b",
+			"label": "Frequency",
+			"min": 0.1,
+			"max": 4,
+			"step": 0.1,
+			"value": 1
+		}
+	],
+	"prompts": [
+		"Double the frequency. What happens to the wavelength?",
+		"Compare the yellow wave with the dashed sine."
+	]
+}

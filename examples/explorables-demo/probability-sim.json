@@ -1,0 +1,32 @@
+{
+	"id": "chance",
+	"title": "Chance settles into a pattern",
+	"topic": "demo",
+	"style": "plain",
+	"template": "probability-sim",
+	"params": {
+		"experiment": "galton"
+	},
+	"sliders": [
+		{
+			"name": "trials",
+			"label": "Trials per tick",
+			"min": 1,
+			"max": 500,
+			"step": 1,
+			"value": 30
+		},
+		{
+			"name": "p",
+			"label": "Probability of right",
+			"min": 0,
+			"max": 1,
+			"step": 0.01,
+			"value": 0.5
+		}
+	],
+	"prompts": [
+		"Press Start and watch the bars approach the yellow expectation.",
+		"Change the bias to 0.8."
+	]
+}

@@ -1,0 +1,59 @@
+{
+	"id": "matrix",
+	"title": "Where does the unit square go?",
+	"topic": "demo",
+	"style": "3b1b",
+	"template": "linear-transform",
+	"params": {
+		"showDeterminant": true,
+		"showEigen": true,
+		"vectors": [
+			[
+				1,
+				1
+			],
+			[
+				-1,
+				2
+			]
+		]
+	},
+	"sliders": [
+		{
+			"name": "a",
+			"label": "a: horizontal î",
+			"min": -3,
+			"max": 3,
+			"step": 0.1,
+			"value": 1
+		},
+		{
+			"name": "b",
+			"label": "b: horizontal ĵ",
+			"min": -3,
+			"max": 3,
+			"step": 0.1,
+			"value": 0.5
+		},
+		{
+			"name": "c",
+			"label": "c: vertical î",
+			"min": -3,
+			"max": 3,
+			"step": 0.1,
+			"value": 0
+		},
+		{
+			"name": "d",
+			"label": "d: vertical ĵ",
+			"min": -3,
+			"max": 3,
+			"step": 0.1,
+			"value": 1
+		}
+	],
+	"prompts": [
+		"Make the determinant zero. What happens to area?",
+		"Find a matrix with no real eigenvectors."
+	]
+}
