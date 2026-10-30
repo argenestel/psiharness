@@ -15,6 +15,9 @@ ${PRACTICE_COMMANDS.map((c) => c.usage.length < 28
 	? `  ${c.usage.padEnd(28)}${c.summary}`
 	: `  ${c.usage}\n  ${"".padEnd(28)}${c.summary}`).join("\n")}
 
+Web:
+  web [--port N] [--open]      psi web: chat with the tutor, interactive challenges, code lab (alias: studio)
+
 Tutor:
   learn [what to learn...]     Launch the interactive tutor (default command)
   ask "<question>"            Ask the tutor once and exit
@@ -69,6 +72,7 @@ export async function main(argv: string[]): Promise<number> {
 			case "review": return await (await import("./commands/review.ts")).review(args);
 			case "render": return await (await import("./commands/render.ts")).render(args);
 			case "crew": return await (await import("./commands/crew.ts")).crew(args);
+			case "web":
 			case "studio": return await (await import("./commands/studio.ts")).studio(args);
 			case "import": return await (await import("./commands/import.ts")).importPack(args);
 			case "doctor": return await (await import("./commands/doctor.ts")).doctor(args);
