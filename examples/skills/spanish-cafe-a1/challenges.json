@@ -1,0 +1,369 @@
+[
+	{
+		"id": "ch-greet-introduce-1",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "greet-introduce",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "It is 09:00 at a café. Say \"Good morning\" in Spanish. Return only the greeting.",
+		"hints": [
+			"Choose the morning greeting.",
+			"Use buenos followed by días."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "Buenos días",
+		"acceptable": [
+			"Buenos dias",
+			"¡Buenos días!",
+			"buenos dias!"
+		]
+	},
+	{
+		"id": "ch-greet-introduce-2",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "greet-introduce",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Introduce yourself as Ana using the frame \"Me llamo ...\". Return one Spanish sentence.",
+		"hints": [
+			"Use the requested name frame.",
+			"Put Ana after Me llamo."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "Me llamo Ana",
+		"acceptable": [
+			"Me llamo Ana."
+		]
+	},
+	{
+		"id": "ch-greet-introduce-3",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "greet-introduce",
+		"kind": "predict",
+		"level": 3,
+		"prompt": "The server hands you water. What single Spanish word means \"thank you\"?",
+		"hints": [
+			"Use the basic thank-you word.",
+			"It begins gra-."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "Gracias",
+		"acceptable": [
+			"¡Gracias!",
+			"Gracias."
+		]
+	},
+	{
+		"id": "ch-greet-introduce-4",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "greet-introduce",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Correct only the greeting in \"Buenas días\". Return the corrected two-word greeting.",
+		"hints": [
+			"Check agreement with días.",
+			"Use buenos, not buenas."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "Buenos días",
+		"acceptable": [
+			"Buenos dias",
+			"¡Buenos días!"
+		]
+	},
+	{
+		"id": "ch-order-drinks-1",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "order-drinks",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Say \"I want a coffee, please\" in Spanish using quiero.",
+		"hints": [
+			"Start with Quiero un.",
+			"Finish with café, por favor."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "Quiero un café, por favor",
+		"acceptable": [
+			"Quiero un cafe, por favor",
+			"Quiero un café por favor.",
+			"Quiero un cafe por favor."
+		]
+	},
+	{
+		"id": "ch-order-drinks-2",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "order-drinks",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Say \"I would like a tea, please\" using me gustaría.",
+		"hints": [
+			"Use the softer request frame.",
+			"Put un té after Me gustaría."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "Me gustaría un té, por favor",
+		"acceptable": [
+			"Me gustaria un te, por favor",
+			"Me gustaría un té por favor.",
+			"Me gustaria un te por favor."
+		]
+	},
+	{
+		"id": "ch-order-drinks-3",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "order-drinks",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Correct the article in \"Quiero una café, por favor\". Return the complete corrected sentence.",
+		"hints": [
+			"Café is masculine.",
+			"Replace una with un."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "Quiero un café, por favor",
+		"acceptable": [
+			"Quiero un cafe, por favor",
+			"Quiero un café por favor.",
+			"Quiero un cafe por favor."
+		]
+	},
+	{
+		"id": "ch-order-drinks-4",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "order-drinks",
+		"kind": "explain",
+		"level": 4,
+		"prompt": "In one or two short sentences, explain how \"Quiero un café, por favor\" and \"Me gustaría un café, por favor\" differ in tone. English is fine.",
+		"hints": [
+			"Both order the same drink.",
+			"One is a direct want and the other is a softer would-like request."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Recognizes both as café orders with a polite por favor.",
+			"Explains that me gustaría is generally softer or more tentative than quiero without claiming quiero is always rude."
+		]
+	},
+	{
+		"id": "ch-numbers-prices-1",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "numbers-prices",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Write the Spanish word for the number 7.",
+		"hints": [
+			"Count from uno.",
+			"The word begins sie-."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "siete"
+	},
+	{
+		"id": "ch-numbers-prices-2",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "numbers-prices",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Write the Spanish word for the standalone number 21 (not before a noun).",
+		"hints": [
+			"Combine veinte and uno into one word.",
+			"The standalone ending is -uno."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "veintiuno"
+	},
+	{
+		"id": "ch-numbers-prices-3",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "numbers-prices",
+		"kind": "quickfire",
+		"level": 3,
+		"prompt": "Write the Spanish word for exactly 100, standing alone.",
+		"hints": [
+			"Exactly 100 has a shorter form.",
+			"Use cien, not ciento."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "cien"
+	},
+	{
+		"id": "ch-numbers-prices-4",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "numbers-prices",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Ask \"How much does it cost?\" about one coffee in Spanish, using cuesta.",
+		"hints": [
+			"Use the question word for how much.",
+			"Place Cuánto before cuesta."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "¿Cuánto cuesta?",
+		"acceptable": [
+			"Cuánto cuesta?",
+			"Cuanto cuesta?",
+			"¿Cuanto cuesta?",
+			"Cuanto cuesta"
+		]
+	},
+	{
+		"id": "ch-numbers-prices-5",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "numbers-prices",
+		"kind": "predict",
+		"level": 5,
+		"prompt": "The menu says \"café: 2,50 €\". Write that price in Spanish words, explicitly naming euros and céntimos.",
+		"hints": [
+			"The comma separates whole euros from hundredths.",
+			"Say dos euros, then cincuenta céntimos."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "Dos euros con cincuenta céntimos",
+		"acceptable": [
+			"Dos euros con cincuenta centimos",
+			"Dos euros y cincuenta céntimos",
+			"Dos euros y cincuenta centimos"
+		]
+	},
+	{
+		"id": "ch-numbers-prices-6",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "numbers-prices",
+		"kind": "apply",
+		"level": 5,
+		"prompt": "The menu says \"té: $3\". Write the price in Spanish words, naming dollars.",
+		"hints": [
+			"Use the word for three and the plural currency.",
+			"Dólares carries an accent."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "Tres dólares",
+		"acceptable": [
+			"Tres dolares"
+		]
+	},
+	{
+		"id": "ch-ser-estar-1",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "ser-estar",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Fill only the blank: \"Yo ___ Ana\" (I am Ana; identity). Use the correct first-person singular form of ser.",
+		"hints": [
+			"This is identity, not location.",
+			"The yo form of ser is soy."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "soy"
+	},
+	{
+		"id": "ch-ser-estar-2",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "ser-estar",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Fill only the blank: \"Yo ___ bien\" (I am well right now). Use the correct first-person singular form of estar.",
+		"hints": [
+			"This describes a current state.",
+			"Use estoy with yo."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "estoy"
+	},
+	{
+		"id": "ch-ser-estar-3",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "ser-estar",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Correct both blanks and return the two words separated by a comma: \"El café ___ una bebida. La taza ___ en la mesa.\" The first means coffee is a drink; the second says where the cup is.",
+		"hints": [
+			"Separate identity from location.",
+			"Use es for a definition and está for the cup location."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "es, está",
+		"acceptable": [
+			"es, esta",
+			"es está",
+			"es esta"
+		]
+	},
+	{
+		"id": "ch-polite-requests-1",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "polite-requests",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Ask a server formally (usted) \"Can you bring a water, please?\" Use Puede traer and un agua. Return one complete Spanish question.",
+		"hints": [
+			"Use the formal singular question frame.",
+			"Start ¿Puede traer and finish un agua, por favor?"
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "¿Puede traer un agua, por favor?",
+		"acceptable": [
+			"Puede traer un agua, por favor?",
+			"¿Puede traer un agua por favor?",
+			"Puede traer un agua por favor"
+		]
+	},
+	{
+		"id": "ch-polite-requests-2",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "polite-requests",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Ask a familiar server informally (tú) \"Can you give me the bill, please?\" Use the frame ¿Me das ...?",
+		"hints": [
+			"The café bill is la cuenta.",
+			"Start ¿Me das and add la cuenta, por favor?"
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "¿Me das la cuenta, por favor?",
+		"acceptable": [
+			"Me das la cuenta, por favor?",
+			"¿Me das la cuenta por favor?",
+			"Me das la cuenta por favor"
+		]
+	},
+	{
+		"id": "ch-cafe-roleplay-1",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "cafe-roleplay",
+		"kind": "build",
+		"level": 3,
+		"prompt": "BUILD a six-turn learner café dialogue with server replies. Menu: café 2 euros, té 3 dólares, agua 1 euro. In your six turns: greet in the morning, introduce yourself, order one item politely, ask the price, repeat the correct price, and thank the server. You may choose either currency by choosing its menu item. Keep Spanish at A1 level.",
+		"hints": [
+			"Write the six actions as a checklist first.",
+			"Reuse Buenos días, Me llamo, Quiero or Me gustaría, ¿Cuánto cuesta?, and Gracias."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Includes all six learner actions and plausible server replies.",
+			"Uses an intelligible polite order and a singular price question.",
+			"Repeats the chosen menu price and currency correctly.",
+			"Uses short A1 phrases; minor punctuation or accent errors do not obscure meaning."
+		]
+	},
+	{
+		"id": "ch-cafe-roleplay-2",
+		"skill": "spanish-cafe-a1",
+		"subskillId": "cafe-roleplay",
+		"kind": "boss",
+		"level": 5,
+		"prompt": "Roleplay a new café visit in six learner turns with server replies. You are Luis, it is morning, you feel well, and you want tea. Menu: té 3 euros, café 2 euros. Greet; introduce yourself and say how you are; order tea with me gustaría and por favor; ask its price; repeat the correct price and ask for the bill using ¿Me das...?; thank the server. No English translation is required.",
+		"hints": [
+			"Combine two short phrases in turns 2 and 5.",
+			"Use Me llamo Luis / Estoy bien, un té, tres euros, la cuenta, and Gracias."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Greets in the morning, introduces Luis, and uses estoy bien for the current state.",
+			"Orders un té with me gustaría and por favor.",
+			"Asks the price, repeats tres euros, and asks for la cuenta with Me das.",
+			"Thanks the server and sustains six intelligible A1 learner turns with server replies."
+		]
+	}
+]

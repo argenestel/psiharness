@@ -1,0 +1,139 @@
+{
+	"skill": "spanish-cafe-a1",
+	"title": "Spanish café A1",
+	"targetPerformance": "Complete a six-turn café exchange in Spanish: greet, introduce yourself, order a drink politely, ask its price, understand a price from 1 to 100, and thank the server; satisfy at least 5 of 6 checks in two roleplays.",
+	"whyItMatters": "Use a small set of reusable phrases in a real café interaction.",
+	"subskills": [
+		{
+			"id": "greet-introduce",
+			"title": "Greet and introduce yourself",
+			"why": "Open a short exchange with familiar words.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Check the time-of-day greeting and say the name aloud once.",
+			"drills": [
+				"Greet in the morning.",
+				"Say your name.",
+				"Thank the server."
+			],
+			"status": "active"
+		},
+		{
+			"id": "order-drinks",
+			"title": "Order café basics",
+			"why": "Ask for a drink and food with useful sentence frames.",
+			"priority": 1,
+			"prerequisites": [
+				"greet-introduce"
+			],
+			"selfCorrection": "Check the drink noun, article, and a polite ending.",
+			"drills": [
+				"Order a coffee with quiero.",
+				"Order tea with me gustaría.",
+				"Add por favor and gracias."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "numbers-prices",
+			"title": "Read numbers and prices",
+			"why": "Recognize quantities and ask what something costs.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Read the amount back and distinguish euros from céntimos.",
+			"drills": [
+				"Count from 1 to 20.",
+				"Read tens through 100.",
+				"Say a price with euros or dollars."
+			],
+			"status": "active"
+		},
+		{
+			"id": "ser-estar",
+			"title": "Choose ser or estar",
+			"why": "Use identity and temporary location/state forms.",
+			"priority": 2,
+			"prerequisites": [
+				"greet-introduce"
+			],
+			"selfCorrection": "Ask whether the sentence gives identity, a location, or a current state.",
+			"drills": [
+				"Use soy for identity.",
+				"Use estoy for current state.",
+				"Contrast es with está in café sentences."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "polite-requests",
+			"title": "Make polite requests",
+			"why": "Ask a server for an item using a complete question.",
+			"priority": 2,
+			"prerequisites": [
+				"order-drinks"
+			],
+			"selfCorrection": "Check who is addressed: puede for usted, das for tú.",
+			"drills": [
+				"Ask ¿Puede traer...?",
+				"Ask ¿Me das...? with por favor.",
+				"Compare formal and informal address."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "cafe-roleplay",
+			"title": "Complete a café visit",
+			"why": "Connect the phrases into a short practical exchange.",
+			"priority": 3,
+			"prerequisites": [
+				"numbers-prices",
+				"ser-estar",
+				"polite-requests"
+			],
+			"selfCorrection": "Check all six target actions, then retry one missed turn.",
+			"drills": [
+				"Build a six-turn dialogue.",
+				"Change one menu item and price.",
+				"Repeat without looking at notes."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "RAE dictionary",
+			"url": "https://dle.rae.es/",
+			"why": "Check standard Spanish spelling."
+		},
+		{
+			"title": "WordReference Spanish-English",
+			"url": "https://www.wordreference.com/esen/",
+			"why": "Look up café vocabulary and examples."
+		},
+		{
+			"title": "Language Transfer Spanish",
+			"url": "https://www.languagetransfer.org/complete-spanish",
+			"why": "Practice free spoken sentence construction."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Embarrassed about pronunciation",
+			"fix": "Say each short phrase quietly once, then try the exchange; retries count.",
+			"done": false
+		},
+		{
+			"barrier": "Too many new words at once",
+			"fix": "Start with café, té, agua, pan, and the same two request frames.",
+			"done": false
+		},
+		{
+			"barrier": "Accent marks slow typing",
+			"fix": "Practice accented spelling, but accept listed unaccented variants during fast rounds.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

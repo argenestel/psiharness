@@ -1,0 +1,386 @@
+[
+	{
+		"id": "ch-multiply-eleven-1",
+		"skill": "mental-math",
+		"subskillId": "multiply-eleven",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Compute 23 × 11. Answer with a number only.",
+		"hints": [
+			"Split 11 into 10 + 1.",
+			"Add 230 and 23."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "253",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-multiply-eleven-2",
+		"skill": "mental-math",
+		"subskillId": "multiply-eleven",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Compute 47 × 11. Answer with a number only.",
+		"hints": [
+			"The middle sum requires a carry.",
+			"Add 470 and 47."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "517",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-multiply-eleven-3",
+		"skill": "mental-math",
+		"subskillId": "multiply-eleven",
+		"kind": "predict",
+		"level": 3,
+		"prompt": "A ticket costs 68 units. What is the total for 11 tickets? Answer with a number only.",
+		"hints": [
+			"Use ten tickets plus one.",
+			"680 + 68 gives the total."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "748",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-multiply-eleven-4",
+		"skill": "mental-math",
+		"subskillId": "multiply-eleven",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "A learner claims 86 × 11 = 8146 by inserting 8+6. Supply the corrected product. Answer with a number only.",
+		"hints": [
+			"A two-digit middle sum must carry.",
+			"Compute 860 + 86."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "946",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-multiply-eleven-5",
+		"skill": "mental-math",
+		"subskillId": "multiply-eleven",
+		"kind": "apply",
+		"level": 5,
+		"prompt": "Compute 307 × 11 mentally. Answer with a number only.",
+		"hints": [
+			"The same decomposition works for three digits.",
+			"Add 3070 and 307."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "3377",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-multiply-five-twenty-five-1",
+		"skill": "mental-math",
+		"subskillId": "multiply-five-twenty-five",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Compute 48 × 5. Answer with a number only.",
+		"hints": [
+			"Scale by ten first.",
+			"Halve 480."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "240",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-multiply-five-twenty-five-2",
+		"skill": "mental-math",
+		"subskillId": "multiply-five-twenty-five",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Compute 73 × 5. Answer with a number only.",
+		"hints": [
+			"Odd inputs still work with halving.",
+			"Halve 730."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "365",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-multiply-five-twenty-five-3",
+		"skill": "mental-math",
+		"subskillId": "multiply-five-twenty-five",
+		"kind": "quickfire",
+		"level": 3,
+		"prompt": "Compute 36 × 25. Answer with a number only.",
+		"hints": [
+			"25 is one quarter of 100.",
+			"Quarter 3600."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "900",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-multiply-five-twenty-five-4",
+		"skill": "mental-math",
+		"subskillId": "multiply-five-twenty-five",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Compute 124 × 25. Answer with a number only.",
+		"hints": [
+			"Divide before multiplying if easier.",
+			"124 divided by 4 is 31; multiply by 100."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "3100",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-multiply-five-twenty-five-5",
+		"skill": "mental-math",
+		"subskillId": "multiply-five-twenty-five",
+		"kind": "debug",
+		"level": 5,
+		"prompt": "A learner says 87 × 25 = 217.5 after scaling by 10. Give the correct product. Answer with a number only.",
+		"hints": [
+			"The quartering trick needs scaling by 100.",
+			"Quarter 8700, not 870."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "2175",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-percentages-1",
+		"skill": "mental-math",
+		"subskillId": "percentages",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Find 10% of 340. Answer with a number only.",
+		"hints": [
+			"Ten percent is one tenth.",
+			"Divide 340 by 10."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "34",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-percentages-2",
+		"skill": "mental-math",
+		"subskillId": "percentages",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Find a 15% tip on 80 currency units; return the tip, not the total. Answer with a number only.",
+		"hints": [
+			"Combine 10% with 5%.",
+			"Add 8 and 4."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "12",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-percentages-3",
+		"skill": "mental-math",
+		"subskillId": "percentages",
+		"kind": "quickfire",
+		"level": 3,
+		"prompt": "Find 20% of 135. Answer with a number only.",
+		"hints": [
+			"Twenty percent is one fifth.",
+			"Divide 135 by 5."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "27",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-percentages-4",
+		"skill": "mental-math",
+		"subskillId": "percentages",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Find 12.5% of 240. Answer with a number only.",
+		"hints": [
+			"12.5% is a simple fraction.",
+			"One eighth of 240 is the answer."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "30",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-percentages-5",
+		"skill": "mental-math",
+		"subskillId": "percentages",
+		"kind": "predict",
+		"level": 5,
+		"prompt": "A price rises from 80 to 92. What is the percent increase? Return the percentage number without the % sign. Answer with a number only.",
+		"hints": [
+			"The base is the old price.",
+			"Divide the increase of 12 by 80, then multiply by 100."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "15",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-round-compensate-1",
+		"skill": "mental-math",
+		"subskillId": "round-compensate",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Compute 67 × 9. Answer with a number only.",
+		"hints": [
+			"Use the next round multiplier.",
+			"670 minus 67."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "603",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-round-compensate-2",
+		"skill": "mental-math",
+		"subskillId": "round-compensate",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Compute 98 × 102. Answer with a number only.",
+		"hints": [
+			"These numbers straddle 100 by the same amount.",
+			"Use (100-2)(100+2) = 10000-4."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "9996",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-squares-ending-five-1",
+		"skill": "mental-math",
+		"subskillId": "squares-ending-five",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Compute 35². Answer with a number only.",
+		"hints": [
+			"Use the digit before the final 5.",
+			"3 × 4 gives 12, then append 25."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "1225",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-squares-ending-five-2",
+		"skill": "mental-math",
+		"subskillId": "squares-ending-five",
+		"kind": "quickfire",
+		"level": 4,
+		"prompt": "Compute 75². Answer with a number only.",
+		"hints": [
+			"Multiply adjacent leading integers.",
+			"7 × 8 gives 56, then append 25."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "5625",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-squares-near-base-1",
+		"skill": "mental-math",
+		"subskillId": "squares-near-base",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Compute 52². Answer with a number only.",
+		"hints": [
+			"Expand around 50.",
+			"2500 + 200 + 4."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "2704",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-squares-near-base-2",
+		"skill": "mental-math",
+		"subskillId": "squares-near-base",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "A learner writes 97² = 10000 - 9. Correct the result. Answer with a number only.",
+		"hints": [
+			"A square has a cross term.",
+			"(100-3)² = 10000 - 600 + 9."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "9409",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-estimate-scale-1",
+		"skill": "mental-math",
+		"subskillId": "estimate-scale",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Estimate 198 × 49 by rounding 198 to 200 and 49 to 50. Return the result of that specified rounded calculation. Answer with a number only.",
+		"hints": [
+			"Use the requested compatible factors.",
+			"Compute 200 × 50."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "10000",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-estimate-scale-2",
+		"skill": "mental-math",
+		"subskillId": "estimate-scale",
+		"kind": "explain",
+		"level": 4,
+		"prompt": "Without calculating 198 × 49 exactly, explain why rounding it to 200 × 50 overestimates the product. Give a simple positive lower bound using 190 × 40.",
+		"hints": [
+			"Both positive factors increased.",
+			"Compare 190 × 40 < 198 × 49 < 200 × 50."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"States that increasing each positive factor makes the product larger.",
+			"Gives the lower bound 7600 and upper bound 10000.",
+			"Labels these as bounds rather than an exact answer."
+		]
+	},
+	{
+		"id": "ch-fermi-models-1",
+		"skill": "mental-math",
+		"subskillId": "fermi-models",
+		"kind": "build",
+		"level": 3,
+		"prompt": "BUILD a one-week café cups model. Assume 40 to 70 customers per open day, 1 to 2 cups per customer, and 6 open days. Show a low and high weekly total and one central estimate with stated assumptions. Change one factor by 20% and report the new central estimate.",
+		"hints": [
+			"Multiply customers/day × cups/customer × days/week.",
+			"Low is 40×1×6; high is 70×2×6. Pick and state central factors before changing one."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Uses consistent units and obtains a low total of 240 and a high total of 840 cups/week.",
+			"States central factors inside the supplied ranges and calculates their product correctly.",
+			"Changes one factor by 20%, recomputes correctly, and describes why this is a model rather than a measured count."
+		]
+	},
+	{
+		"id": "ch-fermi-models-2",
+		"skill": "mental-math",
+		"subskillId": "fermi-models",
+		"kind": "boss",
+		"level": 5,
+		"prompt": "Estimate the weekly milk budget for a café. Assume 60 customers/day, 6 days/week, 75% buy one milk drink, 0.2 litres per milk drink, and milk costs 1.50 per litre. Show the central cost, then give a plausible range by varying only customers/day from 40 to 80. Explain which assumption you would measure first.",
+		"hints": [
+			"Compute milk drinks before litres and money.",
+			"Multiply 60×6×0.75×0.2×1.5, then replace 60 by each endpoint."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Computes 270 milk drinks, 54 litres, and central weekly cost 81 currency units.",
+			"Computes cost range 54 to 108 using 40 and 80 customers/day.",
+			"Keeps units explicit and identifies a measurable uncertainty without presenting assumptions as observed facts."
+		]
+	}
+]

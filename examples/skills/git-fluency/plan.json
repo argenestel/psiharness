@@ -1,0 +1,158 @@
+{
+	"skill": "git-fluency",
+	"title": "Git fluency",
+	"targetPerformance": "Choose the correct single Git command for at least 18 of 20 staging, branch, inspection, integration, and undo scenarios in 20 minutes, then explain a safe recovery sequence in a disposable repository.",
+	"whyItMatters": "Make small commits and recover from mistakes without guessing about repository state.",
+	"subskills": [
+		{
+			"id": "stage-changes",
+			"title": "Stage deliberately",
+			"why": "Control exactly what enters the next commit.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Compare the staged diff with the working-tree diff before committing.",
+			"drills": [
+				"Stage one path.",
+				"Stage selected hunks.",
+				"Unstage without losing edits."
+			],
+			"status": "active"
+		},
+		{
+			"id": "make-commits",
+			"title": "Create and amend commits",
+			"why": "Record a focused snapshot with an intentional message.",
+			"priority": 1,
+			"prerequisites": [
+				"stage-changes"
+			],
+			"selfCorrection": "Inspect HEAD after committing and avoid amending shared history.",
+			"drills": [
+				"Commit with a message.",
+				"Amend staged changes into a private commit.",
+				"Correct the latest private message."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "branch-work",
+			"title": "Work on branches",
+			"why": "Isolate work and locate branch pointers.",
+			"priority": 1,
+			"prerequisites": [
+				"make-commits"
+			],
+			"selfCorrection": "Check the current branch and confirm whether a command switches branches.",
+			"drills": [
+				"Create and switch branches.",
+				"Create a pointer without switching.",
+				"Switch to an existing branch."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "inspect-history",
+			"title": "Read log and diffs",
+			"why": "Inspect the index, a commit, and branch topology.",
+			"priority": 2,
+			"prerequisites": [
+				"make-commits"
+			],
+			"selfCorrection": "Name which two snapshots a diff compares.",
+			"drills": [
+				"Read a compact graph.",
+				"Inspect a commit patch.",
+				"Inspect only staged changes."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "integrate-work",
+			"title": "Choose merge or rebase",
+			"why": "Integrate work while understanding history changes.",
+			"priority": 2,
+			"prerequisites": [
+				"branch-work",
+				"inspect-history"
+			],
+			"selfCorrection": "Draw the before/after graph and check whether commits are shared.",
+			"drills": [
+				"Merge a feature branch.",
+				"Rebase a private feature onto main.",
+				"Explain merge parents and rewritten commit ids."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "undo-worktree",
+			"title": "Restore and reset local state",
+			"why": "Choose whether index and worktree changes survive.",
+			"priority": 2,
+			"prerequisites": [
+				"stage-changes",
+				"inspect-history"
+			],
+			"selfCorrection": "List the effect on HEAD, index, and working tree before choosing a command.",
+			"drills": [
+				"Discard one unstaged path.",
+				"Reset the index while keeping file edits.",
+				"Discard explicitly unwanted tracked local changes."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "recover-history",
+			"title": "Recover and reverse commits",
+			"why": "Distinguish preserving changes, reversing published work, and finding lost tips.",
+			"priority": 3,
+			"prerequisites": [
+				"undo-worktree",
+				"integrate-work"
+			],
+			"selfCorrection": "Check publication status, preserve useful work, and inspect recovery targets first.",
+			"drills": [
+				"Undo a private commit but keep staged content.",
+				"Revert a published commit.",
+				"Locate an earlier HEAD in reflog."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "Git command reference",
+			"url": "https://git-scm.com/docs",
+			"why": "Check exact flags and reset modes."
+		},
+		{
+			"title": "Pro Git book",
+			"url": "https://git-scm.com/book/en/v2",
+			"why": "Review branching, snapshots, and recovery."
+		},
+		{
+			"title": "Git branching reference",
+			"url": "https://git-scm.com/docs/git-branch",
+			"why": "Distinguish creating a branch from switching it."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Afraid to experiment in a real repository",
+			"fix": "Use a disposable local repository with toy files.",
+			"done": false
+		},
+		{
+			"barrier": "Confusing index and worktree",
+			"fix": "Write HEAD/index/worktree on paper and mark which command changes each.",
+			"done": false
+		},
+		{
+			"barrier": "Memorizing without feedback",
+			"fix": "Run status and the appropriate diff after each practice command.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

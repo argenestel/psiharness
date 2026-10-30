@@ -1,0 +1,171 @@
+{
+	"skill": "mental-math",
+	"title": "Mental math",
+	"targetPerformance": "Answer at least 18 of 20 mixed multiplication, percentage, and square prompts correctly in 8 minutes without a calculator, then give a Fermi estimate with explicit units and assumptions.",
+	"whyItMatters": "Make everyday calculations fast enough to check decisions on the spot.",
+	"subskills": [
+		{
+			"id": "multiply-eleven",
+			"title": "Multiply by eleven",
+			"why": "Use place value and carries for fast exact products.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Compare with ten times the number plus one more copy.",
+			"drills": [
+				"Multiply two-digit numbers by 11.",
+				"Handle a middle-digit carry.",
+				"Extend to three-digit numbers."
+			],
+			"status": "active"
+		},
+		{
+			"id": "multiply-five-twenty-five",
+			"title": "Multiply by five and twenty-five",
+			"why": "Replace multiplication with easy division after scaling.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Check x5 by halving x10 and x25 by quartering x100.",
+			"drills": [
+				"Multiply even numbers by 5.",
+				"Multiply odd numbers by 5.",
+				"Quarter a scaled value for x25."
+			],
+			"status": "active"
+		},
+		{
+			"id": "percentages",
+			"title": "Compute percentages and changes",
+			"why": "Connect common rates to useful fractions.",
+			"priority": 1,
+			"prerequisites": [
+				"multiply-five-twenty-five"
+			],
+			"selfCorrection": "State the base amount and distinguish percent change from percentage points.",
+			"drills": [
+				"Find 10%, 15%, and 20%.",
+				"Combine 10% and 5% for a tip.",
+				"Divide a change by its original value."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "round-compensate",
+			"title": "Multiply near round numbers",
+			"why": "Use x9 and near-round products with a correction.",
+			"priority": 2,
+			"prerequisites": [
+				"multiply-eleven"
+			],
+			"selfCorrection": "Check whether the correction must be added or subtracted.",
+			"drills": [
+				"Replace x9 with x10 minus one copy.",
+				"Replace x99 with x100 minus one copy.",
+				"Expand two numbers near 100."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "squares-ending-five",
+			"title": "Square numbers ending in five",
+			"why": "Turn a family of squares into one small multiplication.",
+			"priority": 2,
+			"prerequisites": [
+				"multiply-five-twenty-five"
+			],
+			"selfCorrection": "For 10a+5, multiply a by a+1, then append 25.",
+			"drills": [
+				"Square 35.",
+				"Square 75.",
+				"Check the result lies between neighboring tens squared."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "squares-near-base",
+			"title": "Square near fifty and one hundred",
+			"why": "Use the cross term instead of dropping it.",
+			"priority": 3,
+			"prerequisites": [
+				"squares-ending-five",
+				"round-compensate"
+			],
+			"selfCorrection": "Expand (b+d)^2 as b²+2bd+d² and check the sign of d.",
+			"drills": [
+				"Square a number just above 50.",
+				"Square a number just below 100.",
+				"Compare upper and lower offsets."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "estimate-scale",
+			"title": "Estimate and check scale",
+			"why": "Choose useful rounding and preserve units.",
+			"priority": 2,
+			"prerequisites": [
+				"percentages",
+				"round-compensate"
+			],
+			"selfCorrection": "Compare your estimate with simple upper and lower bounds.",
+			"drills": [
+				"Round factors to one significant figure.",
+				"Estimate a percentage with compatible numbers.",
+				"Explain whether rounding biases upward or downward."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "fermi-models",
+			"title": "Build Fermi estimates",
+			"why": "Decompose a fuzzy question into measurable factors.",
+			"priority": 3,
+			"prerequisites": [
+				"estimate-scale"
+			],
+			"selfCorrection": "Write units at each step, state uncertainty, and test a factor-of-two change.",
+			"drills": [
+				"Estimate café cups per week.",
+				"Build a small budget model.",
+				"State a low and high scenario."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "Khan Academy arithmetic",
+			"url": "https://www.khanacademy.org/math/arithmetic",
+			"why": "Review place value and arithmetic."
+		},
+		{
+			"title": "Khan Academy pre-algebra",
+			"url": "https://www.khanacademy.org/math/pre-algebra",
+			"why": "Review percentages and estimates."
+		},
+		{
+			"title": "Fermi problem",
+			"url": "https://en.wikipedia.org/wiki/Fermi_problem",
+			"why": "See assumption-based estimation examples."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Reaching for a calculator immediately",
+			"fix": "Set a 60-second mental attempt before checking.",
+			"done": false
+		},
+		{
+			"barrier": "A carry mistake ruins confidence",
+			"fix": "Write the decomposition and retry with a nearby number.",
+			"done": false
+		},
+		{
+			"barrier": "Practice feels repetitive",
+			"fix": "Keep short rounds and record the trick that fixed a miss.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

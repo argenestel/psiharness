@@ -1,0 +1,156 @@
+{
+	"skill": "sql-queries",
+	"title": "SQL queries",
+	"targetPerformance": "Write correct SQL for at least 9 of 10 schema-based prompts in 30 minutes, including joins, grouped filters, a subquery, and a window calculation.",
+	"whyItMatters": "Answer business questions from a small relational shop database.",
+	"subskills": [
+		{
+			"id": "select-filter",
+			"title": "Select and filter",
+			"why": "Choose columns and keep only relevant rows.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Check selected columns, quoted text, and every boundary condition.",
+			"drills": [
+				"Project two named columns.",
+				"Filter with AND and OR.",
+				"Check inclusive price and date boundaries."
+			],
+			"status": "active"
+		},
+		{
+			"id": "sort-limit",
+			"title": "Sort and limit",
+			"why": "Return reproducible top results.",
+			"priority": 2,
+			"prerequisites": [
+				"select-filter"
+			],
+			"selfCorrection": "Check direction and add a unique tie-breaker before LIMIT.",
+			"drills": [
+				"Sort prices descending.",
+				"Select the earliest two orders.",
+				"Break ties with the primary key."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "join-tables",
+			"title": "Join tables",
+			"why": "Combine related rows without losing or duplicating entities accidentally.",
+			"priority": 1,
+			"prerequisites": [
+				"select-filter"
+			],
+			"selfCorrection": "Trace foreign keys; count matches and unmatched LEFT JOIN rows.",
+			"drills": [
+				"Join orders to customers.",
+				"Join items to products.",
+				"Retain customers with no orders."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "group-having",
+			"title": "Group and filter aggregates",
+			"why": "Summarize rows at the requested grain.",
+			"priority": 1,
+			"prerequisites": [
+				"join-tables"
+			],
+			"selfCorrection": "Name the output grain; compare WHERE rows with HAVING groups.",
+			"drills": [
+				"Count orders per customer.",
+				"Sum item quantities.",
+				"Filter aggregate counts."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "subquery-tests",
+			"title": "Use subqueries",
+			"why": "Express scalar comparisons and membership tests.",
+			"priority": 2,
+			"prerequisites": [
+				"group-having"
+			],
+			"selfCorrection": "Run the inner query alone, then trace correlation for one outer row.",
+			"drills": [
+				"Compare a price with an average.",
+				"Use IN for customer membership.",
+				"Use a correlated EXISTS test."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "window-ranking",
+			"title": "Rank within groups",
+			"why": "Keep detail rows while assigning row numbers and tied ranks.",
+			"priority": 3,
+			"prerequisites": [
+				"group-having",
+				"sort-limit"
+			],
+			"selfCorrection": "Check partitions, tied ranks, and deterministic ROW_NUMBER ordering.",
+			"drills": [
+				"Number orders per customer.",
+				"Rank tied product prices.",
+				"Compare GROUP BY with windows."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "window-totals",
+			"title": "Calculate window totals",
+			"why": "Show group and running totals beside individual rows.",
+			"priority": 3,
+			"prerequisites": [
+				"window-ranking"
+			],
+			"selfCorrection": "Verify the partition and explicitly use a ROWS frame for running totals.",
+			"drills": [
+				"Repeat a category total per product.",
+				"Accumulate quantities in item-id order.",
+				"Build a customer order report."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "SQLite SELECT",
+			"url": "https://www.sqlite.org/lang_select.html",
+			"why": "Check query clause syntax."
+		},
+		{
+			"title": "PostgreSQL tutorial",
+			"url": "https://www.postgresql.org/docs/current/tutorial.html",
+			"why": "Review joins and aggregates."
+		},
+		{
+			"title": "PostgreSQL window functions",
+			"url": "https://www.postgresql.org/docs/current/tutorial-window.html",
+			"why": "Check partitions, ordering, and frames."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "No database available",
+			"fix": "Sketch a three-row table and predict the output before executing later.",
+			"done": false
+		},
+		{
+			"barrier": "Syntax lookup interrupts practice",
+			"fix": "Keep only the SELECT reference open and time a ten-minute set.",
+			"done": false
+		},
+		{
+			"barrier": "Wrong query feels like failure",
+			"fix": "Write one counterexample row, repair the query, and retry for progress.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

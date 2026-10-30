@@ -1,0 +1,411 @@
+[
+	{
+		"id": "ch-stage-changes-1",
+		"skill": "git-fluency",
+		"subskillId": "stage-changes",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "In a repository with an existing commit, stage only the modified file notes.txt. Return one command.",
+		"hints": [
+			"Name only the file you want staged.",
+			"Use git add followed by notes.txt."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git add notes.txt",
+		"acceptable": [
+			"git add -- notes.txt"
+		]
+	},
+	{
+		"id": "ch-stage-changes-2",
+		"skill": "git-fluency",
+		"subskillId": "stage-changes",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "notes.txt has two independent hunks. Start interactive patch staging for that file so you can choose one hunk. Return only the command that starts the interaction.",
+		"hints": [
+			"Choose patch mode.",
+			"The short patch flag is -p."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git add -p notes.txt",
+		"acceptable": [
+			"git add --patch notes.txt",
+			"git add -p -- notes.txt"
+		]
+	},
+	{
+		"id": "ch-stage-changes-3",
+		"skill": "git-fluency",
+		"subskillId": "stage-changes",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "notes.txt was staged by mistake. A HEAD commit exists. Unstage that file while preserving its working-tree edits. Return one command.",
+		"hints": [
+			"Change the index, not the file edits.",
+			"Use restore with --staged for this path."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git restore --staged notes.txt",
+		"acceptable": [
+			"git restore --staged -- notes.txt",
+			"git reset HEAD -- notes.txt"
+		]
+	},
+	{
+		"id": "ch-stage-changes-4",
+		"skill": "git-fluency",
+		"subskillId": "stage-changes",
+		"kind": "predict",
+		"level": 4,
+		"prompt": "After staging only one of two hunks, which single command displays the exact patch that the next ordinary commit would record?",
+		"hints": [
+			"Compare the index with HEAD.",
+			"Use the staged or cached diff option."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git diff --staged",
+		"acceptable": [
+			"git diff --cached"
+		]
+	},
+	{
+		"id": "ch-make-commits-1",
+		"skill": "git-fluency",
+		"subskillId": "make-commits",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "The intended changes are already staged. Commit them with the exact message Add cafe notes. Return one command.",
+		"hints": [
+			"Pass the message as one argument.",
+			"Use -m and quote the three-word message."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git commit -m \"Add cafe notes\"",
+		"acceptable": [
+			"git commit -m 'Add cafe notes'",
+			"git commit --message=\"Add cafe notes\""
+		]
+	},
+	{
+		"id": "ch-make-commits-2",
+		"skill": "git-fluency",
+		"subskillId": "make-commits",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "The latest commit is private and unpushed. A forgotten file is now staged. Replace the latest commit with the updated snapshot, keeping its message and avoiding an editor.",
+		"hints": [
+			"Amend instead of making another commit.",
+			"Combine --amend and --no-edit."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git commit --amend --no-edit",
+		"acceptable": [
+			"git commit --no-edit --amend"
+		]
+	},
+	{
+		"id": "ch-make-commits-3",
+		"skill": "git-fluency",
+		"subskillId": "make-commits",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Your latest private, unpushed commit has the wrong message. The index matches HEAD. Replace its message with Fix receipt total without opening an editor.",
+		"hints": [
+			"Replace the last commit rather than adding one.",
+			"Use --amend with -m and the new message."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git commit --amend -m \"Fix receipt total\"",
+		"acceptable": [
+			"git commit --amend -m 'Fix receipt total'",
+			"git commit -m \"Fix receipt total\" --amend"
+		]
+	},
+	{
+		"id": "ch-make-commits-4",
+		"skill": "git-fluency",
+		"subskillId": "make-commits",
+		"kind": "explain",
+		"level": 4,
+		"prompt": "A teammate already based work on your published commit. Explain why amending that commit is disruptive, and give a better way to add a missing file.",
+		"hints": [
+			"Think about commit identity and other branch histories.",
+			"A new follow-up commit preserves the published parent chain."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"States that amend creates a replacement commit with a new id.",
+			"Explains that collaborators still reference the old commit, causing divergent history.",
+			"Proposes staging the missing file and making a new ordinary commit."
+		]
+	},
+	{
+		"id": "ch-branch-work-1",
+		"skill": "git-fluency",
+		"subskillId": "branch-work",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Create a branch named cafe-menu at current HEAD and switch to it in one command.",
+		"hints": [
+			"Use a create-and-switch command.",
+			"The switch creation flag is -c."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git switch -c cafe-menu",
+		"acceptable": [
+			"git checkout -b cafe-menu"
+		]
+	},
+	{
+		"id": "ch-branch-work-2",
+		"skill": "git-fluency",
+		"subskillId": "branch-work",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Create a branch pointer named backup at current HEAD without switching away from your current branch.",
+		"hints": [
+			"Creating a pointer need not switch branches.",
+			"Use git branch with the new name."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git branch backup"
+	},
+	{
+		"id": "ch-branch-work-3",
+		"skill": "git-fluency",
+		"subskillId": "branch-work",
+		"kind": "predict",
+		"level": 3,
+		"prompt": "main already exists locally. Which command switches to main without creating a branch?",
+		"hints": [
+			"Use the existing branch name.",
+			"Do not pass the create flag."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git switch main",
+		"acceptable": [
+			"git checkout main"
+		]
+	},
+	{
+		"id": "ch-branch-work-4",
+		"skill": "git-fluency",
+		"subskillId": "branch-work",
+		"kind": "build",
+		"level": 4,
+		"prompt": "BUILD a tiny branch exercise in a disposable repository that already has a main branch and one commit. Create and switch to cafe-menu; add menu.txt containing one drink; stage and commit it; switch back to main. Show the commands, branch names, and why menu.txt is absent on main. Do not push.",
+		"hints": [
+			"Keep the change on a separate branch.",
+			"Use switch -c, add, commit -m, then switch main."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Creates and switches to cafe-menu from main.",
+			"Creates menu.txt and stages and commits it on cafe-menu.",
+			"Returns to main and explains that main still points to the earlier snapshot."
+		]
+	},
+	{
+		"id": "ch-inspect-history-1",
+		"skill": "git-fluency",
+		"subskillId": "inspect-history",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Show a compact one-line commit graph across all local refs. Use log with --oneline, --graph and --all.",
+		"hints": [
+			"Use the log graph view.",
+			"Combine the three flags from the prompt."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git log --oneline --graph --all",
+		"acceptable": [
+			"git log --graph --oneline --all",
+			"git log --all --graph --oneline",
+			"git log --all --oneline --graph"
+		]
+	},
+	{
+		"id": "ch-inspect-history-2",
+		"skill": "git-fluency",
+		"subskillId": "inspect-history",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Inspect the latest commit metadata and patch together using show. Explicitly name HEAD.",
+		"hints": [
+			"The object to inspect is HEAD.",
+			"Use git show followed by HEAD."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git show HEAD",
+		"acceptable": [
+			"git show"
+		]
+	},
+	{
+		"id": "ch-inspect-history-3",
+		"skill": "git-fluency",
+		"subskillId": "inspect-history",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "You ran git diff but want only the changes already staged for the next commit. Give the corrected command.",
+		"hints": [
+			"An ordinary diff excludes the staged comparison.",
+			"Ask for the staged diff."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git diff --staged",
+		"acceptable": [
+			"git diff --cached"
+		]
+	},
+	{
+		"id": "ch-integrate-work-1",
+		"skill": "git-fluency",
+		"subskillId": "integrate-work",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "You are on main with a clean worktree. feature contains commits not reachable from main. Merge feature into main and require a merge commit even if fast-forwarding is possible.",
+		"hints": [
+			"Choose merge, not rebase, to preserve existing commit ids.",
+			"Disable fast-forward with --no-ff."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git merge --no-ff feature"
+	},
+	{
+		"id": "ch-integrate-work-2",
+		"skill": "git-fluency",
+		"subskillId": "integrate-work",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "You are on a private, unpushed feature branch with a clean worktree. Replay its unique commits on top of local main. Return one command; no interactive editing is needed.",
+		"hints": [
+			"The current branch is the one to replay.",
+			"Pass main as the new base."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git rebase main"
+	},
+	{
+		"id": "ch-integrate-work-3",
+		"skill": "git-fluency",
+		"subskillId": "integrate-work",
+		"kind": "boss",
+		"level": 5,
+		"prompt": "You have private feature commits A and B, while main gained C. Explain the graph after merging main into feature versus rebasing feature onto main. Then choose an integration strategy if A and B have already been shared. Describe how you would inspect staged content before committing a conflict resolution. No commands will be executed.",
+		"hints": [
+			"Compare retaining both parent histories with replaying commits.",
+			"Merge preserves A and B; rebase replaces them with new ids. Use a staged diff to inspect a resolution."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Describes a merge commit with two parents retaining original A, B, and C.",
+			"Describes replayed A and B with new ids above C after rebase.",
+			"Prefers merging for shared commits unless collaborators explicitly coordinate a rewrite.",
+			"Uses git diff --staged or --cached to inspect staged conflict resolution."
+		]
+	},
+	{
+		"id": "ch-undo-worktree-1",
+		"skill": "git-fluency",
+		"subskillId": "undo-worktree",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "notes.txt is tracked and has only unstaged edits; the index matches HEAD. You explicitly want to discard those edits in this disposable exercise. Restore only notes.txt from the index.",
+		"hints": [
+			"The index already holds the wanted contents.",
+			"Use restore without --staged."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git restore notes.txt",
+		"acceptable": [
+			"git restore -- notes.txt",
+			"git checkout -- notes.txt"
+		]
+	},
+	{
+		"id": "ch-undo-worktree-2",
+		"skill": "git-fluency",
+		"subskillId": "undo-worktree",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "The latest commit is private. Undo that one commit and unstage its changes, preserving all file content as working-tree edits. Return an explicit reset mode.",
+		"hints": [
+			"Move HEAD and reset the index, retaining the worktree.",
+			"Choose --mixed, not --soft or --hard."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git reset --mixed HEAD~1",
+		"acceptable": [
+			"git reset --mixed HEAD^"
+		]
+	},
+	{
+		"id": "ch-undo-worktree-3",
+		"skill": "git-fluency",
+		"subskillId": "undo-worktree",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Disposable repository: you explicitly want to discard all staged and unstaged tracked edits and match current HEAD. No untracked files need removal. git reset --soft HEAD did not discard them. Supply the correct explicit reset command.",
+		"hints": [
+			"Both index and worktree must be reset.",
+			"Use --hard with current HEAD."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git reset --hard HEAD"
+	},
+	{
+		"id": "ch-recover-history-1",
+		"skill": "git-fluency",
+		"subskillId": "recover-history",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "The most recent commit is private and unpushed. Undo exactly one commit but keep its changes staged, ready to recommit. Return an explicit reset mode.",
+		"hints": [
+			"Keep the index and worktree unchanged.",
+			"Move HEAD back one commit with --soft."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git reset --soft HEAD~1",
+		"acceptable": [
+			"git reset --soft HEAD^"
+		]
+	},
+	{
+		"id": "ch-recover-history-2",
+		"skill": "git-fluency",
+		"subskillId": "recover-history",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Commit abc1234 is an ordinary, non-merge commit already published to teammates. With a clean worktree, create a new commit reversing it without opening an editor.",
+		"hints": [
+			"Preserve published history.",
+			"Use revert with --no-edit and the given commit id."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git revert --no-edit abc1234",
+		"acceptable": [
+			"git revert abc1234 --no-edit"
+		]
+	},
+	{
+		"id": "ch-recover-history-3",
+		"skill": "git-fluency",
+		"subskillId": "recover-history",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "You accidentally moved HEAD away from a useful local commit. Display the local HEAD movement history so you can find the old commit id. Do not reset anything yet.",
+		"hints": [
+			"Branch log and HEAD movement history differ.",
+			"Use the reflog inspection command."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "git reflog",
+		"acceptable": [
+			"git reflog show",
+			"git reflog show HEAD",
+			"git reflog HEAD"
+		]
+	}
+]

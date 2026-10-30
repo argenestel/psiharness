@@ -1,0 +1,158 @@
+{
+	"skill": "regex",
+	"title": "Regular expressions",
+	"targetPerformance": "Solve at least 9 of 10 JavaScript regex tasks in 25 minutes: whole-string validation, captures, lookarounds, and extracting fields from a supplied log line.",
+	"whyItMatters": "Turn text cleanup and log inspection into short, checkable experiments.",
+	"subskills": [
+		{
+			"id": "character-classes",
+			"title": "Choose character classes",
+			"why": "Specify allowed characters without matching unrelated text.",
+			"priority": 1,
+			"prerequisites": [],
+			"selfCorrection": "Test one allowed character, one forbidden character, and the empty string.",
+			"drills": [
+				"Recognize digits.",
+				"Contrast a class with its negation.",
+				"Combine ASCII letters and digits."
+			],
+			"status": "active"
+		},
+		{
+			"id": "anchors-boundaries",
+			"title": "Anchor matches",
+			"why": "Distinguish a full value from a matching substring.",
+			"priority": 1,
+			"prerequisites": [
+				"character-classes"
+			],
+			"selfCorrection": "Try a valid value embedded inside extra characters.",
+			"drills": [
+				"Anchor a whole code.",
+				"Match a word boundary.",
+				"Compare line anchors with the m flag."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "quantifiers",
+			"title": "Control repetition",
+			"why": "Set lengths and avoid greedy overmatching.",
+			"priority": 1,
+			"prerequisites": [
+				"character-classes",
+				"anchors-boundaries"
+			],
+			"selfCorrection": "Check zero, minimum, maximum, and one-past-maximum lengths.",
+			"drills": [
+				"Use exact and ranged repeats.",
+				"Contrast + and *.",
+				"Compare greedy with lazy delimiters."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "groups-captures",
+			"title": "Capture useful fields",
+			"why": "Return the desired fields while keeping structural groups non-capturing.",
+			"priority": 2,
+			"prerequisites": [
+				"quantifiers"
+			],
+			"selfCorrection": "Number capturing parentheses from the left and inspect match groups.",
+			"drills": [
+				"Capture a date.",
+				"Read numbered groups.",
+				"Use a non-capturing repeated group."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "alternation",
+			"title": "Choose alternatives",
+			"why": "Scope OR correctly and protect whole-string constraints.",
+			"priority": 2,
+			"prerequisites": [
+				"groups-captures"
+			],
+			"selfCorrection": "Try each branch plus a prefixed or suffixed near miss.",
+			"drills": [
+				"Choose cat or dog.",
+				"Factor a common suffix.",
+				"Fix missing alternation grouping."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "lookarounds",
+			"title": "Assert context",
+			"why": "Require surrounding text without consuming it.",
+			"priority": 3,
+			"prerequisites": [
+				"groups-captures",
+				"alternation"
+			],
+			"selfCorrection": "Inspect the matched text itself, not just whether a match exists.",
+			"drills": [
+				"Assert a following currency code.",
+				"Assert a preceding currency symbol.",
+				"Reject a forbidden prefix."
+			],
+			"status": "locked"
+		},
+		{
+			"id": "log-parsing",
+			"title": "Parse a log line",
+			"why": "Extract timestamps, levels, IP-shaped tokens, and key=value fields.",
+			"priority": 2,
+			"prerequisites": [
+				"groups-captures",
+				"lookarounds"
+			],
+			"selfCorrection": "Compare every captured field with the original line and reject malformed examples.",
+			"drills": [
+				"Capture timestamp and level.",
+				"Extract a dotted IP-shaped token.",
+				"Collect key=value pairs globally."
+			],
+			"status": "locked"
+		}
+	],
+	"resources": [
+		{
+			"title": "MDN regex guide",
+			"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions",
+			"why": "Review JavaScript syntax and flags."
+		},
+		{
+			"title": "Regular-Expressions.info",
+			"url": "https://www.regular-expressions.info/",
+			"why": "Compare quantifiers, grouping, and assertions."
+		},
+		{
+			"title": "MDN RegExp reference",
+			"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp",
+			"why": "Check match APIs and RegExp behavior."
+		}
+	],
+	"barriers": [
+		{
+			"barrier": "Patterns feel like punctuation soup",
+			"fix": "Build one token at a time and name what it consumes.",
+			"done": false
+		},
+		{
+			"barrier": "Only testing successful matches",
+			"fix": "Add a near miss and an empty string before submitting.",
+			"done": false
+		},
+		{
+			"barrier": "Fear of a wrong pattern",
+			"fix": "Run the samples, write the smallest counterexample, then retry.",
+			"done": false
+		}
+	],
+	"hoursGoal": 20,
+	"createdAt": "2026-10-30T00:00:00Z",
+	"updatedAt": "2026-10-30T00:00:00Z"
+}

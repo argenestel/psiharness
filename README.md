@@ -1,83 +1,116 @@
-# ψ psi — an agent harness for learning big ideas
+# ψ psi — a practice-first learning agent
 
-Most agent harnesses are built to **write code for you**. psi is built to **put ideas in your head**.
+Most agent harnesses are built to **do the work for you**. psi is built so **you get good at something**.
 
-It turns the [pi](https://pi.dev) coding agent (and its fork [oh-my-pi](https://github.com/can1357/oh-my-pi))
-into a tutor that teaches the way the best explainers do:
-
-- **3Blue1Brown** — intuition before formalism, "you could have invented this", visuals that *are* the math.
-- **Kurzgesagt** — a hook you can't ignore, scale jumps, concrete numbers, warm flat-vector storytelling.
-- **Learning science** — prerequisite maps, predict-before-reveal, retrieval practice, FSRS spaced repetition,
-  Bayesian knowledge tracing. Mastery is measured, never assumed.
+psi is a [pi](https://pi.dev)-style terminal agent (it runs inside pi or [oh-my-pi](https://github.com/can1357/oh-my-pi))
+specialized for learning by doing. It remembers how you learn, breaks a skill into the parts that matter,
+and runs short, game-like practice sessions in plain text.
 
 ```
-psi learn "the Fourier transform"
+psi learn          # then: /skill SQL queries   →   /practice
 ```
 
-## What you get
+## The ideas it's built on
 
-| Piece | What it does |
+- **The first 20 hours** (Josh Kaufman): you don't need 10,000 hours to get good enough. Define a concrete target,
+  deconstruct the skill, learn just enough to self-correct, remove the barriers to practice, and put in 20 focused hours.
+- **The Super Mario effect** (Mark Rober): people learn faster when failure is part of a game instead of a judgement.
+  In psi a failed attempt still earns XP, and naming what you'll try differently earns a bonus.
+- **Learning by building**: quests are small real projects with milestones, not lectures.
+- **Learning science**: predict before you're told, retrieval over re-reading, spacing and interleaving, honest grading.
+
+## What a session looks like
+
+```
+ψ sql-queries · Lv 3 ▰▰▰▰▱▱▱▱▱▱ · 🔥4 · 6.5/20h
+
+Welcome back — last time: JOINs clicked once you drew the two tables side by side. Next: GROUP BY with HAVING.
+
+> /practice 20
+
+Challenge · apply · level 2
+  Using orders(id, customer_id, total), list customers whose total spend is over 500.
+  Answer with a single SQL query.
+
+> select customer_id, sum(total) from orders group by customer_id where sum(total) > 500
+✗ Not quite. +4 XP for the attempt.
+  What will you try differently?
+> filters on groups go in HAVING, after GROUP BY
+✓ Lesson logged: +5 XP. Try it again?
+```
+
+## Features
+
+| | |
 |---|---|
-| **Concept graph** | Decomposes a big idea into a prerequisite DAG, tracks which concepts you've mastered, and always knows your *frontier*: what you're ready to learn next. |
-| **Tutor mode** | A pedagogy layer injected into the agent: one idea at a time, Socratic hint ladder, Feynman teach-back. |
-| **Explainers** | Kurzgesagt-style animated storyboards rendered to self-contained HTML players (SVG + Web Animations, captions, optional speech). |
-| **Manim** | 3b1b-style math animation via Manim Community + `psi_manim` helpers, locally or in Docker. |
-| **Explorables** | Slider-driven interactives: function plots, 2×2 linear transforms, vector fields, Fourier epicycles, probability sims, exponential growth. |
-| **Retrieval practice** | Recall / predict / explain / MCQ cards scheduled with FSRS-5, reviewable in the terminal or the studio. |
-| **Crew** | A multi-agent lesson studio: architect, intuition, storyteller, visualizer, quizmaster, and critic agents build a full lesson in parallel. |
-| **Studio** | A local web app with a live concept map, artifact gallery, flashcard review, and progress views. |
+| **Learner memory** | Goals, background, preferences, what clicked, recurring struggles, misconceptions. It's recalled every session and stays private on your machine (`~/.psi/memory.json`). `/remember`, `/memory`, `/forget`. |
+| **20-hour skill plans** | `/skill <what>` sets a concrete target, deconstructs it into subskills (the vital few first), picks 3–5 resources, lists practice barriers and their fixes, and tracks hours toward 20. |
+| **Interactive practice** | `/practice`, `/challenge`, `/boss`, `/hint`. Quickfire, predict, debug, apply, explain, build, and boss challenges, graded instantly when there's an exact answer and by rubric otherwise. |
+| **Game layer** | XP for every attempt (failing included), levels, daily streaks, badges (`first-fail`, `comeback`, `no-hints`, `hour-20`…). |
+| **Build quests** | `/quest` gives you a small real project with 3–5 milestones for the active skill. |
+| **Recaps** | `/recap` writes what you did, what was hard, and what to do next. The next session starts from it. |
+| **Terminal drills** | `psi practice <skill>` drills auto-gradable challenges with no model at all. |
+| **Optional extras** | Concept maps, spaced flashcards (FSRS-5), a crew of role agents, and 3b1b/Kurzgesagt-style visuals (manim, animated explainers, slider explorables) for when a picture really helps. |
 
-## Install
+## Quick start
 
-Requires Node ≥ 22.18. psi has no build step and zero runtime dependencies.
+Requires Node ≥ 22.18. No build step, zero runtime dependencies.
 
 ```bash
-# as a pi package
-pi install git:github.com/argenestel/psiharness
-
-# or clone and use the psi CLI (wraps pi or omp)
 git clone https://github.com/argenestel/psiharness && cd psiharness
 node cli/src/psi.ts doctor
-node cli/src/psi.ts learn "entropy"
-PSI_HOST=omp node cli/src/psi.ts learn "backpropagation"   # use oh-my-pi instead of pi
+
+# try a ready-made skill pack without any model
+node cli/src/psi.ts import-skill examples/skills/mental-math
+node cli/src/psi.ts practice mental-math
+
+# the full agent (pi by default; PSI_HOST=omp for oh-my-pi)
+node cli/src/psi.ts learn
 ```
 
-### Docker
+Or install it as a pi package: `pi install git:github.com/argenestel/psiharness`.
+
+### Commands
+
+**Inside the agent**
+
+| Command | |
+|---|---|
+| `/skill <what to learn>` | 20-hour deconstruction: target, subskills, resources, barriers |
+| `/practice [focus] [minutes]` | A timed practice block, one challenge at a time |
+| `/challenge [kind]` · `/boss` · `/quest` | A single challenge, a mixed boss fight, or a build quest |
+| `/hint` | The next rung of the hint ladder |
+| `/remember <fact>` · `/memory` · `/forget <id>` | Manage what psi knows about you |
+| `/recap` · `/hours` · `/streak` | Wrap up, and see progress |
+| `/learn` `/map` `/lesson` `/quiz` `/review` | Concept maps and spaced flashcards |
+| `/visualize` `/explore` `/crew` `/studio` | Optional visuals and the multi-agent lesson crew |
+
+**From the shell**
+
+`psi skills`, `psi practice <skill>`, `psi hours`, `psi progress`, `psi memory`, `psi import-skill <dir>`, `psi learn`,
+`psi review`, `psi doctor`. Run `psi --help` for everything.
+
+## Skill packs
+
+`examples/skills/` has ready-to-practice packs: **sql-queries**, **regex**, **mental-math**, **git-fluency**, and
+**spanish-cafe-a1**. Each has a 20-hour plan and auto-graded challenges.
+
+`examples/topics/` has concept packs (Fourier transform, linear transformations, entropy, backpropagation,
+exponential growth) for the optional concept-map and visual tutor.
+
+## Docker
 
 ```bash
-docker compose -f docker/compose.yml run --rm psi          # tutor in a container
-docker compose -f docker/compose.yml up studio             # studio on http://localhost:4173
+docker compose -f docker/compose.yml run --rm psi
 ```
 
-See [docker/README.md](docker/README.md) for images (`psi`, `psi-manim`, `psi-full`) and auth options.
+Images: `psi` (agent), `psi-manim` and `psi-full` (with the optional manim renderer). See [docker/README.md](docker/README.md).
 
-## Inside a session
+## Docs
 
-| Command | Behavior |
-|---|---|
-| `/learn <big idea>` | Required topic text; selects the topic, enables tutoring, diagnoses knowledge, then builds the graph and plan |
-| `/map` | Show the active topic's graph and frontier; arguments are ignored |
-| `/lesson [concept]` | Exact concept id or case-insensitive full title; defaults to the first frontier concept |
-| `/visualize [focus]` | Make an animated storyboard; defaults to the current lesson, then the next frontier concept |
-| `/explore [focus]` | Make a slider-driven explorable; same focus default as `/visualize` |
-| `/crew [concept]` | Build a full lesson; resolve a title to a concept id; defaults to the current lesson, then the next frontier concept |
-| `/quiz [focus]` | Ask retrieval questions one at a time; same focus default as `/visualize` |
-| `/review [focus]` | Drill due cards for the active topic; optional text is forwarded as context, not a queue filter |
-| `/studio` | Start or reuse the local studio and print its URL; arguments are ignored |
-| `/progress` | Show active-topic mastery/review progress, or a global summary with no active topic; arguments are ignored |
-| `/tutor on\|off\|socratic\|explain` | Required mode, case-insensitive |
-
-Except for `/learn`, `/tutor`, `/studio`, and `/progress`, commands require an active topic selected with `/learn`.
-`/map` and `/lesson` also require an existing graph.
-
-## Sample topics
-
-`examples/topics/` ships five ready-made packs (Fourier transform, linear transformations, entropy, backpropagation,
-exponential growth). Import one with `psi import examples/topics/fourier-transform`.
-
-## Layout
-
-See [AGENTS.md](AGENTS.md) for the module map and contracts, and [docs/](docs/) for architecture.
+[Getting started](docs/getting-started.md) · [Architecture](docs/architecture.md) ·
+[Tools and commands](docs/tools-and-commands.md) · [Learning science](docs/learning-science.md) ·
+[oh-my-pi compatibility](docs/omp-compat.md) · [Contributing](CONTRIBUTING.md)
 
 ## License
 

@@ -1,0 +1,342 @@
+[
+	{
+		"id": "ch-character-classes-1",
+		"skill": "regex",
+		"subskillId": "character-classes",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Find one ASCII digit anywhere in a string. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"7\", \"a3b\"].\nMust not match: [\"abc\", \"\"].",
+		"hints": [
+			"Describe the allowed range.",
+			"A range goes inside square brackets."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "[0-9]",
+		"acceptable": [
+			"\\d"
+		]
+	},
+	{
+		"id": "ch-character-classes-2",
+		"skill": "regex",
+		"subskillId": "character-classes",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Find one lowercase ASCII vowel anywhere. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"cat\", \"eel\"].\nMust not match: [\"sky\", \"XYZ\"].",
+		"hints": [
+			"A class chooses one character.",
+			"Put the five lowercase vowels in brackets."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "[aeiou]"
+	},
+	{
+		"id": "ch-character-classes-3",
+		"skill": "regex",
+		"subskillId": "character-classes",
+		"kind": "predict",
+		"level": 3,
+		"prompt": "Write a class that finds one character other than an ASCII digit (including spaces). Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"a\", \"9!\", \" \"].\nMust not match: [\"123\", \"\"].",
+		"hints": [
+			"Negate the allowed digit set.",
+			"Place ^ first inside the brackets."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "[^0-9]",
+		"acceptable": [
+			"\\D"
+		]
+	},
+	{
+		"id": "ch-character-classes-4",
+		"skill": "regex",
+		"subskillId": "character-classes",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Broken pattern [A-z] also admits punctuation. Correct it to find exactly one ASCII letter, upper or lower case. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"Q\", \"q\"].\nMust not match: [\"_\", \"[\", \"123\"].",
+		"hints": [
+			"ASCII has punctuation between Z and a.",
+			"Use separate uppercase and lowercase ranges."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "[A-Za-z]",
+		"acceptable": [
+			"[a-zA-Z]"
+		]
+	},
+	{
+		"id": "ch-anchors-boundaries-1",
+		"skill": "regex",
+		"subskillId": "anchors-boundaries",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Match only the entire literal cat. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"cat\"].\nMust not match: [\"bobcat\", \"cats\", \"\", \"cat dog\"].",
+		"hints": [
+			"Both ends need constraints.",
+			"Put ^ before cat and $ after it."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^cat$"
+	},
+	{
+		"id": "ch-anchors-boundaries-2",
+		"skill": "regex",
+		"subskillId": "anchors-boundaries",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Find the standalone word cat; punctuation may surround it. Samples contain ASCII text only. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"cat!\", \"a cat naps\"].\nMust not match: [\"scatter\", \"cats\", \"bobcat\"].",
+		"hints": [
+			"Use word edges rather than string edges.",
+			"Put a word boundary on each side of cat."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "\\bcat\\b"
+	},
+	{
+		"id": "ch-anchors-boundaries-3",
+		"skill": "regex",
+		"subskillId": "anchors-boundaries",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Broken pattern ^OK$ misses an OK line within a multi-line string. Keep the pattern and choose the stated m flag to match a whole OK line. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: m.\nMust match: [\"OK\", \"NO\\nOK\\nNO\"].\nMust not match: [\"NOTOK\", \"OKAY\", \"NO\\nOKAY\"].",
+		"hints": [
+			"Anchors can apply to individual lines.",
+			"With m, ^ and $ delimit each line."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^OK$"
+	},
+	{
+		"id": "ch-anchors-boundaries-4",
+		"skill": "regex",
+		"subskillId": "anchors-boundaries",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Match a complete code consisting of one uppercase ASCII letter followed by exactly two ASCII digits. Inputs have no line terminators. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"A12\", \"Z00\"].\nMust not match: [\"a12\", \"AA12\", \"A123\", \"xA12\", \"\"].",
+		"hints": [
+			"Constrain both length and position.",
+			"Anchor a letter class followed by two digits."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^[A-Z][0-9]{2}$",
+		"acceptable": [
+			"^[A-Z]\\d{2}$"
+		]
+	},
+	{
+		"id": "ch-quantifiers-1",
+		"skill": "regex",
+		"subskillId": "quantifiers",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Match a whole string of exactly three ASCII digits. Inputs have no line terminators. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"123\", \"007\"].\nMust not match: [\"12\", \"1234\", \"x123\"].",
+		"hints": [
+			"Use an exact repetition count.",
+			"Write {3} after the digit class and anchor it."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^[0-9]{3}$",
+		"acceptable": [
+			"^\\d{3}$"
+		]
+	},
+	{
+		"id": "ch-quantifiers-2",
+		"skill": "regex",
+		"subskillId": "quantifiers",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Match a complete lowercase ASCII username of 2 through 4 letters. Inputs have no line terminators. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"ab\", \"cat\", \"four\"].\nMust not match: [\"a\", \"abcde\", \"Ab\", \"\"].",
+		"hints": [
+			"Both bounds are inclusive.",
+			"Use {2,4} after the lowercase class."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^[a-z]{2,4}$"
+	},
+	{
+		"id": "ch-quantifiers-3",
+		"skill": "regex",
+		"subskillId": "quantifiers",
+		"kind": "predict",
+		"level": 3,
+		"prompt": "JavaScript flags: none. For sample \"<b>one</b><b>two</b>\", what exact substring does /<b>.*<\\/b>/.exec(sample)[0] return?",
+		"hints": [
+			"The star is greedy by default.",
+			"It extends to the final closing b tag."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "<b>one</b><b>two</b>"
+	},
+	{
+		"id": "ch-quantifiers-4",
+		"skill": "regex",
+		"subskillId": "quantifiers",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Broken pattern <b>.*</b> consumes both tags in \"<b>one</b><b>two</b>\". Make the smallest lazy-quantifier correction so exec returns only \"<b>one</b>\". Samples contain no newlines. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"<b>one</b><b>two</b>\", \"<b></b>\"].\nMust not match: [\"<i>one</i>\", \"plain\"].",
+		"hints": [
+			"Stop as soon as a closing tag can match.",
+			"Add ? immediately after *."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "<b>.*?</b>"
+	},
+	{
+		"id": "ch-groups-captures-1",
+		"skill": "regex",
+		"subskillId": "groups-captures",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Match a whole date-shaped string YYYY-MM-DD with year, month, day in captures 1, 2, 3. Validate shape only, not calendar ranges. Inputs have no line terminators. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"2026-10-30\", \"1999-01-02\"].\nMust not match: [\"26-10-30\", \"2026/10/30\", \"2026-1-02\"].",
+		"hints": [
+			"Capture each numeric component separately.",
+			"Put parentheses around each fixed-width digit repeat."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^([0-9]{4})-([0-9]{2})-([0-9]{2})$",
+		"acceptable": [
+			"^(\\d{4})-(\\d{2})-(\\d{2})$"
+		]
+	},
+	{
+		"id": "ch-groups-captures-2",
+		"skill": "regex",
+		"subskillId": "groups-captures",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Match one or more repetitions of ha as a whole string, with NO capturing groups. Inputs have no line terminators. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"ha\", \"hahaha\"].\nMust not match: [\"\", \"h\", \"haha!\", \"aha\"].",
+		"hints": [
+			"Group the two-letter unit before repeating it.",
+			"Use (?:ha) to group without capturing."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^(?:ha)+$"
+	},
+	{
+		"id": "ch-alternation-1",
+		"skill": "regex",
+		"subskillId": "alternation",
+		"kind": "quickfire",
+		"level": 2,
+		"prompt": "Match exactly cat or dog as a whole string. Use a non-capturing group. Inputs have no line terminators. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"cat\", \"dog\"].\nMust not match: [\"cats\", \"hotdog\", \"catnap\", \"\"].",
+		"hints": [
+			"Both alternatives need the same anchors.",
+			"Group cat|dog between ^ and $."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^(?:cat|dog)$"
+	},
+	{
+		"id": "ch-alternation-2",
+		"skill": "regex",
+		"subskillId": "alternation",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Fix ^red|blue$ so only the complete word red or blue matches, with a non-capturing group. Inputs have no line terminators. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"red\", \"blue\"].\nMust not match: [\"redwood\", \"darkblue\", \"redblue\"].",
+		"hints": [
+			"The anchors currently bind to separate alternatives.",
+			"Wrap red|blue in (?:...) before anchoring."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^(?:red|blue)$"
+	},
+	{
+		"id": "ch-lookarounds-1",
+		"skill": "regex",
+		"subskillId": "lookarounds",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Find the digit sequence immediately followed by the literal \" USD\" without consuming the space or currency. Samples contain ASCII digits. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"pay 12 USD\", \"3 USD\"].\nMust not match: [\"12 EUR\", \"USD 12\"].",
+		"hints": [
+			"Assert the suffix without adding it to the match.",
+			"Place (?= USD) after a repeated digit class."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "[0-9]+(?= USD)",
+		"acceptable": [
+			"\\d+(?= USD)"
+		]
+	},
+	{
+		"id": "ch-lookarounds-2",
+		"skill": "regex",
+		"subskillId": "lookarounds",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Find a digit sequence immediately preceded by $ without including $ in the match. Use fixed-width lookbehind; JavaScript engines must support lookbehind. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"pay $25\", \"$7\"].\nMust not match: [\"25 EUR\", \"USD25\", \"25$\"].",
+		"hints": [
+			"The context is before the desired digits.",
+			"Use (?<=\\$) before the digit repeat."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "(?<=\\$)[0-9]+",
+		"acceptable": [
+			"(?<=\\$)\\d+"
+		]
+	},
+	{
+		"id": "ch-lookarounds-3",
+		"skill": "regex",
+		"subskillId": "lookarounds",
+		"kind": "debug",
+		"level": 5,
+		"prompt": "Repair ^(?!admin)[a-z]+$ to reject only the exact username admin while accepting administrator. Inputs are single-line lowercase ASCII names. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"ana\", \"administrator\"].\nMust not match: [\"admin\", \"\", \"Admin\"].",
+		"hints": [
+			"The negative assertion must test a whole username.",
+			"Anchor admin to the end inside the lookahead."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^(?!admin$)[a-z]+$"
+	},
+	{
+		"id": "ch-log-parsing-1",
+		"skill": "regex",
+		"subskillId": "log-parsing",
+		"kind": "build",
+		"level": 3,
+		"prompt": "BUILD a log extractor in JavaScript. Sample: \"2026-10-30T09:15:00Z INFO ip=192.0.2.7 user=ana code=200\". Negative sample: \"yesterday NOTICE ip=oops\". Extract timestamp, level (INFO|WARN|ERROR), and an IP-shaped dotted token using captures, then all key=value pairs using a global regex. Flags: none for the anchored header matcher; g for pair extraction. Do not claim to validate octet ranges. Show captures and the three key/value pairs.",
+		"hints": [
+			"Separate header validation from repeated field extraction.",
+			"Capture the ISO-shaped timestamp and level; use four digit groups for the IP shape and matchAll for pairs."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Rejects the negative header and extracts 2026-10-30T09:15:00Z, INFO, 192.0.2.7 from the positive line.",
+			"Uses capturing groups and a global pair pattern, reporting ip=192.0.2.7, user=ana, code=200.",
+			"Distinguishes IP shape validation from numeric octet validation and explains flags."
+		]
+	},
+	{
+		"id": "ch-log-parsing-2",
+		"skill": "regex",
+		"subskillId": "log-parsing",
+		"kind": "explain",
+		"level": 4,
+		"prompt": "JavaScript flags: g. Sample: \"user=ana code=200\". Pattern: /([a-z]+)=([^ ]+)/g. Explain why repeatedly calling test on the same RegExp object can alternate results, and how you would reliably collect both matches and their captures. Negative sample: \"user ana\" contains no key=value match.",
+		"hints": [
+			"A global regex has mutable matching state.",
+			"Describe lastIndex and use matchAll with a fresh regex."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Names lastIndex and explains that successful global calls advance it; a failed test resets it.",
+			"Uses matchAll or a correctly controlled exec loop to collect user/ana and code/200.",
+			"Notes the negative sample yields no matches."
+		]
+	},
+	{
+		"id": "ch-log-parsing-3",
+		"skill": "regex",
+		"subskillId": "log-parsing",
+		"kind": "boss",
+		"level": 5,
+		"prompt": "Match the whole log line and capture (1) ISO-shaped timestamp, (2) INFO/WARN/ERROR, (3) an IPv4-shaped token after ip=. Format is exactly \"timestamp LEVEL ip=address\". Check digit widths only, not calendar or octet ranges. Inputs have no line terminators. Return the raw pattern only, without slash delimiters. JavaScript RegExp flags: none.\nMust match: [\"2026-10-30T09:15:00Z INFO ip=192.0.2.7\", \"2026-01-01T00:00:00Z ERROR ip=10.0.0.1\"].\nMust not match: [\"yesterday INFO ip=192.0.2.7\", \"2026-10-30T09:15:00Z DEBUG ip=192.0.2.7\", \"2026-10-30T09:15:00Z INFO ip=10.0.0\"].",
+		"hints": [
+			"Capture the three fields and anchor the line.",
+			"Use a non-capturing dotted tail repeated three times inside capture 3."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z) (INFO|WARN|ERROR) ip=([0-9]{1,3}(?:\\.[0-9]{1,3}){3})$"
+	}
+]

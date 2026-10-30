@@ -1,0 +1,410 @@
+[
+	{
+		"id": "ch-select-filter-1",
+		"skill": "sql-queries",
+		"subskillId": "select-filter",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn only name and city from every customer. Keep that column order.",
+		"hints": [
+			"Choose the projection first.",
+			"Place name and city after SELECT, then name the table."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT name, city FROM customers",
+		"acceptable": [
+			"SELECT name, city FROM customers;",
+			"select name, city from customers",
+			"select name, city from customers;",
+			"SELECT name,city FROM customers"
+		]
+	},
+	{
+		"id": "ch-select-filter-2",
+		"skill": "sql-queries",
+		"subskillId": "select-filter",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn product_id and name for products with unit_price at least 10 and category exactly 'tea'.",
+		"hints": [
+			"Both conditions must hold.",
+			"Use >= for the inclusive price boundary and AND for the category."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT product_id, name FROM products WHERE unit_price >= 10 AND category = 'tea'",
+		"acceptable": [
+			"SELECT product_id, name FROM products WHERE unit_price >= 10 AND category = 'tea';",
+			"select product_id, name from products where unit_price >= 10 and category = 'tea'",
+			"select product_id, name from products where unit_price >= 10 and category = 'tea';",
+			"SELECT product_id,name FROM products WHERE unit_price >= 10 AND category='tea'"
+		]
+	},
+	{
+		"id": "ch-select-filter-3",
+		"skill": "sql-queries",
+		"subskillId": "select-filter",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nFix this query to return order_id for paid orders placed on or after 2026-01-01: SELECT order_id FROM orders WHERE status = paid AND order_date > '2026-01-01'",
+		"hints": [
+			"Check text literals and the date boundary.",
+			"Quote paid and replace > with >=."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT order_id FROM orders WHERE status = 'paid' AND order_date >= '2026-01-01'",
+		"acceptable": [
+			"SELECT order_id FROM orders WHERE status = 'paid' AND order_date >= '2026-01-01';",
+			"select order_id from orders where status = 'paid' and order_date >= '2026-01-01'",
+			"select order_id from orders where status = 'paid' and order_date >= '2026-01-01';",
+			"SELECT order_id FROM orders WHERE status='paid' AND order_date >= '2026-01-01'"
+		]
+	},
+	{
+		"id": "ch-select-filter-4",
+		"skill": "sql-queries",
+		"subskillId": "select-filter",
+		"kind": "predict",
+		"level": 4,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nFixture customers: (1,'Ana','Lima','2026-01-01'), (2,'Ben','Quito','2026-01-02'), (3,'Cal','Lima','2026-01-03'). What single number does SELECT COUNT(*) FROM customers WHERE city = 'Lima' AND customer_id > 1 return?",
+		"hints": [
+			"Apply each predicate to all three rows.",
+			"Only Cal passes both predicates."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "1",
+		"tolerance": 0
+	},
+	{
+		"id": "ch-sort-limit-1",
+		"skill": "sql-queries",
+		"subskillId": "sort-limit",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn product_id and unit_price for the three most expensive products. Break price ties by product_id ascending.",
+		"hints": [
+			"Sort before limiting.",
+			"Use DESC for price and ASC for the tie-breaker."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT product_id, unit_price FROM products ORDER BY unit_price DESC, product_id ASC LIMIT 3",
+		"acceptable": [
+			"SELECT product_id, unit_price FROM products ORDER BY unit_price DESC, product_id ASC LIMIT 3;",
+			"select product_id, unit_price from products order by unit_price desc, product_id asc limit 3",
+			"select product_id, unit_price from products order by unit_price desc, product_id asc limit 3;",
+			"SELECT product_id,unit_price FROM products ORDER BY unit_price DESC,product_id ASC LIMIT 3"
+		]
+	},
+	{
+		"id": "ch-sort-limit-2",
+		"skill": "sql-queries",
+		"subskillId": "sort-limit",
+		"kind": "debug",
+		"level": 4,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nCorrect the clause order and make ties deterministic: SELECT order_id FROM orders LIMIT 2 ORDER BY order_date. Return earliest orders, breaking ties by order_id ascending.",
+		"hints": [
+			"LIMIT is last.",
+			"Sort by order_date ASC, order_id ASC, then limit to two."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT order_id FROM orders ORDER BY order_date ASC, order_id ASC LIMIT 2",
+		"acceptable": [
+			"SELECT order_id FROM orders ORDER BY order_date ASC, order_id ASC LIMIT 2;",
+			"select order_id from orders order by order_date asc, order_id asc limit 2",
+			"select order_id from orders order by order_date asc, order_id asc limit 2;",
+			"SELECT order_id FROM orders ORDER BY order_date ASC,order_id ASC LIMIT 2"
+		]
+	},
+	{
+		"id": "ch-join-tables-1",
+		"skill": "sql-queries",
+		"subskillId": "join-tables",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn o.order_id and c.name using orders AS o INNER JOIN customers AS c on their customer keys.",
+		"hints": [
+			"Follow orders.customer_id.",
+			"Match o.customer_id to c.customer_id in ON."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT o.order_id, c.name FROM orders AS o INNER JOIN customers AS c ON o.customer_id = c.customer_id",
+		"acceptable": [
+			"SELECT o.order_id, c.name FROM orders AS o INNER JOIN customers AS c ON o.customer_id = c.customer_id;",
+			"select o.order_id, c.name from orders as o inner join customers as c on o.customer_id = c.customer_id",
+			"select o.order_id, c.name from orders as o inner join customers as c on o.customer_id = c.customer_id;",
+			"SELECT o.order_id,c.name FROM orders AS o INNER JOIN customers AS c ON o.customer_id=c.customer_id"
+		]
+	},
+	{
+		"id": "ch-join-tables-2",
+		"skill": "sql-queries",
+		"subskillId": "join-tables",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn oi.order_item_id, p.name and oi.quantity using order_items AS oi INNER JOIN products AS p on product_id.",
+		"hints": [
+			"Find the item-to-product foreign key.",
+			"Join oi.product_id to p.product_id."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT oi.order_item_id, p.name, oi.quantity FROM order_items AS oi INNER JOIN products AS p ON oi.product_id = p.product_id",
+		"acceptable": [
+			"SELECT oi.order_item_id, p.name, oi.quantity FROM order_items AS oi INNER JOIN products AS p ON oi.product_id = p.product_id;",
+			"select oi.order_item_id, p.name, oi.quantity from order_items as oi inner join products as p on oi.product_id = p.product_id",
+			"select oi.order_item_id, p.name, oi.quantity from order_items as oi inner join products as p on oi.product_id = p.product_id;",
+			"SELECT oi.order_item_id,p.name,oi.quantity FROM order_items AS oi INNER JOIN products AS p ON oi.product_id=p.product_id"
+		]
+	},
+	{
+		"id": "ch-join-tables-3",
+		"skill": "sql-queries",
+		"subskillId": "join-tables",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nThis loses customers without orders: SELECT c.customer_id, o.order_id FROM customers AS c INNER JOIN orders AS o ON o.customer_id = c.customer_id. Correct it to retain every customer, including those without orders.",
+		"hints": [
+			"Which table must be preserved?",
+			"Use LEFT JOIN with customers on the left."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT c.customer_id, o.order_id FROM customers AS c LEFT JOIN orders AS o ON o.customer_id = c.customer_id",
+		"acceptable": [
+			"SELECT c.customer_id, o.order_id FROM customers AS c LEFT JOIN orders AS o ON o.customer_id = c.customer_id;",
+			"select c.customer_id, o.order_id from customers as c left join orders as o on o.customer_id = c.customer_id",
+			"select c.customer_id, o.order_id from customers as c left join orders as o on o.customer_id = c.customer_id;",
+			"SELECT c.customer_id,o.order_id FROM customers AS c LEFT JOIN orders AS o ON o.customer_id=c.customer_id"
+		]
+	},
+	{
+		"id": "ch-join-tables-4",
+		"skill": "sql-queries",
+		"subskillId": "join-tables",
+		"kind": "explain",
+		"level": 4,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nWhy does a LEFT JOIN from customers to orders followed by WHERE o.status = 'paid' exclude customers without orders? Explain how to retain every customer while joining only paid orders.",
+		"hints": [
+			"Think about the NULL-extended row.",
+			"Move the paid-status condition into ON."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Explains that unmatched rows have NULL order fields and do not pass the WHERE predicate.",
+			"Places o.status = 'paid' in the ON condition of a LEFT JOIN.",
+			"Distinguishes restricting matches from filtering the final result."
+		]
+	},
+	{
+		"id": "ch-group-having-1",
+		"skill": "sql-queries",
+		"subskillId": "group-having",
+		"kind": "quickfire",
+		"level": 1,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn customer_id and COUNT(*) AS order_count from orders, grouped by customer_id.",
+		"hints": [
+			"One row is needed per customer key.",
+			"Group by customer_id and count rows."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id",
+		"acceptable": [
+			"SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id;",
+			"select customer_id, count(*) as order_count from orders group by customer_id",
+			"select customer_id, count(*) as order_count from orders group by customer_id;",
+			"SELECT customer_id,COUNT(*) AS order_count FROM orders GROUP BY customer_id"
+		]
+	},
+	{
+		"id": "ch-group-having-2",
+		"skill": "sql-queries",
+		"subskillId": "group-having",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn product_id and SUM(quantity) AS units from order_items, grouped by product_id, only for totals at least 5.",
+		"hints": [
+			"Filter group totals after grouping.",
+			"Use HAVING SUM(quantity) >= 5."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT product_id, SUM(quantity) AS units FROM order_items GROUP BY product_id HAVING SUM(quantity) >= 5",
+		"acceptable": [
+			"SELECT product_id, SUM(quantity) AS units FROM order_items GROUP BY product_id HAVING SUM(quantity) >= 5;",
+			"select product_id, sum(quantity) as units from order_items group by product_id having sum(quantity) >= 5",
+			"select product_id, sum(quantity) as units from order_items group by product_id having sum(quantity) >= 5;",
+			"SELECT product_id,SUM(quantity) AS units FROM order_items GROUP BY product_id HAVING SUM(quantity) >= 5"
+		]
+	},
+	{
+		"id": "ch-group-having-3",
+		"skill": "sql-queries",
+		"subskillId": "group-having",
+		"kind": "debug",
+		"level": 3,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nCorrect this invalid aggregate filter: SELECT customer_id, COUNT(*) AS order_count FROM orders WHERE COUNT(*) >= 2 GROUP BY customer_id.",
+		"hints": [
+			"WHERE runs before groups exist.",
+			"Move COUNT(*) >= 2 into HAVING after GROUP BY."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id HAVING COUNT(*) >= 2",
+		"acceptable": [
+			"SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id HAVING COUNT(*) >= 2;",
+			"select customer_id, count(*) as order_count from orders group by customer_id having count(*) >= 2",
+			"select customer_id, count(*) as order_count from orders group by customer_id having count(*) >= 2;",
+			"SELECT customer_id,COUNT(*) AS order_count FROM orders GROUP BY customer_id HAVING COUNT(*) >= 2"
+		]
+	},
+	{
+		"id": "ch-group-having-4",
+		"skill": "sql-queries",
+		"subskillId": "group-having",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn customer_id and COUNT(*) AS paid_count for paid orders only; keep customers with at least 2 paid orders, ordered by paid_count descending then customer_id ascending.",
+		"hints": [
+			"Filter individual orders before grouping.",
+			"Use WHERE for status, HAVING for the count, then ORDER BY."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT customer_id, COUNT(*) AS paid_count FROM orders WHERE status = 'paid' GROUP BY customer_id HAVING COUNT(*) >= 2 ORDER BY paid_count DESC, customer_id ASC",
+		"acceptable": [
+			"SELECT customer_id, COUNT(*) AS paid_count FROM orders WHERE status = 'paid' GROUP BY customer_id HAVING COUNT(*) >= 2 ORDER BY paid_count DESC, customer_id ASC;",
+			"select customer_id, count(*) as paid_count from orders where status = 'paid' group by customer_id having count(*) >= 2 order by paid_count desc, customer_id asc",
+			"select customer_id, count(*) as paid_count from orders where status = 'paid' group by customer_id having count(*) >= 2 order by paid_count desc, customer_id asc;",
+			"SELECT customer_id,COUNT(*) AS paid_count FROM orders WHERE status='paid' GROUP BY customer_id HAVING COUNT(*) >= 2 ORDER BY paid_count DESC,customer_id ASC"
+		]
+	},
+	{
+		"id": "ch-subquery-tests-1",
+		"skill": "sql-queries",
+		"subskillId": "subquery-tests",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn product_id for products priced above the overall average unit_price using a scalar subquery.",
+		"hints": [
+			"The inner query must return one value.",
+			"Compare unit_price with SELECT AVG(unit_price) FROM products."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT product_id FROM products WHERE unit_price > (SELECT AVG(unit_price) FROM products)",
+		"acceptable": [
+			"SELECT product_id FROM products WHERE unit_price > (SELECT AVG(unit_price) FROM products);",
+			"select product_id from products where unit_price > (select avg(unit_price) from products)",
+			"select product_id from products where unit_price > (select avg(unit_price) from products);",
+			"SELECT product_id FROM products WHERE unit_price > (SELECT AVG(unit_price) FROM products)"
+		]
+	},
+	{
+		"id": "ch-subquery-tests-2",
+		"skill": "sql-queries",
+		"subskillId": "subquery-tests",
+		"kind": "apply",
+		"level": 3,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn customer_id from customers whose id occurs among the customer_id values of paid orders, using IN. No sorting required.",
+		"hints": [
+			"Put the paid-order customer ids inside the subquery.",
+			"Filter the outer customer_id with IN (SELECT customer_id FROM orders ...)."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT customer_id FROM customers WHERE customer_id IN (SELECT customer_id FROM orders WHERE status = 'paid')",
+		"acceptable": [
+			"SELECT customer_id FROM customers WHERE customer_id IN (SELECT customer_id FROM orders WHERE status = 'paid');",
+			"select customer_id from customers where customer_id in (select customer_id from orders where status = 'paid')",
+			"select customer_id from customers where customer_id in (select customer_id from orders where status = 'paid');",
+			"SELECT customer_id FROM customers WHERE customer_id IN (SELECT customer_id FROM orders WHERE status='paid')"
+		]
+	},
+	{
+		"id": "ch-subquery-tests-3",
+		"skill": "sql-queries",
+		"subskillId": "subquery-tests",
+		"kind": "apply",
+		"level": 4,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn c.customer_id from customers AS c if a paid order exists. Use a correlated EXISTS subquery over orders AS o, SELECT 1 inside it, and test customer_id equality before status.",
+		"hints": [
+			"The inner test depends on the current customer.",
+			"Correlate o.customer_id = c.customer_id and check paid status inside EXISTS."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT c.customer_id FROM customers AS c WHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.customer_id = c.customer_id AND o.status = 'paid')",
+		"acceptable": [
+			"SELECT c.customer_id FROM customers AS c WHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.customer_id = c.customer_id AND o.status = 'paid');",
+			"select c.customer_id from customers as c where exists (select 1 from orders as o where o.customer_id = c.customer_id and o.status = 'paid')",
+			"select c.customer_id from customers as c where exists (select 1 from orders as o where o.customer_id = c.customer_id and o.status = 'paid');",
+			"SELECT c.customer_id FROM customers AS c WHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.customer_id=c.customer_id AND o.status='paid')"
+		]
+	},
+	{
+		"id": "ch-window-ranking-1",
+		"skill": "sql-queries",
+		"subskillId": "window-ranking",
+		"kind": "apply",
+		"level": 2,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn order_id, customer_id, and ROW_NUMBER() AS seq partitioned by customer_id and ordered by order_date then order_id, both ascending.",
+		"hints": [
+			"Keep each detail row.",
+			"Put PARTITION BY and both sort keys inside OVER."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT order_id, customer_id, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date ASC, order_id ASC) AS seq FROM orders",
+		"acceptable": [
+			"SELECT order_id, customer_id, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date ASC, order_id ASC) AS seq FROM orders;",
+			"select order_id, customer_id, row_number() over (partition by customer_id order by order_date asc, order_id asc) as seq from orders",
+			"select order_id, customer_id, row_number() over (partition by customer_id order by order_date asc, order_id asc) as seq from orders;",
+			"SELECT order_id,customer_id,ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date ASC,order_id ASC) AS seq FROM orders"
+		]
+	},
+	{
+		"id": "ch-window-ranking-2",
+		"skill": "sql-queries",
+		"subskillId": "window-ranking",
+		"kind": "predict",
+		"level": 4,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nFixture products: (1,'A','tea',10), (2,'B','tea',10), (3,'C','tea',8). SELECT product_id, RANK() OVER (PARTITION BY category ORDER BY unit_price DESC) AS r FROM products ORDER BY product_id. Return only the three r values, comma-separated.",
+		"hints": [
+			"Equal prices share a rank.",
+			"The next rank skips the size of the tied group."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "1,1,3",
+		"acceptable": [
+			"1, 1, 3"
+		]
+	},
+	{
+		"id": "ch-window-totals-1",
+		"skill": "sql-queries",
+		"subskillId": "window-totals",
+		"kind": "build",
+		"level": 3,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nBuild a category price report returning product_id, category, unit_price and SUM(unit_price) OVER (PARTITION BY category) AS category_total, preserving every product row. Include a tiny fixture with two products in one category, and predict the output.",
+		"hints": [
+			"A grouped SUM would collapse rows.",
+			"Use a window SUM without an ORDER BY for the full partition."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"rubric": [
+			"Uses SUM(unit_price) OVER (PARTITION BY category) AS category_total.",
+			"Returns product_id, category and unit_price without GROUP BY.",
+			"Supplies a fixture and correctly repeats the category total on both rows."
+		]
+	},
+	{
+		"id": "ch-window-totals-2",
+		"skill": "sql-queries",
+		"subskillId": "window-totals",
+		"kind": "boss",
+		"level": 5,
+		"prompt": "Schema: customers(customer_id INTEGER PRIMARY KEY, name TEXT, city TEXT, signup_date DATE); products(product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, unit_price NUMERIC); orders(order_id INTEGER PRIMARY KEY, customer_id INTEGER REFERENCES customers, order_date DATE, status TEXT); order_items(order_item_id INTEGER PRIMARY KEY, order_id INTEGER REFERENCES orders, product_id INTEGER REFERENCES products, quantity INTEGER).\n\nReturn order_item_id, order_id, quantity and running_units: the running SUM(quantity) per order_id, ordered by order_item_id ascending with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW. Finally sort by order_id then order_item_id ascending.",
+		"hints": [
+			"Restart accumulation for each order.",
+			"Use PARTITION BY order_id, ordered window SUM, and the explicit ROWS frame."
+		],
+		"createdAt": "2026-10-30T00:00:00Z",
+		"expected": "SELECT order_item_id, order_id, quantity, SUM(quantity) OVER (PARTITION BY order_id ORDER BY order_item_id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_units FROM order_items ORDER BY order_id ASC, order_item_id ASC",
+		"acceptable": [
+			"SELECT order_item_id, order_id, quantity, SUM(quantity) OVER (PARTITION BY order_id ORDER BY order_item_id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_units FROM order_items ORDER BY order_id ASC, order_item_id ASC;",
+			"select order_item_id, order_id, quantity, sum(quantity) over (partition by order_id order by order_item_id asc rows between unbounded preceding and current row) as running_units from order_items order by order_id asc, order_item_id asc",
+			"select order_item_id, order_id, quantity, sum(quantity) over (partition by order_id order by order_item_id asc rows between unbounded preceding and current row) as running_units from order_items order by order_id asc, order_item_id asc;",
+			"SELECT order_item_id,order_id,quantity,SUM(quantity) OVER (PARTITION BY order_id ORDER BY order_item_id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_units FROM order_items ORDER BY order_id ASC,order_item_id ASC"
+		]
+	}
+]
