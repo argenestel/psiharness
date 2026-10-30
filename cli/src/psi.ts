@@ -4,13 +4,19 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "./args.ts";
 import { repoRoot } from "./host.ts";
+import { PRACTICE_COMMANDS } from "./practice-commands.ts";
 
-const HELP = `ψ — learn big ideas with pi or oh-my-pi
+const HELP = `ψ — a practice-first learning agent for pi or oh-my-pi
 
 Usage: psi [command] [options] [-- host arguments]
 
-Commands:
-  learn [big idea...]          Launch the interactive tutor (default command)
+Practice (first 20 hours, no model needed):
+${PRACTICE_COMMANDS.map((c) => c.usage.length < 28
+	? `  ${c.usage.padEnd(28)}${c.summary}`
+	: `  ${c.usage}\n  ${"".padEnd(28)}${c.summary}`).join("\n")}
+
+Tutor:
+  learn [what to learn...]     Launch the interactive tutor (default command)
   ask "<question>"            Ask the tutor once and exit
   topics                      List topics with mastery and due counts
   map <topic> [--mermaid]      Show the concept prerequisite tree
@@ -41,6 +47,9 @@ Environment: PSI_HOME (default ~/.psi), PSI_HOST, PSI_BIN (host binary override)
 /** Dispatch CLI commands and return an exit code without exiting the process. */
 export async function main(argv: string[]): Promise<number> {
 	try {
+		// Practice commands parse their own arguments.
+		const practice = PRACTICE_COMMANDS.find((c) => c.name === argv[0]);
+		if (practice) return await practice.run(argv.slice(1), {});
 		const args = parseArgs(argv);
 		if (args.options.help) {
 			console.log(HELP);
