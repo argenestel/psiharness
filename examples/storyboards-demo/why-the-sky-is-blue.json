@@ -1,0 +1,715 @@
+{
+  "id": "why-the-sky-is-blue",
+  "title": "Why is the sky blue?",
+  "topic": "light-and-scattering",
+  "conceptId": "rayleigh-scattering",
+  "style": "kurzgesagt",
+  "palette": "kurzgesagt",
+  "scenes": [
+    {
+      "id": "hook",
+      "durationSec": 9,
+      "narration": "Every clear day, an ocean of blue hangs above us. But sunlight arrives with a whole rainbow of colors, so where does the blue come from?",
+      "elements": [
+        {
+          "id": "sky",
+          "kind": "rect",
+          "props": {
+            "x": 0,
+            "y": 0,
+            "w": 1600,
+            "h": 900,
+            "fill": "#235fc0"
+          },
+          "enter": {
+            "type": "fade"
+          }
+        },
+        {
+          "id": "sun",
+          "kind": "circle",
+          "props": {
+            "x": 1260,
+            "y": 200,
+            "r": 100,
+            "fill": "#ffda66"
+          },
+          "enter": {
+            "type": "pop"
+          },
+          "loop": {
+            "type": "pulse",
+            "duration": 4
+          }
+        },
+        {
+          "id": "hill",
+          "kind": "path",
+          "props": {
+            "d": "M 0 770 Q 360 500 800 790 Q 1250 530 1600 760 L 1600 900 L 0 900 Z",
+            "fill": "#22b99b",
+            "stroke": "none"
+          }
+        },
+        {
+          "id": "observer",
+          "kind": "creature",
+          "props": {
+            "x": 800,
+            "y": 680,
+            "size": 140,
+            "color": "#ff9351",
+            "mood": "curious"
+          },
+          "enter": {
+            "type": "pop"
+          },
+          "loop": {
+            "type": "float",
+            "duration": 3
+          }
+        },
+        {
+          "id": "hook-title",
+          "kind": "text",
+          "props": {
+            "x": 800,
+            "y": 130,
+            "text": "Why is the sky blue?",
+            "size": 52,
+            "align": "middle"
+          },
+          "enter": {
+            "type": "typewriter",
+            "duration": 1.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "question",
+      "durationSec": 9,
+      "narration": "Sunlight looks white because it contains many wavelengths. When it reaches Earth, it meets a thin atmosphere full of tiny gas molecules.",
+      "elements": [
+        {
+          "id": "question-title",
+          "kind": "text",
+          "props": {
+            "x": 800,
+            "y": 130,
+            "text": "White light. Tiny molecules.",
+            "size": 52,
+            "align": "middle"
+          },
+          "enter": {
+            "type": "typewriter",
+            "duration": 1.3
+          }
+        },
+        {
+          "id": "sunlight",
+          "kind": "arrow",
+          "props": {
+            "x1": 150,
+            "y1": 400,
+            "x2": 850,
+            "y2": 400,
+            "stroke": "#fff5e6",
+            "width": 16
+          },
+          "enter": {
+            "type": "draw",
+            "duration": 1.4
+          }
+        },
+        {
+          "id": "atmosphere",
+          "kind": "particles",
+          "props": {
+            "x": 800,
+            "y": 220,
+            "w": 620,
+            "h": 430,
+            "count": 75,
+            "color": "#22d4c5",
+            "speed": 0.7
+          },
+          "enter": {
+            "type": "fade",
+            "delay": 0.5
+          }
+        },
+        {
+          "id": "earth",
+          "kind": "circle",
+          "props": {
+            "x": 1180,
+            "y": 1080,
+            "r": 510,
+            "fill": "#326abb"
+          },
+          "enter": {
+            "type": "slide",
+            "from": "bottom"
+          }
+        },
+        {
+          "id": "spectrum",
+          "kind": "group",
+          "props": {
+            "x": 250,
+            "y": 520,
+            "scale": 1,
+            "rotate": -8,
+            "children": [
+              {
+                "id": "red-wave",
+                "kind": "path",
+                "props": {
+                  "d": "M 0 0 Q 80 -65 160 0 T 320 0",
+                  "stroke": "#FC6255",
+                  "width": 9
+                }
+              },
+              {
+                "id": "blue-wave",
+                "kind": "path",
+                "props": {
+                  "d": "M 0 100 Q 30 55 60 100 T 120 100 T 180 100 T 240 100 T 300 100",
+                  "stroke": "#58C4DD",
+                  "width": 9
+                }
+              }
+            ]
+          },
+          "enter": {
+            "type": "fade",
+            "delay": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "build",
+      "durationSec": 9,
+      "narration": "Zoom in on a molecule: its electric charges respond to passing light and reradiate some of it in new directions. This is scattering, and short wavelengths scatter much more strongly.",
+      "elements": [
+        {
+          "id": "build-title",
+          "kind": "text",
+          "props": {
+            "x": 800,
+            "y": 120,
+            "text": "A molecule redirects light",
+            "size": 52,
+            "align": "middle"
+          },
+          "enter": {
+            "type": "typewriter",
+            "duration": 1.3
+          }
+        },
+        {
+          "id": "molecule",
+          "kind": "creature",
+          "props": {
+            "x": 800,
+            "y": 450,
+            "size": 100,
+            "color": "#22d4c5",
+            "mood": "surprised"
+          },
+          "enter": {
+            "type": "grow"
+          },
+          "loop": {
+            "type": "pulse",
+            "duration": 2
+          }
+        },
+        {
+          "id": "incoming",
+          "kind": "vector",
+          "props": {
+            "x": 300,
+            "y": 450,
+            "dx": 360,
+            "dy": 0,
+            "stroke": "#fff5e6",
+            "label": "incoming light"
+          },
+          "enter": {
+            "type": "draw",
+            "duration": 1
+          }
+        },
+        {
+          "id": "scatter-up",
+          "kind": "vector",
+          "props": {
+            "x": 870,
+            "y": 390,
+            "dx": 220,
+            "dy": -170,
+            "stroke": "#58C4DD",
+            "label": "scattered blue"
+          },
+          "enter": {
+            "type": "draw",
+            "delay": 1,
+            "duration": 1
+          }
+        },
+        {
+          "id": "scatter-down",
+          "kind": "arrow",
+          "props": {
+            "x1": 850,
+            "y1": 520,
+            "x2": 1100,
+            "y2": 700,
+            "stroke": "#58C4DD",
+            "width": 7
+          },
+          "enter": {
+            "type": "draw",
+            "delay": 1.4
+          }
+        },
+        {
+          "id": "orbit-dot",
+          "kind": "group",
+          "props": {
+            "x": 800,
+            "y": 450,
+            "children": [
+              {
+                "id": "charge",
+                "kind": "circle",
+                "props": {
+                  "x": 0,
+                  "y": -130,
+                  "r": 16,
+                  "fill": "#ffda66"
+                }
+              }
+            ]
+          },
+          "loop": {
+            "type": "orbit",
+            "duration": 4
+          }
+        }
+      ],
+      "camera": {
+        "zoom": 1.25,
+        "x": 800,
+        "y": 450
+      }
+    },
+    {
+      "id": "reveal",
+      "durationSec": 9,
+      "narration": "Rayleigh scattering grows roughly as one over wavelength to the fourth power. Blue light has a shorter wavelength than red, so it is scattered several times more strongly.",
+      "elements": [
+        {
+          "id": "reveal-title",
+          "kind": "text",
+          "props": {
+            "x": 800,
+            "y": 120,
+            "text": "Shorter waves scatter more",
+            "size": 52,
+            "align": "middle"
+          },
+          "enter": {
+            "type": "typewriter",
+            "duration": 1.3
+          }
+        },
+        {
+          "id": "law",
+          "kind": "equation",
+          "props": {
+            "x": 180,
+            "y": 300,
+            "tex": "I \\propto \\lambda^{-4}",
+            "size": 64
+          }
+        },
+        {
+          "id": "axes",
+          "kind": "path",
+          "props": {
+            "d": "M 650 220 L 650 650 L 1400 650",
+            "stroke": "#a4b5d8",
+            "width": 3
+          },
+          "enter": {
+            "type": "draw"
+          }
+        },
+        {
+          "id": "rayleigh",
+          "kind": "graph",
+          "props": {
+            "x": 670,
+            "y": 240,
+            "w": 680,
+            "h": 390,
+            "fn": "1/Math.pow(x,4)",
+            "domain": [
+              0.4,
+              0.7
+            ],
+            "range": [
+              0,
+              40
+            ],
+            "stroke": "#58C4DD"
+          },
+          "enter": {
+            "type": "draw",
+            "duration": 2,
+            "delay": 0.5
+          }
+        },
+        {
+          "id": "x-label",
+          "kind": "text",
+          "props": {
+            "x": 1000,
+            "y": 715,
+            "text": "wavelength (micrometers)",
+            "size": 28,
+            "align": "middle"
+          }
+        },
+        {
+          "id": "y-label",
+          "kind": "text",
+          "props": {
+            "x": 700,
+            "y": 205,
+            "text": "relative scattering",
+            "size": 28
+          }
+        },
+        {
+          "id": "blue-label",
+          "kind": "text",
+          "props": {
+            "x": 700,
+            "y": 770,
+            "text": "blue: shorter",
+            "fill": "#58C4DD",
+            "size": 32
+          }
+        },
+        {
+          "id": "red-label",
+          "kind": "text",
+          "props": {
+            "x": 1150,
+            "y": 770,
+            "text": "red: longer",
+            "fill": "#FC6255",
+            "size": 32
+          }
+        }
+      ],
+      "camera": {
+        "zoom": 1,
+        "x": 800,
+        "y": 450
+      }
+    },
+    {
+      "id": "violet",
+      "durationSec": 9,
+      "narration": "Violet light scatters even more strongly than blue. But our eyes are less sensitive to violet, and sunlight contains less of it: the mix we perceive is blue.",
+      "elements": [
+        {
+          "id": "violet-title",
+          "kind": "text",
+          "props": {
+            "x": 800,
+            "y": 140,
+            "text": "Then why not violet?",
+            "size": 52,
+            "align": "middle"
+          },
+          "enter": {
+            "type": "typewriter",
+            "duration": 1.3
+          }
+        },
+        {
+          "id": "violet-card",
+          "kind": "rect",
+          "props": {
+            "x": 200,
+            "y": 260,
+            "w": 500,
+            "h": 320,
+            "rx": 36,
+            "fill": "#8163d5"
+          },
+          "enter": {
+            "type": "slide",
+            "from": "left"
+          },
+          "exit": {
+            "type": "fade",
+            "duration": 0.8
+          }
+        },
+        {
+          "id": "blue-card",
+          "kind": "rect",
+          "props": {
+            "x": 880,
+            "y": 260,
+            "w": 500,
+            "h": 320,
+            "rx": 36,
+            "fill": "#3286d6"
+          },
+          "enter": {
+            "type": "slide",
+            "from": "right"
+          }
+        },
+        {
+          "id": "violet-text",
+          "kind": "text",
+          "props": {
+            "x": 450,
+            "y": 420,
+            "text": "More scattering",
+            "size": 40,
+            "align": "middle"
+          }
+        },
+        {
+          "id": "blue-text",
+          "kind": "text",
+          "props": {
+            "x": 1130,
+            "y": 420,
+            "text": "Stronger perception",
+            "size": 40,
+            "align": "middle"
+          }
+        },
+        {
+          "id": "happy-eye",
+          "kind": "creature",
+          "props": {
+            "x": 800,
+            "y": 700,
+            "size": 110,
+            "color": "#ffda66",
+            "mood": "happy"
+          },
+          "enter": {
+            "type": "pop",
+            "delay": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "zoom-out",
+      "durationSec": 9,
+      "narration": "Across the whole sky, molecules send scattered blue light toward us from every direction. Near sunset, sunlight travels farther through the air, leaving more reds and oranges in the direct beam.",
+      "elements": [
+        {
+          "id": "zoom-title",
+          "kind": "text",
+          "props": {
+            "x": 800,
+            "y": 120,
+            "text": "A planet-wide blue glow",
+            "size": 52,
+            "align": "middle"
+          },
+          "enter": {
+            "type": "typewriter",
+            "duration": 1.3
+          }
+        },
+        {
+          "id": "planet",
+          "kind": "circle",
+          "props": {
+            "x": 800,
+            "y": 660,
+            "r": 300,
+            "fill": "#2f689f"
+          },
+          "enter": {
+            "type": "grow"
+          }
+        },
+        {
+          "id": "air-shell",
+          "kind": "circle",
+          "props": {
+            "x": 800,
+            "y": 660,
+            "r": 325,
+            "fill": "none",
+            "stroke": "#58C4DD"
+          },
+          "enter": {
+            "type": "fade"
+          },
+          "loop": {
+            "type": "pulse",
+            "duration": 5
+          }
+        },
+        {
+          "id": "air-dots",
+          "kind": "particles",
+          "props": {
+            "x": 360,
+            "y": 200,
+            "w": 880,
+            "h": 320,
+            "count": 120,
+            "color": "#58C4DD",
+            "speed": 1.3
+          }
+        },
+        {
+          "id": "sunset-ray",
+          "kind": "arrow",
+          "props": {
+            "x1": 180,
+            "y1": 370,
+            "x2": 1390,
+            "y2": 370,
+            "stroke": "#ff9351",
+            "width": 10
+          },
+          "enter": {
+            "type": "draw",
+            "duration": 2
+          }
+        }
+      ],
+      "camera": {
+        "zoom": 0.85,
+        "x": 820,
+        "y": 440
+      },
+      "background": "deep"
+    },
+    {
+      "id": "recap",
+      "durationSec": 9,
+      "narration": "Sunlight brings the colors; tiny molecules scatter the shorter waves more strongly; our eyes turn that scattered mixture into a blue sky. Next time you look up, you are seeing light take a detour.",
+      "elements": [
+        {
+          "id": "recap-title",
+          "kind": "text",
+          "props": {
+            "x": 800,
+            "y": 140,
+            "text": "Blue sky = light taking a detour",
+            "size": 52,
+            "align": "middle"
+          },
+          "enter": {
+            "type": "typewriter",
+            "duration": 1.3
+          }
+        },
+        {
+          "id": "recap-group",
+          "kind": "group",
+          "props": {
+            "x": 250,
+            "y": 320,
+            "scale": 1,
+            "rotate": 0,
+            "children": [
+              {
+                "id": "recap-sun",
+                "kind": "circle",
+                "props": {
+                  "x": 0,
+                  "y": 90,
+                  "r": 75,
+                  "fill": "#ffda66"
+                }
+              },
+              {
+                "id": "recap-arrow",
+                "kind": "arrow",
+                "props": {
+                  "x1": 110,
+                  "y1": 90,
+                  "x2": 450,
+                  "y2": 90,
+                  "stroke": "#fff5e6",
+                  "width": 8
+                }
+              },
+              {
+                "id": "recap-molecule",
+                "kind": "creature",
+                "props": {
+                  "x": 560,
+                  "y": 90,
+                  "size": 85,
+                  "color": "#22d4c5",
+                  "mood": "happy"
+                }
+              },
+              {
+                "id": "recap-blue",
+                "kind": "vector",
+                "props": {
+                  "x": 650,
+                  "y": 120,
+                  "dx": 230,
+                  "dy": 190,
+                  "stroke": "#58C4DD",
+                  "label": "a blue detour"
+                }
+              }
+            ]
+          },
+          "enter": {
+            "type": "pop",
+            "duration": 1
+          }
+        },
+        {
+          "id": "recap-line",
+          "kind": "text",
+          "props": {
+            "x": 800,
+            "y": 780,
+            "text": "Sunlight + molecules + your eyes",
+            "size": 40,
+            "align": "middle"
+          },
+          "enter": {
+            "type": "typewriter",
+            "delay": 1,
+            "duration": 2
+          }
+        }
+      ],
+      "camera": {
+        "zoom": 1,
+        "x": 800,
+        "y": 450
+      }
+    }
+  ]
+}
