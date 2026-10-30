@@ -6,7 +6,7 @@ import type { ExplorableSpec, Storyboard } from "../../../core/src/types.ts";
 
 /** Render storyboard/explorable JSON to HTML, or Python/storyboard JSON through manim. */
 export async function render(args: ParsedArgs): Promise<number> {
-	arity(args, 1, 1, "render [--manim] <file> [-o path] [-q l|m|h] [--docker]");
+	arity(args, 1, 1, "render [--manim] <file> [-o path] [-q l|m|h] [--docker] [--speech] [--autoplay]");
 	const file = resolve(args.positionals[0]);
 	const source = readFileSync(file, "utf8");
 	if (args.options.manim) {
@@ -22,7 +22,7 @@ export async function render(args: ParsedArgs): Promise<number> {
 			code = storyboardToManim(sb);
 		}
 		const result = await renderManim({ code, outDir: resolve(option(args, "o") ?? dirname(file)),
-			quality, runner: args.options.docker ? "docker" : "auto" });
+			quality, runner: args.options.docker ? "docker" : undefined });
 		if (result.outputs.length) console.log(result.outputs.join("\n"));
 		if (!result.ok) throw new Error(result.log || "Manim rendering failed");
 		return 0;
@@ -34,7 +34,9 @@ export async function render(args: ParsedArgs): Promise<number> {
 		const { renderStoryboardHtml, validateStoryboard } = await import("../../../visual/src/storyboard-html.ts");
 		const errors = validateStoryboard(spec as Storyboard);
 		if (errors.length) throw new Error(errors.join("; "));
-		html = renderStoryboardHtml(spec as Storyboard);
+		html = renderStoryboardHtml(spec as Storyboard, {
+			speech: args.options.speech === true, autoplay: args.options.autoplay === true,
+		});
 	} else if ("template" in spec && "sliders" in spec && "params" in spec) {
 		const { renderExplorableHtml, validateExplorable } = await import("../../../visual/src/explorable.ts");
 		const errors = validateExplorable(spec as ExplorableSpec);

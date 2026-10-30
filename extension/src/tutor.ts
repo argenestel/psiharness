@@ -7,6 +7,12 @@ export interface TutorState {
 	currentLesson?: string;
 }
 
+/** Normalize host flag values: CLI parsers deliver `--flag=true` as the string "true". */
+export function flagEnabled(value: unknown): boolean {
+	if (value === true || value === 1) return true;
+	return typeof value === "string" && ["true", "1", "yes", "on"].includes(value.trim().toLowerCase());
+}
+
 /** Persist a snapshot without putting private state into the conversation. */
 export function persistTutor(pi: ExtensionAPI, state: TutorState): void {
 	pi.appendEntry("psi-tutor", { ...state });
@@ -36,8 +42,9 @@ export function registerTutor(
 			state.currentLesson = undefined;
 			state.mode = "on";
 		}
-		if (pi.getFlag("psi-tutor") === true) state.mode = "on";
-		if ((typeof topic === "string" && topic.trim()) || pi.getFlag("psi-tutor") === true) {
+		const tutorFlag = flagEnabled(pi.getFlag("psi-tutor"));
+		if (tutorFlag) state.mode = "on";
+		if ((typeof topic === "string" && topic.trim()) || tutorFlag) {
 			persistTutor(pi, state);
 		}
 		refresh(ctx);
@@ -45,7 +52,9 @@ export function registerTutor(
 	pi.on("before_agent_start", async (event) => {
 		if (state.mode === "off") return;
 		const learner = state.topic ? store.readLearner(state.topic) : undefined;
-		const notes = learner?.notes.slice(-12).join("\n").slice(0, 4000) || "None recorded.";
+		const observations = learner?.notes.slice(-12) ?? [];
+		const noteLines = state.topic ? store.readNotes(state.topic).split(/\r?\n/).filter((line) => line.trim()) : [];
+		const notes = [...observations, ...noteLines.slice(-12)].join("\n").slice(-4000) || "None recorded.";
 		const due = state.topic ? store.dueCards(state.topic).length : store.dueCards().length;
 		return { systemPrompt: `${event.systemPrompt}\n\n## ψ teaching contract
 Active topic: ${state.topic ?? "not selected"}

@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -157,19 +157,59 @@ function run(command: string, args: string[], timeout: number, signal?: AbortSig
 	});
 }
 
-/** Check the local binary and configured Docker image independently. */
-export async function manimAvailable(): Promise<{ local: boolean; docker: boolean }> {
+/** Manim release used by the uv fallback and Docker images. */
+export const MANIM_VERSION = "0.22.1";
+type Runner = "auto" | "local" | "docker";
+type LocalCommand = { command: string; prefix: string[]; via: "manim" | "uv" };
+const uvCommand = (): LocalCommand => ({
+	command: "uv", prefix: ["run", "--no-project", "--with", `manim==${process.env.PSI_MANIM_VERSION || MANIM_VERSION}`,
+		"manim"], via: "uv",
+});
+
+/** Resolve a local manim: the `manim` binary, else `uv run --with manim==…` when uv exists. */
+async function localManim(signal?: AbortSignal): Promise<LocalCommand | undefined> {
+	if ((await run("manim", ["--version"], 10000, signal)).ok) return { command: "manim", prefix: [], via: "manim" };
+	if ((await run("uv", ["--version"], 10000, signal)).ok) return uvCommand();
+	return undefined;
+}
+
+/** The runner preference from PSI_MANIM_RUNNER (auto|local|docker), defaulting to auto. */
+export function envRunner(value = process.env.PSI_MANIM_RUNNER): Runner {
+	const runner = value?.trim().toLowerCase();
+	return runner === "local" || runner === "docker" ? runner : "auto";
+}
+
+/** Check local manim (binary or uv fallback) and the configured Docker image independently. */
+export async function manimAvailable(): Promise<{ local: boolean; docker: boolean; via?: "manim" | "uv" }> {
 	const [local, docker] = await Promise.all([
-		run("manim", ["--version"], 10000),
+		localManim(),
 		run("docker", ["image", "inspect", process.env.PSI_MANIM_IMAGE ?? "psi-manim:latest"], 10000),
 	]);
-	return { local: local.ok, docker: docker.ok };
+	return { local: Boolean(local), docker: docker.ok, ...(local ? { via: local.via } : {}) };
+}
+
+async function videos(dir: string): Promise<Map<string, string>> {
+	const found = new Map<string, string>();
+	async function scan(current: string): Promise<void> {
+		let items;
+		try { items = await readdir(current, { withFileTypes: true }); } catch { return; }
+		for (const item of items) {
+			const path = join(current, item.name);
+			if (item.isDirectory() && item.name !== "partial_movie_files") await scan(path);
+			else if (item.isFile() && item.name.endsWith(".mp4")) {
+				const info = await stat(path).catch(() => undefined);
+				if (info) found.set(path, `${info.mtimeMs}:${info.size}`);
+			}
+		}
+	}
+	await scan(dir);
+	return found;
 }
 
 /** Render Python locally or in Docker; render and filesystem failures are returned as diagnostics. */
 export async function renderManim(opts: {
 	code: string; scene?: string; outDir: string; quality?: "l" | "m" | "h";
-	runner?: "auto" | "local" | "docker"; signal?: AbortSignal;
+	runner?: Runner; signal?: AbortSignal;
 }): Promise<RenderResult> {
 	let temp: string | undefined;
 	let container: string | undefined;
@@ -181,20 +221,30 @@ export async function renderManim(opts: {
 		await mkdir(out, { recursive: true });
 		temp = await mkdtemp(join(tmpdir(), "psi-manim-"));
 		await writeFile(join(temp, "scene.py"), opts.code);
-		let runner = opts.runner ?? "auto";
+		let runner = opts.runner ?? envRunner();
+		let local: LocalCommand | undefined;
 		if (runner === "auto") {
-			const available = await manimAvailable();
-			if (!available.local && !available.docker) return {
-				ok: false, outputs: [], log: "Manim is unavailable locally and the Docker image is unavailable",
+			local = await localManim(opts.signal);
+			if (opts.signal?.aborted) return { ok: false, outputs: [], log: "Render aborted" };
+			const docker = local ? false : (await run("docker",
+				["image", "inspect", process.env.PSI_MANIM_IMAGE ?? "psi-manim:latest"], 10000, opts.signal)).ok;
+			if (!local && !docker) return {
+				ok: false, outputs: [],
+				log: "Manim is unavailable: no `manim` or `uv` on PATH, and the Docker image is unavailable",
 			};
-			runner = available.local ? "local" : "docker";
+			runner = local ? "local" : "docker";
+		} else if (runner === "local") {
+			// Explicit local: still fall back to uv when the manim binary is missing.
+			local = await localManim(opts.signal) ?? { command: "manim", prefix: [], via: "manim" };
 		}
 		const pythonDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../python");
-		const args = [`-q${opts.quality ?? "l"}`, "--media_dir", runner === "local" ? join(out, "media") : "/out/media",
+		const media = join(out, "media");
+		const before = await videos(media);
+		const args = [`-q${opts.quality ?? "l"}`, "--media_dir", runner === "local" ? media : "/out/media",
 			runner === "local" ? join(temp, "scene.py") : "/work/scene.py", scene];
 		if (runner === "docker") container = `psi-manim-${process.pid}-${temp.split(/[\\/]/).at(-1)}`;
 		const result = runner === "local"
-			? await run("manim", args, 600000, opts.signal, {
+			? await run(local!.command, [...local!.prefix, ...args], 600000, opts.signal, {
 				...process.env,
 				PYTHONPATH: [pythonDir, process.env.PYTHONPATH].filter(Boolean)
 					.join(process.platform === "win32" ? ";" : ":"),
@@ -202,18 +252,13 @@ export async function renderManim(opts: {
 			: await run("docker", ["run", "--rm", "--name", container!, "-v", `${temp}:/work:ro`, "-v", `${out}:/out`,
 				"-v", `${pythonDir}:/psi-python:ro`, "-e", "PYTHONPATH=/psi-python",
 				process.env.PSI_MANIM_IMAGE ?? "psi-manim:latest", "manim", ...args], 600000, opts.signal);
-		const outputs: string[] = [];
-		async function scan(dir: string): Promise<void> {
-			for (const item of await readdir(dir, { withFileTypes: true })) {
-				const path = join(dir, item.name);
-				if (item.isDirectory() && item.name !== "partial_movie_files") await scan(path);
-				else if (item.isFile() && item.name.endsWith(".mp4")) outputs.push(path);
-			}
-		}
-		await scan(out);
-		outputs.sort();
+		// Report only videos this render created or rewrote, never stale MP4s from earlier renders.
+		const outputs = [...await videos(media)].filter(([path, stamp]) => before.get(path) !== stamp)
+			.map(([path]) => path).sort();
+		const via = runner === "local" ? local!.via : "docker";
 		return result.ok && outputs.length ? { ok: true, outputs } : {
-			ok: false, outputs, log: result.log || "Manim produced no MP4 output",
+			ok: false, outputs, log: [result.ok ? "Manim produced no new MP4 output" : "", result.log, `runner: ${via}`]
+				.filter(Boolean).join("\n"),
 		};
 	} catch (error) {
 		return { ok: false, outputs: [], log: error instanceof Error ? error.message : String(error) };

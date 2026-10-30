@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { basename } from "node:path";
 import { Type } from "@earendil-works/pi-ai";
 import { defineTool, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { frontier, isMastered, nowIso, pathTo, slugify, toMermaid, validateGraph } from "../../core/src/index.ts";
@@ -61,16 +63,18 @@ export function registerTools(
 			const topic = topicOf(p.topic ?? p.plan?.topic);
 			const graph = store.readGraph(topic);
 			if (!graph) return toolResult({ errors: ["Create a concept graph first."] });
+			const ids = new Set(graph.concepts.map((c) => c.id));
+			const errors = [
+				...(p.plan?.lessons ?? []).filter((l) => !ids.has(l.conceptId)).map((l) => `Unknown concept: ${l.conceptId}`),
+				...(p.targetId && !ids.has(p.targetId) ? [`Unknown concept: ${p.targetId}`] : []),
+			];
+			// Validate everything before writing so a bad targetId cannot leave a half-applied call.
+			if (errors.length) return toolResult({ errors });
 			if (p.plan) {
-				const ids = new Set(graph.concepts.map((c) => c.id));
-				const errors = p.plan.lessons.filter((l) => !ids.has(l.conceptId)).map((l) => `Unknown concept: ${l.conceptId}`);
-				if (errors.length) return toolResult({ errors });
-				store.writePlan(topic, { ...p.plan, topic, updatedAt: nowIso() });
+				const now = nowIso();
+				store.writePlan(topic, { ...p.plan, topic, createdAt: p.plan.createdAt || now, updatedAt: now });
 			}
 			const mastered = masteredIds(store, topic);
-			if (p.targetId && !graph.concepts.some((c) => c.id === p.targetId)) {
-				return toolResult({ errors: [`Unknown concept: ${p.targetId}`] });
-			}
 			refresh(ctx);
 			return toolResult({ plan: store.readPlan(topic), frontier: frontier(graph, mastered),
 				path: p.targetId ? pathTo(graph, p.targetId, mastered) : undefined });
@@ -141,12 +145,16 @@ export function registerTools(
 		name: "psi_storyboard",
 		label: "Storyboard",
 		description: "Validate, save, and render storyboard HTML. Return errors or an artifact path.",
-		parameters: Type.Object({ storyboard: storyboardSchema }),
+		parameters: Type.Object({
+			storyboard: storyboardSchema,
+			speech: Type.Optional(Type.Boolean({ description: "Read narration aloud with browser speech synthesis" })),
+			autoplay: Type.Optional(Type.Boolean({ description: "Start playing when the page opens" })),
+		}),
 		async execute(_id, p) {
 			const { validateStoryboard, renderStoryboardHtml } = await import("../../visual/src/index.ts");
 			const errors = validateStoryboard(p.storyboard);
 			if (errors.length) return toolResult({ errors });
-			const html = renderStoryboardHtml(p.storyboard);
+			const html = renderStoryboardHtml(p.storyboard, { speech: p.speech === true, autoplay: p.autoplay === true });
 			store.saveStoryboard(p.storyboard);
 			const path = store.writeArtifact(p.storyboard.topic, `${slugify(p.storyboard.id)}.html`, html);
 			return toolResult({ path }, "Use /studio to view this artifact.");
@@ -194,7 +202,15 @@ export function registerTools(
 			}
 			const result = await renderManim({ code, scene: p.scene, outDir: store.artifactsDir(topic),
 				quality: p.quality, runner: p.runner, signal });
-			return toolResult(result, "Use /studio to view rendered artifacts.");
+			// Studio lists artifacts/ flat, so publish finished videos next to the HTML artifacts.
+			const videos = result.outputs.map((file, index) => {
+				const scene = basename(file, ".mp4").replace(/([a-z0-9])([A-Z])/g, "$1-$2");
+				const name = slugify(p.storyboardId ?? scene) || "manim";
+				return store.writeArtifact(topic, `${name}${index ? `-${index + 1}` : ""}.mp4`, readFileSync(file));
+			});
+			const outputs = [...(sourcePath ? [sourcePath] : []), ...videos];
+			return toolResult({ ...result, outputs, ...(sourcePath ? { source: sourcePath } : {}),
+				...(result.outputs.length ? { media: result.outputs } : {}) }, "Use /studio to view rendered artifacts.");
 		},
 	}));
 	pi.registerTool(defineTool({
@@ -213,7 +229,9 @@ export function registerTools(
 		async execute(_id, p, signal, _update, ctx) {
 			const topic = topicOf(p.topic);
 			const { runCrewTask, buildLesson } = await import("../../crew/src/index.ts");
-			const opts = { store, signal };
+			// Children inherit the session's model unless PSI_CREW_MODEL overrides it.
+			const current = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
+			const opts = { store, signal, model: process.env.PSI_CREW_MODEL || current };
 			const results = [];
 			if (p.tasks) {
 				for (const task of p.tasks) results.push(await runCrewTask({ ...task,
@@ -233,11 +251,11 @@ export function registerTools(
 		parameters: Type.Object({ topic: topicSchema, note: Type.String({ minLength: 1 }) }),
 		async execute(_id, p) {
 			const topic = topicOf(p.topic);
-			const learner = store.readLearner(topic) ?? { topic, mastery: {}, notes: [], updatedAt: nowIso() };
-			learner.notes.push(p.note);
-			learner.updatedAt = nowIso();
-			store.writeLearner(topic, learner);
-			return toolResult({ saved: true, notes: learner.notes.length });
+			const text = p.note.replace(/\s+/g, " ").trim();
+			if (!text) return toolResult({ errors: ["Note must not be blank."] });
+			store.appendNote(topic, `- ${nowIso()} ${text}`);
+			const notes = store.readNotes(topic).split(/\r?\n/).filter((line) => line.trim()).length;
+			return toolResult({ saved: true, path: `${store.topicDir(topic)}/notes.md`, notes });
 		},
 	}));
 }

@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
-import { appendFileSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { appendFileSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { basename, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PsiStore } from "../../core/src/index.ts";
 import type { CrewResult, CrewTask } from "../../core/src/index.ts";
@@ -14,16 +14,69 @@ export interface CrewOptions {
 	signal?: AbortSignal;
 	bin?: string;
 	timeoutMs?: number;
+	/** Extra host arguments (e.g. `--thinking low`), placed before the `--` message separator. */
+	args?: string[];
 }
 
 const extensionPath = fileURLToPath(new URL("../../extension/src/index.ts", import.meta.url));
+const skillsPath = fileURLToPath(new URL("../../skills", import.meta.url));
+const promptsPath = fileURLToPath(new URL("../../prompts", import.meta.url));
+
+/**
+ * A skill index for hosts that cannot load skill directories from the command line (omp rejects `--skill`).
+ * Agents can `read` the listed SKILL.md files on demand.
+ */
+export function skillIndex(dir = skillsPath): string {
+	let names: string[];
+	try { names = readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(); }
+	catch { return ""; }
+	const lines = names.flatMap((name) => {
+		const file = join(dir, name, "SKILL.md");
+		try {
+			const description = /^description:\s*(.+)$/m.exec(readFileSync(file, "utf8"))?.[1]?.trim() ?? "";
+			return [`- ${file}${description ? ` — ${description.slice(0, 200)}` : ""}`];
+		} catch { return []; }
+	});
+	return lines.length ? `## psi skills\nRead the matching SKILL.md with the read tool before doing that kind of work:\n`
+		+ lines.join("\n") : "";
+}
+
+/** Resolve which host CLI dialect a binary speaks: explicit host, PSI_HOST, or an `omp` binary name. */
+export function crewHost(opts: Pick<CrewOptions, "host" | "bin"> = {}): "pi" | "omp" {
+	const host = opts.host ?? process.env.PSI_HOST;
+	if (host === "omp" || host === "pi") return host;
+	const bin = opts.bin ?? process.env.PSI_BIN ?? "";
+	return /^omp(\.exe)?$/i.test(basename(bin)) ? "omp" : "pi";
+}
+
+// omp has no `ls` and may lack `find` (it rejects unknown or unavailable --tools names); `glob` covers both.
+const OMP_TOOL_NAMES: Record<string, string> = { ls: "glob", find: "glob" };
+
+/** A role's tool allowlist in the given host's vocabulary, without duplicates. */
+export function roleTools(role: CrewTask["role"], host: "pi" | "omp" = "pi"): string[] {
+	const tools = ROLE_TOOLS[role].map((tool) => host === "omp" ? OMP_TOOL_NAMES[tool] ?? tool : tool);
+	return [...new Set(tools)];
+}
+
+/** Host argv for one role: psi extension, skills and prompts, the role's tool allowlist, then the message. */
+export function crewArgs(task: CrewTask, opts: Pick<CrewOptions, "model" | "args" | "host" | "bin"> = {}): string[] {
+	const message = taskMessage(task);
+	const omp = crewHost(opts) === "omp";
+	// pi loads skills/prompts by flag; omp has no such flags (unknown flags abort), so it gets a readable index.
+	const resources = omp ? [] : ["--skill", skillsPath, "--prompt-template", promptsPath];
+	const system = [ROLE_PROMPTS[task.role], ...(omp ? [skillIndex()] : []), message].filter(Boolean).join("\n\n");
+	return ["-p", "--mode", "json", "--no-session", "-e", extensionPath, ...resources,
+		"--tools", roleTools(task.role, omp ? "omp" : "pi").join(","), "--append-system-prompt", system,
+		...(opts.model ? ["--model", opts.model] : []), ...(opts.args ?? []).filter((arg) => arg !== "--"), "--", message];
+}
 
 function snapshot(root: string): Map<string, string> {
 	const files = new Map<string, string>();
 	function walk(dir: string): void {
 		for (const entry of readdirSync(dir, { withFileTypes: true })) {
 			const path = join(dir, entry.name);
-			if (entry.isDirectory()) walk(path);
+			// Manim's cache (svgs, partial movies) is noise; psi_manim publishes finished videos into artifacts/.
+			if (entry.isDirectory()) { if (relative(root, path).split(sep).join("/") !== "artifacts/media") walk(path); }
 			else if (entry.isFile()) {
 				const name = relative(root, path).split(sep).join("/");
 				if (name === "crew/log.jsonl") continue;
@@ -34,6 +87,13 @@ function snapshot(root: string): Map<string, string> {
 	}
 	walk(root);
 	return files;
+}
+
+const READ_ONLY_TOOLS = new Set(["read", "grep", "find", "ls", "psi_review_next", "psi_mastery"]);
+
+/** Whether a role's allowlist can change files; read-only roles never own changes made by concurrent peers. */
+export function roleCanWrite(role: CrewTask["role"]): boolean {
+	return ROLE_TOOLS[role].some((tool) => !READ_ONLY_TOOLS.has(tool));
 }
 
 function assistantOutput(stdout: string): { output: string; error?: string } {
@@ -78,12 +138,8 @@ export async function runCrewTask(task: CrewTask, opts: CrewOptions = {}): Promi
 		mkdirSync(topicDir, { recursive: true });
 		before = snapshot(topicDir);
 		if (opts.signal?.aborted) throw new Error("aborted");
-		const message = taskMessage(task);
 		const bin = opts.bin ?? process.env.PSI_BIN ?? ((opts.host ?? process.env.PSI_HOST) === "omp" ? "omp" : "pi");
-		const args = ["-p", "--mode", "json", "--no-session", "-e", extensionPath,
-			"--tools", ROLE_TOOLS[task.role].join(","), "--append-system-prompt",
-			`${ROLE_PROMPTS[task.role]}\n\n${message}`,
-			...(opts.model ? ["--model", opts.model] : []), "--", message];
+		const args = crewArgs(task, { ...opts, bin });
 		const execution = await new Promise<{ stdout: string; error?: string }>((resolve) => {
 			const child = spawn(bin, args, { cwd: topicDir, env: { ...process.env, PSI_HOME: store.root },
 				stdio: ["ignore", "pipe", "pipe"], shell: false });
@@ -125,8 +181,11 @@ export async function runCrewTask(task: CrewTask, opts: CrewOptions = {}): Promi
 	}
 	if (topicDir) {
 		try {
-			if (before) result.files = [...snapshot(topicDir)].filter(([name, stamp]) => before.get(name) !== stamp)
-				.map(([name]) => name).sort();
+			// Concurrent tasks share the topic directory, so a read-only role cannot be credited with peers' writes.
+			if (before && roleCanWrite(task.role)) {
+				result.files = [...snapshot(topicDir)].filter(([name, stamp]) => before.get(name) !== stamp)
+					.map(([name]) => name).sort();
+			}
 		} catch (error) {
 			result.ok = false;
 			result.error ??= `File tracking failed: ${String(error)}`;

@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PsiStore } from "../../core/src/index.ts";
 import type { CrewRole, CrewTask } from "../../core/src/index.ts";
-import { buildLesson, ROLE_PROMPTS, ROLE_TOOLS, runCrew, runCrewTask } from "../src/index.ts";
+import { buildLesson, crewArgs, crewHost, roleCanWrite, roleTools, ROLE_PROMPTS, ROLE_TOOLS, runCrew, runCrewTask } from "../src/index.ts";
 
 const root = mkdtempSync(join(tmpdir(), "psi-crew-"));
 after(() => rmSync(root, { recursive: true, force: true }));
@@ -244,4 +244,68 @@ process.exit(result.status ?? 1);
 	assert.equal(results[4].ok, true);
 	assert.match(events(store).find((row) => row.role === "critic")!.message, /Visualizer failed/);
 	assert.match(readFileSync(join(store.topicDir(topic), "crew/visualizer.md"), "utf8"), /^FAILED:/);
+});
+
+test("role agents get the psi extension, skills, prompts, model and extra host args", () => {
+	const args = crewArgs(task("Quiz", "quizmaster"), { model: "xai/grok-4.6", args: ["--thinking", "low", "--"] });
+	assert.match(args[args.indexOf("-e") + 1], /extension\/src\/index.ts$/);
+	const skills = args[args.indexOf("--skill") + 1];
+	assert.match(skills, /[\\/]skills$/);
+	assert.ok(existsSync(join(skills, "retrieval-practice", "SKILL.md")));
+	assert.match(args[args.indexOf("--prompt-template") + 1], /[\\/]prompts$/);
+	assert.equal(args[args.indexOf("--tools") + 1], ROLE_TOOLS.quizmaster.join(","));
+	assert.equal(args[args.indexOf("--model") + 1], "xai/grok-4.6");
+	assert.equal(args[args.indexOf("--thinking") + 1], "low");
+	assert.equal(args.filter((arg) => arg === "--").length, 1, "only the message separator");
+	assert.equal(args.at(-2), "--");
+	assert.match(args.at(-1)!, /^Quiz/);
+});
+
+test("role tool allowlists name only real pi built-ins or registered psi tools", async () => {
+	const builtins = new Set(["read", "bash", "edit", "write", "grep", "find", "ls"]);
+	const psi = new Set<string>();
+	const extension = (await import("../../extension/src/index.ts")).default;
+	extension({ registerTool: (tool: { name: string }) => psi.add(tool.name), registerCommand() {}, registerFlag() {},
+		getFlag() {}, on() {}, appendEntry() {}, sendUserMessage() {}, sendMessage() {} } as never);
+	for (const [role, tools] of Object.entries(ROLE_TOOLS)) {
+		for (const tool of tools) assert.ok(builtins.has(tool) || psi.has(tool), `${role}: unknown tool ${tool}`);
+	}
+});
+
+test("a read-only critic running beside a writer is not credited with the writer's files", async () => {
+	const { store } = fixture();
+	const [quizmaster, critic] = await runCrew([task("FAKE_SHORT", "quizmaster"), task("FAKE_SHORT", "critic")],
+		{ store, bin, concurrency: 2 });
+	assert.ok(quizmaster.files.includes("quizmaster.txt"));
+	assert.deepEqual(critic.files, []);
+	assert.equal(roleCanWrite("critic"), false);
+	assert.equal(roleCanWrite("quizmaster"), true);
+});
+
+test("omp role agents skip pi-only resource flags and get a readable skill index", () => {
+	const args = crewArgs(task("Quiz", "quizmaster"), { host: "omp" });
+	assert.ok(!args.includes("--skill"));
+	assert.ok(!args.includes("--prompt-template"));
+	assert.match(args[args.indexOf("--append-system-prompt") + 1], /^You are the quizmaster[\s\S]*## psi skills[\s\S]*SKILL\.md/);
+	assert.equal(crewHost({ bin: "/opt/omp/bin/omp" }), process.env.PSI_HOST === "pi" ? "pi" : "omp");
+	assert.equal(crewHost({ host: "pi", bin: "/opt/omp/bin/omp" }), "pi");
+	// omp rejects `ls` (unknown) and `find` (unavailable without fd); glob replaces both.
+	assert.equal(args[args.indexOf("--tools") + 1], "read,grep,glob,psi_cards_add,psi_note");
+	assert.deepEqual(roleTools("critic", "omp"), ["read", "grep", "glob"]);
+	assert.deepEqual(roleTools("critic", "pi"), ROLE_TOOLS.critic);
+});
+
+test("manim's media cache is not reported as crew output", async () => {
+	const { store, topic } = fixture();
+	const wrapper = join(root, "media-host");
+	writeFileSync(wrapper, `#!/usr/bin/env node
+const fs = require("node:fs"); const path = require("node:path");
+fs.mkdirSync(path.join(process.cwd(), "artifacts/media/texts"), { recursive: true });
+fs.writeFileSync(path.join(process.cwd(), "artifacts/media/texts/a.svg"), "x");
+fs.writeFileSync(path.join(process.cwd(), "artifacts/scene.mp4"), "v");
+`);
+	chmodSync(wrapper, 0o755);
+	const result = await runCrewTask(task("Draw", "visualizer"), { store, bin: wrapper });
+	assert.deepEqual(result.files, ["artifacts/scene.mp4"]);
+	assert.ok(existsSync(join(store.topicDir(topic), "artifacts/media/texts/a.svg")));
 });

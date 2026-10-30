@@ -86,11 +86,11 @@ test("host arguments include resources, tutor flags, host options, and prompt", 
 	assert.deepEqual(buildHostArgs({ repo: "/repo", topic: "math", model: "model", thinking: "high", print: true,
 		passthrough: ["--provider", "x"], message: "Why?" }), [
 		"-e", "/repo/extension/src/index.ts", "--skill", "/repo/skills", "--prompt-template", "/repo/prompts",
-		"--psi-tutor", "--psi-topic", "math", "--model", "model", "--thinking", "high", "-p",
+		"--psi-tutor=true", "--psi-topic", "math", "--model", "model", "--thinking", "high", "-p",
 		"--provider", "x", "--", "Why?",
 	]);
 	const minimal = buildHostArgs({ repo: "/repo" });
-	assert.ok(minimal.includes("--psi-tutor"));
+	assert.ok(minimal.includes("--psi-tutor=true"));
 	assert.ok(!minimal.includes("-p"));
 	assert.ok(!minimal.includes("--psi-topic"));
 	assert.deepEqual(buildHostArgs({ repo: "/repo", model: "--", message: "-question" }).slice(-4),
@@ -249,4 +249,44 @@ test("review on EOF leaves the current card untouched", (t) => {
 	assert.match(result.stdout, /Reviewed 0 cards/);
 	assert.equal(readFileSync(join(dir, "cards.json"), "utf8"), before);
 	assert.ok(!existsSync(join(dir, "reviews.jsonl")));
+});
+
+test("render forwards --speech and --autoplay into storyboard HTML", (t) => {
+	const home = temp(t);
+	const story = join(home, "story.json");
+	writeFileSync(story, JSON.stringify({ id: "story", topic: graph.topic, title: "Story", style: "plain",
+		scenes: [{ id: "one", narration: "Notice", durationSec: 1, elements: [] }] }));
+	const plain = run(["render", story, "-o", join(home, "plain.html")], home);
+	assert.equal(plain.status, 0, plain.stderr);
+	const plainHtml = readFileSync(join(home, "plain.html"), "utf8");
+	assert.match(plainHtml, /"autoplay":false/);
+	assert.match(plainHtml, /"speech":false/);
+	const spoken = run(["render", story, "--speech", "--autoplay", "-o", join(home, "spoken.html")], home);
+	assert.equal(spoken.status, 0, spoken.stderr);
+	const spokenHtml = readFileSync(join(home, "spoken.html"), "utf8");
+	assert.match(spokenHtml, /"autoplay":true/);
+	assert.match(spokenHtml, /"speech":true/);
+});
+
+test("studio address honours flags, then PSI_STUDIO_PORT/HOST, then 4173 on loopback, never HOST", async () => {
+	const { studioAddress } = await import("../src/commands/studio.ts");
+	assert.deepEqual(studioAddress(parseArgs([]), {}), { port: 4173, host: "127.0.0.1" });
+	assert.deepEqual(studioAddress(parseArgs([]), { HOST: "0.0.0.0" }), { port: 4173, host: "127.0.0.1" });
+	assert.deepEqual(studioAddress(parseArgs([]), { PSI_STUDIO_PORT: "5000", PSI_STUDIO_HOST: "0.0.0.0" }),
+		{ port: 5000, host: "0.0.0.0" });
+	assert.deepEqual(studioAddress(parseArgs(["--port", "6000", "--host", "::1"]),
+		{ PSI_STUDIO_PORT: "5000", PSI_STUDIO_HOST: "0.0.0.0" }), { port: 6000, host: "::1" });
+	assert.throws(() => studioAddress(parseArgs([]), { PSI_STUDIO_PORT: "nope" }), /Port/);
+});
+
+test("omp host args avoid pi-only resource flags and carry a skill index instead", () => {
+	const repo = fileURLToPath(new URL("../..", import.meta.url));
+	const omp = buildHostArgs({ repo, host: "omp", message: "Hi" });
+	assert.ok(!omp.includes("--skill"));
+	assert.ok(!omp.includes("--prompt-template"));
+	const index = omp[omp.indexOf("--append-system-prompt") + 1];
+	assert.match(index, /retrieval-practice[\\/]SKILL\.md/);
+	assert.ok(omp.includes("--psi-tutor=true"));
+	assert.deepEqual(omp.slice(-2), ["--", "Hi"]);
+	assert.ok(buildHostArgs({ repo, host: "pi" }).includes("--skill"));
 });

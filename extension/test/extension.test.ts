@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { isAbsolute, join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
@@ -209,3 +209,114 @@ test("lesson plan and learner notes persist through the shared store", async (t)
 	assert.match(prompt, /Uses geometric reasoning/);
 	assert.match(prompt, /Needs a concrete example/);
 }));
+
+test("--psi-tutor=true arrives as a string and still enables tutor mode", async (t) => {
+	const { flagEnabled } = await import("../src/tutor.ts");
+	for (const value of [true, "true", "1", "TRUE", " yes "]) assert.equal(flagEnabled(value), true, String(value));
+	for (const value of [false, "false", "0", "", undefined, "nope"]) assert.equal(flagEnabled(value), false, String(value));
+	await fixture(t, async (f) => {
+		f.flags.set("psi-tutor", "true");
+		await f.fire("session_start");
+		const result = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0];
+		assert.match(result.systemPrompt, /Tutor mode: on/);
+	});
+	await fixture(t, async (f) => {
+		f.flags.set("psi-tutor", "false");
+		await f.fire("session_start");
+		assert.equal((await f.fire("before_agent_start", { systemPrompt: "Base" }))[0], undefined);
+	});
+});
+
+test("psi_note writes notes.md and the tutor injection reads it", async (t) => fixture(t, async (f) => {
+	const saved = await f.execute("psi_note", { topic: "algebra", note: "Thinks dot product\nis a vector." });
+	assert.equal(saved.details.saved, true);
+	const notes = readFileSync(join(process.env.PSI_HOME!, "topics", "algebra", "notes.md"), "utf8");
+	assert.match(notes, /^- \d{4}-.* Thinks dot product is a vector\.\n$/);
+	assert.equal(saved.details.notes, 1);
+	assert.ok((await f.execute("psi_note", { topic: "algebra", note: "   " })).details.errors);
+	await f.commands.get("learn")!.handler("algebra", f.ctx);
+	const prompt = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+	assert.match(prompt, /Thinks dot product is a vector/);
+}));
+
+test("psi_lesson_plan validates targetId before saving the plan", async (t) => fixture(t, async (f) => {
+	await f.execute("psi_concept_graph", { topic: "algebra", title: "Algebra", bigIdea: "See structure", concepts: [concept] });
+	const plan = { topic: "algebra", goal: "Understand vectors", learnerLevel: "curious", lessons: [
+		{ conceptId: "vectors", objective: "Predict scaling", beats: [], visuals: [], checks: [], status: "planned" },
+	], createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" };
+	const bad = await f.execute("psi_lesson_plan", { topic: "algebra", plan, targetId: "missing" });
+	assert.deepEqual(bad.details.errors, ["Unknown concept: missing"]);
+	assert.equal(existsSync(join(process.env.PSI_HOME!, "topics", "algebra", "plan.json")), false);
+}));
+
+test("psi_storyboard forwards speech and autoplay to the HTML player", async (t) => fixture(t, async (f) => {
+	const sb = { id: "talk", title: "Talk", topic: "algebra", style: "plain", scenes: [
+		{ id: "one", narration: "Listen.", durationSec: 2, elements: [] },
+	] };
+	const quiet = readFileSync((await f.execute("psi_storyboard", { storyboard: sb })).details.path, "utf8");
+	assert.match(quiet, /"autoplay":false/);
+	const spoken = readFileSync((await f.execute("psi_storyboard", { storyboard: sb, speech: true, autoplay: true }))
+		.details.path, "utf8");
+	assert.match(spoken, /"autoplay":true/);
+	assert.match(spoken, /"speech":true/);
+}));
+
+test("psi_manim with storyboardId and render returns the .py source alongside render results", async (t) => {
+	if (process.platform === "win32") return;
+	const bin = mkdtempSync(join(tmpdir(), "psi-ext-manim-"));
+	const previous = process.env.PATH;
+	try {
+		writeFileSync(join(bin, "manim"), `#!${process.execPath}\nimport fs from "node:fs"; import path from "node:path";\n`
+			+ 'const a = process.argv.slice(2); if (!a.includes("--media_dir")) process.exit(0);\n'
+			+ 'const m = a[a.indexOf("--media_dir") + 1]; fs.mkdirSync(m, { recursive: true });\n'
+			+ 'fs.writeFileSync(path.join(m, "Talk.mp4"), "v");\n');
+		chmodSync(join(bin, "manim"), 0o755);
+		process.env.PATH = bin;
+		await fixture(t, async (f) => {
+			await f.execute("psi_storyboard", { storyboard: { id: "talk", title: "Talk", topic: "algebra", style: "plain",
+				scenes: [{ id: "one", narration: "Listen.", durationSec: 1, elements: [] }] } });
+			const result = await f.execute("psi_manim", { topic: "algebra", storyboardId: "talk", render: true, runner: "local" });
+			assert.equal(result.details.ok, true, result.details.log);
+			assert.match(result.details.source, /talk\.py$/);
+			assert.equal(result.details.outputs[0], result.details.source);
+			assert.match(result.details.outputs[1], /artifacts\/talk\.mp4$/);
+			assert.match(result.details.media[0], /media\/Talk\.mp4$/);
+			assert.equal(readFileSync(result.details.outputs[1], "utf8"), "v");
+		});
+	} finally {
+		process.env.PATH = previous;
+		rmSync(bin, { recursive: true, force: true });
+	}
+});
+
+test("/studio dials the configured bind host instead of assuming localhost", async () => {
+	const { studioHost } = await import("../src/commands.ts");
+	assert.deepEqual(studioHost({}), { bind: "127.0.0.1", dial: "127.0.0.1" });
+	assert.deepEqual(studioHost({ PSI_STUDIO_HOST: "0.0.0.0" }), { bind: "0.0.0.0", dial: "127.0.0.1" });
+	assert.deepEqual(studioHost({ PSI_STUDIO_HOST: "::" }), { bind: "::", dial: "::1" });
+	assert.deepEqual(studioHost({ HOST: "0.0.0.0" }), { bind: "127.0.0.1", dial: "127.0.0.1" });
+	assert.deepEqual(studioHost({ PSI_STUDIO_HOST: "192.168.1.5", HOST: "x" }), { bind: "192.168.1.5", dial: "192.168.1.5" });
+});
+
+test("psi_manim publishes CamelCase scene videos under kebab-case artifact names", async (t) => {
+	if (process.platform === "win32") return;
+	const bin = mkdtempSync(join(tmpdir(), "psi-ext-manim-"));
+	const previous = process.env.PATH;
+	try {
+		writeFileSync(join(bin, "manim"), `#!${process.execPath}\nimport fs from "node:fs"; import path from "node:path";\n`
+			+ 'const a = process.argv.slice(2); if (!a.includes("--media_dir")) process.exit(0);\n'
+			+ 'const m = a[a.indexOf("--media_dir") + 1]; fs.mkdirSync(m, { recursive: true });\n'
+			+ 'fs.writeFileSync(path.join(m, a.at(-1) + ".mp4"), "v");\n');
+		chmodSync(join(bin, "manim"), 0o755);
+		process.env.PATH = bin;
+		await fixture(t, async (f) => {
+			const result = await f.execute("psi_manim", { topic: "algebra", runner: "local",
+				code: "from manim import *\nclass ProjectionAlongTheRoad(Scene):\n    pass\n" });
+			assert.equal(result.details.ok, true, result.details.log);
+			assert.match(result.details.outputs[0], /artifacts\/projection-along-the-road\.mp4$/);
+		});
+	} finally {
+		process.env.PATH = previous;
+		rmSync(bin, { recursive: true, force: true });
+	}
+});

@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile, chmod, readFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile, chmod, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import type { Storyboard, StoryElement } from "../../core/src/types.ts";
-import { manimAvailable, renderManim, storyboardToManim } from "../src/manim.ts";
+import { envRunner, manimAvailable, renderManim, storyboardToManim } from "../src/manim.ts";
 
 function storyboard(elements: StoryElement[] = []): Storyboard {
 	return { id: "my-math-story", title: "Math", topic: "math", style: "3b1b", scenes: [
@@ -98,7 +98,8 @@ test("local runner passes scene, media path and PYTHONPATH and collects finished
 		// A stub renderer checks orchestration without importing or rendering Manim.
 		await writeFile(bin, `#!${process.execPath}\n` +
 			'import fs from "node:fs"; import path from "node:path";\n' +
-			'const args = process.argv.slice(2); const media = args[args.indexOf("--media_dir") + 1];\n' +
+			'const args = process.argv.slice(2); if (!args.includes("--media_dir")) process.exit(0);\n' +
+			'const media = args[args.indexOf("--media_dir") + 1];\n' +
 			'fs.mkdirSync(media, { recursive: true }); fs.writeFileSync(path.join(media, "Demo.mp4"), "video");\n' +
 			'fs.writeFileSync(path.join(media, "args.json"), JSON.stringify({ args, python: process.env.PYTHONPATH }));\n');
 		await chmod(bin, 0o755);
@@ -144,4 +145,82 @@ test("abort stops an active renderer and returns diagnostics promptly", async ()
 		else process.env.PATH = previous;
 		await rm(dir, { recursive: true, force: true });
 	}
+});
+
+async function withStubPath(name: string, run: (dir: string) => Promise<void>): Promise<void> {
+	if (process.platform === "win32") return;
+	const dir = await mkdtemp(join(tmpdir(), name));
+	const previous = { path: process.env.PATH, runner: process.env.PSI_MANIM_RUNNER };
+	try {
+		process.env.PATH = dir;
+		delete process.env.PSI_MANIM_RUNNER;
+		await run(dir);
+	} finally {
+		if (previous.path === undefined) delete process.env.PATH; else process.env.PATH = previous.path;
+		if (previous.runner === undefined) delete process.env.PSI_MANIM_RUNNER;
+		else process.env.PSI_MANIM_RUNNER = previous.runner;
+		await rm(dir, { recursive: true, force: true });
+	}
+}
+
+// A stub that records its argv and PYTHONPATH and optionally writes a video into --media_dir.
+async function stub(dir: string, name: string, writeVideo: boolean): Promise<void> {
+	const bin = join(dir, name);
+	await writeFile(bin, `#!${process.execPath}\n` +
+		'import fs from "node:fs"; import path from "node:path";\n' +
+		'const args = process.argv.slice(2); if (!args.includes("--media_dir")) process.exit(0);\n' +
+		'const media = args[args.indexOf("--media_dir") + 1]; fs.mkdirSync(media, { recursive: true });\n' +
+		(writeVideo ? 'fs.writeFileSync(path.join(media, "Demo.mp4"), "video" + Date.now());\n' : "") +
+		'fs.writeFileSync(path.join(media, "args.json"), JSON.stringify({ args, python: process.env.PYTHONPATH }));\n');
+	await chmod(bin, 0o755);
+}
+
+test("stale videos from earlier renders are not reported and a silent render fails", async () => {
+	await withStubPath("psi-manim-stale-", async (dir) => {
+		await stub(dir, "manim", false);
+		const out = join(dir, "out");
+		await mkdir(join(out, "media"), { recursive: true });
+		await writeFile(join(out, "media", "Old.mp4"), "old video");
+		const result = await renderManim({ code: "class Demo(PsiScene): pass", outDir: out, runner: "local" });
+		assert.equal(result.ok, false);
+		assert.deepEqual(result.outputs, []);
+		assert.match(result.log!, /no new MP4/);
+	});
+});
+
+test("only freshly written videos are reported when old ones exist", async () => {
+	await withStubPath("psi-manim-fresh-", async (dir) => {
+		await stub(dir, "manim", true);
+		const out = join(dir, "out");
+		await mkdir(join(out, "media"), { recursive: true });
+		await writeFile(join(out, "media", "Old.mp4"), "old video");
+		const result = await renderManim({ code: "class Demo(PsiScene): pass", outDir: out, runner: "local" });
+		assert.equal(result.ok, true, result.log);
+		assert.deepEqual(result.outputs, [join(out, "media", "Demo.mp4")]);
+	});
+});
+
+test("falls back to uv run --with manim when the manim binary is missing", async () => {
+	await withStubPath("psi-manim-uv-", async (dir) => {
+		await stub(dir, "uv", true);
+		assert.deepEqual(await manimAvailable(), { local: true, docker: false, via: "uv" });
+		for (const runner of ["auto", "local", undefined] as const) {
+			if (runner === undefined) process.env.PSI_MANIM_RUNNER = "local";
+			const out = join(dir, `out-${runner ?? "env"}`);
+			const result = await renderManim({ code: "class Demo(PsiScene): pass", outDir: out, runner });
+			assert.equal(result.ok, true, result.log);
+			const invocation = JSON.parse(await readFile(join(out, "media", "args.json"), "utf8"));
+			assert.deepEqual(invocation.args.slice(0, 5), ["run", "--no-project", "--with", "manim==0.22.1", "manim"]);
+			assert.equal(invocation.args.at(-1), "Demo");
+			assert.ok(invocation.python.split(":")[0].endsWith("/python"));
+		}
+	});
+});
+
+test("PSI_MANIM_RUNNER selects the default runner", () => {
+	assert.equal(envRunner("docker"), "docker");
+	assert.equal(envRunner(" LOCAL "), "local");
+	assert.equal(envRunner("auto"), "auto");
+	assert.equal(envRunner("bogus"), "auto");
+	assert.equal(envRunner(undefined), "auto");
 });

@@ -16,10 +16,13 @@ Commands:
   map <topic> [--mermaid]      Show the concept prerequisite tree
   review [topic]              Drill due flashcards in the terminal
   render <file.json> [-o path] Render storyboard or explorable HTML
+    [--speech] [--autoplay]    Storyboards: read narration aloud / start playing
   render --manim <file>        Render Python or storyboard JSON with manim
-    [-q l|m|h] [--docker]      Select quality and Docker runner (-o directory)
+    [-q l|m|h] [--docker]      Select quality and Docker runner (-o directory;
+                               PSI_MANIM_RUNNER=auto|local|docker sets the default)
   crew <topic> <conceptId>    Build a lesson with the role crew
-  studio [--port N] [--open]   Start the local web studio
+  studio [--port N] [--host H] [--open]
+                              Start the local web studio (PSI_STUDIO_PORT/HOST)
   import <dir>                Copy a topic pack into PSI_HOME
   doctor                      Check runtimes, tools, and writable storage
 

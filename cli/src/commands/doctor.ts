@@ -52,8 +52,9 @@ export async function doctor(args: ParsedArgs): Promise<number> {
 	try {
 		const { manimAvailable } = await import("../../../visual/src/manim.ts");
 		const available = await manimAvailable();
-		report("manim local", available.local, available.local ? "available" : "unavailable",
-			"Install manim: pip install manim");
+		report("manim local", available.local,
+			available.local ? (available.via === "uv" ? "available via uv run --with manim" : "available") : "unavailable",
+			"Install manim (pip install manim) or uv (https://docs.astral.sh/uv/) for the uv fallback.");
 		report("manim docker", available.docker, available.docker ? "available" : "unavailable",
 			"Start Docker and build the psi-manim:latest image (or set PSI_MANIM_IMAGE).");
 	} catch (error) {

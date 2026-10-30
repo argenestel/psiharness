@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { skillIndex } from "../../crew/src/runner.ts";
 import { option } from "./args.ts";
 import type { ParsedArgs } from "./args.ts";
 
@@ -18,13 +19,18 @@ export interface HostOptions {
 	message?: string;
 	print?: boolean;
 	passthrough?: string[];
+	/** Host dialect: omp has no --skill/--prompt-template flags, so it gets a skill index instead. */
+	host?: "pi" | "omp";
 }
 
 /** Construct the host argv, with psi resources and tutor mode enabled. */
 export function buildHostArgs(opts: HostOptions = {}): string[] {
 	const root = opts.repo ?? repoRoot;
-	const args = ["-e", join(root, "extension/src/index.ts"), "--skill", join(root, "skills"),
-		"--prompt-template", join(root, "prompts"), "--psi-tutor"];
+	const resources = opts.host === "omp"
+		? ["--append-system-prompt", skillIndex(join(root, "skills"))]
+		: ["--skill", join(root, "skills"), "--prompt-template", join(root, "prompts")];
+	// `=true` keeps the boolean flag from swallowing a following positional; the extension normalizes it.
+	const args = ["-e", join(root, "extension/src/index.ts"), ...resources, "--psi-tutor=true"];
 	if (opts.topic) args.push("--psi-topic", opts.topic);
 	if (opts.model) args.push("--model", opts.model);
 	if (opts.thinking) args.push("--thinking", opts.thinking);
@@ -59,7 +65,7 @@ export async function launchHost(args: ParsedArgs, message?: string, print = fal
 		const child = spawn(bin, buildHostArgs({
 			topic: option(args, "topic") ?? option(args, "psi-topic"),
 			model: option(args, "model"), thinking: option(args, "thinking"),
-			message, print, passthrough: args.passthrough,
+			message, print, passthrough: args.passthrough, host,
 		}), { cwd: workspace, stdio: "inherit", env: { ...process.env, PSI_HOME: home } });
 		const interrupt = () => { child.kill("SIGINT"); };
 		const terminate = () => { child.kill("SIGTERM"); };

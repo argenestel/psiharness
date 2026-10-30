@@ -7,9 +7,16 @@ import { masteredIds } from "./tools.ts";
 import { persistTutor, type TutorState } from "./tutor.ts";
 import { progressSummary } from "./widget.ts";
 
-function listening(port: number): Promise<boolean> {
+/** Where the studio binds (PSI_STUDIO_HOST, else loopback; never the generic HOST) and the host clients dial. */
+export function studioHost(env: NodeJS.ProcessEnv = process.env): { bind: string; dial: string } {
+	const bind = env.PSI_STUDIO_HOST?.trim() || "127.0.0.1";
+	const dial = bind === "0.0.0.0" ? "127.0.0.1" : bind === "::" ? "::1" : bind;
+	return { bind, dial };
+}
+
+function listening(port: number, host: string): Promise<boolean> {
 	return new Promise((resolve) => {
-		const socket = createConnection({ host: "127.0.0.1", port });
+		const socket = createConnection({ host, port });
 		let settled = false;
 		const finish = (ok: boolean) => {
 			if (settled) return;
@@ -137,13 +144,14 @@ never mark mastery by explanation alone.`);
 			if (!Number.isInteger(port) || port < 1 || port > 65535) {
 				ctx.ui.notify("PSI_STUDIO_PORT must be an integer from 1 to 65535.", "error"); return;
 			}
+			const { bind, dial } = studioHost();
 			try {
 				starting ??= (async () => {
-					if (await listening(port)) return;
+					if (await listening(port, dial)) return;
 					const root = fileURLToPath(new URL("../../", import.meta.url));
 					const child = spawn(process.execPath, ["studio/src/server.ts"], {
 						cwd: root, detached: true, stdio: "ignore",
-						env: { ...process.env, PSI_HOME: store.root, PSI_STUDIO_PORT: String(port) },
+						env: { ...process.env, PSI_HOME: store.root, PSI_STUDIO_PORT: String(port), PSI_STUDIO_HOST: bind },
 					});
 					let failure: Error | undefined;
 					child.once("error", (error) => { failure = error; });
@@ -151,13 +159,13 @@ never mark mastery by explanation alone.`);
 					for (let i = 0; i < 40; i++) {
 						if (failure) throw failure;
 						if (child.exitCode !== null) throw new Error(`Studio exited with code ${child.exitCode}`);
-						if (await listening(port)) return;
+						if (await listening(port, dial)) return;
 						await new Promise((resolve) => setTimeout(resolve, 100));
 					}
 					throw new Error("Studio did not become ready within 4 seconds.");
 				})();
 				await starting;
-				ctx.ui.notify(`ψ studio: http://localhost:${port}`, "info");
+				ctx.ui.notify(`ψ studio: http://${dial.includes(":") ? `[${dial}]` : dial}:${port}`, "info");
 			} catch (error) {
 				ctx.ui.notify(`Could not start studio: ${error instanceof Error ? error.message : String(error)}`, "error");
 			} finally { starting = undefined; }

@@ -6,7 +6,7 @@ export interface ParsedArgs {
 }
 
 const values = new Set(["host", "model", "thinking", "topic", "psi-topic", "port", "o", "q"]);
-const switches = new Set(["help", "version", "mermaid", "manim", "docker", "open"]);
+const switches = new Set(["help", "version", "mermaid", "manim", "docker", "open", "speech", "autoplay"]);
 const aliases: Record<string, string> = { h: "help", v: "version", output: "o", quality: "q" };
 
 /** Parse supported options without consuming host arguments after --. */
