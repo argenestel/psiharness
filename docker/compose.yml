@@ -1,0 +1,44 @@
+services:
+  psi:
+    build:
+      context: ..
+      dockerfile: docker/base.Dockerfile
+    image: psi:latest
+    stdin_open: true
+    tty: true
+    volumes:
+      - psi-data:/data
+      - "${HOME}/.pi:/home/psi/.pi:ro"
+    environment:
+      - ANTHROPIC_API_KEY
+      - OPENAI_API_KEY
+
+  studio:
+    build:
+      context: ..
+      dockerfile: docker/base.Dockerfile
+    image: psi:latest
+    command: ["node", "/opt/psi/studio/src/server.ts"]
+    ports:
+      - "4173:4173"
+    volumes:
+      - psi-data:/data
+      - "${HOME}/.pi:/home/psi/.pi:ro"
+    environment:
+      PSI_STUDIO_HOST: 0.0.0.0
+      PSI_STUDIO_PORT: "4173"
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+    restart: unless-stopped
+
+  manim:
+    build:
+      context: ..
+      dockerfile: docker/manim.Dockerfile
+    image: psi-manim:latest
+    profiles: ["build"]
+    command: ["manim", "--version"]
+
+volumes:
+  psi-data:
+    name: psi-data
