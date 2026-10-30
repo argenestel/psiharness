@@ -1,5 +1,42 @@
-"use strict";
+/** Parse shell hashes while retaining the original #/topic/view URLs. */
+export function parseRoute(hash = "#/") {
+	try {
+		const raw = String(hash).replace(/^#\/?/, "");
+		const index = raw.indexOf("?");
+		const path = index < 0 ? raw : raw.slice(0, index);
+		const query = new URLSearchParams(index < 0 ? "" : raw.slice(index + 1));
+		const parts = path.split("/").map(decodeURIComponent);
+		const [first, second] = parts;
+		if (!first) return { route: "home", params: {} };
+		if (first === "new") return { route: "new", params: {
+			skill: query.get("skill") || "", topic: query.get("topic") || "", prompt: query.get("prompt") || "",
+		} };
+		if (first === "chat" && second) return { route: "chat", params: { chatId: second } };
+		if (first === "skills" && second) return { route: "skill", params: { skill: second } };
+		if (first === "memory" || first === "topics") return { route: first, params: {} };
+		return { route: "topic", params: { topic: first, view: second || "map" } };
+	} catch { return { route: "home", params: {} }; }
+}
 
+/** Clamp a ratio and round it to a whole percent for progress bars. */
+export function barPercent(value, total) {
+	const n = Number(value), max = Number(total);
+	return Number.isFinite(n) && Number.isFinite(max) && max > 0
+		? Math.round(Math.max(0, Math.min(1, n / max)) * 100) : 0;
+}
+
+/** Format the shared 20-hour goal and the core's quadratic XP level boundaries. */
+export function formatBars(progress = {}) {
+	const finite = (n) => Number.isFinite(Number(n)) ? Math.max(0, Number(n)) : 0;
+	const xp = finite(progress?.xp);
+	const level = Math.floor((1 + Math.sqrt(1 + 4 * xp / 25)) / 2);
+	const start = 25 * (level - 1) * level;
+	const hours = finite(progress?.minutesLogged) / 60;
+	return { level, levelPercent: barPercent(xp - start, 50 * level),
+		hours: `${Math.round(hours * 10) / 10}/20`, hoursPercent: barPercent(hours, 20) };
+}
+
+function init() {
 const app = document.querySelector("#app");
 const dialog = document.querySelector("#lightbox");
 const connection = document.querySelector("#connection");
@@ -34,10 +71,8 @@ async function api(path, options) {
 	return data;
 }
 function route() {
-	try {
-		const [topic, view = "map"] = location.hash.replace(/^#\/?/, "").split("/").map(decodeURIComponent);
-		return { topic, view: view || "map" };
-	} catch { return { topic: "", view: "map" }; }
+	const parsed = parseRoute(location.hash);
+	return { topic: parsed.params.topic || "", view: parsed.params.view || "map" };
 }
 function topicPath(topic, view) { return `#/${enc(topic)}/${view}`; }
 function artwork() {
@@ -72,7 +107,7 @@ async function render() {
 	const token = ++generation;
 	const { topic, view } = route();
 	reviewState = undefined;
-	if (events.readyState === EventSource.OPEN) setConnection("● Live");
+	if (events?.readyState === EventSource.OPEN) setConnection("● Live");
 	app.setAttribute("aria-busy", "true");
 	try {
 		if (!topic) {
@@ -95,7 +130,7 @@ async function render() {
 		const concepts = graph?.concepts || [];
 		const mastery = learner?.mastery || {};
 		document.title = `${graph?.title || titleOf(topic)} · ψ Studio`;
-		app.innerHTML = `<a class="back" href="#/">← All topics</a><div class="topic-heading">
+		app.innerHTML = `<a class="back" href="#/topics">← All topics</a><div class="topic-heading">
 			<span class="eyebrow">FOLLOW YOUR CURIOSITY</span><h1>${escapeHtml(graph?.title || titleOf(topic))}</h1>
 			<p>${escapeHtml(graph?.bigIdea || "Your next big idea starts here.")}</p></div>
 			<nav class="tabs" aria-label="Topic views">${VIEWS.map(([id, label, short]) => `<a href="${topicPath(topic, id)}"
@@ -358,7 +393,7 @@ async function submitRating(rating) {
 		const card = s.cards[s.index];
 		ownWriteUntil = Date.now() + 2000;
 		const updated = await api(`/api/topics/${enc(s.topic)}/cards/${enc(card.id)}/review`, {
-			method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rating }),
+			method: "POST", headers: { "Content-Type": "application/json", "X-Psi": "1" }, body: JSON.stringify({ rating }),
 		});
 		ownWriteUntil = Date.now() + 1000;
 		if (s.token !== generation) return;
@@ -406,25 +441,168 @@ function renderProgress(container, concepts, mastery, reviews) {
 		${rows || empty("No concepts to measure yet.")}</section>`;
 }
 
+let events;
+let mounted;
+let shellGeneration = 0;
+let sharedApi;
+const navigate = (hash) => {
+	if (location.hash === hash) void renderRoute();
+	else location.hash = hash;
+};
+const closeDrawer = () => {
+	document.body.classList.remove("psi-drawer-open");
+	document.querySelector("#menu-toggle").setAttribute("aria-expanded", "false");
+};
+async function refreshChrome() {
+	const token = ++shellGeneration;
+	const client = sharedApi || (await import("./js/api.js").catch(() => null))?.api;
+	if (!client || token !== shellGeneration) return;
+	sharedApi = client;
+	const list = async (path, selector, build, fallback) => {
+		const el = document.querySelector(selector);
+		try {
+			const items = await client.get(path);
+			if (token !== shellGeneration) return;
+			el.replaceChildren();
+			const nodes = await Promise.all(items.map(build));
+			if (token !== shellGeneration) return;
+			el.append(...nodes);
+			if (!items.length) el.textContent = fallback;
+		} catch { if (token === shellGeneration) el.textContent = "Unavailable right now"; }
+	};
+	const link = (text, href) => {
+		const a = document.createElement("a"); a.textContent = text; a.href = href; return a;
+	};
+	await Promise.allSettled([
+		list("/api/chat", "#saved-chats", (c) => link(c.title || "Untitled chat", `#/chat/${enc(c.id)}`),
+			"Your next conversation starts here."),
+		list("/api/skills", "#sidebar-skills", async (s) => {
+			const slug = typeof s === "string" ? s : s.skill;
+			const detail = typeof s === "string" ? await client.get(`/api/skills/${enc(slug)}`).catch(() => ({})) : s;
+			const a = link(detail.plan?.title || detail.title || titleOf(slug), `#/skills/${enc(slug)}`);
+			const p = detail.progress || {};
+			const bar = formatBars(p);
+			const small = document.createElement("small");
+			small.textContent = `Level ${bar.level} · ${bar.hours}h`;
+			const progress = document.createElement("progress");
+			progress.max = 100; progress.value = bar.hoursPercent;
+			progress.setAttribute("aria-label", `${titleOf(slug)} practice hours`);
+			const levelProgress = document.createElement("progress");
+			levelProgress.max = 100; levelProgress.value = bar.levelPercent;
+			levelProgress.setAttribute("aria-label", `${titleOf(slug)} level progress`);
+			a.append(small, levelProgress, progress); return a;
+		}, "Build your first skill."),
+		list("/api/topics", "#sidebar-topics", (t) => link(t.title, topicPath(t.topic, "map")), "No topics yet."),
+		(async () => {
+			const hud = document.querySelector("#skill-hud");
+			try {
+				const state = await client.get("/api/state");
+				const data = state.activeSkill ? await client.get(`/api/skills/${enc(state.activeSkill)}`) : {};
+				if (token !== shellGeneration) return;
+				const bars = formatBars(data.progress);
+				hud.innerHTML = `<span class="psi-hud-skill">${escapeHtml(data.plan?.title || state.activeSkill || "Ready to learn")}</span>
+					<span class="psi-hud-level">Level ${bars.level}<progress max="100" value="${bars.levelPercent}"
+					aria-label="Level progress">${bars.levelPercent}%</progress></span>
+					<span>🔥 ${escapeHtml(data.progress?.streakDays || 0)}</span><span>${bars.hours}h</span>`;
+			} catch { if (token === shellGeneration) hud.textContent = "Your progress will appear here · Level 1 · 🔥 0 · 0/20h"; }
+		})(),
+	]);
+	if (token === shellGeneration) document.querySelectorAll("#sidebar a").forEach((a) => {
+		if (a.hash === location.hash) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+	});
+}
+async function renderRoute() {
+	closeDrawer(); closeArtifact();
+	mounted?.destroy?.(); mounted = undefined;
+	const token = ++generation;
+	reviewState = undefined;
+	const parsed = parseRoute(location.hash);
+	void refreshChrome();
+	if (parsed.route === "topic" || parsed.route === "topics") return render();
+	app.replaceChildren();
+	const host = document.createElement("div"); app.append(host);
+	host.innerHTML = empty("Opening your learning space…");
+	document.title = "ψ Studio · Learn by doing";
+	app.setAttribute("aria-busy", "true");
+	try {
+		let view;
+		if (parsed.route === "home") {
+			const { mountHome } = await import("./js/home.js");
+			if (token !== generation) return;
+			view = mountHome(host, { navigate });
+		} else if (parsed.route === "memory") {
+			const { mountMemory } = await import("./js/memory.js");
+			if (token !== generation) return;
+			view = mountMemory(host);
+		} else if (parsed.route === "skill") {
+			const { mountPractice } = await import("./js/practice.js");
+			if (token !== generation) return;
+			view = mountPractice(host, { skill: parsed.params.skill, navigate });
+		} else if (parsed.route === "chat" || parsed.route === "new") {
+			const { api: client } = await import("./js/api.js");
+			const { mountChat } = await import("./js/chat.js");
+			if (token !== generation) return;
+			let chatId = parsed.params.chatId;
+			if (parsed.route === "new") {
+				host.innerHTML = empty("Starting a conversation…");
+				const { skill, topic, prompt } = parsed.params;
+				const created = await client.post("/api/chat", { ...(skill && { skill }), ...(topic && { topic }) });
+				chatId = created.id;
+				// Seed before mounting SSE; the chat endpoint replays its saved records on connection.
+				if (prompt) await client.post(`/api/chat/${enc(chatId)}/prompt`, { message: prompt });
+				if (token !== generation) return;
+				history.replaceState(null, "", `#/chat/${enc(chatId)}`);
+				void refreshChrome();
+			}
+			view = await mountChat(host, { chatId, skill: parsed.params.skill, topic: parsed.params.topic,
+				onChatCreated: (id) => navigate(`#/chat/${enc(id)}`) });
+		} else host.innerHTML = empty("This page does not exist. Choose a view in the sidebar.");
+		if (token === generation) mounted = view;
+		else view?.destroy?.();
+	} catch (error) {
+		if (token === generation) {
+			host.innerHTML = `<div class="empty"><h2>Couldn't open this view</h2><p>${escapeHtml(error.message)}</p>
+				<button id="shell-retry">Try again</button></div>`;
+			host.querySelector("#shell-retry").onclick = renderRoute;
+		}
+	} finally { if (token === generation) app.removeAttribute("aria-busy"); }
+}
 document.querySelector("#close-lightbox").onclick = closeArtifact;
 dialog.addEventListener("cancel", (event) => { event.preventDefault(); closeArtifact(); });
 dialog.addEventListener("click", (event) => { if (event.target === dialog) closeArtifact(); });
-window.addEventListener("hashchange", () => { closeArtifact(); void render(); });
+document.querySelector("#menu-toggle").onclick = () => {
+	const open = document.body.classList.toggle("psi-drawer-open");
+	document.querySelector("#menu-toggle").setAttribute("aria-expanded", String(open));
+};
+document.querySelector("#drawer-shade").onclick = closeDrawer;
+document.querySelector("#sidebar").addEventListener("click", (event) => {
+	if (event.target.closest("a")) closeDrawer();
+});
+document.querySelector(".psi-skip").onclick = (event) => { event.preventDefault(); app.focus(); };
+window.addEventListener("hashchange", () => { void renderRoute(); });
 window.addEventListener("keydown", (event) => {
+	if (event.key === "Escape") closeDrawer();
 	if (dialog.open || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
 	if (event.altKey || event.ctrlKey || event.metaKey) return;
 	if (reviewState && event.code === "Space" && !reviewState.revealed && reviewState.cards[reviewState.index]) {
 		event.preventDefault(); reviewState.revealed = true; renderCard();
 	} else if (reviewState && /^[1-4]$/.test(event.key)) { event.preventDefault(); void submitRating(Number(event.key)); }
 });
-const events = new EventSource("/api/events");
+events = new EventSource("/api/events");
 events.onopen = () => setConnection("● Live");
 events.onerror = () => setConnection("Reconnecting…");
 events.addEventListener("changed", () => {
+	void refreshChrome();
 	if (Date.now() < ownWriteUntil) return;
-	// Preserve an active answer and in-flight review; all other views refresh immediately.
 	if (reviewState) { setConnection("● Updates ready"); return; }
-	void render();
+	// Keep live conversations and form drafts intact during filesystem updates.
+	if (["topic", "topics"].includes(parseRoute(location.hash).route)) void render();
 });
-connection.textContent = liveLabel;
-void render();
+window.addEventListener("focus", () => { void refreshChrome(); });
+void renderRoute();
+}
+
+if (typeof document !== "undefined") {
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+	else init();
+}

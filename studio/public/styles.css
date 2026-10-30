@@ -248,3 +248,107 @@ progress::-moz-progress-bar { background: var(--purple);}
 	dialog { padding: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+/* Practice-first shell. The concept studio keeps its existing view styles above. */
+.psi-sidebar {
+	position: fixed; inset: 0 auto 0 0; width: 254px; padding: 24px 20px; z-index: 30;
+	background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto;
+	display: flex; flex-direction: column; gap: 25px;
+}
+.psi-sidebar .brand { display: block; font-size: 1.6rem; }
+.psi-sidebar .brand small { display: block; font-size: .56rem; letter-spacing: .18em; color: var(--muted); margin-left: 38px; }
+.psi-sidebar .brand span { font-size: 2.6rem; line-height: 1; }
+.psi-new-chat { text-align: center; width: 100%; }
+.psi-sidebar-links, .psi-nav-section nav { display: grid; gap: 4px; }
+.psi-sidebar nav { color: var(--muted); font-size: .8rem; }
+.psi-sidebar nav a { color: var(--fg); padding: 8px 10px; border-radius: 8px; overflow-wrap: anywhere; }
+.psi-sidebar nav a:hover, .psi-sidebar nav a[aria-current] { background: var(--panel-high); text-decoration: none; color: var(--mint); }
+.psi-sidebar nav small { display: block; color: var(--muted); font-size: .7rem; margin: 4px 0; }
+.psi-sidebar nav progress { height: 4px; margin-top: 5px; }
+.psi-nav-section h2 { font-size: .67rem; text-transform: uppercase; letter-spacing: .11em; color: var(--muted); margin: 0 0 8px 10px; }
+.psi-nav-section h2 a { float: right; font-size: .62rem; text-transform: none; letter-spacing: 0; }
+.psi-sidebar-note { font-size: .68rem; margin: auto 0 0; padding-top: 22px; border-top: 1px solid var(--line); }
+.psi-workspace { margin-left: 254px; min-width: 0; }
+.psi-topbar { position: sticky; top: 0; z-index: 20; background: var(--bg); max-width: none; min-height: 77px; padding: 16px 35px; gap: 18px; }
+.psi-hud { display: flex; gap: 24px; align-items: center; font-size: .78rem; flex: 1; color: var(--muted); }
+.psi-hud-skill { color: var(--fg); font-weight: 650; max-width: 270px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.psi-hud-level { display: grid; gap: 5px; min-width: 90px; }
+.psi-hud-level progress { height: 5px; }
+.psi-workspace main { padding: 38px clamp(20px, 3.6vw, 56px) 65px; max-width: 1320px; min-height: calc(100vh - 155px); }
+#menu-toggle, #drawer-shade { display: none; }
+.psi-skip { position: fixed; top: -100px; left: 15px; z-index: 100; padding: 10px; background: var(--panel); }
+.psi-skip:focus { top: 10px; }
+.psi-hero { padding: 23px 0 32px; max-width: 940px; }
+.psi-hero h1 { font-size: clamp(2rem, 3.9vw, 3.65rem); max-width: 800px; margin: 18px 0; }
+.psi-hero > p { max-width: 670px; font-size: .98rem; }
+.psi-learn-form { margin-top: 30px; }
+.psi-learn-form label { display: block; margin-bottom: 9px; font-size: .85rem; font-weight: 600; }
+input, textarea, select { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.psi-learn-form input { width: 100%; padding: 19px 20px; background: var(--panel); font-size: 1.03rem; }
+.psi-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 13px; }
+.psi-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.psi-chips button { background: transparent; color: var(--muted); font-size: .73rem; padding: 6px 12px; border-radius: 30px; }
+.psi-chips button:hover { color: var(--mint); }
+.psi-section { margin-top: 30px; }
+.psi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px; }
+.psi-card { display: block; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 23px; min-width: 0; overflow-wrap: anywhere; }
+.psi-card h3 { margin: 12px 0 8px; font-size: 1.12rem; }
+.psi-card p { font-size: .85rem; }
+.psi-card p:last-child { margin-bottom: 0; }
+.psi-card button { font-size: .8rem; }
+.psi-home-columns { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; }
+.psi-home-columns .psi-section { margin-top: 0; }
+.psi-home-columns .psi-card { min-height: 150px; }
+.psi-review-link { display: block; padding: 8px 0; }
+.psi-practice h1, .psi-memory h1 { font-size: clamp(2rem, 3.4vw, 3rem); margin-top: 13px; }
+.psi-target { max-width: 800px; font-size: 1.1rem; }
+.psi-practice-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.psi-practice-stats strong { display: block; font-size: 1.65rem; color: var(--mint); }
+.psi-practice-stats span { display: block; font-size: .72rem; color: var(--muted); margin-bottom: 9px; }
+.psi-subskills { padding-left: 22px; margin-bottom: 0; }
+.psi-subskills li { padding: 13px 0 18px 10px; border-bottom: 1px solid var(--line); }
+.psi-subskills li:last-child { border: 0; }
+.psi-subskills h3 { margin: 7px 0; }
+.psi-subskills p { margin-bottom: 7px; }
+.psi-challenge-host { margin: 16px 0; }
+.psi-memory-form { margin: 25px 0 0; }
+.psi-form-row { display: flex; align-items: end; gap: 14px; }
+.psi-form-row label { display: grid; gap: 6px; font-size: .78rem; }
+.psi-grow { flex: 1; }
+.psi-memory-columns { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; margin-top: 25px; }
+.psi-memory-group, .psi-recap { margin-bottom: 14px; }
+.psi-memory-group h3 { text-transform: capitalize; color: var(--mint); }
+.psi-memory-item { border-top: 1px solid var(--line); padding: 14px 0; }
+.psi-memory-item p { color: var(--fg); margin-bottom: 6px; }
+.psi-memory-item button { display: block; padding: 4px 10px; margin-top: 8px; color: var(--coral); font-size: .7rem; }
+#memory-summary { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; color: var(--muted); font-size: .83rem; }
+.psi-recap { border-left: 3px solid var(--purple); }
+.psi-recap time { font-size: .7rem; color: var(--muted); }
+@media (max-width: 1050px) {
+	.psi-sidebar { width: 220px; padding: 22px 16px; }
+	.psi-workspace { margin-left: 220px; }
+	.psi-hud { gap: 13px; }
+	.psi-hud-skill { max-width: 190px; }
+	.psi-home-columns, .psi-memory-columns { grid-template-columns: 1fr; }
+	.psi-form-row { flex-wrap: wrap; }
+}
+@media (max-width: 760px) {
+	.psi-sidebar { width: min(290px, 85vw); transform: translateX(-100%); transition: transform .2s; }
+	.psi-workspace { margin-left: 0; }
+	#menu-toggle { display: block; padding: 5px 10px; }
+	.psi-drawer-open .psi-sidebar { transform: translateX(0); }
+	.psi-drawer-open #drawer-shade { display: block; position: fixed; inset: 0; border: 0; border-radius: 0; background: #020610aa; z-index: 25; }
+	.psi-topbar { padding: 12px 16px; gap: 12px; }
+	.psi-hud { gap: 12px; flex-wrap: wrap; font-size: .7rem; }
+	.psi-hud-skill { flex-basis: 100%; max-width: 100%; }
+	.psi-hud-level { display: flex; gap: 7px; align-items: center; }
+	.psi-hud-level progress { width: 50px; }
+	.psi-topbar #connection { font-size: .6rem; }
+	.psi-practice-stats { grid-template-columns: repeat(2, 1fr); }
+	.psi-hero { padding-top: 5px; }
+	.psi-hero .eyebrow { font-size: .59rem; }
+	.psi-hero h1 { font-size: 2.25rem; }
+	.psi-form-row { align-items: stretch; }
+	.psi-form-row label { width: 100%; }
+	.psi-workspace main { padding: 24px 20px 45px; }
+}

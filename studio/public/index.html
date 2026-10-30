@@ -4,19 +4,34 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="theme-color" content="#0c1222">
-	<title>ψ Studio · See the big idea</title>
+	<title>ψ Studio · Learn by doing</title>
 	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230c1222'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%2370dfc1' font-family='sans-serif'%3E%CF%88%3C/text%3E%3C/svg%3E">
 	<link rel="stylesheet" href="/styles.css">
-	<script src="/app.js" defer></script>
+	<link rel="stylesheet" href="/css/chat.css">
+	<link rel="stylesheet" href="/css/widgets.css">
+	<script src="/app.js" type="module"></script>
 </head>
 <body>
-	<header class="topbar">
-		<a class="brand" href="#/" aria-label="Studio home"><span>ψ</span> Studio</a>
-		<span class="tagline">A universe of ideas, one connection at a time.</span>
-		<span id="connection" role="status">Connecting…</span>
-	</header>
-	<main id="app" tabindex="-1"><p class="empty">Opening your learning universe…</p></main>
+	<a class="psi-skip" href="#app">Skip to content</a>
+	<aside id="sidebar" class="psi-sidebar" aria-label="Learning navigation">
+		<a class="brand" href="#/" aria-label="psi home"><span>ψ</span> psi <small>LEARN BY DOING</small></a>
+		<a class="button psi-new-chat" href="#/new">＋ New chat</a>
+		<nav aria-label="Workspace" class="psi-sidebar-links"><a href="#/">⌂ Home</a><a href="#/memory">◇ Memory</a></nav>
+		<section class="psi-nav-section"><h2>Conversations</h2><nav id="saved-chats" aria-label="Saved chats">No conversations yet.</nav></section>
+		<section class="psi-nav-section"><h2>Your skills</h2><nav id="sidebar-skills" aria-label="Skills">Build your first skill.</nav></section>
+		<section class="psi-nav-section"><h2>Concepts <a href="#/topics">View all ↗</a></h2><nav id="sidebar-topics" aria-label="Topics">No topics yet.</nav></section>
+		<p class="psi-sidebar-note">Small attempts. Lasting understanding.<br>Every try earns progress.</p>
+	</aside>
+	<button id="drawer-shade" aria-label="Close navigation" tabindex="-1"></button>
+	<div class="psi-workspace">
+		<header class="topbar psi-topbar">
+			<button id="menu-toggle" aria-label="Toggle navigation" aria-controls="sidebar" aria-expanded="false">☰</button>
+			<div id="skill-hud" class="psi-hud" aria-label="Learning progress">Ready to learn · Level 1 · 🔥 0 · 0/20h</div>
+			<span id="connection" role="status">Connecting…</span>
+		</header>
+		<main id="app" tabindex="-1"><p class="empty">Opening your learning space…</p></main>
+		<footer>ψ · Try. Learn. Level up.</footer>
+	</div>
 	<dialog id="lightbox" aria-label="Artifact viewer"><button id="close-lightbox" class="close" aria-label="Close viewer">×</button><div id="lightbox-content"></div></dialog>
-	<footer>ψ · Build intuition. Make connections. Remember what matters.</footer>
 </body>
 </html>
