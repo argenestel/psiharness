@@ -1,0 +1,199 @@
+{
+	"topic": "linear-transformations",
+	"title": "Linear Transformations",
+	"bigIdea": "A linear transformation is a rule for moving vectors that is completely determined by where it sends a basis: matrix columns record those moves, composition chains them, the determinant measures signed area scaling, and eigenvectors reveal directions that keep their heading.",
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z",
+	"concepts": [
+		{
+			"id": "linear-map-grid-squish",
+			"title": "A grid can move as one coherent object",
+			"summary": "A linear transformation moves every point by a rule that preserves the origin and straight-line combinations. On a grid it can stretch, rotate, shear, or flatten the plane while keeping parallel lines parallel.",
+			"prerequisites": [],
+			"difficulty": 1,
+			"intuition": "Imagine a transparent rubber grid whose arrows all move consistently: the origin stays put and every parallelogram remains a parallelogram.",
+			"misconceptions": [
+				"A linear transformation can move the origin anywhere as long as the picture still looks smooth.",
+				"Every visually simple deformation is linear, including a translation or a bend.",
+				"A grid line has to remain the same length for the transformation to be linear."
+			],
+			"visualHooks": [
+				"A square grid stretches into a slanted parallelogram one point at a time.",
+				"Colored rubber bands show that parallel lines stay parallel while spacing changes.",
+				"A tiny creature watches the origin stay pinned while the rest of its world squishes."
+			],
+			"tags": ["intuition", "transformations", "grid", "linear-algebra"]
+		},
+		{
+			"id": "vectors",
+			"title": "Vectors are reusable moves",
+			"summary": "A vector records a displacement with direction and magnitude, independent of where its arrow is drawn. Vectors add by head-to-tail motion and scale by changing how far the move goes.",
+			"prerequisites": ["linear-map-grid-squish"],
+			"difficulty": 1,
+			"intuition": "A vector is an instruction to move: direction and amount, independent of where you draw its arrow.",
+			"misconceptions": [
+				"A vector is a point whose coordinates identify its location.",
+				"Two arrows are different vectors whenever they start at different places.",
+				"Adding vectors means adding their lengths instead of adding horizontal and vertical moves."
+			],
+			"visualHooks": [
+				"Slide identical arrows across the plane and show that their displacement does not change.",
+				"Place two colored arrows head-to-tail so their sum appears as the shortcut arrow.",
+				"Stretch one arrow with a slider and watch every copy stretch by the same factor."
+			],
+			"tags": ["vectors", "displacement", "addition", "scaling"]
+		},
+		{
+			"id": "basis",
+			"title": "A basis is a pair of coordinate directions",
+			"summary": "Two independent vectors form a basis for the plane when every vector can be made from exactly one combination of them. The coefficients are coordinates in that chosen basis.",
+			"prerequisites": ["vectors"],
+			"difficulty": 2,
+			"intuition": "A basis is a pair of reusable moves that lets you describe any point by how much of each move you take.",
+			"misconceptions": [
+				"Only the horizontal and vertical unit vectors can be a basis.",
+				"A basis vector must have length one or be perpendicular to the other basis vector.",
+				"If a vector has two coordinates, those numbers mean the same thing in every basis."
+			],
+			"visualHooks": [
+				"Build a point by taking colored steps along two oblique basis arrows.",
+				"Show a square lattice becoming a slanted parallelogram lattice under a new basis.",
+				"Fade between the same geometric arrow and its changing coordinate labels."
+			],
+			"tags": ["basis", "coordinates", "span", "independence"]
+		},
+		{
+			"id": "linear-maps",
+			"title": "Linearity preserves combinations",
+			"summary": "A map T is linear when T(u+v)=T(u)+T(v) and T(cu)=cT(u). Together these rules mean T sends every linear combination to the same combination of the transformed ingredients.",
+			"prerequisites": ["vectors", "basis"],
+			"difficulty": 2,
+			"intuition": "A linear map transforms a whole plane once you know how it transforms sums and scalings.",
+			"misconceptions": [
+				"A map is linear whenever its graph is a straight line in a plot.",
+				"Preserving addition alone is enough; scaling may follow a different rule.",
+				"A linear map must preserve lengths, angles, or areas."
+			],
+			"visualHooks": [
+				"Compare transforming a sum before versus after splitting it into two arrows.",
+				"Animate a grid point as a weighted combination of two basis arrows.",
+				"Use a rubber sheet to show straight segments remain straight while lengths change."
+			],
+			"tags": ["linear-map", "additivity", "homogeneity", "combinations"]
+		},
+		{
+			"id": "matrix-columns",
+			"title": "Matrix columns are transformed basis vectors",
+			"summary": "Once input and output bases are chosen, a linear map is encoded by a matrix. In the standard basis, the first column is T(i) and the second column is T(j), so matrix multiplication computes transformed coordinates.",
+			"prerequisites": ["basis", "linear-maps"],
+			"difficulty": 2,
+			"intuition": "A matrix is a compact record of where the basis arrows go: its columns are those transformed basis vectors.",
+			"misconceptions": [
+				"The rows, rather than the columns, are always the images of the input basis vectors.",
+				"A matrix entry is a fixed physical length instead of a coordinate in the output basis.",
+				"The same matrix describes a map even after changing either the input or output basis."
+			],
+			"visualHooks": [
+				"Color the i and j arrows to match the first and second matrix columns.",
+				"Transform a unit square into a parallelogram and read its two edge vectors as columns.",
+				"Expand a coordinate combination and let the two columns assemble the result."
+			],
+			"tags": ["matrix", "columns", "coordinates", "standard-basis"]
+		},
+		{
+			"id": "composition",
+			"title": "Composition chains transformations",
+			"summary": "Applying one linear map after another gives a new linear map. For matrices, AB means B acts first and A acts second, which is why matrix multiplication is ordered and usually noncommutative.",
+			"prerequisites": ["linear-maps", "matrix-columns"],
+			"difficulty": 3,
+			"intuition": "Composition is stacking coordinate machines; the right-hand map acts first.",
+			"misconceptions": [
+				"AB means A acts first because A is written first.",
+				"Matrix multiplication is entry-by-entry multiplication.",
+				"Every pair of matrices can be composed in either order with the same result."
+			],
+			"visualHooks": [
+				"Send a grid through a blue machine and then a gold machine, preserving the intermediate state.",
+				"Show the columns of AB as A acting on the columns of B.",
+				"Run AB and BA side by side so a shear and a stretch visibly disagree."
+			],
+			"tags": ["composition", "matrix-multiplication", "order", "transformations"]
+		},
+		{
+			"id": "determinant",
+			"title": "The determinant measures signed area scaling",
+			"summary": "For a 2×2 matrix, the determinant is ad−bc. It is the signed area of the image of the unit square: its magnitude is the area scale and its sign records orientation reversal.",
+			"prerequisites": ["matrix-columns", "composition"],
+			"difficulty": 3,
+			"intuition": "The determinant is the signed area of the image of a unit square.",
+			"misconceptions": [
+				"The determinant is the area of the matrix's four entries.",
+				"A negative determinant means the map shrinks every vector.",
+				"A determinant of zero means only that one particular square landed on a line."
+			],
+			"visualHooks": [
+				"Fill the unit square, transform its corners, and track the signed parallelogram area.",
+				"Flip the plane through a mirror-like map and show the determinant sign change.",
+				"Flatten a square into a line while the area readout falls continuously to zero."
+			],
+			"tags": ["determinant", "area", "orientation", "invertibility"]
+		},
+		{
+			"id": "inverse",
+			"title": "An inverse map rewinds the motion",
+			"summary": "A linear map has an inverse exactly when its determinant is nonzero. The inverse sends every output back to its unique input, and composing a map with its inverse gives the identity transformation.",
+			"prerequisites": ["composition", "determinant"],
+			"difficulty": 3,
+			"intuition": "An inverse is a map that rewinds every arrow, so doing both returns each point exactly.",
+			"misconceptions": [
+				"The inverse matrix is made by taking the reciprocal of every entry.",
+				"Any map can be undone even after it has flattened a plane into a line.",
+				"The inverse transformation is the same as reflecting the picture across a diagonal."
+			],
+			"visualHooks": [
+				"Play a grid forward through A and backward through A⁻¹ until every line returns home.",
+				"Contrast a reversible parallelogram map with a flattened map that has lost information.",
+				"Show AA⁻¹ as two stacked machines collapsing to an unchanged grid."
+			],
+			"tags": ["inverse", "identity", "undo", "determinant"]
+		},
+		{
+			"id": "eigenvectors",
+			"title": "Eigenvectors keep their direction",
+			"summary": "An eigenvector is a nonzero vector whose direction is unchanged by a map: Av=λv. The eigenvalue λ tells whether that direction stretches, shrinks, or flips, and some real matrices have no real eigenvectors.",
+			"prerequisites": ["linear-maps", "matrix-columns", "determinant"],
+			"difficulty": 3,
+			"intuition": "An eigenvector is a special direction that survives the transformation without turning; its eigenvalue says stretch or flip.",
+			"misconceptions": [
+				"An eigenvector is a point that stays fixed in place.",
+				"Every nonzero vector is an eigenvector of every matrix after choosing a suitable eigenvalue.",
+				"An eigenvalue must be positive because it measures a length."
+			],
+			"visualHooks": [
+				"Sweep many arrows through a shear and highlight the one line that does not rotate.",
+				"Show λ as a slider that stretches an eigenvector while its ray stays on one line.",
+				"Use the characteristic equation to turn a matrix question into an intersection of directions."
+			],
+			"tags": ["eigenvectors", "eigenvalues", "invariant-directions", "characteristic-polynomial"]
+		},
+		{
+			"id": "change-of-basis",
+			"title": "Changing basis changes the coordinates, not the vector",
+			"summary": "A geometric vector is independent of coordinates, but its coordinate column changes with the chosen basis. Basis-change matrices translate between coordinate descriptions, and a map's matrix changes by conjugation when the same basis is used on input and output.",
+			"prerequisites": ["basis", "matrix-columns", "composition", "inverse"],
+			"difficulty": 4,
+			"intuition": "Changing basis is changing the measuring sticks: the arrow stays in the plane while its coordinate recipe changes.",
+			"misconceptions": [
+				"Changing basis physically moves the vector in the plane.",
+				"The coordinate numbers of a vector are intrinsic and cannot depend on a basis.",
+				"A basis-change matrix can be applied without tracking which direction converts to which."
+			],
+			"visualHooks": [
+				"Hold one arrow still while two coordinate grids rotate and report different coefficients.",
+				"Use a conversion machine and its inverse to translate old coordinates into new ones.",
+				"Show P⁻¹AP as the same geometric action written from a new viewpoint."
+			],
+			"tags": ["change-of-basis", "coordinates", "similarity", "representation"]
+		}
+	]
+}

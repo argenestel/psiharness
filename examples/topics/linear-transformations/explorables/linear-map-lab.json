@@ -1,0 +1,28 @@
+{
+	"id": "linear-map-lab",
+	"title": "Move the grid yourself",
+	"topic": "linear-transformations",
+	"conceptId": "linear-map-grid-squish",
+	"style": "3b1b",
+	"template": "linear-transform",
+	"params": {
+		"showDeterminant": true,
+		"showEigen": true,
+		"vectors": [[1, 2]]
+	},
+	"sliders": [
+		{ "name": "a", "label": "a: x-coordinate of where î lands", "min": -3, "max": 3, "step": 0.1, "value": 2 },
+		{ "name": "b", "label": "b: x-coordinate of where ĵ lands", "min": -3, "max": 3, "step": 0.1, "value": -1 },
+		{ "name": "c", "label": "c: y-coordinate of where î lands", "min": -3, "max": 3, "step": 0.1, "value": 1 },
+		{ "name": "d", "label": "d: y-coordinate of where ĵ lands", "min": -3, "max": 3, "step": 0.1, "value": 1 }
+	],
+	"prompts": [
+		"Start at a=2, b=−1, c=1, d=1. The green î arrow lands on (2,1), the first column (a,c); the red ĵ arrow lands on (−1,1), the second column (b,d).",
+		"The yellow arrow is where the input vector (1,2) lands. Predict it first: 1·(2,1) + 2·(−1,1) = (0,3).",
+		"Read det(A) = 3 in the panel: the shaded unit square has become a parallelogram with three times the area.",
+		"Keep a=2, b=−1, c=1 and slide d down to −0.5. det(A) reaches 0 and the whole grid collapses onto a single line.",
+		"Push d to −1. det(A) is now −1: the area is unchanged in size, but î and ĵ have swapped their turning order, so the plane has been flipped.",
+		"Set a=1, b=1, c=0, d=1, a shear. Only one dashed eigen-line remains, along the x-axis, with eigenvalue 1: those arrows slide along themselves without turning.",
+		"Set a=0, b=−1, c=1, d=0, a quarter-turn. The panel reports no real eigenvector directions, because every arrow turns."
+	]
+}

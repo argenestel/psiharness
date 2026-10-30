@@ -1,0 +1,474 @@
+{
+	"topic": "fourier-transform",
+	"goal": "By the end you can look at a signal in time or frequency, explain how rotating vectors and orthogonal sinusoids reveal its ingredients, and predict what convolution filters will do.",
+	"learnerLevel": "student",
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z",
+	"lessons": [
+		{
+			"conceptId": "rotating-vectors-draw-anything",
+			"objective": "By the end you can describe how a chain of rotating vectors makes a moving tip trace a shape.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Watch a few nested circles move a pen tip into a recognizable heart."
+				},
+				{
+					"kind": "question",
+					"text": "How can simple circular motions cooperate to make corners, lobes, and a pointed bottom?"
+				},
+				{
+					"kind": "build",
+					"text": "Follow the endpoint of one rotor, then attach a second rotor to that endpoint and add their displacements."
+				},
+				{
+					"kind": "reveal",
+					"text": "The final pen position is a sum of rotating vectors; each circle contributes one rhythm and one scale."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "The same idea can describe a drawing, a vibration, or any signal built from repeated motion."
+				},
+				{
+					"kind": "recap",
+					"text": "One rotor gives a circle; many rotors add their tips to trace richer paths."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "kurzgesagt",
+					"title": "Every sound is a sum of circles",
+					"goal": "Make the moving endpoint and its nested circular scaffolding obvious, then show that summed rotors rebuild waves, a square wave, and a drawing.",
+					"path": "storyboards/rotating-vectors-draw-anything.json"
+				},
+				{
+					"kind": "explorable",
+					"style": "kurzgesagt",
+					"title": "Let the rotors draw a shape",
+					"goal": "Let the learner vary the number and speed of rotating components.",
+					"path": "explorables/circles-draw-a-heart.json"
+				}
+			],
+			"checks": [
+				"card-rotating-vectors-draw-anything-1",
+				"card-rotating-vectors-draw-anything-2",
+				"card-rotating-vectors-draw-anything-3",
+				"card-rotating-vectors-draw-anything-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "complex-numbers",
+			"objective": "By the end you can use the complex plane to interpret multiplication by a unit complex number as a rotation.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Press the button i and watch an arrow turn exactly a quarter-turn without changing length."
+				},
+				{
+					"kind": "question",
+					"text": "What arithmetic operation could carry both the size and direction of a planar arrow?"
+				},
+				{
+					"kind": "build",
+					"text": "Place a+bi at the point (a,b), then multiply polar lengths and add polar angles."
+				},
+				{
+					"kind": "reveal",
+					"text": "Multiplying by cos(θ)+i sin(θ) rotates by θ; its magnitude is one, so no stretch occurs."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Complex numbers let a two-dimensional rotation become one compact multiplication rule."
+				},
+				{
+					"kind": "recap",
+					"text": "A complex number is a plane point, and complex multiplication composes scale and turn."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "The complex plane turns",
+					"goal": "Connect a+bi, polar angle, and rotation by multiplication."
+				}
+			],
+			"checks": [
+				"card-complex-numbers-1",
+				"card-complex-numbers-2",
+				"card-complex-numbers-3",
+				"card-complex-numbers-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "rotating-vectors",
+			"objective": "By the end you can read e^{iωt} as a unit vector with angular speed ω and identify how a coefficient changes its size and phase.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Compare two clock hands: one turns twice as fast, while another starts from a different angle."
+				},
+				{
+					"kind": "question",
+					"text": "Which part of a compact formula should control speed, length, and starting angle?"
+				},
+				{
+					"kind": "build",
+					"text": "Track e^{iωt} around the unit circle and multiply it by a fixed complex coefficient."
+				},
+				{
+					"kind": "reveal",
+					"text": "ω sets angular speed, the coefficient magnitude sets radius, and its angle sets phase."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "A signal can be assembled by adding many independent clock hands with different speeds."
+				},
+				{
+					"kind": "recap",
+					"text": "Complex exponentials are rotating basis motions, with coefficients carrying amplitude and phase."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "A complex clock hand",
+					"goal": "Separate angular speed, amplitude, and phase in one rotating vector."
+				}
+			],
+			"checks": [
+				"card-rotating-vectors-1",
+				"card-rotating-vectors-2",
+				"card-rotating-vectors-3",
+				"card-rotating-vectors-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "sinusoids",
+			"objective": "By the end you can derive a sine wave as the one-axis projection of uniform circular motion.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A bead loops around a circle while its shadow slides up and down as a perfect wave."
+				},
+				{
+					"kind": "question",
+					"text": "Why does a constant-speed circle produce a changing signal with smooth peaks and troughs?"
+				},
+				{
+					"kind": "build",
+					"text": "Project the rotor's endpoint onto the vertical axis and label the height at equal time steps."
+				},
+				{
+					"kind": "reveal",
+					"text": "The projected coordinate is A sin(ωt+φ), so amplitude, frequency, and phase have geometric jobs."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Every pure sinusoid is a simple rotating ingredient viewed through one coordinate."
+				},
+				{
+					"kind": "recap",
+					"text": "Rotation in the plane and oscillation on a line are two views of the same motion."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "A sine wave is a shadow",
+					"goal": "Make projection from a rotating vector to a sinusoid visually immediate."
+				}
+			],
+			"checks": [
+				"card-sinusoids-1",
+				"card-sinusoids-2",
+				"card-sinusoids-3",
+				"card-sinusoids-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "frequency-intuition",
+			"objective": "By the end you can distinguish frequency, period, angular frequency, and amplitude when comparing oscillations.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Two equal-height waves race across the screen: one completes six cycles while the other completes two."
+				},
+				{
+					"kind": "question",
+					"text": "What changed between the waves, and what stayed fixed?"
+				},
+				{
+					"kind": "build",
+					"text": "Measure one cycle as a period T, count cycles per time as f, and convert to angular speed ω=2πf."
+				},
+				{
+					"kind": "reveal",
+					"text": "Frequency changes the horizontal spacing and tempo; amplitude changes vertical reach."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "The spectrum will use frequency as its address, so a clear sense of pace matters more than a memorized symbol."
+				},
+				{
+					"kind": "recap",
+					"text": "Period is time per cycle, frequency is cycles per time, and angular frequency counts radians per time."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Tempo versus height",
+					"goal": "Separate frequency from amplitude and period with matched wave comparisons."
+				}
+			],
+			"checks": [
+				"card-frequency-intuition-1",
+				"card-frequency-intuition-2",
+				"card-frequency-intuition-3",
+				"card-frequency-intuition-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "inner-product-with-sinusoid",
+			"objective": "By the end you can explain why averaging a signal times a reference sinusoid detects the reference frequency.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A detector listens to a messy signal and lights up only when its reference rhythm matches a hidden tone."
+				},
+				{
+					"kind": "question",
+					"text": "How can multiplication and averaging tell one frequency apart from all the others?"
+				},
+				{
+					"kind": "build",
+					"text": "Multiply the signal by a reference sine, inspect the positive and negative lobes, and average over complete cycles."
+				},
+				{
+					"kind": "reveal",
+					"text": "Matching rhythms stay biased in one sign and produce a nonzero inner product; mismatched rhythms cancel."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "This is a projection onto a sinusoidal direction, just like a dot product finds a vector's component."
+				},
+				{
+					"kind": "recap",
+					"text": "Tune the reference, multiply, and average: the result measures that sinusoid's coefficient."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Tune the rhythm detector",
+					"goal": "Show matching products accumulating while mismatches cancel."
+				}
+			],
+			"checks": [
+				"card-inner-product-with-sinusoid-1",
+				"card-inner-product-with-sinusoid-2",
+				"card-inner-product-with-sinusoid-3",
+				"card-inner-product-with-sinusoid-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "orthogonality",
+			"objective": "By the end you can use sinusoidal orthogonality to justify measuring Fourier coefficients independently.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Multiply two different integer-frequency waves and watch their product paint equal positive and negative area."
+				},
+				{
+					"kind": "question",
+					"text": "When does one rhythm become invisible to another under an inner product?"
+				},
+				{
+					"kind": "build",
+					"text": "Integrate over a shared complete period and pair sine with sine, cosine with cosine, and sine with cosine."
+				},
+				{
+					"kind": "reveal",
+					"text": "Distinct harmonics have zero inner product, while a wave paired with itself has positive energy."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Sinusoids act like perpendicular coordinate axes in a space of functions."
+				},
+				{
+					"kind": "recap",
+					"text": "Orthogonality is the cancellation rule that lets each frequency be read without contamination from the others."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Rhythms as perpendicular axes",
+					"goal": "Make zero cross-correlation and positive self-correlation visible."
+				}
+			],
+			"checks": [
+				"card-orthogonality-1",
+				"card-orthogonality-2",
+				"card-orthogonality-3",
+				"card-orthogonality-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "fourier-series",
+			"objective": "By the end you can describe a periodic signal as a constant plus weighted sine and cosine harmonics.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A single sine wave grows extra harmonics until its smooth crest becomes a square wave's flat top."
+				},
+				{
+					"kind": "question",
+					"text": "Can a repeating shape be rebuilt from a vocabulary of pure tones?"
+				},
+				{
+					"kind": "build",
+					"text": "Project the periodic signal onto each orthogonal sine and cosine, then add the measured coefficients."
+				},
+				{
+					"kind": "reveal",
+					"text": "The Fourier series is the sum of harmonics; more terms add sharper detail while preserving the periodic pattern."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "The drawing made by rotating vectors and the sound made by harmonics use the same additive language."
+				},
+				{
+					"kind": "recap",
+					"text": "Fourier series = constant term plus orthogonal sinusoidal ingredients, each weighted by projection."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Build a periodic shape from tones",
+					"goal": "Show harmonics accumulating into a repeating waveform."
+				},
+				{
+					"kind": "explorable",
+					"style": "kurzgesagt",
+					"title": "Watch circles build a heart",
+					"goal": "Connect sorted Fourier coefficients to a reconstruction that sharpens as terms are added.",
+					"path": "explorables/circles-draw-a-heart.json"
+				}
+			],
+			"checks": [
+				"card-fourier-series-1",
+				"card-fourier-series-2",
+				"card-fourier-series-3",
+				"card-fourier-series-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "continuous-fourier-transform",
+			"objective": "By the end you can interpret the continuous Fourier transform as a correlation with every possible frequency.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A frequency spotlight sweeps across a one-time pulse and paints a broad spectrum instead of a few discrete bars."
+				},
+				{
+					"kind": "question",
+					"text": "What changes when the signal is not periodic and the candidate frequencies are no longer integer harmonics?"
+				},
+				{
+					"kind": "build",
+					"text": "Correlate the signal with e^{-iωt} for each real ω, recording magnitude and phase as the detector scans."
+				},
+				{
+					"kind": "reveal",
+					"text": "The transform turns time localization into a spread of frequencies and turns repeated rhythms into concentrated peaks."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Time and frequency are complementary descriptions, connected by a reversible integral transform with a convention-dependent scale."
+				},
+				{
+					"kind": "recap",
+					"text": "The Fourier transform is a continuum of rhythm detectors, not a mysterious switch that deletes the signal's structure."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Scan every frequency",
+					"goal": "Connect a time signal to its continuous magnitude and phase spectrum."
+				}
+			],
+			"checks": [
+				"card-continuous-fourier-transform-1",
+				"card-continuous-fourier-transform-2",
+				"card-continuous-fourier-transform-3",
+				"card-continuous-fourier-transform-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "convolution-filtering",
+			"objective": "By the end you can predict how a time-domain convolution changes a signal by inspecting the filter's frequency response.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A sliding blur kernel softens a jagged signal while a frequency mask dims its fast rotors."
+				},
+				{
+					"kind": "question",
+					"text": "Why should sliding weighted overlap in time be equivalent to multiplying spectra?"
+				},
+				{
+					"kind": "build",
+					"text": "Write convolution as accumulated shifted copies of a kernel, then transform the shifts into phase factors."
+				},
+				{
+					"kind": "reveal",
+					"text": "The convolution theorem turns convolution into pointwise multiplication: each frequency is scaled and phase-shifted independently."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Low-pass, high-pass, and band-pass filters are choices about which rotating ingredients survive."
+				},
+				{
+					"kind": "recap",
+					"text": "Convolution is overlap in time and multiplication in frequency, so filtering is easiest to see in the spectrum."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Filtering as frequency choice",
+					"goal": "Link sliding overlap, spectral multiplication, and selective frequency loss."
+				}
+			],
+			"checks": [
+				"card-convolution-filtering-1",
+				"card-convolution-filtering-2",
+				"card-convolution-filtering-3",
+				"card-convolution-filtering-4"
+			],
+			"status": "planned"
+		}
+	]
+}

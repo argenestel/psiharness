@@ -1,0 +1,199 @@
+{
+	"topic": "fourier-transform",
+	"title": "Fourier Transform: seeing the rotating ingredients inside a signal",
+	"bigIdea": "Any repeating-looking signal can be understood as a mixture of simple rotating motions, and the Fourier transform reveals how much of each frequency is present so that filtering and convolution become visible operations.",
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z",
+	"concepts": [
+		{
+			"id": "rotating-vectors-draw-anything",
+			"title": "Rotating vectors can draw shapes",
+			"summary": "The tip of one rotating arrow traces a circle; a chain of rotating arrows added end to end can trace surprisingly rich closed paths.",
+			"prerequisites": [],
+			"difficulty": 1,
+			"intuition": "A rotating arrow is a tiny motion recipe, and a chain of recipes can add up to a drawing.",
+			"misconceptions": [
+				"One rotating vector can draw any shape by itself.",
+				"The circles are the final picture rather than scaffolding for the moving tip.",
+				"Adding more circles always makes the drawing exact."
+			],
+			"visualHooks": [
+				"Nested bicycle wheels whose axle tips trace a heart.",
+				"Orbiting planets hand a pen from one center to the next.",
+				"A spinning arrow leaves a bright trail only at its endpoint."
+			],
+			"tags": ["hook", "visual-intuition", "epicycles"]
+		},
+		{
+			"id": "complex-numbers",
+			"title": "Complex numbers are points with a built-in turn",
+			"summary": "A complex number a+bi names a point in the plane, while multiplying by a unit complex number changes its angle and rotates it without changing its length.",
+			"prerequisites": ["rotating-vectors-draw-anything"],
+			"difficulty": 2,
+			"intuition": "Complex multiplication is geometry in disguise: length scales and angles add.",
+			"misconceptions": [
+				"The symbol i is an ordinary real number with a negative value.",
+				"A complex number is two unrelated numbers rather than one geometric point.",
+				"Multiplying by i makes a vector longer because it adds a dimension."
+			],
+			"visualHooks": [
+				"A coordinate plane where i is a quarter-turn button.",
+				"Two arrows multiply by composing their stretches and rotations.",
+				"A compass needle turning as e^{iθ} is dialed."
+			],
+			"tags": ["complex-numbers", "rotation", "algebra"]
+		},
+		{
+			"id": "rotating-vectors",
+			"title": "A rotating vector is a complex exponential",
+			"summary": "The expression e^{iωt} is a unit vector rotating at angular speed ω; multiplying it by a complex coefficient sets a component's size and starting phase.",
+			"prerequisites": ["complex-numbers"],
+			"difficulty": 2,
+			"intuition": "One complex exponential is a clock hand whose speed, length, and starting angle are all explicit.",
+			"misconceptions": [
+				"The imaginary exponent makes the value grow exponentially in magnitude.",
+				"Changing phase changes frequency.",
+				"A negative frequency means a negative physical time."
+			],
+			"visualHooks": [
+				"A clock hand labelled ωt sweeping around the unit circle.",
+				"A coefficient arrow attached to a faster or slower rotor.",
+				"Clockwise and counterclockwise hands for opposite signed frequencies."
+			],
+			"tags": ["complex-exponential", "phase", "frequency"]
+		},
+		{
+			"id": "sinusoids",
+			"title": "Sinusoids are shadows of rotation",
+			"summary": "Projecting uniform circular motion onto one axis produces a sine or cosine wave; amplitude controls the excursion and frequency controls how quickly cycles repeat.",
+			"prerequisites": ["rotating-vectors"],
+			"difficulty": 2,
+			"intuition": "A sine wave is what a steady circular motion looks like when seen edge-on.",
+			"misconceptions": [
+				"Amplitude changes how often the wave cycles.",
+				"A phase shift changes the wave's frequency.",
+				"Sine and cosine are fundamentally different kinds of motion."
+			],
+			"visualHooks": [
+				"A bead moving around a circle casts a moving shadow on a wall.",
+				"The same rotor shown from above and then edge-on.",
+				"A stretched and compressed wave beside its circular source."
+			],
+			"tags": ["sinusoid", "projection", "amplitude"]
+		},
+		{
+			"id": "frequency-intuition",
+			"title": "Frequency is the pace of repetition",
+			"summary": "Frequency counts cycles per unit time, while angular frequency is 2π times that rate; high frequency means faster oscillation, not necessarily larger amplitude.",
+			"prerequisites": ["sinusoids"],
+			"difficulty": 2,
+			"intuition": "Frequency is the tempo of a repeating motion; amplitude is how far the motion reaches.",
+			"misconceptions": [
+				"A higher frequency must have a higher amplitude.",
+				"Frequency and period both measure the same number with the same units.",
+				"A signal has only one frequency because it has one time axis."
+			],
+			"visualHooks": [
+				"Slow and fast metronomes tracing waves with equal height.",
+				"A race between a short-period and long-period oscillator.",
+				"A frequency dial that changes spacing while leaving height fixed."
+			],
+			"tags": ["frequency", "period", "rate"]
+		},
+		{
+			"id": "inner-product-with-sinusoid",
+			"title": "Correlating with a sinusoid measures its ingredient",
+			"summary": "Multiplying a signal by a reference sinusoid and averaging over a whole number of cycles measures how strongly that frequency is present.",
+			"prerequisites": ["sinusoids", "frequency-intuition"],
+			"difficulty": 3,
+			"intuition": "An inner product is a detector tuned to one pattern: it reports how much the signal points in that direction.",
+			"misconceptions": [
+				"The average of a product is always zero for oscillating signals.",
+				"Correlation with a frequency proves the signal contains only that frequency.",
+				"The detector works the same way if the observation window cuts a cycle in half."
+			],
+			"visualHooks": [
+				"A lock-in amplifier turning a knob until two waves line up.",
+				"Positive and negative lobes cancelling except for the matching rhythm.",
+				"A projection shadow growing when the reference wave matches."
+			],
+			"tags": ["inner-product", "correlation", "coefficient"]
+		},
+		{
+			"id": "orthogonality",
+			"title": "Different frequencies can be perpendicular",
+			"summary": "Over a complete shared period, distinct integer-frequency sines and cosines have zero inner product, so their coefficients can be measured independently.",
+			"prerequisites": ["inner-product-with-sinusoid"],
+			"difficulty": 3,
+			"intuition": "Orthogonality makes different rhythms invisible to one another when averaged over the right interval.",
+			"misconceptions": [
+				"Perpendicular only makes sense for arrows drawn in two dimensions.",
+				"Any two different frequencies cancel on every interval.",
+				"Zero inner product means both signals are zero."
+			],
+			"visualHooks": [
+				"Two waves whose product has equal positive and negative area.",
+				"A high-dimensional coordinate grid with sine waves as axes.",
+				"A rotating projection landing at the origin after a full period."
+			],
+			"tags": ["orthogonality", "basis", "projection"]
+		},
+		{
+			"id": "fourier-series",
+			"title": "Fourier series rebuild periodic signals",
+			"summary": "A periodic function can be represented as a constant plus weighted sine and cosine harmonics; orthogonality supplies each weight by projection.",
+			"prerequisites": ["orthogonality"],
+			"difficulty": 4,
+			"intuition": "A Fourier series is a recipe that stacks simple pure tones until their sum matches a repeating shape.",
+			"misconceptions": [
+				"A Fourier series uses only one sine wave.",
+				"The sharp corners of a square wave mean the series has stopped converging.",
+				"The coefficients are arbitrary knobs rather than measured projections."
+			],
+			"visualHooks": [
+				"Harmonic circles assembling a square wave one layer at a time.",
+				"A mixing desk with fundamental and integer overtones.",
+				"A smooth approximation tightening around a jump as terms are added."
+			],
+			"tags": ["fourier-series", "harmonics", "basis"]
+		},
+		{
+			"id": "continuous-fourier-transform",
+			"title": "The Fourier transform scans a continuum of frequencies",
+			"summary": "For a nonperiodic signal, the Fourier transform records its correlation with every continuous frequency, turning a time description into a frequency description.",
+			"prerequisites": ["fourier-series", "frequency-intuition"],
+			"difficulty": 4,
+			"intuition": "The transform is a bank of infinitely many rhythm detectors, one for each possible frequency.",
+			"misconceptions": [
+				"The transform throws away time and therefore cannot describe transient signals.",
+				"A frequency spectrum is always a list of separate spikes.",
+				"The transform and its inverse are the same operation with no convention choices."
+			],
+			"visualHooks": [
+				"A spotlight sweeping across a continuous frequency ruler.",
+				"A burst in time spreading into a broad spectrum.",
+				"Two views of the same signal linked by a rotating detector bank."
+			],
+			"tags": ["fourier-transform", "spectrum", "continuous"]
+		},
+		{
+			"id": "convolution-filtering",
+			"title": "Convolution filters by multiplying spectra",
+			"summary": "Convolution combines a signal with a response kernel in time; the convolution theorem says this becomes pointwise multiplication in frequency, making filtering transparent.",
+			"prerequisites": ["continuous-fourier-transform"],
+			"difficulty": 4,
+			"intuition": "A filter keeps, weakens, or delays frequency ingredients, and convolution is the time-domain way those choices act on a signal.",
+			"misconceptions": [
+				"Convolution is ordinary multiplication at matching time points.",
+				"A low-pass filter removes all detail rather than selectively reducing rapid variation.",
+				"Multiplication in one domain always means convolution in the same domain."
+			],
+			"visualHooks": [
+				"A sliding kernel brushing across a signal and accumulating weighted overlap.",
+				"A frequency gate dimming fast rotors while passing slow ones.",
+				"The same filter shown as a blur in time and a mask in frequency."
+			],
+			"tags": ["convolution", "filtering", "convolution-theorem"]
+		}
+	]
+}

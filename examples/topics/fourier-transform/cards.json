@@ -1,0 +1,742 @@
+[
+	{
+		"id": "card-rotating-vectors-draw-anything-1",
+		"topic": "fourier-transform",
+		"conceptId": "rotating-vectors-draw-anything",
+		"kind": "predict",
+		"prompt": "One arrow spins at a steady rate around a fixed center. Before you watch: what does its tip trace?",
+		"answer": "A circle. A single rotor can only make a circle (or stay at a point if its length is zero); richer shapes need more rotors added together.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-rotating-vectors-draw-anything-2",
+		"topic": "fourier-transform",
+		"conceptId": "rotating-vectors-draw-anything",
+		"kind": "explain",
+		"prompt": "Two arrows are chained tip to tail, and the small second arrow spins three times as fast as the big first one. Why doesn't the pen trace a circle?",
+		"answer": "The pen's position is the sum of both arrows. The slow big arrow carries the center of the small fast circle around, so a fast wobble rides on a slow loop and the tip traces a looped, flower-like curve.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-rotating-vectors-draw-anything-3",
+		"topic": "fourier-transform",
+		"conceptId": "rotating-vectors-draw-anything",
+		"kind": "recall",
+		"prompt": "In an epicycle drawing machine, which part actually draws the picture?",
+		"answer": "Only the tip of the last arrow. The circles and arms are scaffolding that show the tip's position as a sum of rotating vectors.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-rotating-vectors-draw-anything-4",
+		"topic": "fourier-transform",
+		"conceptId": "rotating-vectors-draw-anything",
+		"kind": "mcq",
+		"prompt": "A heart outline is approximated first with 5 rotating arrows (largest first), then with 50. What should you expect?",
+		"answer": "The 50-arrow version hugs the outline more closely, especially at the sharp point and the dip",
+		"choices": [
+			"The 5-arrow version is already exact",
+			"The 50-arrow version hugs the outline more closely, especially at the sharp point and the dip",
+			"More arrows only make the pen move faster",
+			"Extra arrows add visible circles to the drawing but cannot change its shape"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-complex-numbers-1",
+		"topic": "fourier-transform",
+		"conceptId": "complex-numbers",
+		"kind": "recall",
+		"prompt": "Where does the complex number 3 − 2i sit in the complex plane?",
+		"answer": "At the point (3, −2): the real part is the horizontal coordinate and the imaginary part is the vertical coordinate.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-complex-numbers-2",
+		"topic": "fourier-transform",
+		"conceptId": "complex-numbers",
+		"kind": "predict",
+		"prompt": "Multiply 2 + i by i. Predict the result and describe what happened to the arrow.",
+		"answer": "i(2 + i) = 2i + i² = −1 + 2i. The arrow from the origin to (2, 1) turned a quarter-turn counterclockwise to (−1, 2); its length √5 did not change.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-complex-numbers-3",
+		"topic": "fourier-transform",
+		"conceptId": "complex-numbers",
+		"kind": "explain",
+		"prompt": "Why does multiplying by cos θ + i sin θ rotate a complex number without stretching it?",
+		"answer": "Complex multiplication multiplies lengths and adds angles. cos θ + i sin θ has length 1 and angle θ, so it adds θ to the angle and multiplies the length by 1.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-complex-numbers-4",
+		"topic": "fourier-transform",
+		"conceptId": "complex-numbers",
+		"kind": "mcq",
+		"prompt": "What does multiplying a complex number z by 2i do to z's arrow?",
+		"answer": "Doubles its length and turns it 90° counterclockwise",
+		"choices": [
+			"Moves it 2 units up",
+			"Doubles its length only",
+			"Doubles its length and turns it 90° counterclockwise",
+			"Turns it 180°"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-rotating-vectors-1",
+		"topic": "fourier-transform",
+		"conceptId": "rotating-vectors",
+		"kind": "recall",
+		"prompt": "In c·e^{iωt}, what sets the radius, what sets the starting angle, and what sets the spin rate?",
+		"answer": "|c| sets the radius, the angle of c sets the starting angle (phase), and ω sets the angular speed in radians per unit time.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-rotating-vectors-2",
+		"topic": "fourier-transform",
+		"conceptId": "rotating-vectors",
+		"kind": "predict",
+		"prompt": "With ω = 5, how large is |e^{iωt}| at t = 1000?",
+		"answer": "Exactly 1. An imaginary exponent only rotates: e^{iωt} = cos ωt + i sin ωt always stays on the unit circle and never grows.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-rotating-vectors-3",
+		"topic": "fourier-transform",
+		"conceptId": "rotating-vectors",
+		"kind": "explain",
+		"prompt": "How do e^{iωt} and e^{−iωt} differ, and what do you get when you add them?",
+		"answer": "They turn at the same speed in opposite directions. Their vertical (imaginary) parts cancel and their horizontal parts add, giving the real oscillation 2cos(ωt).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-rotating-vectors-4",
+		"topic": "fourier-transform",
+		"conceptId": "rotating-vectors",
+		"kind": "mcq",
+		"prompt": "Replacing c = 1 with c = i in c·e^{iωt} changes which property of the rotor?",
+		"answer": "Its starting angle (phase), by 90°",
+		"choices": [
+			"Its spin speed",
+			"Its starting angle (phase), by 90°",
+			"Its radius",
+			"Its direction of rotation"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-sinusoids-1",
+		"topic": "fourier-transform",
+		"conceptId": "sinusoids",
+		"kind": "predict",
+		"prompt": "A point goes counterclockwise around a circle of radius 3 at one revolution per second, starting at the rightmost point. What is its height after 0.25 s?",
+		"answer": "3. A quarter-turn puts it at the top of the circle: height = 3 sin(2π · 0.25) = 3.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-sinusoids-2",
+		"topic": "fourier-transform",
+		"conceptId": "sinusoids",
+		"kind": "recall",
+		"prompt": "In A sin(ωt + φ), what geometric job does each of A, ω and φ do?",
+		"answer": "A is the circle's radius (the peak height), ω is how fast the point goes around (angular frequency), and φ is the starting angle (phase).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-sinusoids-3",
+		"topic": "fourier-transform",
+		"conceptId": "sinusoids",
+		"kind": "explain",
+		"prompt": "Why are sine and cosine the same kind of motion?",
+		"answer": "Both are shadows of one uniform circular motion, viewed along different axes. cos t = sin(t + π/2): they differ only by a quarter-turn phase shift.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-sinusoids-4",
+		"topic": "fourier-transform",
+		"conceptId": "sinusoids",
+		"kind": "mcq",
+		"prompt": "You double the radius of the rotating circle and keep its speed. What happens to the projected wave?",
+		"answer": "Its peaks double in height; its cycle rate is unchanged",
+		"choices": [
+			"It cycles twice as often",
+			"Its peaks double in height; its cycle rate is unchanged",
+			"It shifts to the right",
+			"It turns from a sine into a cosine"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-frequency-intuition-1",
+		"topic": "fourier-transform",
+		"conceptId": "frequency-intuition",
+		"kind": "recall",
+		"prompt": "How are period T, frequency f, and angular frequency ω related?",
+		"answer": "f = 1/T cycles per unit time, and ω = 2πf radians per unit time.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-frequency-intuition-2",
+		"topic": "fourier-transform",
+		"conceptId": "frequency-intuition",
+		"kind": "predict",
+		"prompt": "Concert A is a 440 Hz tone. Predict its period and its angular frequency.",
+		"answer": "T = 1/440 s ≈ 2.27 ms, and ω = 2π · 440 ≈ 2765 radians per second.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-frequency-intuition-3",
+		"topic": "fourier-transform",
+		"conceptId": "frequency-intuition",
+		"kind": "explain",
+		"prompt": "Two waves have the same height, but in the same window one completes 6 cycles and the other completes 2. What differs and what stays the same?",
+		"answer": "Frequency differs: the six-cycle wave has three times the frequency and one third the period. Amplitude is the same. Frequency is tempo; amplitude is reach.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-frequency-intuition-4",
+		"topic": "fourier-transform",
+		"conceptId": "frequency-intuition",
+		"kind": "mcq",
+		"prompt": "Which change raises the frequency of a sinusoid made by a rotating arrow?",
+		"answer": "Spinning the arrow faster",
+		"choices": [
+			"Making the arrow longer",
+			"Spinning the arrow faster",
+			"Starting the arrow at a different angle",
+			"Adding a constant to the signal"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-inner-product-with-sinusoid-1",
+		"topic": "fourier-transform",
+		"conceptId": "inner-product-with-sinusoid",
+		"kind": "recall",
+		"prompt": "How do you measure how much of frequency n is present in a 2π-periodic signal f?",
+		"answer": "Multiply f by the reference sinusoid of frequency n (or by e^{−int}) and average over a whole number of cycles. The average is proportional to that frequency's coefficient.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-inner-product-with-sinusoid-2",
+		"topic": "fourier-transform",
+		"conceptId": "inner-product-with-sinusoid",
+		"kind": "predict",
+		"prompt": "Predict the average of sin(3t) · sin(3t) over 0 ≤ t ≤ 2π.",
+		"answer": "1/2. The product sin²(3t) is never negative, so nothing cancels, and its average over whole cycles is 1/2.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-inner-product-with-sinusoid-3",
+		"topic": "fourier-transform",
+		"conceptId": "inner-product-with-sinusoid",
+		"kind": "explain",
+		"prompt": "Why does multiplying by a matching sinusoid give a nonzero average, while a mismatched frequency averages to zero?",
+		"answer": "When the rhythms match, peaks meet peaks and troughs meet troughs, so the product stays mostly positive. When they differ, the two drift in and out of step, and over whole shared periods the positive and negative lobes cancel exactly.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-inner-product-with-sinusoid-4",
+		"topic": "fourier-transform",
+		"conceptId": "inner-product-with-sinusoid",
+		"kind": "mcq",
+		"prompt": "f(t) = 4 sin(2t) + sin(7t). What is the average of f(t) · sin(2t) over 0 ≤ t ≤ 2π?",
+		"answer": "2",
+		"choices": [
+			"4",
+			"2",
+			"0",
+			"5"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-orthogonality-1",
+		"topic": "fourier-transform",
+		"conceptId": "orthogonality",
+		"kind": "recall",
+		"prompt": "What does it mean for two functions to be orthogonal on [0, 2π]?",
+		"answer": "Their inner product, the integral of their product over [0, 2π], is zero.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-orthogonality-2",
+		"topic": "fourier-transform",
+		"conceptId": "orthogonality",
+		"kind": "predict",
+		"prompt": "Is the integral of sin(t) · cos(t) from 0 to 2π zero?",
+		"answer": "Yes. sin t cos t = ½ sin 2t, which completes two whole cycles on [0, 2π], so its integral is zero.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-orthogonality-3",
+		"topic": "fourier-transform",
+		"conceptId": "orthogonality",
+		"kind": "explain",
+		"prompt": "Why does orthogonality let you measure each Fourier coefficient independently?",
+		"answer": "When you project the signal onto one harmonic, every other harmonic contributes zero, so only that harmonic's coefficient survives. It is like reading an x-coordinate without the y-coordinate interfering.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-orthogonality-4",
+		"topic": "fourier-transform",
+		"conceptId": "orthogonality",
+		"kind": "mcq",
+		"prompt": "Over a full period [0, 2π], which inner product is NOT zero?",
+		"answer": "sin(4t) with sin(4t)",
+		"choices": [
+			"sin(4t) with sin(5t)",
+			"sin(4t) with cos(4t)",
+			"cos(2t) with cos(3t)",
+			"sin(4t) with sin(4t)"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-fourier-series-1",
+		"topic": "fourier-transform",
+		"conceptId": "fourier-series",
+		"kind": "recall",
+		"prompt": "Write the general form of the Fourier series of a 2π-periodic function f.",
+		"answer": "f(t) = a₀/2 + Σₙ₌₁^∞ (aₙ cos nt + bₙ sin nt), with aₙ = (1/π)∫ f(t) cos nt dt and bₙ = (1/π)∫ f(t) sin nt dt over one period; equivalently Σ cₙ e^{int} over all integers n.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-fourier-series-2",
+		"topic": "fourier-transform",
+		"conceptId": "fourier-series",
+		"kind": "predict",
+		"prompt": "A square wave's series is (4/π)(sin t + sin 3t / 3 + sin 5t / 5 + …). Which harmonics are missing, and how do the others shrink?",
+		"answer": "Every even harmonic is missing. The odd harmonic n has amplitude proportional to 1/n.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-fourier-series-3",
+		"topic": "fourier-transform",
+		"conceptId": "fourier-series",
+		"kind": "explain",
+		"prompt": "Partial sums of a square wave's series always overshoot by about 9% of the jump right beside it, however many terms you add. Why doesn't that contradict convergence?",
+		"answer": "The overshoot (the Gibbs phenomenon) is squeezed into an ever narrower region next to the jump. At any fixed point away from the jump the error still goes to zero, so the series converges pointwise and in mean square, just not uniformly near the discontinuity.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-fourier-series-4",
+		"topic": "fourier-transform",
+		"conceptId": "fourier-series",
+		"kind": "mcq",
+		"prompt": "How are the coefficients of a Fourier series determined?",
+		"answer": "By projecting the signal onto each harmonic with an inner product",
+		"choices": [
+			"They are free knobs tuned by trial and error",
+			"By projecting the signal onto each harmonic with an inner product",
+			"By sampling the signal at n equally spaced points",
+			"By differentiating the signal n times"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-continuous-fourier-transform-1",
+		"topic": "fourier-transform",
+		"conceptId": "continuous-fourier-transform",
+		"kind": "recall",
+		"prompt": "Write one common convention for the Fourier transform and its inverse.",
+		"answer": "f̂(ξ) = ∫ f(t) e^{−2πiξt} dt and f(t) = ∫ f̂(ξ) e^{2πiξt} dξ, both over the whole real line. Other conventions use angular frequency ω and move factors of 2π around.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-continuous-fourier-transform-2",
+		"topic": "fourier-transform",
+		"conceptId": "continuous-fourier-transform",
+		"kind": "predict",
+		"prompt": "A very short click in time: is its spectrum narrow or broad?",
+		"answer": "Broad. The more concentrated a signal is in time, the more spread out its spectrum, and vice versa.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-continuous-fourier-transform-3",
+		"topic": "fourier-transform",
+		"conceptId": "continuous-fourier-transform",
+		"kind": "explain",
+		"prompt": "Why does a signal that never repeats need a continuum of frequencies instead of a list of harmonics?",
+		"answer": "A signal repeating every T only needs harmonics at frequencies n/T, spaced 1/T apart. Let T grow without bound and the spacing shrinks to zero, so the sum over harmonics becomes an integral over every frequency.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-continuous-fourier-transform-4",
+		"topic": "fourier-transform",
+		"conceptId": "continuous-fourier-transform",
+		"kind": "mcq",
+		"prompt": "What does the complex number f̂(ξ) tell you?",
+		"answer": "The size and phase of the frequency-ξ ingredient",
+		"choices": [
+			"The value of the signal at time ξ",
+			"The size and phase of the frequency-ξ ingredient",
+			"How loud the signal is overall",
+			"How many times the signal crosses zero"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-convolution-filtering-1",
+		"topic": "fourier-transform",
+		"conceptId": "convolution-filtering",
+		"kind": "recall",
+		"prompt": "State the convolution theorem.",
+		"answer": "The Fourier transform of a convolution is the pointwise product of the transforms: (f ∗ g)^ = f̂ · ĝ, up to a constant that depends on the convention.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-convolution-filtering-2",
+		"topic": "fourier-transform",
+		"conceptId": "convolution-filtering",
+		"kind": "predict",
+		"prompt": "You convolve a signal with a wide, smooth blur kernel. What happens to its high-frequency content?",
+		"answer": "It is weakened. A wide smooth kernel has a spectrum concentrated at low frequencies, so multiplying spectra dims the fast components: a low-pass filter.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-convolution-filtering-3",
+		"topic": "fourier-transform",
+		"conceptId": "convolution-filtering",
+		"kind": "explain",
+		"prompt": "Why is filtering easier to reason about in the frequency domain than in the time domain?",
+		"answer": "In time, convolution blends many input samples into each output through a sliding weighted overlap. In frequency it becomes separate multiplication at each frequency: every sinusoid is simply scaled and phase-shifted by the filter's response there.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-convolution-filtering-4",
+		"topic": "fourier-transform",
+		"conceptId": "convolution-filtering",
+		"kind": "mcq",
+		"prompt": "A filter passes frequencies below 100 Hz unchanged and blocks everything above. The input is a 50 Hz tone plus a 300 Hz tone. What comes out?",
+		"answer": "Just the 50 Hz tone",
+		"choices": [
+			"Just the 300 Hz tone",
+			"Just the 50 Hz tone",
+			"A single 350 Hz tone",
+			"Both tones at half volume"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	}
+]

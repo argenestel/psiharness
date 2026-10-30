@@ -1,0 +1,37 @@
+{
+	"id": "circles-draw-a-heart",
+	"title": "Spinning circles draw a heart",
+	"topic": "fourier-transform",
+	"conceptId": "rotating-vectors-draw-anything",
+	"style": "kurzgesagt",
+	"template": "fourier-epicycles",
+	"params": {
+		"shape": "heart"
+	},
+	"sliders": [
+		{
+			"name": "terms",
+			"label": "Number of spinning circles",
+			"min": 1,
+			"max": 64,
+			"step": 1,
+			"value": 5
+		},
+		{
+			"name": "speed",
+			"label": "Playback speed",
+			"min": 0.1,
+			"max": 3,
+			"step": 0.1,
+			"value": 1
+		}
+	],
+	"prompts": [
+		"Set the number of circles to 1: a single spinning arrow can only trace a circle, whatever the target shape.",
+		"Step up to 2, then 3 circles. Watch the circle dent inward as each smaller, faster rotor rides on the tip of the one before it.",
+		"Around 10 to 20 circles the dashed reconstruction is almost the heart. Notice which features sharpen last: the pointed bottom and the dip at the top need the fastest, smallest circles.",
+		"Slow the speed to 0.3 and follow only the last arm's tip. The circles are scaffolding; the yellow trail is the drawing.",
+		"Look for circles turning in opposite directions. Each rotor keeps the sign of its frequency, so some spin clockwise and others counterclockwise, even after they are sorted from largest to smallest.",
+		"Predict before you drag: will going from 40 to 64 circles visibly change the drawing? The largest circles already carry almost all of the shape."
+	]
+}

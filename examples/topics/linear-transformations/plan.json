@@ -1,0 +1,528 @@
+{
+	"topic": "linear-transformations",
+	"goal": "See linear algebra as the study of consistent ways to move space: vectors are moves, bases are measuring sticks, matrices record basis images, and determinants and eigenvectors expose what a transformation preserves.",
+	"learnerLevel": "student",
+	"createdAt": "2026-10-30T00:00:00.000Z",
+	"updatedAt": "2026-10-30T00:00:00.000Z",
+	"lessons": [
+		{
+			"conceptId": "linear-map-grid-squish",
+			"objective": "By the end you can recognize a linear transformation in a moving grid and predict which features stay coherent.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Watch a square grid stretch, shear, and flatten while the origin stays pinned. Ask: what single rule could move every point so coherently?"
+				},
+				{
+					"kind": "question",
+					"text": "Compare a translation, a bend, and a grid shear. Which one preserves the origin and keeps every straight line straight?"
+				},
+				{
+					"kind": "build",
+					"text": "Track a point as a weighted combination of two arrows, then move the arrows and the point by the same rule."
+				},
+				{
+					"kind": "reveal",
+					"text": "Linearity means T(u+v)=T(u)+T(v), T(cu)=cT(u), and T(0)=0: combinations survive the move."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Stretching, rotating, shearing, and flattening are different faces of one idea: a consistent map of vector space."
+				},
+				{
+					"kind": "recap",
+					"text": "Say the test aloud: origin fixed, sums preserved, scalings preserved. A linear map preserves the grid's combination structure."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "The plane as a rubber grid",
+					"goal": "Make a coherent grid deformation and the fixed origin immediately visible.",
+					"path": "storyboards/linear-map-grid-squish.json"
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Move the grid yourself",
+					"goal": "Let the learner test stretch, shear, rotation, and flattening with four matrix entries.",
+					"path": "explorables/linear-map-lab.json"
+				}
+			],
+			"checks": [
+				"card-linear-map-grid-squish-1",
+				"card-linear-map-grid-squish-2",
+				"card-linear-map-grid-squish-3",
+				"card-linear-map-grid-squish-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "vectors",
+			"objective": "By the end you can add and scale vectors as reusable displacements and distinguish an arrow's location from its move.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Slide the same arrow to three places. The scenery changes, but the instruction ‘move right two and up one’ does not."
+				},
+				{
+					"kind": "question",
+					"text": "If two arrows have equal length and direction but different tails, are they different vectors or copies of one move?"
+				},
+				{
+					"kind": "build",
+					"text": "Place one arrow head-to-tail after another and draw the shortcut from the first tail to the last head."
+				},
+				{
+					"kind": "reveal",
+					"text": "A vector is a displacement; componentwise addition combines moves and scalar multiplication changes their amount or reverses them."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Vectors give linear algebra its movable pieces: every later transformation acts on these reusable instructions."
+				},
+				{
+					"kind": "recap",
+					"text": "Name the three operations: translate the arrow without changing it, add displacements componentwise, and scale every component together."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Arrows are moves",
+					"goal": "Separate a vector's displacement from the location of its drawn arrow."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Vectors through a map",
+					"goal": "Compare input vectors with their transformed arrows on the same grid.",
+					"path": "explorables/linear-map-lab.json"
+				}
+			],
+			"checks": [
+				"card-vectors-1",
+				"card-vectors-2",
+				"card-vectors-3",
+				"card-vectors-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "basis",
+			"objective": "By the end you can use two independent vectors as a basis and read a vector's coordinates as coefficients of those moves.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Replace the familiar horizontal and vertical arrows with two oblique arrows. Can every point still be reached by taking enough of each?"
+				},
+				{
+					"kind": "question",
+					"text": "What goes wrong if the two proposed basis arrows lie on one line? Which points become unreachable?"
+				},
+				{
+					"kind": "build",
+					"text": "Take a copies of the first arrow and b copies of the second, then add them to land on a chosen target."
+				},
+				{
+					"kind": "reveal",
+					"text": "A basis spans the plane and is independent: every vector has one and only one coordinate recipe in that basis."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Coordinates are not labels glued to a vector; they are instructions relative to selected measuring directions."
+				},
+				{
+					"kind": "recap",
+					"text": "Check a basis by asking two questions: can its arrows reach every vector, and is the recipe unique?"
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Two moves span a plane",
+					"goal": "Show oblique basis vectors generating a complete parallelogram lattice."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "The matrix as a new grid",
+					"goal": "Connect basis vectors to the two visible columns and their generated lattice.",
+					"path": "explorables/linear-map-lab.json"
+				}
+			],
+			"checks": [
+				"card-basis-1",
+				"card-basis-2",
+				"card-basis-3",
+				"card-basis-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "linear-maps",
+			"objective": "By the end you can test a rule for additivity and homogeneity and explain why those two properties control every linear combination.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Send u and v through a mysterious machine. The machine either respects the shortcut u+v or breaks it; watch for the moment the two paths disagree."
+				},
+				{
+					"kind": "question",
+					"text": "Does preserving straightness alone guarantee a linear map? Test a translation and a curved rule against the origin and sums."
+				},
+				{
+					"kind": "build",
+					"text": "Split a vector into a weighted sum of basis arrows, transform each ingredient, and recombine the outputs."
+				},
+				{
+					"kind": "reveal",
+					"text": "T(au+bv)=aT(u)+bT(v) follows from additivity and homogeneity, so two basis images determine the entire map."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Linearity is a promise about combinations, not about preserving sizes: the map may rotate, stretch, shear, or collapse."
+				},
+				{
+					"kind": "recap",
+					"text": "A rule earns the word linear when it respects both addition and scalar multiplication, including the forced fixed origin."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Combinations survive",
+					"goal": "Make the split-transform-recombine path coincide with transforming the sum directly."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Linearity laboratory",
+					"goal": "Experiment with maps whose transformed grid preserves combinations.",
+					"path": "explorables/linear-map-lab.json"
+				}
+			],
+			"checks": [
+				"card-linear-maps-1",
+				"card-linear-maps-2",
+				"card-linear-maps-3",
+				"card-linear-maps-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "matrix-columns",
+			"objective": "By the end you can construct a matrix from the images of a basis and use its columns to calculate a transformed vector.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "A whole grid moves, yet two arrows seem to control everything. Which two arrows would you measure first?"
+				},
+				{
+					"kind": "question",
+					"text": "If the input is (x,y), why should x multiply one visible arrow while y multiplies the other?"
+				},
+				{
+					"kind": "build",
+					"text": "Transform i and j, place their outputs as columns, and assemble xT(i)+yT(j) for a sample input."
+				},
+				{
+					"kind": "reveal",
+					"text": "The matrix [T(i) T(j)] stores the map in its columns, so matrix-vector multiplication is exactly linear recombination."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "A matrix is not just a rectangle of numbers; it is a map's coordinate portrait relative to chosen bases."
+				},
+				{
+					"kind": "recap",
+					"text": "To build a standard-basis matrix, transform the first unit vector for column one and the second for column two."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Read the columns as arrows",
+					"goal": "Tie each matrix column to one transformed basis vector and a transformed grid edge."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Where does the unit square go?",
+					"goal": "Let the learner change a, b, c, and d while seeing the two column arrows move.",
+					"path": "explorables/linear-map-lab.json"
+				}
+			],
+			"checks": [
+				"card-matrix-columns-1",
+				"card-matrix-columns-2",
+				"card-matrix-columns-3",
+				"card-matrix-columns-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "composition",
+			"objective": "By the end you can compose two linear maps in the correct order and explain why the corresponding matrices multiply in that order.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Pass the same grid through a stretch and a shear. Swapping the machines changes the final picture; why does order matter?"
+				},
+				{
+					"kind": "question",
+					"text": "In AB, which map sees the original vector first, A or B? Trace one arrow through both labels before calculating."
+				},
+				{
+					"kind": "build",
+					"text": "Transform each column of B with A, then place those two outputs as the columns of the composite map."
+				},
+				{
+					"kind": "reveal",
+					"text": "ABv=A(Bv): the rightmost factor acts first, and matrix multiplication combines row dot columns to encode that chain."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Composition turns transformations into a language for building complex motion from simple stages."
+				},
+				{
+					"kind": "recap",
+					"text": "Read a product right to left, apply each map to the current vector, and expect AB and BA to differ unless the maps commute."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Two machines in a row",
+					"goal": "Make right-to-left matrix order and noncommutativity visible on one grid."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Stack the maps",
+					"goal": "Compare the matrix columns and area after changing the four entries."
+				}
+			],
+			"checks": [
+				"card-composition-1",
+				"card-composition-2",
+				"card-composition-3",
+				"card-composition-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "determinant",
+			"objective": "By the end you can compute a 2×2 determinant and interpret its magnitude as area scaling and its sign as orientation.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Fill a unit square with glowing ink, transform it, and watch one number track the signed area of the new parallelogram."
+				},
+				{
+					"kind": "question",
+					"text": "What should the area number say after a reflection, a double stretch, or a flattening onto one line?"
+				},
+				{
+					"kind": "build",
+					"text": "Use the two matrix columns as edge vectors and compare the parallelogram area with ad−bc."
+				},
+				{
+					"kind": "reveal",
+					"text": "det(A)=ad−bc: absolute value is the area multiplier, while the sign records whether orientation was preserved or reversed."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "The determinant compresses a two-dimensional geometric story into one scalar without forgetting collapse or handedness."
+				},
+				{
+					"kind": "recap",
+					"text": "Read det as signed area scale. Zero means the plane has lost a dimension and the map cannot be one-to-one."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Area has a sign",
+					"goal": "Connect ad−bc to the oriented area of the transformed unit square."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Tune the area",
+					"goal": "Let the learner drive the determinant toward positive, negative, and zero values.",
+					"path": "explorables/linear-map-lab.json"
+				}
+			],
+			"checks": [
+				"card-determinant-1",
+				"card-determinant-2",
+				"card-determinant-3",
+				"card-determinant-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "inverse",
+			"objective": "By the end you can decide when a 2×2 map is invertible and explain an inverse as a transformation that restores lost coordinates.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Run a grid forward through A and try to rewind it. A reversible parallelogram returns home; a flattened sheet cannot remember where points came from."
+				},
+				{
+					"kind": "question",
+					"text": "What information disappears when det(A)=0, and why would no second rule be able to recover it?"
+				},
+				{
+					"kind": "build",
+					"text": "Swap the diagonal entries, negate the off-diagonals, divide by the determinant, and test the product against the identity."
+				},
+				{
+					"kind": "reveal",
+					"text": "A⁻¹=(1/(ad−bc))[[d,−b],[−c,a]] for nonzero determinant; AA⁻¹=I means every vector is restored."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Invertibility is information preservation: a map can distort a grid dramatically and still be reversible if it never collapses a direction."
+				},
+				{
+					"kind": "recap",
+					"text": "Check det first. Nonzero gives a unique undo map; zero signals multiple inputs share an output and no inverse exists."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "Forward and backward",
+					"goal": "Show the inverse as a real undoing process and isolate collapse as the obstruction."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Find a reversible map",
+					"goal": "Use the determinant display to distinguish recoverable and collapsed grids.",
+					"path": "explorables/linear-map-lab.json"
+				}
+			],
+			"checks": [
+				"card-inverse-1",
+				"card-inverse-2",
+				"card-inverse-3",
+				"card-inverse-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "eigenvectors",
+			"objective": "By the end you can identify an eigenvector direction and interpret its eigenvalue as the signed scale factor along that direction.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Sweep a fan of arrows through a shear. Almost every arrow turns, but one line keeps its heading while its length changes."
+				},
+				{
+					"kind": "question",
+					"text": "Is a vector an eigenvector because it stays at the same point, or because its output lies on the same line?"
+				},
+				{
+					"kind": "build",
+					"text": "Set Av=λv, rearrange to (A−λI)v=0, and demand a nonzero solution by setting the determinant to zero."
+				},
+				{
+					"kind": "reveal",
+					"text": "Eigenvectors are invariant directions and λ records stretch, shrink, or reversal; a rotation can have no real invariant direction."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Eigenvectors reveal the axes a transformation naturally prefers, even when the standard coordinate grid hides them."
+				},
+				{
+					"kind": "recap",
+					"text": "Look for Av parallel to v, not Av equal to v. The scalar relating them is the eigenvalue, and v must be nonzero."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "The directions that survive",
+					"goal": "Highlight invariant lines and distinguish fixed vectors from scaled eigenvectors."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Hunt eigen-directions",
+					"goal": "Show real eigenvalue lines while the matrix sliders change the map.",
+					"path": "explorables/linear-map-lab.json"
+				}
+			],
+			"checks": [
+				"card-eigenvectors-1",
+				"card-eigenvectors-2",
+				"card-eigenvectors-3",
+				"card-eigenvectors-4"
+			],
+			"status": "planned"
+		},
+		{
+			"conceptId": "change-of-basis",
+			"objective": "By the end you can convert coordinates between bases and explain why the same geometric map gets a different matrix in a different coordinate system.",
+			"beats": [
+				{
+					"kind": "hook",
+					"text": "Keep one arrow frozen while two coordinate grids rotate beneath it. The arrow has not moved, yet its coordinate pair changes."
+				},
+				{
+					"kind": "question",
+					"text": "Which object changed: the vector, the basis, or the numbers used to describe the vector?"
+				},
+				{
+					"kind": "build",
+					"text": "Treat the new basis vectors as columns of P, solve P[new coordinates]=[old geometric vector], and use P⁻¹ to convert back."
+				},
+				{
+					"kind": "reveal",
+					"text": "Coordinates are representations. With the same basis on both sides, the new matrix is P⁻¹AP: one map seen through a new measuring grid."
+				},
+				{
+					"kind": "zoom-out",
+					"text": "Changing basis can turn a hard-looking transformation into a simple one by choosing axes aligned with its natural behavior."
+				},
+				{
+					"kind": "recap",
+					"text": "Name the direction of conversion, build the basis matrix from its columns, and apply the correct matrix or inverse in that order."
+				}
+			],
+			"visuals": [
+				{
+					"kind": "storyboard",
+					"style": "3b1b",
+					"title": "One arrow, new coordinates",
+					"goal": "Keep geometry fixed while coordinate labels change with the basis."
+				},
+				{
+					"kind": "explorable",
+					"style": "3b1b",
+					"title": "Choose your measuring sticks",
+					"goal": "Connect basis columns, inverse conversion, and matrix representation."
+				}
+			],
+			"checks": [
+				"card-change-of-basis-1",
+				"card-change-of-basis-2",
+				"card-change-of-basis-3",
+				"card-change-of-basis-4"
+			],
+			"status": "planned"
+		}
+	]
+}

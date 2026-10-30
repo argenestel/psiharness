@@ -1,0 +1,742 @@
+[
+	{
+		"id": "card-linear-map-grid-squish-1",
+		"topic": "linear-transformations",
+		"conceptId": "linear-map-grid-squish",
+		"kind": "recall",
+		"prompt": "Watching a grid move under a linear transformation, what three things must stay true?",
+		"answer": "The origin stays put, grid lines stay straight, and parallel grid lines stay parallel and evenly spaced (unless the whole plane is flattened onto a line or point).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-linear-map-grid-squish-2",
+		"topic": "linear-transformations",
+		"conceptId": "linear-map-grid-squish",
+		"kind": "predict",
+		"prompt": "Is T(v)=v+(1,0) a linear transformation? Predict first, then test T(0).",
+		"answer": "No. T(0)=(1,0), but every linear map must send zero to zero; this is a translation.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-linear-map-grid-squish-3",
+		"topic": "linear-transformations",
+		"conceptId": "linear-map-grid-squish",
+		"kind": "explain",
+		"prompt": "Why does a linear map send a parallelogram to a parallelogram? Explain using vector combinations.",
+		"answer": "The four corners are combinations 0, u, v, and u+v. Linearity sends them to 0, T(u), T(v), and T(u)+T(v), which are the corners of a parallelogram, possibly flattened.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-linear-map-grid-squish-4",
+		"topic": "linear-transformations",
+		"conceptId": "linear-map-grid-squish",
+		"kind": "mcq",
+		"prompt": "A transformation keeps the origin fixed but bends the grid lines into arcs. Is it linear?",
+		"answer": "No: linear maps keep grid lines straight and evenly spaced",
+		"choices": [
+			"Yes, because the origin stays fixed",
+			"No: linear maps keep grid lines straight and evenly spaced",
+			"Yes, if the arcs are circular",
+			"Only if it preserves area"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-vectors-1",
+		"topic": "linear-transformations",
+		"conceptId": "vectors",
+		"kind": "recall",
+		"prompt": "What does a vector record geometrically?",
+		"answer": "A vector records a displacement: a direction and magnitude, independent of the location where its arrow is drawn.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-vectors-2",
+		"topic": "linear-transformations",
+		"conceptId": "vectors",
+		"kind": "predict",
+		"prompt": "Predict the sum of the moves (1,2) and (−3,5).",
+		"answer": "(−2,7): horizontal and vertical displacements add separately, (1−3, 2+5).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-vectors-3",
+		"topic": "linear-transformations",
+		"conceptId": "vectors",
+		"kind": "explain",
+		"prompt": "Why can two arrows with different tails represent the same vector?",
+		"answer": "A vector describes only the displacement from tail to head. Sliding the arrow without changing its direction or length preserves that displacement.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-vectors-4",
+		"topic": "linear-transformations",
+		"conceptId": "vectors",
+		"kind": "mcq",
+		"prompt": "What is −2(1,−3)?",
+		"answer": "(−2,6)",
+		"choices": [
+			"(−2,6)",
+			"(2,−6)",
+			"(−1,−3)",
+			"(−2,−3)"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-basis-1",
+		"topic": "linear-transformations",
+		"conceptId": "basis",
+		"kind": "recall",
+		"prompt": "What two conditions make two plane vectors a basis?",
+		"answer": "They span the plane, so every vector can be reached, and they are linearly independent, so the coordinate recipe is unique.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-basis-2",
+		"topic": "linear-transformations",
+		"conceptId": "basis",
+		"kind": "predict",
+		"prompt": "Using e₁=(1,1) and e₂=(1,−1), predict the coordinates of (4,2).",
+		"answer": "(3,1), since 3(1,1)+1(1,−1)=(4,2).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-basis-3",
+		"topic": "linear-transformations",
+		"conceptId": "basis",
+		"kind": "explain",
+		"prompt": "Why do coordinates depend on a basis even though the geometric vector does not?",
+		"answer": "Coordinates are coefficients of the chosen basis vectors. Changing those measuring directions changes the recipe needed to make the same geometric arrow.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-basis-4",
+		"topic": "linear-transformations",
+		"conceptId": "basis",
+		"kind": "mcq",
+		"prompt": "Which pair is not a basis for the plane?",
+		"answer": "(1,0) and (2,0)",
+		"choices": [
+			"(1,0) and (0,1)",
+			"(1,1) and (1,−1)",
+			"(1,0) and (2,0)",
+			"(2,1) and (1,1)"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-linear-maps-1",
+		"topic": "linear-transformations",
+		"conceptId": "linear-maps",
+		"kind": "recall",
+		"prompt": "State the two equations that a linear map T must satisfy.",
+		"answer": "T(u+v)=T(u)+T(v) and T(cu)=cT(u) for all vectors u,v and scalars c.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-linear-maps-2",
+		"topic": "linear-transformations",
+		"conceptId": "linear-maps",
+		"kind": "predict",
+		"prompt": "If T(1,0)=(2,1) and T(0,1)=(−1,3), predict T(2,4).",
+		"answer": "T(2,4)=2(2,1)+4(−1,3)=(0,14).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-linear-maps-3",
+		"topic": "linear-transformations",
+		"conceptId": "linear-maps",
+		"kind": "explain",
+		"prompt": "Why do the images of two basis vectors determine a linear map on the whole plane?",
+		"answer": "Every vector is one unique linear combination of the basis vectors. Linearity forces the image to use exactly those same coefficients on the two known images.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-linear-maps-4",
+		"topic": "linear-transformations",
+		"conceptId": "linear-maps",
+		"kind": "mcq",
+		"prompt": "Which rule is not linear?",
+		"answer": "T(x,y)=(x+1,y)",
+		"choices": [
+			"T(x,y)=(2x,y)",
+			"T(x,y)=(x−y,3y)",
+			"T(x,y)=(x+1,y)",
+			"T(x,y)=(0,x)"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-matrix-columns-1",
+		"topic": "linear-transformations",
+		"conceptId": "matrix-columns",
+		"kind": "recall",
+		"prompt": "In the standard basis, what do the two columns of a 2×2 matrix represent?",
+		"answer": "The first column is T(1,0), the image of i, and the second column is T(0,1), the image of j.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-matrix-columns-2",
+		"topic": "linear-transformations",
+		"conceptId": "matrix-columns",
+		"kind": "predict",
+		"prompt": "For A=[[2,−1],[1,3]], predict A(3,2).",
+		"answer": "(4,9), since (2·3−1·2, 1·3+3·2)=(4,9).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-matrix-columns-3",
+		"topic": "linear-transformations",
+		"conceptId": "matrix-columns",
+		"kind": "explain",
+		"prompt": "Why are matrix entries coordinates rather than a list of unrelated numbers?",
+		"answer": "Each column is an output vector written in the output basis, and the input coordinates tell how much of each column to combine. The entries are therefore coordinates of transformed basis arrows.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-matrix-columns-4",
+		"topic": "linear-transformations",
+		"conceptId": "matrix-columns",
+		"kind": "mcq",
+		"prompt": "If T(i)=(2,0) and T(j)=(−1,4), which matrix represents T?",
+		"answer": "[[2,−1],[0,4]]",
+		"choices": [
+			"[[2,−1],[0,4]]",
+			"[[2,0],[−1,4]]",
+			"[[0,4],[2,−1]]",
+			"[[−1,2],[4,0]]"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-composition-1",
+		"topic": "linear-transformations",
+		"conceptId": "composition",
+		"kind": "recall",
+		"prompt": "In the product AB, which map acts first on a vector?",
+		"answer": "B acts first, then A: ABv=A(Bv). Products are read right to left as compositions.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-composition-2",
+		"topic": "linear-transformations",
+		"conceptId": "composition",
+		"kind": "predict",
+		"prompt": "Let A=diag(2,1), B=[[1,1],[0,1]]. Predict AB(1,1).",
+		"answer": "(4,1): B sends (1,1) to (2,1), then A sends that to (4,1).",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-composition-3",
+		"topic": "linear-transformations",
+		"conceptId": "composition",
+		"kind": "explain",
+		"prompt": "Why is matrix multiplication not entry-by-entry multiplication?",
+		"answer": "A product matrix must describe one map applied after another. Its columns are the first map's columns transformed by the second map, which requires row-by-column combinations rather than matching entries.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-composition-4",
+		"topic": "linear-transformations",
+		"conceptId": "composition",
+		"kind": "mcq",
+		"prompt": "What does ABv mean?",
+		"answer": "Apply B to v, then apply A to the result",
+		"choices": [
+			"Apply A to v, then B",
+			"Apply B to v, then apply A to the result",
+			"Multiply A and B entry by entry before using v",
+			"Add A and B, then apply the sum to v"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-determinant-1",
+		"topic": "linear-transformations",
+		"conceptId": "determinant",
+		"kind": "recall",
+		"prompt": "What is det([[a,b],[c,d]]) and what does it measure?",
+		"answer": "It is ad−bc. Geometrically it is the signed area scale of the map, with magnitude for area and sign for orientation.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-determinant-2",
+		"topic": "linear-transformations",
+		"conceptId": "determinant",
+		"kind": "predict",
+		"prompt": "A=diag(2,3) stretches one axis by 2 and the other by 3. Predict its determinant and unit-square area.",
+		"answer": "The determinant is 6, so the image of a unit square has area 6 and keeps orientation.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-determinant-3",
+		"topic": "linear-transformations",
+		"conceptId": "determinant",
+		"kind": "explain",
+		"prompt": "Why does determinant zero mean the map loses a dimension of information?",
+		"answer": "The two column vectors become dependent, so the unit square collapses to a line or point. Different inputs can then share one output, making the map non-invertible.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-determinant-4",
+		"topic": "linear-transformations",
+		"conceptId": "determinant",
+		"kind": "mcq",
+		"prompt": "What is the determinant of [[1,2],[3,4]]?",
+		"answer": "−2",
+		"choices": [
+			"−2",
+			"2",
+			"10",
+			"−10"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-inverse-1",
+		"topic": "linear-transformations",
+		"conceptId": "inverse",
+		"kind": "recall",
+		"prompt": "When does a 2×2 matrix have an inverse?",
+		"answer": "Exactly when its determinant is nonzero; then the map is one-to-one and every output has a unique input.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-inverse-2",
+		"topic": "linear-transformations",
+		"conceptId": "inverse",
+		"kind": "predict",
+		"prompt": "Predict the inverse of [[1,1],[0,1]].",
+		"answer": "[[1,−1],[0,1]], because it subtracts the shear that the original matrix adds.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-inverse-3",
+		"topic": "linear-transformations",
+		"conceptId": "inverse",
+		"kind": "explain",
+		"prompt": "Why is an inverse matrix not formed by taking the reciprocal of each entry?",
+		"answer": "An inverse must undo the entire combined action, including how entries mix coordinates. Its formula swaps and negates entries for a 2×2 matrix and divides by the determinant so multiplication gives the identity.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-inverse-4",
+		"topic": "linear-transformations",
+		"conceptId": "inverse",
+		"kind": "mcq",
+		"prompt": "Which matrix has no inverse?",
+		"answer": "[[2,4],[1,2]]",
+		"choices": [
+			"[[1,0],[0,1]]",
+			"[[2,4],[1,2]]",
+			"[[1,1],[0,1]]",
+			"[[0,−1],[1,0]]"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-eigenvectors-1",
+		"topic": "linear-transformations",
+		"conceptId": "eigenvectors",
+		"kind": "recall",
+		"prompt": "What equation defines an eigenvector v and eigenvalue λ?",
+		"answer": "Av=λv with v nonzero. The output is a scalar multiple of the input, so its direction is unchanged.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-eigenvectors-2",
+		"topic": "linear-transformations",
+		"conceptId": "eigenvectors",
+		"kind": "predict",
+		"prompt": "For A=diag(3,−1), predict two eigenvector directions and their eigenvalues.",
+		"answer": "The x-axis direction (1,0) has λ=3, and the y-axis direction (0,1) has λ=−1; any nonzero scalar multiples on those lines also work.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-eigenvectors-3",
+		"topic": "linear-transformations",
+		"conceptId": "eigenvectors",
+		"kind": "explain",
+		"prompt": "What is the difference between a fixed vector and an eigenvector?",
+		"answer": "A fixed vector has eigenvalue 1, so Av=v. An eigenvector may be stretched, shrunk, or flipped with any eigenvalue, as long as it stays on its original line.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-eigenvectors-4",
+		"topic": "linear-transformations",
+		"conceptId": "eigenvectors",
+		"kind": "mcq",
+		"prompt": "Which map has no real eigenvector direction?",
+		"answer": "A 90° rotation",
+		"choices": [
+			"A horizontal stretch",
+			"A shear",
+			"A 90° rotation",
+			"The identity map"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-change-of-basis-1",
+		"topic": "linear-transformations",
+		"conceptId": "change-of-basis",
+		"kind": "recall",
+		"prompt": "What changes when you change basis: the geometric vector, its coordinates, or both?",
+		"answer": "The geometric vector stays the same; its coordinate column changes because the coefficients are now measured against different basis vectors.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-change-of-basis-2",
+		"topic": "linear-transformations",
+		"conceptId": "change-of-basis",
+		"kind": "predict",
+		"prompt": "Use the basis b₁=(2,0), b₂=(0,½). What are the coordinates of the standard vector (4,3) in this basis?",
+		"answer": "(2,6), since 2·(2,0)+6·(0,½)=(4,3). Longer measuring sticks give smaller numbers and shorter sticks give bigger ones; the arrow itself never moves.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-change-of-basis-3",
+		"topic": "linear-transformations",
+		"conceptId": "change-of-basis",
+		"kind": "explain",
+		"prompt": "Why does P⁻¹AP represent the same map in a new basis?",
+		"answer": "P converts new coordinates to old coordinates, A performs the geometric map in old coordinates, and P⁻¹ converts the result back to new coordinates. The composition is therefore P⁻¹AP.",
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	},
+	{
+		"id": "card-change-of-basis-4",
+		"topic": "linear-transformations",
+		"conceptId": "change-of-basis",
+		"kind": "mcq",
+		"prompt": "What is the best description of a change-of-basis matrix?",
+		"answer": "It converts coordinate columns between two bases",
+		"choices": [
+			"It physically moves every geometric vector",
+			"It converts coordinate columns between two bases",
+			"It always preserves every coordinate number",
+			"It exists only for orthonormal bases"
+		],
+		"fsrs": {
+			"state": 0,
+			"stability": 0,
+			"difficulty": 0,
+			"reps": 0,
+			"lapses": 0,
+			"due": "2026-10-30T00:00:00.000Z"
+		},
+		"createdAt": "2026-10-30T00:00:00.000Z"
+	}
+]

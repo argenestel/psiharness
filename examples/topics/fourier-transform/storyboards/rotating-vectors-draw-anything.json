@@ -1,0 +1,2291 @@
+{
+	"id": "rotating-vectors-draw-anything",
+	"title": "Every sound is a sum of circles",
+	"topic": "fourier-transform",
+	"conceptId": "rotating-vectors-draw-anything",
+	"style": "kurzgesagt",
+	"palette": "kurzgesagt",
+	"scenes": [
+		{
+			"id": "the-air-wiggles",
+			"durationSec": 9,
+			"background": "bg",
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			},
+			"narration": "Pluck a guitar string and the air beside your ear starts to wiggle. Plot that air pressure over time and you get a messy scribble. Yet hidden inside it is something astonishingly simple.",
+			"elements": [
+				{
+					"id": "the-air-wiggles-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Every sound is a wiggle in the air",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 0.9
+					}
+				},
+				{
+					"id": "the-air-wiggles-air",
+					"kind": "particles",
+					"props": {
+						"x": 80,
+						"y": 230,
+						"w": 1440,
+						"h": 560,
+						"count": 110,
+						"color": "#a4b5d8",
+						"speed": 0.6
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 1.2
+					}
+				},
+				{
+					"id": "the-air-wiggles-listener",
+					"kind": "creature",
+					"props": {
+						"x": 270,
+						"y": 560,
+						"size": 95,
+						"color": "#22d4c5",
+						"mood": "curious"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.5,
+						"duration": 0.8
+					},
+					"loop": {
+						"type": "float",
+						"delay": 1.4,
+						"duration": 3
+					}
+				},
+				{
+					"id": "the-air-wiggles-axis",
+					"kind": "path",
+					"props": {
+						"d": "M 560 490 L 1480 490",
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "the-air-wiggles-label-pressure",
+					"kind": "text",
+					"props": {
+						"x": 560,
+						"y": 300,
+						"text": "air pressure",
+						"size": 28,
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "the-air-wiggles-label-time",
+					"kind": "text",
+					"props": {
+						"x": 1480,
+						"y": 700,
+						"text": "time →",
+						"size": 28,
+						"fill": "#a4b5d8",
+						"align": "end"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "the-air-wiggles-wave",
+					"kind": "graph",
+					"props": {
+						"x": 560,
+						"y": 340,
+						"w": 920,
+						"h": 300,
+						"fn": "Math.sin(x)+0.5*Math.sin(3*x+0.6)+0.35*Math.sin(5*x+1.2)",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1.6,
+							1.6
+						],
+						"stroke": "#ffda66"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.4,
+						"duration": 3.5
+					}
+				}
+			]
+		},
+		{
+			"id": "one-spinning-arrow",
+			"durationSec": 10,
+			"background": "deep",
+			"camera": {
+				"zoom": 1.06,
+				"x": 780,
+				"y": 470
+			},
+			"narration": "Meet the simplest motion there is: an arrow spinning at a steady pace. Ignore everything except the height of its tip, and that height rises and falls as a perfectly smooth wave. That is a pure tone.",
+			"elements": [
+				{
+					"id": "one-spinning-arrow-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "One spinning arrow, one pure tone",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 0.9
+					}
+				},
+				{
+					"id": "one-spinning-arrow-rotor",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "one-spinning-arrow-rotor-pad",
+								"kind": "circle",
+								"props": {
+									"x": 400,
+									"y": 470,
+									"r": 170,
+									"fill": "none",
+									"stroke": "none"
+								}
+							},
+							{
+								"id": "one-spinning-arrow-rotor-ring",
+								"kind": "circle",
+								"props": {
+									"x": 400,
+									"y": 470,
+									"r": 160,
+									"fill": "none",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "one-spinning-arrow-rotor-arm",
+								"kind": "vector",
+								"props": {
+									"x": 400,
+									"y": 470,
+									"dx": 0,
+									"dy": -160,
+									"stroke": "#ff9351"
+								}
+							},
+							{
+								"id": "one-spinning-arrow-rotor-pen",
+								"kind": "circle",
+								"props": {
+									"x": 400,
+									"y": 310,
+									"r": 9,
+									"fill": "#ffda66"
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.4,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "orbit",
+						"delay": 0.4,
+						"duration": 4
+					}
+				},
+				{
+					"id": "one-spinning-arrow-link",
+					"kind": "arrow",
+					"props": {
+						"x1": 420,
+						"y1": 310,
+						"x2": 740,
+						"y2": 310,
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "one-spinning-arrow-axis",
+					"kind": "path",
+					"props": {
+						"d": "M 760 470 L 1480 470",
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "one-spinning-arrow-wave",
+					"kind": "graph",
+					"props": {
+						"x": 760,
+						"y": 310,
+						"w": 720,
+						"h": 320,
+						"fn": "Math.cos(x)",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1,
+							1
+						],
+						"stroke": "#ffda66"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.6,
+						"duration": 4
+					}
+				},
+				{
+					"id": "one-spinning-arrow-label",
+					"kind": "text",
+					"props": {
+						"x": 1480,
+						"y": 700,
+						"text": "height of the tip",
+						"size": 28,
+						"fill": "#a4b5d8",
+						"align": "end"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.8,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "one-spinning-arrow-eq",
+					"kind": "equation",
+					"props": {
+						"x": 200,
+						"y": 790,
+						"tex": "h(t) = A\\cos(\\omega t)",
+						"size": 44,
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.2,
+						"duration": 0.8
+					}
+				}
+			]
+		},
+		{
+			"id": "length-and-speed",
+			"durationSec": 10,
+			"background": "bg",
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			},
+			"narration": "Every spinning arrow has exactly two dials. Its length sets how far the tip swings, which we hear as loudness. Its speed sets how often the wave repeats, which we hear as pitch. Spin three times faster and the tone jumps up in pitch.",
+			"elements": [
+				{
+					"id": "length-and-speed-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Two dials: length and speed",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 0.9
+					}
+				},
+				{
+					"id": "length-and-speed-rotor-1",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "length-and-speed-rotor-1-pad",
+								"kind": "circle",
+								"props": {
+									"x": 290,
+									"y": 270,
+									"r": 95,
+									"fill": "none",
+									"stroke": "none"
+								}
+							},
+							{
+								"id": "length-and-speed-rotor-1-ring",
+								"kind": "circle",
+								"props": {
+									"x": 290,
+									"y": 270,
+									"r": 85,
+									"fill": "none",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "length-and-speed-rotor-1-arm",
+								"kind": "vector",
+								"props": {
+									"x": 290,
+									"y": 270,
+									"dx": 0,
+									"dy": -85,
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "length-and-speed-rotor-1-pen",
+								"kind": "circle",
+								"props": {
+									"x": 290,
+									"y": 185,
+									"r": 9,
+									"fill": "#ffda66"
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.4,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "orbit",
+						"delay": 0.4,
+						"duration": 6
+					}
+				},
+				{
+					"id": "length-and-speed-axis-1",
+					"kind": "path",
+					"props": {
+						"d": "M 440 270 L 1180 270",
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.6000000000000001,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "length-and-speed-wave-1",
+					"kind": "graph",
+					"props": {
+						"x": 440,
+						"y": 185,
+						"w": 740,
+						"h": 170,
+						"fn": "Math.cos(x)",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1,
+							1
+						],
+						"stroke": "#22d4c5"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.8,
+						"duration": 1.6
+					}
+				},
+				{
+					"id": "length-and-speed-label-1",
+					"kind": "text",
+					"props": {
+						"x": 1220,
+						"y": 280,
+						"text": "slow",
+						"size": 30,
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.2000000000000002,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "length-and-speed-rotor-2",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "length-and-speed-rotor-2-pad",
+								"kind": "circle",
+								"props": {
+									"x": 290,
+									"y": 500,
+									"r": 95,
+									"fill": "none",
+									"stroke": "none"
+								}
+							},
+							{
+								"id": "length-and-speed-rotor-2-ring",
+								"kind": "circle",
+								"props": {
+									"x": 290,
+									"y": 500,
+									"r": 85,
+									"fill": "none",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "length-and-speed-rotor-2-arm",
+								"kind": "vector",
+								"props": {
+									"x": 290,
+									"y": 500,
+									"dx": 0,
+									"dy": -85,
+									"stroke": "#ff9351"
+								}
+							},
+							{
+								"id": "length-and-speed-rotor-2-pen",
+								"kind": "circle",
+								"props": {
+									"x": 290,
+									"y": 415,
+									"r": 9,
+									"fill": "#ffda66"
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.0,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "orbit",
+						"delay": 2.0,
+						"duration": 2
+					}
+				},
+				{
+					"id": "length-and-speed-axis-2",
+					"kind": "path",
+					"props": {
+						"d": "M 440 500 L 1180 500",
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "length-and-speed-wave-2",
+					"kind": "graph",
+					"props": {
+						"x": 440,
+						"y": 415,
+						"w": 740,
+						"h": 170,
+						"fn": "Math.cos(3*x)",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1,
+							1
+						],
+						"stroke": "#ff9351"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.4,
+						"duration": 1.6
+					}
+				},
+				{
+					"id": "length-and-speed-label-2",
+					"kind": "text",
+					"props": {
+						"x": 1220,
+						"y": 510,
+						"text": "3× faster → higher pitch",
+						"size": 30,
+						"fill": "#ff9351"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.8,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "length-and-speed-rotor-3",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "length-and-speed-rotor-3-pad",
+								"kind": "circle",
+								"props": {
+									"x": 290,
+									"y": 730,
+									"r": 52,
+									"fill": "none",
+									"stroke": "none"
+								}
+							},
+							{
+								"id": "length-and-speed-rotor-3-ring",
+								"kind": "circle",
+								"props": {
+									"x": 290,
+									"y": 730,
+									"r": 42,
+									"fill": "none",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "length-and-speed-rotor-3-arm",
+								"kind": "vector",
+								"props": {
+									"x": 290,
+									"y": 730,
+									"dx": 0,
+									"dy": -42,
+									"stroke": "#f465a9"
+								}
+							},
+							{
+								"id": "length-and-speed-rotor-3-pen",
+								"kind": "circle",
+								"props": {
+									"x": 290,
+									"y": 688,
+									"r": 9,
+									"fill": "#ffda66"
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 3.6,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "orbit",
+						"delay": 3.6,
+						"duration": 6
+					}
+				},
+				{
+					"id": "length-and-speed-axis-3",
+					"kind": "path",
+					"props": {
+						"d": "M 440 730 L 1180 730",
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 3.8000000000000003,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "length-and-speed-wave-3",
+					"kind": "graph",
+					"props": {
+						"x": 440,
+						"y": 645,
+						"w": 740,
+						"h": 170,
+						"fn": "0.5*Math.cos(x)",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1,
+							1
+						],
+						"stroke": "#f465a9"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 4.0,
+						"duration": 1.6
+					}
+				},
+				{
+					"id": "length-and-speed-label-3",
+					"kind": "text",
+					"props": {
+						"x": 1220,
+						"y": 740,
+						"text": "half as long → quieter",
+						"size": 30,
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 4.4,
+						"duration": 0.6
+					}
+				}
+			]
+		},
+		{
+			"id": "tip-to-tail",
+			"durationSec": 11,
+			"background": "deep",
+			"camera": {
+				"zoom": 1.08,
+				"x": 780,
+				"y": 480
+			},
+			"narration": "Now the trick. Stack the arrows tip to tail and let each one spin at its own speed. The tip of the last arrow is the sum of all of them. Its height no longer traces a plain wave; it traces something with shoulders and corners.",
+			"elements": [
+				{
+					"id": "tip-to-tail-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Stack them tip to tail",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 0.9
+					}
+				},
+				{
+					"id": "tip-to-tail-rotor-1",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "tip-to-tail-rotor-1-pad",
+								"kind": "circle",
+								"props": {
+									"x": 400,
+									"y": 480,
+									"r": 261,
+									"fill": "none",
+									"stroke": "none"
+								}
+							},
+							{
+								"id": "tip-to-tail-rotor-1-ring",
+								"kind": "circle",
+								"props": {
+									"x": 400,
+									"y": 480,
+									"r": 165,
+									"fill": "none",
+									"stroke": "#a4b5d8"
+								}
+							},
+							{
+								"id": "tip-to-tail-rotor-1-arm",
+								"kind": "path",
+								"props": {
+									"d": "M 400 480 L 400 315",
+									"stroke": "#22d4c5",
+									"width": 6
+								}
+							},
+							{
+								"id": "tip-to-tail-rotor-1-hub",
+								"kind": "circle",
+								"props": {
+									"x": 400,
+									"y": 480,
+									"r": 6,
+									"fill": "#22d4c5"
+								}
+							},
+							{
+								"id": "tip-to-tail-rotor-2",
+								"kind": "group",
+								"props": {
+									"x": 0,
+									"y": 0,
+									"children": [
+										{
+											"id": "tip-to-tail-rotor-2-pad",
+											"kind": "circle",
+											"props": {
+												"x": 400,
+												"y": 315,
+												"r": 96,
+												"fill": "none",
+												"stroke": "none"
+											}
+										},
+										{
+											"id": "tip-to-tail-rotor-2-ring",
+											"kind": "circle",
+											"props": {
+												"x": 400,
+												"y": 315,
+												"r": 55,
+												"fill": "none",
+												"stroke": "#22d4c5"
+											}
+										},
+										{
+											"id": "tip-to-tail-rotor-2-arm",
+											"kind": "path",
+											"props": {
+												"d": "M 400 315 L 400 370",
+												"stroke": "#ff9351",
+												"width": 6
+											}
+										},
+										{
+											"id": "tip-to-tail-rotor-2-hub",
+											"kind": "circle",
+											"props": {
+												"x": 400,
+												"y": 315,
+												"r": 6,
+												"fill": "#ff9351"
+											}
+										},
+										{
+											"id": "tip-to-tail-rotor-3",
+											"kind": "group",
+											"props": {
+												"x": 0,
+												"y": 0,
+												"children": [
+													{
+														"id": "tip-to-tail-rotor-3-pad",
+														"kind": "circle",
+														"props": {
+															"x": 400,
+															"y": 370,
+															"r": 41,
+															"fill": "none",
+															"stroke": "none"
+														}
+													},
+													{
+														"id": "tip-to-tail-rotor-3-ring",
+														"kind": "circle",
+														"props": {
+															"x": 400,
+															"y": 370,
+															"r": 33,
+															"fill": "none",
+															"stroke": "#22d4c5"
+														}
+													},
+													{
+														"id": "tip-to-tail-rotor-3-arm",
+														"kind": "path",
+														"props": {
+															"d": "M 400 370 L 400 337",
+															"stroke": "#f465a9",
+															"width": 6
+														}
+													},
+													{
+														"id": "tip-to-tail-rotor-3-hub",
+														"kind": "circle",
+														"props": {
+															"x": 400,
+															"y": 370,
+															"r": 6,
+															"fill": "#f465a9"
+														}
+													},
+													{
+														"id": "tip-to-tail-rotor-3-pen",
+														"kind": "circle",
+														"props": {
+															"x": 400,
+															"y": 337,
+															"r": 9,
+															"fill": "#ffda66"
+														}
+													}
+												]
+											},
+											"enter": {
+												"type": "pop",
+												"delay": 1.6,
+												"duration": 0.7
+											},
+											"loop": {
+												"type": "orbit",
+												"delay": 0.4,
+												"duration": 3
+											}
+										}
+									]
+								},
+								"enter": {
+									"type": "pop",
+									"delay": 1.0,
+									"duration": 0.7
+								},
+								"loop": {
+									"type": "orbit",
+									"delay": 0.4,
+									"duration": 3
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.4,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "orbit",
+						"delay": 0.4,
+						"duration": 6
+					}
+				},
+				{
+					"id": "tip-to-tail-axis",
+					"kind": "path",
+					"props": {
+						"d": "M 760 480 L 1480 480",
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.8,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "tip-to-tail-wave",
+					"kind": "graph",
+					"props": {
+						"x": 760,
+						"y": 310,
+						"w": 720,
+						"h": 340,
+						"fn": "Math.cos(x)-Math.cos(3*x)/3+Math.cos(5*x)/5",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1.25,
+							1.25
+						],
+						"stroke": "#ffda66"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.2,
+						"duration": 4
+					}
+				},
+				{
+					"id": "tip-to-tail-eq",
+					"kind": "equation",
+					"props": {
+						"x": 760,
+						"y": 790,
+						"tex": "\\text{tip} = \\vec a_1 + \\vec a_2 + \\vec a_3",
+						"size": 40,
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.5,
+						"duration": 0.8
+					}
+				}
+			]
+		},
+		{
+			"id": "square-from-circles",
+			"durationSec": 12,
+			"background": "bg",
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 460
+			},
+			"narration": "With the right lengths and speeds, circles can even build a square wave. One circle gives a gentle hump. Three circles start to square the shoulders. Twelve circles hug the target closely, apart from a small overshoot that lingers right at each jump. This is Fourier's bold claim: a repeating signal is a sum of circles.",
+			"elements": [
+				{
+					"id": "square-from-circles-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "Even sharp corners are made of circles",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 0.9
+					}
+				},
+				{
+					"id": "square-from-circles-axis",
+					"kind": "path",
+					"props": {
+						"d": "M 220 450.0 L 1280 450.0",
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.2,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "square-from-circles-target",
+					"kind": "path",
+					"props": {
+						"d": "M 220.0 314.3 L 485.0 314.3 L 485.0 585.7 L 750.0 585.7 L 750.0 314.3 L 1015.0 314.3 L 1015.0 585.7 L 1280.0 585.7",
+						"stroke": "#f465a9",
+						"width": 2
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.4,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "square-from-circles-one",
+					"kind": "graph",
+					"props": {
+						"x": 220,
+						"y": 260,
+						"w": 1060,
+						"h": 380,
+						"fn": "4/Math.PI*(Math.sin(1*x)/1)",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1.4,
+							1.4
+						],
+						"stroke": "#a4b5d8"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.8,
+						"duration": 1.5
+					}
+				},
+				{
+					"id": "square-from-circles-three",
+					"kind": "graph",
+					"props": {
+						"x": 220,
+						"y": 260,
+						"w": 1060,
+						"h": 380,
+						"fn": "4/Math.PI*(Math.sin(1*x)/1+Math.sin(3*x)/3+Math.sin(5*x)/5)",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1.4,
+							1.4
+						],
+						"stroke": "#22d4c5"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 3.0,
+						"duration": 1.5
+					}
+				},
+				{
+					"id": "square-from-circles-twelve",
+					"kind": "graph",
+					"props": {
+						"x": 220,
+						"y": 260,
+						"w": 1060,
+						"h": 380,
+						"fn": "4/Math.PI*(Math.sin(1*x)/1+Math.sin(3*x)/3+Math.sin(5*x)/5+Math.sin(7*x)/7+Math.sin(9*x)/9+Math.sin(11*x)/11+Math.sin(13*x)/13+Math.sin(15*x)/15+Math.sin(17*x)/17+Math.sin(19*x)/19+Math.sin(21*x)/21+Math.sin(23*x)/23)",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1.4,
+							1.4
+						],
+						"stroke": "#ffda66"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 5.2,
+						"duration": 1.8
+					}
+				},
+				{
+					"id": "square-from-circles-label-1",
+					"kind": "text",
+					"props": {
+						"x": 1320,
+						"y": 330,
+						"text": "1 circle",
+						"size": 30,
+						"fill": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.0,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "square-from-circles-label-3",
+					"kind": "text",
+					"props": {
+						"x": 1320,
+						"y": 380,
+						"text": "3 circles",
+						"size": 30,
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.2,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "square-from-circles-label-12",
+					"kind": "text",
+					"props": {
+						"x": 1320,
+						"y": 430,
+						"text": "12 circles",
+						"size": 30,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 5.4,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "square-from-circles-amazed",
+					"kind": "creature",
+					"props": {
+						"x": 1420,
+						"y": 640,
+						"size": 70,
+						"color": "#ff9351",
+						"mood": "surprised"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 6.5,
+						"duration": 0.6
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 7.2,
+						"duration": 1.5
+					}
+				},
+				{
+					"id": "square-from-circles-eq",
+					"kind": "equation",
+					"props": {
+						"x": 220,
+						"y": 770,
+						"tex": "f(t) = \\tfrac{4}{\\pi}\\left(\\sin t + \\tfrac{1}{3}\\sin 3t + \\tfrac{1}{5}\\sin 5t + \\cdots\\right)",
+						"size": 38,
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 7.5,
+						"duration": 0.8
+					}
+				}
+			]
+		},
+		{
+			"id": "draw-a-heart",
+			"durationSec": 11,
+			"background": "deep",
+			"camera": {
+				"zoom": 1.15,
+				"x": 800,
+				"y": 440
+			},
+			"narration": "Now free the tip to move in two dimensions instead of just up and down. Treat each point on a drawing as a complex number, and the very same chain of spinning circles can trace a heart, a signature, almost any closed outline.",
+			"elements": [
+				{
+					"id": "draw-a-heart-stars",
+					"kind": "particles",
+					"props": {
+						"x": 60,
+						"y": 80,
+						"w": 1480,
+						"h": 740,
+						"count": 70,
+						"color": "#ffda66",
+						"speed": 0.3
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 1.0
+					}
+				},
+				{
+					"id": "draw-a-heart-heart",
+					"kind": "path",
+					"props": {
+						"d": "M 800.0 370.0 L 800.0 370.0 L 800.0 369.8 L 800.0 369.6 L 800.0 369.3 L 800.1 368.9 L 800.1 368.5 L 800.1 367.9 L 800.2 367.3 L 800.3 366.5 L 800.4 365.7 L 800.5 364.9 L 800.7 363.9 L 800.9 362.9 L 801.1 361.8 L 801.4 360.6 L 801.7 359.3 L 802.0 358.0 L 802.4 356.7 L 802.8 355.2 L 803.2 353.7 L 803.7 352.2 L 804.2 350.5 L 804.8 348.9 L 805.5 347.2 L 806.2 345.4 L 806.9 343.6 L 807.7 341.8 L 808.6 339.9 L 809.5 338.0 L 810.4 336.0 L 811.5 334.1 L 812.6 332.1 L 813.7 330.1 L 814.9 328.0 L 816.2 326.0 L 817.5 324.0 L 818.9 321.9 L 820.4 319.9 L 821.9 317.8 L 823.5 315.8 L 825.1 313.7 L 826.8 311.7 L 828.6 309.7 L 830.4 307.7 L 832.3 305.8 L 834.3 303.9 L 836.3 302.0 L 838.4 300.1 L 840.6 298.3 L 842.8 296.5 L 845.0 294.8 L 847.4 293.1 L 849.7 291.4 L 852.2 289.8 L 854.7 288.3 L 857.2 286.8 L 859.8 285.4 L 862.4 284.1 L 865.1 282.8 L 867.8 281.6 L 870.6 280.5 L 873.4 279.4 L 876.3 278.4 L 879.2 277.5 L 882.1 276.7 L 885.1 275.9 L 888.1 275.3 L 891.1 274.7 L 894.2 274.2 L 897.3 273.8 L 900.3 273.5 L 903.5 273.3 L 906.6 273.1 L 909.7 273.1 L 912.9 273.1 L 916.1 273.3 L 919.2 273.5 L 922.4 273.8 L 925.6 274.2 L 928.8 274.7 L 931.9 275.3 L 935.1 276.0 L 938.2 276.8 L 941.4 277.7 L 944.5 278.7 L 947.5 279.7 L 950.6 280.9 L 953.7 282.1 L 956.7 283.4 L 959.6 284.8 L 962.6 286.3 L 965.5 287.9 L 968.3 289.5 L 971.2 291.3 L 973.9 293.1 L 976.6 295.0 L 979.3 297.0 L 981.9 299.0 L 984.5 301.1 L 987.0 303.3 L 989.4 305.5 L 991.8 307.9 L 994.1 310.2 L 996.3 312.7 L 998.4 315.2 L 1000.5 317.7 L 1002.5 320.4 L 1004.5 323.0 L 1006.3 325.7 L 1008.1 328.5 L 1009.7 331.3 L 1011.3 334.2 L 1012.8 337.1 L 1014.3 340.0 L 1015.6 343.0 L 1016.8 346.0 L 1017.9 349.0 L 1019.0 352.1 L 1019.9 355.2 L 1020.8 358.3 L 1021.5 361.5 L 1022.2 364.6 L 1022.7 367.8 L 1023.2 371.0 L 1023.5 374.3 L 1023.8 377.5 L 1023.9 380.7 L 1024.0 384.0 L 1023.9 387.3 L 1023.8 390.5 L 1023.5 393.8 L 1023.2 397.1 L 1022.7 400.4 L 1022.2 403.7 L 1021.5 407.0 L 1020.8 410.2 L 1019.9 413.5 L 1019.0 416.8 L 1017.9 420.1 L 1016.8 423.3 L 1015.6 426.6 L 1014.3 429.8 L 1012.8 433.1 L 1011.3 436.3 L 1009.7 439.5 L 1008.1 442.7 L 1006.3 445.9 L 1004.5 449.1 L 1002.5 452.2 L 1000.5 455.4 L 998.4 458.5 L 996.3 461.6 L 994.1 464.7 L 991.8 467.8 L 989.4 470.9 L 987.0 474.0 L 984.5 477.0 L 981.9 480.0 L 979.3 483.0 L 976.6 486.0 L 973.9 489.0 L 971.2 492.0 L 968.3 494.9 L 965.5 497.8 L 962.6 500.8 L 959.6 503.7 L 956.7 506.5 L 953.7 509.4 L 950.6 512.3 L 947.5 515.1 L 944.5 517.9 L 941.4 520.8 L 938.2 523.6 L 935.1 526.3 L 931.9 529.1 L 928.8 531.9 L 925.6 534.6 L 922.4 537.4 L 919.2 540.1 L 916.1 542.8 L 912.9 545.5 L 909.7 548.2 L 906.6 550.9 L 903.5 553.6 L 900.3 556.2 L 897.3 558.9 L 894.2 561.5 L 891.1 564.1 L 888.1 566.7 L 885.1 569.3 L 882.1 571.9 L 879.2 574.5 L 876.3 577.1 L 873.4 579.6 L 870.6 582.1 L 867.8 584.7 L 865.1 587.2 L 862.4 589.7 L 859.8 592.1 L 857.2 594.6 L 854.7 597.1 L 852.2 599.5 L 849.7 601.9 L 847.4 604.3 L 845.0 606.7 L 842.8 609.0 L 840.6 611.4 L 838.4 613.7 L 836.3 616.0 L 834.3 618.2 L 832.3 620.5 L 830.4 622.7 L 828.6 624.9 L 826.8 627.1 L 825.1 629.2 L 823.5 631.3 L 821.9 633.4 L 820.4 635.4 L 818.9 637.4 L 817.5 639.4 L 816.2 641.3 L 814.9 643.2 L 813.7 645.1 L 812.6 646.9 L 811.5 648.7 L 810.4 650.5 L 809.5 652.2 L 808.6 653.8 L 807.7 655.4 L 806.9 657.0 L 806.2 658.5 L 805.5 660.0 L 804.8 661.4 L 804.2 662.7 L 803.7 664.1 L 803.2 665.3 L 802.8 666.5 L 802.4 667.7 L 802.0 668.8 L 801.7 669.8 L 801.4 670.8 L 801.1 671.7 L 800.9 672.5 L 800.7 673.3 L 800.5 674.1 L 800.4 674.8 L 800.3 675.4 L 800.2 675.9 L 800.1 676.4 L 800.1 676.8 L 800.1 677.2 L 800.0 677.5 L 800.0 677.7 L 800.0 677.9 L 800.0 678.0 L 800.0 678.0 L 800.0 678.0 L 800.0 677.9 L 800.0 677.7 L 800.0 677.5 L 799.9 677.2 L 799.9 676.8 L 799.9 676.4 L 799.8 675.9 L 799.7 675.4 L 799.6 674.8 L 799.5 674.1 L 799.3 673.3 L 799.1 672.5 L 798.9 671.7 L 798.6 670.8 L 798.3 669.8 L 798.0 668.8 L 797.6 667.7 L 797.2 666.5 L 796.8 665.3 L 796.3 664.1 L 795.8 662.7 L 795.2 661.4 L 794.5 660.0 L 793.8 658.5 L 793.1 657.0 L 792.3 655.4 L 791.4 653.8 L 790.5 652.2 L 789.6 650.5 L 788.5 648.7 L 787.4 646.9 L 786.3 645.1 L 785.1 643.2 L 783.8 641.3 L 782.5 639.4 L 781.1 637.4 L 779.6 635.4 L 778.1 633.4 L 776.5 631.3 L 774.9 629.2 L 773.2 627.1 L 771.4 624.9 L 769.6 622.7 L 767.7 620.5 L 765.7 618.2 L 763.7 616.0 L 761.6 613.7 L 759.4 611.4 L 757.2 609.0 L 755.0 606.7 L 752.6 604.3 L 750.3 601.9 L 747.8 599.5 L 745.3 597.1 L 742.8 594.6 L 740.2 592.1 L 737.6 589.7 L 734.9 587.2 L 732.2 584.7 L 729.4 582.1 L 726.6 579.6 L 723.7 577.1 L 720.8 574.5 L 717.9 571.9 L 714.9 569.3 L 711.9 566.7 L 708.9 564.1 L 705.8 561.5 L 702.7 558.9 L 699.7 556.2 L 696.5 553.6 L 693.4 550.9 L 690.3 548.2 L 687.1 545.5 L 683.9 542.8 L 680.8 540.1 L 677.6 537.4 L 674.4 534.6 L 671.2 531.9 L 668.1 529.1 L 664.9 526.3 L 661.8 523.6 L 658.6 520.8 L 655.5 517.9 L 652.5 515.1 L 649.4 512.3 L 646.3 509.4 L 643.3 506.5 L 640.4 503.7 L 637.4 500.8 L 634.5 497.8 L 631.7 494.9 L 628.8 492.0 L 626.1 489.0 L 623.4 486.0 L 620.7 483.0 L 618.1 480.0 L 615.5 477.0 L 613.0 474.0 L 610.6 470.9 L 608.2 467.8 L 605.9 464.7 L 603.7 461.6 L 601.6 458.5 L 599.5 455.4 L 597.5 452.2 L 595.5 449.1 L 593.7 445.9 L 591.9 442.7 L 590.3 439.5 L 588.7 436.3 L 587.2 433.1 L 585.7 429.8 L 584.4 426.6 L 583.2 423.3 L 582.1 420.1 L 581.0 416.8 L 580.1 413.5 L 579.2 410.2 L 578.5 407.0 L 577.8 403.7 L 577.3 400.4 L 576.8 397.1 L 576.5 393.8 L 576.2 390.5 L 576.1 387.3 L 576.0 384.0 L 576.1 380.7 L 576.2 377.5 L 576.5 374.3 L 576.8 371.0 L 577.3 367.8 L 577.8 364.6 L 578.5 361.5 L 579.2 358.3 L 580.1 355.2 L 581.0 352.1 L 582.1 349.0 L 583.2 346.0 L 584.4 343.0 L 585.7 340.0 L 587.2 337.1 L 588.7 334.2 L 590.3 331.3 L 591.9 328.5 L 593.7 325.7 L 595.5 323.0 L 597.5 320.4 L 599.5 317.7 L 601.6 315.2 L 603.7 312.7 L 605.9 310.2 L 608.2 307.9 L 610.6 305.5 L 613.0 303.3 L 615.5 301.1 L 618.1 299.0 L 620.7 297.0 L 623.4 295.0 L 626.1 293.1 L 628.8 291.3 L 631.7 289.5 L 634.5 287.9 L 637.4 286.3 L 640.4 284.8 L 643.3 283.4 L 646.3 282.1 L 649.4 280.9 L 652.5 279.7 L 655.5 278.7 L 658.6 277.7 L 661.8 276.8 L 664.9 276.0 L 668.1 275.3 L 671.2 274.7 L 674.4 274.2 L 677.6 273.8 L 680.8 273.5 L 683.9 273.3 L 687.1 273.1 L 690.3 273.1 L 693.4 273.1 L 696.5 273.3 L 699.7 273.5 L 702.7 273.8 L 705.8 274.2 L 708.9 274.7 L 711.9 275.3 L 714.9 275.9 L 717.9 276.7 L 720.8 277.5 L 723.7 278.4 L 726.6 279.4 L 729.4 280.5 L 732.2 281.6 L 734.9 282.8 L 737.6 284.1 L 740.2 285.4 L 742.8 286.8 L 745.3 288.3 L 747.8 289.8 L 750.3 291.4 L 752.6 293.1 L 755.0 294.8 L 757.2 296.5 L 759.4 298.3 L 761.6 300.1 L 763.7 302.0 L 765.7 303.9 L 767.7 305.8 L 769.6 307.7 L 771.4 309.7 L 773.2 311.7 L 774.9 313.7 L 776.5 315.8 L 778.1 317.8 L 779.6 319.9 L 781.1 321.9 L 782.5 324.0 L 783.8 326.0 L 785.1 328.0 L 786.3 330.1 L 787.4 332.1 L 788.5 334.1 L 789.6 336.0 L 790.5 338.0 L 791.4 339.9 L 792.3 341.8 L 793.1 343.6 L 793.8 345.4 L 794.5 347.2 L 795.2 348.9 L 795.8 350.5 L 796.3 352.2 L 796.8 353.7 L 797.2 355.2 L 797.6 356.7 L 798.0 358.0 L 798.3 359.3 L 798.6 360.6 L 798.9 361.8 L 799.1 362.9 L 799.3 363.9 L 799.5 364.9 L 799.6 365.7 L 799.7 366.5 L 799.8 367.3 L 799.9 367.9 L 799.9 368.5 L 799.9 368.9 L 800.0 369.3 L 800.0 369.6 L 800.0 369.8 L 800.0 370.0 Z",
+						"fill": "none",
+						"stroke": "#f465a9",
+						"width": 7
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.4,
+						"duration": 6
+					}
+				},
+				{
+					"id": "draw-a-heart-ring-1",
+					"kind": "circle",
+					"props": {
+						"x": 800.0,
+						"y": 440.0,
+						"r": 175.0,
+						"fill": "none",
+						"stroke": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.4,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-arm-1",
+					"kind": "path",
+					"props": {
+						"d": "M 800.0 440.0 L 902.9 298.4",
+						"stroke": "#22d4c5",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.5,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-joint-1",
+					"kind": "circle",
+					"props": {
+						"x": 800.0,
+						"y": 440.0,
+						"r": 5,
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.5,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "draw-a-heart-ring-2",
+					"kind": "circle",
+					"props": {
+						"x": 902.9,
+						"y": 298.4,
+						"r": 42.0,
+						"fill": "none",
+						"stroke": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.65,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-arm-2",
+					"kind": "path",
+					"props": {
+						"d": "M 902.9 298.4 L 862.9 285.4",
+						"stroke": "#ff9351",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.75,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-joint-2",
+					"kind": "circle",
+					"props": {
+						"x": 902.9,
+						"y": 298.4,
+						"r": 5,
+						"fill": "#ff9351"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 0.75,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "draw-a-heart-ring-3",
+					"kind": "circle",
+					"props": {
+						"x": 862.9,
+						"y": 285.4,
+						"r": 35.0,
+						"fill": "none",
+						"stroke": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.9,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-arm-3",
+					"kind": "path",
+					"props": {
+						"d": "M 862.9 285.4 L 829.6 296.3",
+						"stroke": "#f465a9",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.0,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-joint-3",
+					"kind": "circle",
+					"props": {
+						"x": 862.9,
+						"y": 285.4,
+						"r": 5,
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.0,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "draw-a-heart-ring-4",
+					"kind": "circle",
+					"props": {
+						"x": 829.6,
+						"y": 296.3,
+						"r": 35.0,
+						"fill": "none",
+						"stroke": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.15,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-arm-4",
+					"kind": "path",
+					"props": {
+						"d": "M 829.6 296.3 L 862.9 307.1",
+						"stroke": "#ffda66",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.25,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-joint-4",
+					"kind": "circle",
+					"props": {
+						"x": 829.6,
+						"y": 296.3,
+						"r": 5,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.25,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "draw-a-heart-ring-5",
+					"kind": "circle",
+					"props": {
+						"x": 862.9,
+						"y": 307.1,
+						"r": 14.0,
+						"fill": "none",
+						"stroke": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.4,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-arm-5",
+					"kind": "path",
+					"props": {
+						"d": "M 862.9 307.1 L 849.6 311.4",
+						"stroke": "#22d4c5",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.5,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-joint-5",
+					"kind": "circle",
+					"props": {
+						"x": 862.9,
+						"y": 307.1,
+						"r": 5,
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.5,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "draw-a-heart-ring-6",
+					"kind": "circle",
+					"props": {
+						"x": 849.6,
+						"y": 311.4,
+						"r": 7.0,
+						"fill": "none",
+						"stroke": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.65,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-arm-6",
+					"kind": "path",
+					"props": {
+						"d": "M 849.6 311.4 L 853.7 305.7",
+						"stroke": "#ff9351",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 1.75,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-joint-6",
+					"kind": "circle",
+					"props": {
+						"x": 849.6,
+						"y": 311.4,
+						"r": 5,
+						"fill": "#ff9351"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.75,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "draw-a-heart-ring-7",
+					"kind": "circle",
+					"props": {
+						"x": 853.7,
+						"y": 305.7,
+						"r": 7.0,
+						"fill": "none",
+						"stroke": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.9,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-arm-7",
+					"kind": "path",
+					"props": {
+						"d": "M 853.7 305.7 L 849.6 300.1",
+						"stroke": "#f465a9",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.0,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-joint-7",
+					"kind": "circle",
+					"props": {
+						"x": 853.7,
+						"y": 305.7,
+						"r": 5,
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.0,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "draw-a-heart-ring-8",
+					"kind": "circle",
+					"props": {
+						"x": 849.6,
+						"y": 300.1,
+						"r": 7.0,
+						"fill": "none",
+						"stroke": "#a4b5d8"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.15,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-arm-8",
+					"kind": "path",
+					"props": {
+						"d": "M 849.6 300.1 L 845.5 294.4",
+						"stroke": "#ffda66",
+						"width": 5
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.25,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "draw-a-heart-joint-8",
+					"kind": "circle",
+					"props": {
+						"x": 849.6,
+						"y": 300.1,
+						"r": 5,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.25,
+						"duration": 0.4
+					}
+				},
+				{
+					"id": "draw-a-heart-pen",
+					"kind": "circle",
+					"props": {
+						"x": 845.5,
+						"y": 294.4,
+						"r": 11,
+						"fill": "#ffda66"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.2,
+						"duration": 0.5
+					},
+					"loop": {
+						"type": "pulse",
+						"delay": 2.8,
+						"duration": 1.2
+					}
+				},
+				{
+					"id": "draw-a-heart-artist",
+					"kind": "creature",
+					"props": {
+						"x": 1260,
+						"y": 690,
+						"size": 70,
+						"color": "#22d4c5",
+						"mood": "happy"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.0,
+						"duration": 0.6
+					},
+					"loop": {
+						"type": "float",
+						"delay": 1.8,
+						"duration": 2.5
+					}
+				},
+				{
+					"id": "draw-a-heart-caption",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 160,
+						"text": "Same circles, now drawing in 2D",
+						"size": 40,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 0.9
+					}
+				}
+			]
+		},
+		{
+			"id": "run-it-backward",
+			"durationSec": 11,
+			"background": "bg",
+			"camera": {
+				"zoom": 1,
+				"x": 800,
+				"y": 450
+			},
+			"narration": "The Fourier transform runs this recipe in reverse. Hand it the messy wiggle and it reports how long the arrow must be at every possible speed: a spectrum. Here it finds three spikes, three pure tones hiding inside one sound.",
+			"elements": [
+				{
+					"id": "run-it-backward-title",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 110,
+						"text": "The Fourier transform runs the recipe backward",
+						"size": 46,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.2,
+						"duration": 0.9
+					}
+				},
+				{
+					"id": "run-it-backward-mess",
+					"kind": "graph",
+					"props": {
+						"x": 120,
+						"y": 300,
+						"w": 560,
+						"h": 280,
+						"fn": "Math.sin(x)+0.5*Math.sin(3*x+0.6)+0.35*Math.sin(5*x+1.2)",
+						"domain": [
+							0,
+							12.566
+						],
+						"range": [
+							-1.6,
+							1.6
+						],
+						"stroke": "#ffda66"
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.4,
+						"duration": 1.4
+					}
+				},
+				{
+					"id": "run-it-backward-mess-axis",
+					"kind": "path",
+					"props": {
+						"d": "M 120 440 L 680 440",
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 0.3,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "run-it-backward-mess-label",
+					"kind": "text",
+					"props": {
+						"x": 400,
+						"y": 640,
+						"text": "the sound in time",
+						"size": 28,
+						"fill": "#a4b5d8",
+						"align": "middle"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0.8,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "run-it-backward-machine",
+					"kind": "arrow",
+					"props": {
+						"x1": 720,
+						"y1": 440,
+						"x2": 900,
+						"y2": 440,
+						"stroke": "#fff5e6",
+						"width": 6
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.0,
+						"duration": 0.8
+					}
+				},
+				{
+					"id": "run-it-backward-spectrum-axis",
+					"kind": "path",
+					"props": {
+						"d": "M 960 640 L 1500 640",
+						"stroke": "#a4b5d8",
+						"width": 2
+					},
+					"enter": {
+						"type": "draw",
+						"delay": 2.6,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "run-it-backward-spectrum-label",
+					"kind": "text",
+					"props": {
+						"x": 1500,
+						"y": 720,
+						"text": "speed of circle (frequency) →",
+						"size": 26,
+						"fill": "#a4b5d8",
+						"align": "end"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.8,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "run-it-backward-bar-1",
+					"kind": "rect",
+					"props": {
+						"x": 1010,
+						"y": 340.0,
+						"w": 60,
+						"h": 300.0,
+						"rx": 10,
+						"fill": "#22d4c5"
+					},
+					"enter": {
+						"type": "slide",
+						"delay": 3.2,
+						"duration": 0.6,
+						"from": "bottom"
+					}
+				},
+				{
+					"id": "run-it-backward-bar-label-1",
+					"kind": "text",
+					"props": {
+						"x": 1040,
+						"y": 680,
+						"text": "1×",
+						"size": 30,
+						"fill": "#22d4c5",
+						"align": "middle"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.4,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "run-it-backward-bar-3",
+					"kind": "rect",
+					"props": {
+						"x": 1180,
+						"y": 490.0,
+						"w": 60,
+						"h": 150.0,
+						"rx": 10,
+						"fill": "#ff9351"
+					},
+					"enter": {
+						"type": "slide",
+						"delay": 3.7,
+						"duration": 0.6,
+						"from": "bottom"
+					}
+				},
+				{
+					"id": "run-it-backward-bar-label-3",
+					"kind": "text",
+					"props": {
+						"x": 1210,
+						"y": 680,
+						"text": "3×",
+						"size": 30,
+						"fill": "#ff9351",
+						"align": "middle"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 3.9,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "run-it-backward-bar-5",
+					"kind": "rect",
+					"props": {
+						"x": 1350,
+						"y": 535.0,
+						"w": 60,
+						"h": 105.0,
+						"rx": 10,
+						"fill": "#f465a9"
+					},
+					"enter": {
+						"type": "slide",
+						"delay": 4.2,
+						"duration": 0.6,
+						"from": "bottom"
+					}
+				},
+				{
+					"id": "run-it-backward-bar-label-5",
+					"kind": "text",
+					"props": {
+						"x": 1380,
+						"y": 680,
+						"text": "5×",
+						"size": 30,
+						"fill": "#f465a9",
+						"align": "middle"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 4.4,
+						"duration": 0.5
+					}
+				},
+				{
+					"id": "run-it-backward-detective",
+					"kind": "creature",
+					"props": {
+						"x": 1420,
+						"y": 280,
+						"size": 55,
+						"color": "#ff9351",
+						"mood": "happy"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 5.0,
+						"duration": 0.6
+					},
+					"loop": {
+						"type": "float",
+						"delay": 5.6,
+						"duration": 2.5
+					}
+				},
+				{
+					"id": "run-it-backward-eq",
+					"kind": "equation",
+					"props": {
+						"x": 260,
+						"y": 790,
+						"tex": "\\hat f(\\xi) = \\int f(t)\\, e^{-2\\pi i \\xi t}\\, dt",
+						"size": 42,
+						"fill": "#fff5e6"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 5.5,
+						"duration": 0.8
+					}
+				}
+			]
+		},
+		{
+			"id": "everything-is-circles",
+			"durationSec": 10,
+			"background": "deep",
+			"camera": {
+				"zoom": 0.92,
+				"x": 800,
+				"y": 450
+			},
+			"narration": "Your inner ear does a version of this, sorting incoming sound by pitch along a coiled membrane. Audio and image compression lean on Fourier-style transforms, and MRI scanners rebuild pictures from frequency data. Every sound is a sum of circles; the Fourier transform tells you which ones.",
+			"elements": [
+				{
+					"id": "everything-is-circles-stars",
+					"kind": "particles",
+					"props": {
+						"x": -100,
+						"y": -40,
+						"w": 1800,
+						"h": 980,
+						"count": 160,
+						"color": "#a4b5d8",
+						"speed": 0.2
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 0,
+						"duration": 1.2
+					}
+				},
+				{
+					"id": "everything-is-circles-headline",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 200,
+						"text": "Every sound is a sum of circles.",
+						"size": 60,
+						"align": "middle",
+						"fill": "#fff5e6",
+						"weight": 700
+					},
+					"enter": {
+						"type": "typewriter",
+						"delay": 0.3,
+						"duration": 1.4
+					}
+				},
+				{
+					"id": "everything-is-circles-ear",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "everything-is-circles-ear-pad",
+								"kind": "circle",
+								"props": {
+									"x": 330,
+									"y": 470,
+									"r": 80,
+									"fill": "none",
+									"stroke": "none"
+								}
+							},
+							{
+								"id": "everything-is-circles-ear-ring",
+								"kind": "circle",
+								"props": {
+									"x": 330,
+									"y": 470,
+									"r": 70,
+									"fill": "none",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "everything-is-circles-ear-arm",
+								"kind": "vector",
+								"props": {
+									"x": 330,
+									"y": 470,
+									"dx": 0,
+									"dy": -70,
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "everything-is-circles-ear-pen",
+								"kind": "circle",
+								"props": {
+									"x": 330,
+									"y": 400,
+									"r": 9,
+									"fill": "#ffda66"
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.4,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "orbit",
+						"delay": 1.4,
+						"duration": 3
+					}
+				},
+				{
+					"id": "everything-is-circles-zip",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "everything-is-circles-zip-pad",
+								"kind": "circle",
+								"props": {
+									"x": 800,
+									"y": 470,
+									"r": 80,
+									"fill": "none",
+									"stroke": "none"
+								}
+							},
+							{
+								"id": "everything-is-circles-zip-ring",
+								"kind": "circle",
+								"props": {
+									"x": 800,
+									"y": 470,
+									"r": 70,
+									"fill": "none",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "everything-is-circles-zip-arm",
+								"kind": "vector",
+								"props": {
+									"x": 800,
+									"y": 470,
+									"dx": 0,
+									"dy": -70,
+									"stroke": "#ff9351"
+								}
+							},
+							{
+								"id": "everything-is-circles-zip-pen",
+								"kind": "circle",
+								"props": {
+									"x": 800,
+									"y": 400,
+									"r": 9,
+									"fill": "#ffda66"
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 1.8,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "orbit",
+						"delay": 1.8,
+						"duration": 2
+					}
+				},
+				{
+					"id": "everything-is-circles-scan",
+					"kind": "group",
+					"props": {
+						"x": 0,
+						"y": 0,
+						"children": [
+							{
+								"id": "everything-is-circles-scan-pad",
+								"kind": "circle",
+								"props": {
+									"x": 1270,
+									"y": 470,
+									"r": 80,
+									"fill": "none",
+									"stroke": "none"
+								}
+							},
+							{
+								"id": "everything-is-circles-scan-ring",
+								"kind": "circle",
+								"props": {
+									"x": 1270,
+									"y": 470,
+									"r": 70,
+									"fill": "none",
+									"stroke": "#22d4c5"
+								}
+							},
+							{
+								"id": "everything-is-circles-scan-arm",
+								"kind": "vector",
+								"props": {
+									"x": 1270,
+									"y": 470,
+									"dx": 0,
+									"dy": -70,
+									"stroke": "#f465a9"
+								}
+							},
+							{
+								"id": "everything-is-circles-scan-pen",
+								"kind": "circle",
+								"props": {
+									"x": 1270,
+									"y": 400,
+									"r": 9,
+									"fill": "#ffda66"
+								}
+							}
+						]
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 2.2,
+						"duration": 0.7
+					},
+					"loop": {
+						"type": "orbit",
+						"delay": 2.2,
+						"duration": 1.4
+					}
+				},
+				{
+					"id": "everything-is-circles-ear-label",
+					"kind": "text",
+					"props": {
+						"x": 330,
+						"y": 600,
+						"text": "your inner ear",
+						"size": 30,
+						"fill": "#22d4c5",
+						"align": "middle"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 1.6,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "everything-is-circles-zip-label",
+					"kind": "text",
+					"props": {
+						"x": 800,
+						"y": 600,
+						"text": "MP3 and JPEG",
+						"size": 30,
+						"fill": "#ff9351",
+						"align": "middle"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.0,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "everything-is-circles-scan-label",
+					"kind": "text",
+					"props": {
+						"x": 1270,
+						"y": 600,
+						"text": "MRI scanners",
+						"size": 30,
+						"fill": "#f465a9",
+						"align": "middle"
+					},
+					"enter": {
+						"type": "fade",
+						"delay": 2.4,
+						"duration": 0.6
+					}
+				},
+				{
+					"id": "everything-is-circles-friend-1",
+					"kind": "creature",
+					"props": {
+						"x": 560,
+						"y": 740,
+						"size": 50,
+						"color": "#22d4c5",
+						"mood": "happy"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 3.2,
+						"duration": 0.6
+					},
+					"loop": {
+						"type": "float",
+						"delay": 3.8,
+						"duration": 2.6
+					}
+				},
+				{
+					"id": "everything-is-circles-friend-2",
+					"kind": "creature",
+					"props": {
+						"x": 1040,
+						"y": 740,
+						"size": 50,
+						"color": "#f465a9",
+						"mood": "curious"
+					},
+					"enter": {
+						"type": "pop",
+						"delay": 3.5,
+						"duration": 0.6
+					},
+					"loop": {
+						"type": "float",
+						"delay": 4.1,
+						"duration": 2.2
+					}
+				}
+			]
+		}
+	]
+}
