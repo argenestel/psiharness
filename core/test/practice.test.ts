@@ -349,6 +349,42 @@ test("math format normalizes LaTeX and compares safe numeric expressions", (t) =
 		"$y$"), "success");
 });
 
+test("math format grades algebraically equivalent answers by randomized evaluation", (t) => {
+	const store = fixture(t);
+	for (const [expected, answer] of [
+		["2x+3x^2", "3x^2+2x"], ["x^2+x", "x(x+1)"], ["a^2+2ab+b^2", "(a+b)^2"], ["x^2/2", "\\frac{1}{2}x^2"],
+		["x^2/2", "0.5x^2"], ["x^{-1}", "1/x"], ["1", "\\sin^2 x + \\cos^2 x"], ["\\frac{ap}{ap+b(1-p)}", "ap/(ap+b-bp)"],
+		["v^2/r", "\\frac{v^2}{r}"], ["\\frac{s}{\\sqrt{n}}", "s/\\sqrt{n}"], ["6x", "y = 6x"], ["6x", "f'(x)=6x"],
+	]) {
+		assert.equal(store.checkAnswer(answerChallenge({ format: "math", expected }), answer), "success",
+			`${expected} / ${answer}`);
+	}
+	for (const [expected, answer] of [["3x^2+2x", "2x+3x^3"], ["x^2+x", "x^2-x"], ["(a+b)^2", "a^2+b^2"],
+		["x", "x^2"], ["x", "<script>"], ["x", "x".repeat(500)], ["x", ")))((("], ["x", "\\frac{"], ["x", ""]]) {
+		assert.equal(store.checkAnswer(answerChallenge({ format: "math", expected }), answer), "fail", answer);
+	}
+	assert.equal(store.checkAnswer(answerChallenge({ format: "math", expected: "x^2", acceptable: ["q"] }), "q"),
+		"success");
+});
+
+test("every shipped pack's math answers still grade as success", (t) => {
+	const store = fixture(t);
+	const packs = path.join(import.meta.dirname, "../../examples/skills");
+	let checked = 0;
+	for (const pack of fs.readdirSync(packs)) {
+		const file = path.join(packs, pack, "challenges.json");
+		if (!fs.existsSync(file)) continue;
+		for (const c of JSON.parse(fs.readFileSync(file, "utf8")) as Challenge[]) {
+			if (c.format !== "math" || !c.expected) continue;
+			for (const answer of [c.expected, ...(c.acceptable ?? [])]) {
+				assert.equal(store.checkAnswer(c, answer), "success", `${pack}/${c.id}: ${answer}`);
+				checked++;
+			}
+		}
+	}
+	assert.ok(checked > 0);
+});
+
 test("code format always defers grading even when expected matches", (t) => {
 	const store = fixture(t);
 	assert.equal(store.checkAnswer(answerChallenge({ format: "code" }), "yes"), undefined);

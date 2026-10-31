@@ -3,6 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 import { levelFor, newBadges, updateStreak, xpFor } from "./gamify.ts";
+import { mathEquivalent } from "./mathexpr.ts";
 import type { Attempt, Challenge, Outcome, PracticeSession, Progress, SkillPlan, Subskill } from "./types.ts";
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -96,64 +97,6 @@ function normalizeMath(text: string): string {
 			.replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)").replace(/\^\{([^{}]+)\}/g, "^($1)");
 	} while (result !== previous);
 	return result.replace(/\^\(([+-]?\d+)\)/g, "^$1");
-}
-
-// Recursive descent: sum → product → unary → power → primary. Exponents associate right.
-function evaluateMath(text: string): number | undefined {
-	if (text.length > 4096) return undefined;
-	let at = 0;
-	function primary(): number {
-		if (text[at] === "(") {
-			at++;
-			const value = sum();
-			if (text[at++] !== ")") throw new Error("Missing parenthesis");
-			return value;
-		}
-		if (text.startsWith("sqrt(", at)) {
-			at += 4;
-			return Math.sqrt(primary());
-		}
-		for (const [name, value] of [["pi", Math.PI], ["e", Math.E]] as const) {
-			if (text.startsWith(name, at)) { at += name.length; return value; }
-		}
-		const match = /^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/.exec(text.slice(at));
-		if (!match) throw new Error("Expected number");
-		at += match[0].length;
-		return Number(match[0]);
-	}
-	function power(): number {
-		const value = primary();
-		if (text[at] !== "^") return value;
-		at++;
-		return value ** unary();
-	}
-	function unary(): number {
-		if (text[at] === "+") { at++; return unary(); }
-		if (text[at] === "-") { at++; return -unary(); }
-		return power();
-	}
-	function product(): number {
-		let value = unary();
-		while (text[at] === "*" || text[at] === "/") {
-			const op = text[at++];
-			const right = unary();
-			value = op === "*" ? value * right : value / right;
-		}
-		return value;
-	}
-	function sum(): number {
-		let value = product();
-		while (text[at] === "+" || text[at] === "-") {
-			const op = text[at++];
-			const right = product();
-			value = op === "+" ? value + right : value - right;
-		}
-		return value;
-	}
-	try {
-		const value = sum();
-		return at === text.length && Number.isFinite(value) ? value : undefined;
-	} catch { return undefined; }
 }
 
 function closeEnough(actual: number | undefined, target: number | undefined, tolerance?: number): boolean {
@@ -335,12 +278,10 @@ export class PracticeStore {
 				numberWithUnit(candidate, c.unit), c.tolerance)) ? "success" : "fail";
 		}
 		if (c.format === "math") {
-			const actual = normalizeMath(answer), number = evaluateMath(actual);
-			return candidates.some((candidate) => {
-				const expected = normalizeMath(candidate), target = evaluateMath(expected);
-				return number !== undefined && target !== undefined ? closeEnough(number, target, c.tolerance)
-					: actual === expected;
-			}) ? "success" : "fail";
+			// Equivalent by randomized evaluation (3x^2+2x ≡ 2x+3x^2); normalized string match is the fallback.
+			const actual = normalizeMath(answer);
+			return candidates.some((candidate) => normalizeMath(candidate) === actual
+				|| mathEquivalent(answer, candidate, c.tolerance) === true) ? "success" : "fail";
 		}
 		const actual = normalize(answer);
 		return candidates.some((candidate) => {
