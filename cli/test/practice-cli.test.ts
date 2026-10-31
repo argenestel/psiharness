@@ -200,3 +200,30 @@ test("memory adds, lists, names, summarizes, forgets, and rejects invalid kinds"
 	assert.equal((await run("memory", ["forget", "missing"], home)).code, 1);
 	assert.equal((await run("memory", ["add", "invalid", "Text"], home)).code, 1);
 });
+
+test("import-skill copies sources and valid lessons, warning and continuing for invalid lessons", async (t) => {
+	const root = temp(t);
+	const pack = fixture(root);
+	const home = join(root, "home");
+	const { SourceStore } = await import("../../core/src/sources.ts");
+	const source = new SourceStore(root).add(plan.skill, { url: "https://docs.python.org/3/", title: "Python" });
+	mkdirSync(join(pack, "lessons"));
+	const lesson = { title: "Sums", explanation: "Add numbers.", keyIdeas: ["Count", "Combine"],
+		citations: [{ n: 1, sourceId: source.id }] };
+	writeFileSync(join(pack, "lessons", "sums.json"), JSON.stringify(lesson));
+	writeFileSync(join(pack, "lessons", "invalid.json"), "{");
+	writeFileSync(join(pack, "lessons", "..unsafe.json"), JSON.stringify(lesson));
+	let warnings = "";
+	const original = process.stderr.write;
+	process.stderr.write = ((chunk: string | Uint8Array) => { warnings += chunk.toString(); return true; }) as typeof original;
+	try {
+		const result = await run("import-skill", [pack], home);
+		assert.equal(result.code, 0, result.output);
+		assert.match(result.output, /^Imported test-skill ->/);
+	} finally { process.stderr.write = original; }
+	assert.deepEqual(JSON.parse(readFileSync(join(home, "skills", plan.skill, "sources.json"), "utf8")), [source]);
+	assert.equal(JSON.parse(readFileSync(join(home, "skills", plan.skill, "lessons", "sums.json"), "utf8")).title, "Sums");
+	assert.ok(!existsSync(join(home, "skills", plan.skill, "lessons", "invalid.json")));
+	assert.ok(!existsSync(join(home, "skills", plan.skill, "lessons", "..unsafe.json")));
+	assert.match(warnings, /Skipped lesson invalid.json/);
+});

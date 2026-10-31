@@ -1,4 +1,5 @@
-import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { LessonStore } from "../../../core/src/lessons.ts";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { slugify } from "../../../core/src/slug.ts";
@@ -35,6 +36,34 @@ export async function importSkill(argv: string[], ctx: PracticeContext): Promise
 	mkdirSync(target, { recursive: true });
 	writeFileSync(join(target, "plan.json"), JSON.stringify(plan, null, 2) + "\n");
 	writeFileSync(join(target, "challenges.json"), JSON.stringify(normalized, null, 2) + "\n");
+
+	const sourcesFile = join(source, "sources.json");
+	if (existsSync(sourcesFile) && lstatSync(sourcesFile).isFile()) {
+		const destination = join(target, "sources.json");
+		if (existsSync(destination) && lstatSync(destination).isSymbolicLink()) {
+			throw new Error("Refusing sources symlink inside store");
+		}
+		const sources = JSON.parse(readFileSync(sourcesFile, "utf8"));
+		if (!Array.isArray(sources)) throw new Error("sources.json must contain an array");
+		copyFileSync(sourcesFile, destination);
+	}
+	const lessonDirectory = join(source, "lessons");
+	const lessons = new LessonStore(home);
+	if (existsSync(lessonDirectory) && lstatSync(lessonDirectory).isDirectory()) {
+		for (const entry of readdirSync(lessonDirectory, { withFileTypes: true })) {
+			if (!entry.isFile() || !/^[a-z0-9]+(?:-[a-z0-9]+)*\.json$/.test(entry.name)) continue;
+			try {
+				const id = entry.name.slice(0, -5);
+				const lesson = JSON.parse(readFileSync(join(lessonDirectory, entry.name), "utf8"));
+				const errors = lessons.validate(slug, id, lesson);
+				if (errors.length) throw new Error(errors.join("; "));
+				lessons.write(slug, id, lesson);
+			} catch (error) {
+				const warning = `Skipped lesson ${entry.name}: ${error instanceof Error ? error.message : String(error)}`;
+				process.stderr.write(`${warning}\n`);
+			}
+		}
+	}
 	(ctx.stdout ?? process.stdout).write(`Imported ${slug} -> ${target}\n`);
 	return 0;
 }

@@ -1,4 +1,5 @@
-import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
+import { LessonStore } from "../../core/src/lessons.ts";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PracticeStore, validateChallenge } from "../../core/src/practice.ts";
@@ -117,7 +118,7 @@ export class PracticeApi {
 	}
 
 	/** Copy examples/skills/<slug> into the store; importing an installed skill is a no-op, never an overwrite. */
-	private importPack(slug: string): { skill: string; alreadyImported?: true } {
+	private importPack(slug: string): { skill: string; alreadyImported?: true; warnings?: string[] } {
 		if (!this.packs().some((p) => p.slug === slug)) throw apiError(404, "Pack not found");
 		const source = join(packsDir, slug);
 		const plan = JSON.parse(readFileSync(join(source, "plan.json"), "utf8"));
@@ -135,11 +136,42 @@ export class PracticeApi {
 		if (errors.length) throw apiError(400, `Invalid skill pack: ${errors.slice(0, 3).join("; ")}`);
 		// Stage the whole pack, then rename it into place so a crash never leaves a half-imported skill.
 		const staging = join(this.home, "skills", `.import-${skill}-${process.pid}-${Date.now()}`);
-		mkdirSync(staging, { recursive: true });
-		writeFileSync(join(staging, "plan.json"), JSON.stringify({ ...plan, skill }, null, "\t") + "\n");
-		writeFileSync(join(staging, "challenges.json"), JSON.stringify(normalized, null, "\t") + "\n");
-		renameSync(staging, target);
-		return { skill };
+		const importTarget = join(staging, "skills", skill);
+		mkdirSync(importTarget, { recursive: true });
+		writeFileSync(join(importTarget, "plan.json"), JSON.stringify({ ...plan, skill }, null, "\t") + "\n");
+		writeFileSync(join(importTarget, "challenges.json"), JSON.stringify(normalized, null, "\t") + "\n");
+
+		const warnings: string[] = [];
+		const sourcesFile = join(source, "sources.json");
+		if (existsSync(sourcesFile) && lstatSync(sourcesFile).isFile()) {
+			const destination = join(importTarget, "sources.json");
+			if (existsSync(destination) && lstatSync(destination).isSymbolicLink()) {
+				throw new Error("Refusing sources symlink inside store");
+			}
+			const sources = JSON.parse(readFileSync(sourcesFile, "utf8"));
+			if (!Array.isArray(sources)) throw new Error("sources.json must contain an array");
+			copyFileSync(sourcesFile, destination);
+		}
+		const lessonDirectory = join(source, "lessons");
+		const lessons = new LessonStore(staging);
+		if (existsSync(lessonDirectory) && lstatSync(lessonDirectory).isDirectory()) {
+			for (const entry of readdirSync(lessonDirectory, { withFileTypes: true })) {
+				if (!entry.isFile() || !/^[a-z0-9]+(?:-[a-z0-9]+)*\.json$/.test(entry.name)) continue;
+				try {
+					const id = entry.name.slice(0, -5);
+					const lesson = JSON.parse(readFileSync(join(lessonDirectory, entry.name), "utf8"));
+					const errors = lessons.validate(skill, id, lesson);
+					if (errors.length) throw new Error(errors.join("; "));
+					lessons.write(skill, id, lesson);
+				} catch (error) {
+					const warning = `Skipped lesson ${entry.name}: ${error instanceof Error ? error.message : String(error)}`;
+					warnings.push(warning);
+				}
+			}
+		}
+		renameSync(importTarget, target);
+		rmSync(staging, { recursive: true, force: true });
+		return warnings.length ? { skill, warnings } : { skill };
 	}
 
 	/** Return undefined for unhandled paths; all returned values are JSON serializable. */
@@ -180,7 +212,10 @@ export class PracticeApi {
 			const unattempted = ["1", "true"].includes(url.searchParams.get("unattempted") ?? "");
 			const challenges = this.practice.listChallenges(skill).map((c) => publicChallenge(c, history))
 				.filter((c) => !unattempted || !c.attempted);
-			return { plan: this.practice.readPlan(skill) ?? null, progress: this.practice.progress(skill), challenges };
+			const plan = this.practice.readPlan(skill);
+			const available = new Set(new LessonStore(this.home).list(skill).map((lesson) => lesson.subskillId));
+			return { plan: plan ? { ...plan, subskills: plan.subskills.map((subskill) =>
+				({ ...subskill, lessonAvailable: available.has(subskill.id) })) } : null, progress: this.practice.progress(skill), challenges };
 		}
 		if (p[3] !== "challenges" || !p[4]) return undefined;
 		const challenge = this.practice.getChallenge(skill, p[4]);
