@@ -14,7 +14,9 @@ Check units and orders of magnitude in physics. Ask for a prediction before runn
 End sessions with psi_practice_session stop and psi_recap.`;
 
 /** Append a bounded learner profile and practice contract to the existing system prompt. */
-export function registerInjection(pi: ExtensionAPI, deps: PracticeDeps): void {
+export function registerInjection(
+	pi: ExtensionAPI, deps: PracticeDeps, pathInjection: () => Promise<string> = async () => "",
+): void {
 	pi.on("before_agent_start", async (event, ctx) => {
 		deps.resume();
 		const skill = deps.state.skill;
@@ -33,7 +35,8 @@ export function registerInjection(pi: ExtensionAPI, deps: PracticeDeps): void {
 				next?.title.slice(0, 120) ?? "complete"}) and ${challenges.length} ready challenges (${untried} not tried). `
 				+ "Do NOT create a new plan; use psi_challenge action next to serve ready challenges before writing new ones."
 			: "No plan exists yet; create one with psi_skill_plan create only if none exists.";
-		const required = `${guidance}\n`
+		const path = await pathInjection();
+		const required = (path ? `${path}\n` : "") + `${guidance}\n`
 			+ "Skill files are optional reference: read at most one SKILL.md only when you need a technique you don't know; "
 			+ `start practising immediately.\n${contract}`;
 		const nextLabel = next ? `${next.id}: ${next.title}`

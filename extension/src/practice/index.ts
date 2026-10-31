@@ -6,6 +6,7 @@ import { slugify } from "../../../core/src/slug.ts";
 import { registerTools } from "./tools.ts";
 import { registerCommands } from "./commands.ts";
 import { registerInjection } from "./inject.ts";
+import { registerPaths } from "./paths.ts";
 import { refreshHud } from "./hud.ts";
 
 export interface PracticeState {
@@ -68,7 +69,8 @@ export function registerPractice(pi: ExtensionAPI, options: { home?: string } = 
 	deps.resume();
 	registerTools(pi, deps);
 	registerCommands(pi, deps);
-	registerInjection(pi, deps);
+	const paths = registerPaths(pi, options.home);
+	registerInjection(pi, deps, paths.injection);
 	pi.on("session_start", async (_event, ctx) => {
 		state.skill = undefined;
 		state.challengeId = undefined;

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
@@ -84,9 +84,9 @@ const plan = (overrides = {}) => ({
 test("registers every practice tool, command, lifecycle handler, and skill flag", async (t) => fixture(t, async (f) => {
 	assert.deepEqual([...f.tools.keys()].sort(), ["psi_memory_remember", "psi_memory_recall", "psi_memory_forget",
 		"psi_recap", "psi_skill_plan", "psi_challenge", "psi_attempt", "psi_hint", "psi_practice_session",
-		"psi_progress_report"].sort());
+		"psi_progress_report", "psi_path"].sort());
 	assert.deepEqual([...f.commands.keys()].sort(), ["skill", "practice", "challenge", "boss", "quest", "hint",
-		"remember", "memory", "forget", "recap", "hours", "streak"].sort());
+		"remember", "memory", "forget", "recap", "hours", "streak", "path"].sort());
 	assert.deepEqual(f.registeredFlags, ["psi-skill"]);
 	assert.ok(f.handlers.has("before_agent_start"));
 	assert.ok(f.handlers.has("session_start"));
@@ -450,4 +450,120 @@ test("string psi-skill flag selects the exact imported slug", async (t) => fixtu
 	assert.match(text, /Active skill: python-foundations/);
 	assert.match(text, /No plan exists yet/);
 	assert.doesNotMatch(text, /Do NOT create a new plan/);
+}));
+
+
+test("active path file is replaced atomically and survives a new store", async (t) => fixture(t, async (_f, home) => {
+	const { ActivePathStore } = await import("../src/practice/paths.ts");
+	const store = new ActivePathStore();
+	assert.equal(store.read(), undefined);
+	store.write("first");
+	store.write("second");
+	assert.equal(new ActivePathStore(home).read(), "second");
+	assert.deepEqual(JSON.parse(readFileSync(join(home, "graph", "active-path.json"), "utf8")),
+		{ activePath: "second" });
+	assert.deepEqual(readdirSync(join(home, "graph")), ["active-path.json"]);
+	writeFileSync(join(home, "graph", "active-path.json"), "invalid JSON");
+	assert.equal(store.read(), undefined);
+}));
+
+test("/path new parses a goal and sends the exact agent request", async (t) => fixture(t, async (f) => {
+	await f.command("path", "  new   learn SQL joins  ");
+	assert.equal(f.messages.at(-1), "Build a learning path for: learn SQL joins. "
+		+ "Look at my knowledge graph first, then call psi_path create.");
+	await f.command("path", "new");
+	assert.equal(f.notifications.at(-1), "Usage: /path new <goal>");
+}));
+
+const knowledgeLocation = new URL("../../core/src/knowledge.ts", import.meta.url);
+const knowledgeModule = existsSync(knowledgeLocation) ? await import(knowledgeLocation.href) : undefined;
+const pathOptions = { skip: knowledgeModule ? false : "knowledge.ts not present" };
+
+async function pathFixture(t: test.TestContext,
+	run: (f: ReturnType<typeof fake>, home: string, store: any, ids: string[]) => Promise<void>) {
+	await fixture(t, async (f, home) => {
+		await f.execute("psi_skill_plan", { action: "create", plan: plan({ subskills: [
+			{ ...plan().subskills[0], status: "solid" },
+			{ ...plan().subskills[0], id: "joins", title: "Joins", prerequisites: ["select"] },
+		] }) });
+		const store = new knowledgeModule!.KnowledgeStore(home);
+		const ids = ["subskill:sql/select", "subskill:sql/joins", "skill:sql"];
+		await run(f, home, store, ids);
+	});
+}
+
+test("psi_path lists, gets, creates and continues ordered fixture steps", pathOptions, async (t) => {
+	await pathFixture(t, async (f, _home, store, ids) => {
+		const created = await f.execute("psi_path", { action: "create", title: "SQL route", goal: "Query data", steps: ids });
+		assert.equal(created.details.path.total, 3);
+		assert.equal(created.details.path.done, 1);
+		const id = created.details.path.id;
+		assert.equal(store.readPath(id).title, "SQL route");
+		assert.equal(f.entries.at(-1).customType, "psi-active-path");
+		assert.equal(f.entries.at(-1).data.activePath, id);
+		const listed = await f.execute("psi_path", { action: "list" });
+		assert.match(listed.content[0].text, /SQL route.*1\/3 done.*Query data/);
+		const got = await f.execute("psi_path", { action: "get", id });
+		assert.deepEqual(got.details.steps.map((step: any) => step.status), ["done", "next", "pending"]);
+		assert.match(got.content[0].text, /2\. Joins \[next\]/);
+		const next = await f.execute("psi_path", { action: "next" });
+		assert.equal(next.details.next.id, ids[1]);
+		assert.match(next.content[0].text, /psi_challenge with action "next", skill "sql", subskillId "joins"/);
+		const generated = await f.execute("psi_path", { action: "create", title: "Generated", goal: "Joins",
+			targetId: ids[1] });
+		assert.deepEqual(generated.details.path.steps, store.pathTo(ids[1]));
+		assert.ok((await f.execute("psi_path", { action: "get", id: "missing" })).details.errors);
+		assert.ok((await f.execute("psi_path", { action: "create", title: "Invalid" })).details.errors);
+	});
+});
+
+test("/path list and id switch paths; injection restores session before file fallback", pathOptions, async (t) => {
+	await pathFixture(t, async (f, home, store, ids) => {
+		const first = store.savePath({ title: "SQL route", goal: "Query data", steps: ids, source: "learner" });
+		const second = store.savePath({ title: "Other route", goal: "Practice", steps: [ids[2]], source: "learner" });
+		const prompt = async () => (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+		assert.doesNotMatch(await prompt(), /Active path:/);
+		await f.command("path");
+		const listing = f.notifications.at(-1);
+		await f.command("path", "list");
+		assert.equal(f.notifications.at(-1), listing);
+		assert.match(listing!, /SQL route/);
+		await f.command("path", first.id);
+		assert.match(f.notifications.at(-1)!, /step 2 of 3: Joins/);
+		const expected = "Active path: SQL route — step 2 of 3: Joins. Continue it unless the learner asks otherwise.";
+		assert.deepEqual((await prompt()).split("\n").filter((text: string) => text.startsWith("Active path:")), [expected]);
+		await f.command("path", "missing");
+		assert.match(f.notifications.at(-1)!, /Path not found.*list/);
+		const { ActivePathStore } = await import("../src/practice/paths.ts");
+		const saved = new ActivePathStore(home);
+		assert.equal(saved.read(), first.id);
+		saved.write(second.id);
+		await f.fire("session_start");
+		assert.ok((await prompt()).includes(expected));
+		f.entries.length = 0;
+		await f.fire("session_start");
+		assert.match(await prompt(), /Active path: Other route — step 1 of 1: SQL\./);
+		assert.match((await f.execute("psi_path", { action: "next" })).content[0].text, /Start \/practice for skill sql/);
+		f.entries.push({ type: "custom", customType: "psi-active-path", data: { activePath: first.id } });
+		await f.fire("session_tree");
+		assert.ok((await prompt()).includes(expected));
+		const { PracticeStore } = await import("../../core/src/practice.ts");
+		new PracticeStore(home).setSubskillStatus("sql", "joins", "solid");
+		const completed = store.savePath({ title: "Done", goal: "Done", steps: [ids[0]], source: "learner" });
+		await f.command("path", completed.id);
+		assert.doesNotMatch(await prompt(), /Active path:/);
+		assert.match((await f.execute("psi_path", { action: "next" })).content[0].text, /All steps are done/);
+	});
+});
+
+test("psi_path next teaches concept steps", pathOptions, async (t) => fixture(t, async (f, home) => {
+	const { PsiStore } = await import("../../core/src/store.ts");
+	const now = new Date().toISOString();
+	new PsiStore(home).writeGraph("algebra", { topic: "algebra", title: "Algebra", bigIdea: "Understand vectors",
+		concepts: [{ id: "vectors", title: "Vectors", summary: "Directed quantities", prerequisites: [], difficulty: 1 }],
+		createdAt: now, updatedAt: now });
+	const path = await f.execute("psi_path", { action: "create", title: "Vectors", goal: "Understand vectors",
+		steps: ["concept:algebra/vectors"] });
+	const next = await f.execute("psi_path", { action: "next", id: path.details.path.id });
+	assert.equal(next.details.instruction, "Teach Vectors.");
 }));
