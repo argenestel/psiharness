@@ -182,6 +182,22 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - Web API (planned): `GET /api/me` → LearnerSummary, `PUT /api/me/profile` {dailyGoal?, tutorMode?},
   `GET /api/skills/:s/sources`, `GET /api/skills/:s/lessons/:subskillId`.
 
+### continuous lessons, sandboxed code execution, light Socratic prompts
+- `psi_run` {language: "python"|"javascript"|"sql"|"bash", code, setup?, stdin?} — executes code for demos and to
+  VERIFY computed claims before stating them. Enabled only when `PSI_CODE_EXEC=1` (set by the Docker `web`/`psi`
+  services; off on a bare host unless the user opts in). Runs in a fresh temp dir with a stripped env, 10 s timeout,
+  output capped at 64 KB, no inherited secrets. sql runs in an in-memory SQLite (`python3 -c` with sqlite3). Result:
+  stdout, stderr, exitCode, ms + `details.widget {type:"run", language, code, stdout, stderr, exitCode, ms}`.
+- `psi_next_steps` {options: [{label, message}] (2–4)} — the tutor ends every turn by offering what to do next as
+  one-click replies (e.g. "Continue", "Show me another example", "I'm stuck", "Try one myself"); widget
+  `{type:"next_steps", options}`. The web chat also always shows a default "Continue" reply after a teaching turn.
+- `psi_ask` {question, kind: "predict"|"why"|"what-if", hint?} — a light Socratic prompt inside a lesson (not graded,
+  no XP, never more than one per 2–3 teaching chunks); widget `{type:"socratic", question, kind, hint}` with an
+  answer box and "Just show me" (sends "Just show me" so the lesson continues).
+- Flow contract (inject.ts): lessons run continuously in chunks (explain → demo with psi_run → optional Socratic
+  prompt → next chunk); never end a turn without psi_next_steps; "continue"/"next" means proceed without
+  re-asking; check understanding with one practice challenge at the end of a subskill, not after every chunk.
+
 ### visual (`visual/src/index.ts` re-exports) — optional extras
 - `palettes.ts`: `type Palette = { name; bg; fg; muted; accent: string[]; deep; glow }`, `PALETTES`, `paletteFor(style, name?)`
 - `storyboard-html.ts`: `validateStoryboard(sb): string[]`, `renderStoryboardHtml(sb, opts?: { autoplay?: boolean; speech?: boolean }): string`
