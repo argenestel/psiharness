@@ -1,0 +1,50 @@
+{
+	"skill": "spanish-cafe-a1",
+	"subskillId": "polite-requests",
+	"title": "Make polite requests",
+	"explanation": "Pick your 'you' first. With a server you don't know, **usted** is the respectful choice for someone you don't know or someone older [1], and it takes third-person verb forms [2]. With a friend or someone close, **tú** is the familiar singular [3], with second-person verbs.\n\nThen soften the request. The conditional mood softens a request and makes it more polite [4]: *¿Podría…?* ('Could you…?') is gentler than the present-tense *¿Puede…?* ('Can you…?'). Either way, end with *por favor*.\n\nA useful template for usted: **¿Podría + infinitive + object, por favor?** For example *traer* ('to bring') plus *un café*.",
+	"keyIdeas": [
+		"Usted (formal) takes third-person verbs; tú (familiar) takes second-person verbs.",
+		"The conditional (¿Podría…?) is softer than the present (¿Puede…?).",
+		"Template: ¿Podría + infinitive + object, por favor?"
+	],
+	"workedExample": {
+		"problem": "Ask a server you don't know, as politely as possible, 'Could you bring a coffee, please?'",
+		"steps": [
+			"Stranger: use usted, so the verb is third person.",
+			"Most polite: the conditional of poder, podría.",
+			"Add the infinitive and object: traer un café (café is masculine, so un).",
+			"Close with por favor and the question marks ¿ … ?"
+		],
+		"answer": "¿Podría traer un café, por favor?"
+	},
+	"pitfalls": [
+		"Using tú forms with a stranger when you meant to be formal.",
+		"Using second-person verbs with usted.",
+		"Forgetting the opening ¿, which Spanish writes at the start of every question."
+	],
+	"citations": [
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "formal singular; used when addressing a person respectfully, someone older, someone not known to the speaker, or someone of some social distance",
+			"locator": "Personal pronouns: usted"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "Like usted, it uses third-person verb forms",
+			"locator": "Personal pronouns: ustedes"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "familiar singular; used when addressing someone who is of close affinity",
+			"locator": "Personal pronouns: tú"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "Courtesy: Using this mood softens a request, making it more polite.",
+			"locator": "Conditional: uses"
+		}
+	],
+	"createdAt": "2026-10-31T20:17:59Z",
+	"updatedAt": "2026-10-31T20:17:59Z"
+}

@@ -1,0 +1,60 @@
+{
+	"skill": "spanish-cafe-a1",
+	"subskillId": "greet-introduce",
+	"title": "Greet and introduce yourself",
+	"explanation": "The standard morning greeting in Spanish is **buenos días**. The RAE calls it the general formula, the only one used in Spain, while in parts of the Americas (especially the Río de la Plata area) *buen día* also appears [1].\n\nTo say your name, use the verb **llamarse**, which means 'to have the name that is expressed' [2]. *Me llamo Pablo* is literally 'I call myself Pablo'. To ask someone's name, build a question with *cómo* ('how'), just like the dictionary's own example, *No sé cómo se llama el restaurante* [3].\n\nChoose formal or familiar 'you'. **Usted** is for addressing a person respectfully, someone older, or someone you don't know [4], and it takes third-person verb forms [5], the same form the dictionary lists for usted: *usted llama* [6]. So a polite question to a stranger is *¿Cómo se llama usted?*",
+	"keyIdeas": [
+		"Morning greeting: buenos días (buen día also heard in parts of the Americas).",
+		"Me llamo … = 'my name is …' (llamarse = to be called).",
+		"With strangers use usted plus a third-person verb: ¿Cómo se llama usted?"
+	],
+	"workedExample": {
+		"problem": "At a café you want to ask an older server you don't know for their name, politely, and then say that your name is Pablo.",
+		"steps": [
+			"Stranger and older: choose usted.",
+			"Usted takes the third-person form of llamarse: se llama.",
+			"Question word for 'what is your name' is cómo ('how'): ¿Cómo se llama usted?",
+			"Your own name uses the first person: Me llamo Pablo."
+		],
+		"answer": "¿Cómo se llama usted? — Me llamo Pablo."
+	},
+	"pitfalls": [
+		"Mixing up the forms of llamarse: me llamo for yourself, se llama for usted (or for he / she).",
+		"Using a second-person verb with usted (usted takes third-person forms).",
+		"Leaving off the opening ¿ in written questions."
+	],
+	"citations": [
+		{
+			"sourceId": "src-3ebc7531f3",
+			"quote": "Esta es la única usada en España; en América alterna con buen día, que está sobre todo extendida en el área rioplatense",
+			"locator": "día, 2: buen día o buenos días"
+		},
+		{
+			"sourceId": "src-068c2dfec4",
+			"quote": "Tener el nombre o la denominación que se expresa.",
+			"locator": "llamar, 2.b (prnl.)"
+		},
+		{
+			"sourceId": "src-068c2dfec4",
+			"quote": "No sé cómo se llama el restaurante donde comimos.",
+			"locator": "llamar, 2.b, example"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "formal singular; used when addressing a person respectfully, someone older, someone not known to the speaker, or someone of some social distance",
+			"locator": "Personal pronouns: usted"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "Like usted, it uses third-person verb forms",
+			"locator": "Personal pronouns: ustedes"
+		},
+		{
+			"sourceId": "src-068c2dfec4",
+			"quote": "usted llama",
+			"locator": "Conjugación de llamar: presente"
+		}
+	],
+	"createdAt": "2026-10-31T20:17:59Z",
+	"updatedAt": "2026-10-31T20:17:59Z"
+}

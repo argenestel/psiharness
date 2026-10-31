@@ -1,0 +1,60 @@
+{
+	"skill": "spanish-cafe-a1",
+	"subskillId": "cafe-roleplay",
+	"title": "Complete a café visit",
+	"explanation": "A short café visit strings together everything in this skill. Greet first: in the morning, *buenos días* [1]. If you introduce yourself, use *me llamo* [2].\n\nOrder with the right article (café is masculine, *un café* [3]) and soften with the conditional, which makes a request more polite [4]. Ask the server things with *usted* and third-person verbs if you don't know them [5]. Read prices in euros and céntimos [6].\n\nPlan before you speak. List your turns (greet, order, ask, close), choose formal or familiar once, and keep it consistent through the whole conversation.",
+	"keyIdeas": [
+		"Sequence: greet, order, ask, close.",
+		"Choose usted or tú once and stay consistent.",
+		"Soften requests with the conditional and por favor."
+	],
+	"workedExample": {
+		"problem": "Script three learner turns for a morning visit: you are Marta, the server is a stranger, and you want a black coffee.",
+		"steps": [
+			"Turn 1, morning greeting: Buenos días.",
+			"Turn 2, introduce yourself with llamarse: Me llamo Marta.",
+			"Turn 3, polite order with un + masculine café and the conditional of querer: Querría un café negro, por favor.",
+			"Check consistency: nothing addresses the server as tú, so the formal register holds."
+		],
+		"answer": "Buenos días. Me llamo Marta. Querría un café negro, por favor."
+	},
+	"pitfalls": [
+		"Switching between tú and usted in the same conversation.",
+		"Forgetting article agreement (un café) under time pressure.",
+		"Skipping the greeting and opening with a bare order."
+	],
+	"citations": [
+		{
+			"sourceId": "src-3ebc7531f3",
+			"quote": "La fórmula de saludo que se emplea durante la mañana es, en el español general, buenos días.",
+			"locator": "día, 2"
+		},
+		{
+			"sourceId": "src-068c2dfec4",
+			"quote": "Tener el nombre o la denominación que se expresa.",
+			"locator": "llamar, 2.b (prnl.)"
+		},
+		{
+			"sourceId": "src-78ebc2bc3b",
+			"quote": "Como determinante, toma la forma un ante sustantivos masculinos, los preceda inmediatamente o no",
+			"locator": "uno, una, 1.1"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "Courtesy: Using this mood softens a request, making it more polite.",
+			"locator": "Conditional: uses"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "formal singular; used when addressing a person respectfully, someone older, someone not known to the speaker, or someone of some social distance",
+			"locator": "Personal pronouns: usted"
+		},
+		{
+			"sourceId": "src-6759ef745b",
+			"quote": "La fracción del euro recibe los nombres de céntimo",
+			"locator": "euro, 3"
+		}
+	],
+	"createdAt": "2026-10-31T20:17:59Z",
+	"updatedAt": "2026-10-31T20:17:59Z"
+}

@@ -1,0 +1,58 @@
+{
+	"skill": "spanish-cafe-a1",
+	"subskillId": "order-drinks",
+	"title": "Order café basics",
+	"explanation": "In the dictionary the drink *café* is marked **m.**, masculine [1]. Spanish uses the article **un** before masculine nouns [2], so you order *un café*. (A twist you will meet: feminine nouns that begin with a stressed *a*, like *agua*, also normally take *un* [3].)\n\nThere are two ways to ask. *Quiero …* ('I want …') is direct. Softer is the conditional: the courtesy use of this mood softens a request and makes it more polite [4]. For example *me gustaría* means 'I would like' [5], and *querría* is the conditional of *querer* ('to want') [6]. Add *por favor* either way.\n\nPredict the tone before you speak. Both forms are fine in a café, but the conditional sounds more polite.",
+	"keyIdeas": [
+		"Café is masculine, so it takes un.",
+		"Quiero … is direct; me gustaría … or querría … is softer and more polite.",
+		"Add por favor."
+	],
+	"workedExample": {
+		"problem": "Order one black coffee (café negro) two ways: first directly with querer, then more politely with its conditional.",
+		"steps": [
+			"Café is masculine (m.), so the article is un: un café negro.",
+			"Direct, present tense of querer: Quiero un café negro, por favor.",
+			"Polite, conditional of querer: Querría un café negro, por favor."
+		],
+		"answer": "Quiero un café negro, por favor. / Querría un café negro, por favor."
+	},
+	"pitfalls": [
+		"Matching the article to the English word instead of the Spanish noun's gender; check m./f. in the dictionary.",
+		"Saying me gusta ('I like') when you mean me gustaría ('I would like')."
+	],
+	"citations": [
+		{
+			"sourceId": "src-27f107450b",
+			"quote": "1.b. m. Bebida que se hace por infusión de la semilla tostada y molida",
+			"locator": "café, 1.b"
+		},
+		{
+			"sourceId": "src-78ebc2bc3b",
+			"quote": "Como determinante, toma la forma un ante sustantivos masculinos, los preceda inmediatamente o no",
+			"locator": "uno, una, 1.1"
+		},
+		{
+			"sourceId": "src-78ebc2bc3b",
+			"quote": "La forma femenina una se apocopa normalmente en un ante sustantivos femeninos que comienzan por /a/ tónica",
+			"locator": "uno, una, 1.1"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "Courtesy: Using this mood softens a request, making it more polite.",
+			"locator": "Conditional: uses"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "me gustaría ser médico = \"When I was young, I thought that I would like to be a doctor\"",
+			"locator": "Conditional: uses"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "querer querría querrías querríamos querríais querrían",
+			"locator": "Conditional: irregular verbs"
+		}
+	],
+	"createdAt": "2026-10-31T20:17:59Z",
+	"updatedAt": "2026-10-31T20:17:59Z"
+}

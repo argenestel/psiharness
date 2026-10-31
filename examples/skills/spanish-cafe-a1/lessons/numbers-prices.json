@@ -1,0 +1,64 @@
+{
+	"skill": "spanish-cafe-a1",
+	"subskillId": "numbers-prices",
+	"title": "Read numbers and prices",
+	"explanation": "Most number words are plain vocabulary to memorise, but two families change shape depending on what follows. **Uno** works like the article: it becomes *un* before a masculine noun, and the same shortening applies inside larger numbers, as in *Tengo veintiún años* [1]. The dictionary form of 21 itself is *veintiuno*, 'veinte más uno' [2].\n\n**Ciento** (100) shortens to *cien* when it comes right before the noun it counts [3]: *cien cafés*. Inside larger numbers you write the full form: *ciento uno* [4]. And when the number is used as a noun or stands alone, today's Spanish clearly prefers *cien* [5].\n\nFor prices in euros, the plural is *euros* [6], and the fraction of a euro is called the *céntimo* [7].",
+	"keyIdeas": [
+		"uno → un before masculine nouns, also inside numbers (veintiún años).",
+		"ciento → cien before a noun; ciento inside larger numbers (ciento uno).",
+		"Euros and céntimos: the plural is euros."
+	],
+	"workedExample": {
+		"problem": "Say 'twenty-one coffees' and the number 105 in Spanish.",
+		"steps": [
+			"Café is masculine, and uno shortens before a masculine noun even inside 21: veintiún.",
+			"Plural noun: veintiún cafés.",
+			"105 is a larger number, so ciento keeps its full form: ciento cinco."
+		],
+		"answer": "veintiún cafés; ciento cinco"
+	},
+	"pitfalls": [
+		"Writing veintiuno before a masculine noun (it shortens to veintiún).",
+		"Using cien inside larger numbers (ciento uno, not cien uno).",
+		"Using centavo for the euro's fraction; the RAE says the euro's fraction is céntimo."
+	],
+	"citations": [
+		{
+			"sourceId": "src-78ebc2bc3b",
+			"quote": "Estas mismas leyes de la apócope rigen cuando uno, una es componente de numerales complejos",
+			"locator": "uno, una, 2.2"
+		},
+		{
+			"sourceId": "src-78ebc2bc3b",
+			"quote": "Tengo veintiún años",
+			"locator": "uno, una, 2.2, example"
+		},
+		{
+			"sourceId": "src-3dc5338e1a",
+			"quote": "se apocopa en la forma cien cuando antecede al sustantivo al que cuantifica",
+			"locator": "ciento, 1"
+		},
+		{
+			"sourceId": "src-3dc5338e1a",
+			"quote": "se escribe en su forma plena en el resto de los numerales: ciento uno",
+			"locator": "ciento, 1"
+		},
+		{
+			"sourceId": "src-3dc5338e1a",
+			"quote": "en la lengua actual se prefiere claramente la forma apocopada cien",
+			"locator": "ciento, 2"
+		},
+		{
+			"sourceId": "src-6759ef745b",
+			"quote": "Su plural, en español, es euros",
+			"locator": "euro, 1"
+		},
+		{
+			"sourceId": "src-6759ef745b",
+			"quote": "La fracción del euro recibe los nombres de céntimo",
+			"locator": "euro, 3"
+		}
+	],
+	"createdAt": "2026-10-31T20:17:59Z",
+	"updatedAt": "2026-10-31T20:17:59Z"
+}

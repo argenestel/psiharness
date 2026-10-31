@@ -1,0 +1,54 @@
+{
+	"skill": "spanish-cafe-a1",
+	"subskillId": "ser-estar",
+	"title": "Choose ser or estar",
+	"explanation": "Spanish has two verbs for 'to be'. **Ser** expresses the fundamental nature, identity, or characteristics of something, what it really is; **estar** expresses the state or condition it happens to be in [1]. Many learners use 'permanent vs temporary' as a shortcut, but 'essential nature' versus 'state or condition' is the more accurate test [2].\n\n**Location** uses estar. Spanish treats location as a state, so even *Madrid está en España* takes estar [3].\n\nPresent-tense forms: ser is *soy, eres, es, somos, sois, son* [4] (plus *sos* in voseo regions); estar is *estoy, estás, está, estamos, estáis, están* [5]. Ask yourself first: am I saying **what** it is, or **how / where** it is right now?",
+	"keyIdeas": [
+		"Ser: identity, nature, characteristics (what it is).",
+		"Estar: state or condition, and location (how or where it is).",
+		"Test: essential nature versus state, not just permanent versus temporary."
+	],
+	"workedExample": {
+		"problem": "Fill the blanks: 'Nosotros ___ en el café' (we are at the café) and 'Tú ___ estudiante' (you are a student).",
+		"steps": [
+			"First sentence gives a location, so use estar. Subject nosotros gives estamos.",
+			"Second sentence says what you are (identity), so use ser. Subject tú gives eres.",
+			"Read both back: Nosotros estamos en el café. Tú eres estudiante."
+		],
+		"answer": "estamos; eres"
+	},
+	"pitfalls": [
+		"Using ser for location because the place seems permanent.",
+		"Relying only on 'permanent vs temporary', which fails for location and for many states.",
+		"Mixing persons, e.g. using the yo form with a tú subject."
+	],
+	"citations": [
+		{
+			"sourceId": "src-c381265324",
+			"quote": "Today, ser is used to express the fundamental nature, identity, essence, or characteristics of something - what it really is, while estar expresses the state or condition something happens to be in.",
+			"locator": "Spanish: Nuance"
+		},
+		{
+			"sourceId": "src-c381265324",
+			"quote": "it is more accurate to describe the distinction as one of \"essential nature\" versus \"state or condition\"",
+			"locator": "Spanish: Nuance"
+		},
+		{
+			"sourceId": "src-c381265324",
+			"quote": "In Spanish, location is regarded as a state, and therefore is indicated with estar",
+			"locator": "Spanish: Location"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "ser \"to be (essence)\" soy eres sos es somos sois son",
+			"locator": "Present indicative: irregular verbs"
+		},
+		{
+			"sourceId": "src-d2539babcf",
+			"quote": "estar \"to be (state)\" estoy estás está estamos estáis están",
+			"locator": "Present indicative: irregular verbs"
+		}
+	],
+	"createdAt": "2026-10-31T20:17:59Z",
+	"updatedAt": "2026-10-31T20:17:59Z"
+}
