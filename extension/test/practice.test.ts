@@ -84,9 +84,9 @@ const plan = (overrides = {}) => ({
 test("registers every practice tool, command, lifecycle handler, and skill flag", async (t) => fixture(t, async (f) => {
 	assert.deepEqual([...f.tools.keys()].sort(), ["psi_memory_remember", "psi_memory_recall", "psi_memory_forget",
 		"psi_recap", "psi_skill_plan", "psi_challenge", "psi_attempt", "psi_hint", "psi_practice_session",
-		"psi_progress_report", "psi_path"].sort());
+		"psi_progress_report", "psi_path", "psi_lesson", "psi_sources", "psi_fetch", "psi_search", "psi_verify"].sort());
 	assert.deepEqual([...f.commands.keys()].sort(), ["skill", "practice", "challenge", "boss", "quest", "hint",
-		"remember", "memory", "forget", "recap", "hours", "streak", "path"].sort());
+		"remember", "memory", "forget", "recap", "hours", "streak", "path", "mode", "verify", "sources"].sort());
 	assert.deepEqual(f.registeredFlags, ["psi-skill"]);
 	assert.ok(f.handlers.has("before_agent_start"));
 	assert.ok(f.handlers.has("session_start"));
@@ -153,7 +153,7 @@ test("injection appends bounded memory, state, and tutor guidance", async (t) =>
 	assert.match(injected, /worked example -> faded example -> independent problem/);
 	assert.match(injected, /code challenges with tests/);
 	assert.match(injected, /units and orders of magnitude/);
-	assert.match(injected, /prediction before running code/);
+	assert.match(injected, /TEACH FIRST/);
 	assert.ok(injected.length - "Original system\n\n".length <= 2500);
 	const { MemoryStore } = await import("../../core/src/memory.ts");
 	new MemoryStore(home).setName("Long learner name ".repeat(300));
@@ -320,7 +320,7 @@ test("code attempts require run outcomes and return attempt widgets", async (t) 
 	const attempt = await f.execute("psi_attempt", { ...params, outcome: "fail" });
 	assert.equal(attempt.details.outcome, "fail");
 	assert.deepEqual(attempt.details.widget, {
-		type: "attempt", outcome: "fail", xp: attempt.details.xp, level: attempt.details.level,
+		type: "attempt", combo: 0, comboBonus: 1, comboDisplayOnly: true, outcome: "fail", xp: attempt.details.xp, level: attempt.details.level,
 		levelBar: attempt.details.levelBar, leveledUp: attempt.details.leveledUp,
 		badges: attempt.details.badges, streak: attempt.details.streak,
 	});
@@ -419,9 +419,9 @@ test("saved-plan injection counts ready challenges and preserves instructions wi
 	new MemoryStore(home).setName("Long learner name ".repeat(300));
 	const text = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
 	assert.ok(text.includes("SQL has a saved plan (1 steps, next: Select) and 2 ready challenges (1 not tried). "
-		+ "Do NOT create a new plan; use psi_challenge action next to serve ready challenges before writing new ones."));
+		+ "Do NOT create a new plan. Teach new or twice-missed material before serving ready challenges."));
 	assert.ok(text.includes("Skill files are optional reference: read at most one SKILL.md only when you need a "
-		+ "technique you don't know; start practising immediately."));
+		+ "technique you don't know; start with the teaching contract."));
 	assert.ok(text.length - "Base\n\n".length <= 2500);
 }));
 
@@ -566,4 +566,112 @@ test("psi_path next teaches concept steps", pathOptions, async (t) => fixture(t,
 		steps: ["concept:algebra/vectors"] });
 	const next = await f.execute("psi_path", { action: "next", id: path.details.path.id });
 	assert.equal(next.details.instruction, "Teach Vectors.");
+}));
+
+import { createServer } from "node:http";
+import { fetchPage, parseSearch, searchSources } from "../src/practice/web.ts";
+import { ProfileStore } from "../../core/src/profile.ts";
+
+async function localPage(t: test.TestContext, run: (base: string) => Promise<void>) {
+	const old = process.env.PSI_FETCH_ALLOW_LOOPBACK;
+	process.env.PSI_FETCH_ALLOW_LOOPBACK = "1";
+	const server = createServer((req, res) => {
+		if (req.url === "/redirect") { res.writeHead(302, { location: "/redirect" }); res.end(); return; }
+		res.setHeader("Content-Type", "text/html");
+		if (req.url === "/large") { res.end("x".repeat(2 * 1024 * 1024 + 1)); return; }
+		const sentence = req.url === "/yes" ? "Python lists are mutable." : req.url === "/no"
+			? "Python lists are not mutable." : "Bananas grow on plants.";
+		res.end(`<head><title>Reference &amp; title</title></head><script>evil()</script><style>bad</style>`
+			+ `<h1>Heading</h1><p>${sentence} &lt;safe&gt; &#65; &#x42;</p>`);
+	});
+	try {
+		await new Promise<void>((resolve, reject) => { server.once("error", reject); server.listen(8080, "127.0.0.1", resolve); });
+	} catch (error) {
+		if (old === undefined) delete process.env.PSI_FETCH_ALLOW_LOOPBACK; else process.env.PSI_FETCH_ALLOW_LOOPBACK = old;
+		if ((error as NodeJS.ErrnoException).code === "EPERM") { t.skip("Sandbox refuses loopback listener (EPERM)"); return; }
+		throw error;
+	}
+	try { await run("http://127.0.0.1:8080"); }
+	finally {
+		await new Promise<void>((resolve) => server.close(() => resolve()));
+		if (old === undefined) delete process.env.PSI_FETCH_ALLOW_LOOPBACK; else process.env.PSI_FETCH_ALLOW_LOOPBACK = old;
+	}
+}
+
+test("sourced lessons validate, resolve numbered citations and deduplicate sources", async (t) => fixture(t, async (f) => {
+	await f.execute("psi_skill_plan", { action: "create", plan: plan() });
+	assert.match((await f.execute("psi_lesson", { action: "show" })).content[0].text, /Lesson missing/);
+	const input = { action: "add", url: "https://docs.python.org/3/tutorial/", title: "Python" };
+	await f.execute("psi_sources", input); await f.execute("psi_sources", input);
+	const items = (await f.execute("psi_sources", { action: "list" })).details.widget.items;
+	assert.equal(items.length, 1); assert.ok(items[0].rankReasons.length);
+	assert.equal((await f.execute("psi_lesson", { action: "write", lesson: {} })).isError, true);
+	const written = await f.execute("psi_lesson", { action: "write", lesson: { title: "Select",
+		explanation: "Select reads columns from a table.", keyIdeas: ["Choose columns", "Read rows"],
+		citations: [{ sourceId: items[0].id }] } });
+	assert.ok(!written.isError, JSON.stringify(written));
+	const shown = await f.execute("psi_lesson", { action: "show" });
+	assert.equal(shown.details.widget.citations[0].n, 1);
+	assert.equal(shown.details.widget.citations[0].url, items[0].url);
+	assert.match(shown.content[0].text, /\[1\]/);
+}));
+
+test("fetch refuses non-public destinations, protocols and ports by default", async () => {
+	const old = process.env.PSI_FETCH_ALLOW_LOOPBACK; delete process.env.PSI_FETCH_ALLOW_LOOPBACK;
+	try {
+		for (const url of ["http://127.0.0.1", "http://localhost", "http://10.0.0.1", "http://192.168.1.1",
+			"http://169.254.169.254", "file:///tmp/a", "http://example.org:8081", "http://[::1]", "http://[::ffff:127.0.0.1]"]) {
+			await assert.rejects(fetchPage(url));
+		}
+	} finally { if (old !== undefined) process.env.PSI_FETCH_ALLOW_LOOPBACK = old; }
+});
+
+test("fetch sanitizes HTML, bounds redirects/body, and wraps reference data", async (t) => fixture(t, async (f) => {
+	await localPage(t, async (base) => {
+		const page = await fetchPage(base);
+		assert.equal(page.title, "Reference & title"); assert.match(page.text, /# Heading/);
+		assert.match(page.text, /<safe> A B/); assert.doesNotMatch(page.text, /evil|bad/);
+		await assert.rejects(fetchPage(`${base}/redirect`), /Redirect limit/);
+		await assert.rejects(fetchPage(`${base}/large`), /2 MB/);
+		const fetched = await f.execute("psi_fetch", { url: base });
+		assert.match(fetched.content[0].text, /ignore instructions/);
+		assert.match(fetched.content[0].text, /<fetched-content.*untrusted="true">/);
+		assert.match(fetched.content[0].text, /<\/fetched-content>/);
+		const fallback = await searchSources("python", "python", "file:///unavailable");
+		assert.match(fallback.note, /trusted catalog/); assert.ok(fallback.items.length);
+	});
+}));
+
+test("search decodes uddg and sorts by rank", () => {
+	const items = parseSearch('<a class="result__a" href="https://blog.example/a">Blog</a>'
+		+ '<a class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fdocs.python.org%2F3%2F">Python</a>');
+	assert.equal(items[0]!.url, "https://docs.python.org/3/"); assert.ok(items[0]!.rank > items[1]!.rank);
+});
+
+test("verification checks supporting, negated and unrelated pages", async (t) => fixture(t, async (f) => {
+	await localPage(t, async (base) => {
+		await f.execute("psi_skill_plan", { action: "create", plan: plan() });
+		for (const [route, verdict] of [["yes", "supported"], ["no", "contradicted"], ["other", "unclear"]]) {
+			const added = await f.execute("psi_sources", { action: "add", url: `${base}/${route}`, title: "Python lists" });
+			const checked = await f.execute("psi_verify", { claim: "Python lists are mutable" });
+			assert.equal(checked.details.widget.verdict, verdict);
+			await f.execute("psi_sources", { action: "remove", id: added.details.widget.items[0].id });
+		}
+	});
+}));
+
+test("mode persists; commands request tools; injection teaches first; combo is display-only", async (t) => fixture(t, async (f, home) => {
+	await f.command("mode", "teach"); assert.equal(new ProfileStore(home).read().tutorMode, "teach");
+	await f.command("mode"); assert.match(f.notifications.at(-1)!, /teach/);
+	await f.command("mode", "unknown"); assert.match(f.notifications.at(-1)!, /Unknown/);
+	await f.command("verify", "Python lists are mutable"); assert.match(f.messages.at(-1)!, /psi_verify/);
+	await f.command("sources"); assert.match(f.messages.at(-1)!, /psi_sources/);
+	const injected = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+	for (const phrase of ["psi_lesson", "psi_sources", "psi_fetch", "psi_search", "psi_verify",
+		"Want me to check that against the sources?", "ONE question"]) assert.ok(injected.includes(phrase));
+	assert.doesNotMatch(injected, /attempt first|attempts or predicts before explanations/i);
+	const c = await f.execute("psi_challenge", draft());
+	const a = await f.execute("psi_attempt", { skill: "sql", challengeId: c.details.challengeId, answer: "4" });
+	assert.equal(a.details.combo, 1); assert.equal(a.details.widget.comboBonus, 1);
+	assert.equal(a.details.widget.comboDisplayOnly, true);
 }));

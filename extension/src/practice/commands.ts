@@ -18,7 +18,7 @@ export function registerCommands(pi: ExtensionAPI, deps: PracticeDeps): void {
 Follow Josh Kaufman's first 20 hours: ask my target performance, current level, and time per day.
 Then use psi_skill_plan create to deconstruct the skill into prioritized subskills with self-correction drills.
 List practice barriers and fixes; choose at most 3 resources, just enough to self-correct. Set hoursGoal to 20.
-Start the first short interactive practice: one challenge, my attempt first, hints only on request.`);
+Gather 3–6 sources with psi_search, psi_fetch, psi_sources add; write and show a psi_lesson before psi_challenge.`);
 		},
 	});
 	pi.registerCommand("practice", {

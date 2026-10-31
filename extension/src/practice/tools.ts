@@ -3,6 +3,8 @@ import { join } from "node:path";
 import { Type } from "@earendil-works/pi-ai";
 import { defineTool } from "@earendil-works/pi-coding-agent";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { ProfileStore } from "../../../core/src/profile.ts";
+import { comboBonus } from "../../../core/src/gamify.ts";
 import { validateChallenge } from "../../../core/src/practice.ts";
 import type { Attempt, Challenge, ChallengeKind, MemoryKind, Outcome, SkillPlan } from "../../../core/src/types.ts";
 import { progressReport } from "./hud.ts";
@@ -234,7 +236,8 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 				deps.refresh(ctx);
 				return result({ plan: parsed.plan, overwritten: p.action === "create" && !!old },
 					p.action === "create" && old ? "Existing plan overwritten at the learner’s explicit start-over request."
-						: JSON.stringify({ plan: parsed.plan }, null, 2));
+						: JSON.stringify({ plan: parsed.plan }, null, 2) + (p.action === "create"
+							? " Gather 3–6 sources with psi_search, psi_fetch, then psi_sources add. Write the first lesson with psi_lesson write BEFORE psi_challenge." : ""));
 			}
 			const skill = object(p.plan) && typeof p.plan.skill === "string" ? p.plan.skill : state.skill;
 			if (!skill || !slug.test(skill)) return result({ errors: ["Select a skill with /skill or supply plan.skill."] });
@@ -307,9 +310,11 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 			if (state.challengeId === c.id) { state.challengeId = undefined; state.hintIndex = 0; }
 			deps.persist();
 			deps.refresh(ctx);
-			const widget = { type: "attempt", outcome, xp: recorded.attempt.xp, level: report.level,
+			const combo = new ProfileStore(practice.root).summarize().combo;
+			const bonus = outcome === "success" ? comboBonus(combo) : 1;
+			const widget = { type: "attempt", combo, comboBonus: bonus, comboDisplayOnly: true, outcome, xp: recorded.attempt.xp, level: report.level,
 				levelBar: report.levelBar, leveledUp: recorded.leveledUp, badges: recorded.badges, streak: report.streak };
-			return result({ widget, outcome, xp: recorded.attempt.xp, level: report.level, leveledUp: recorded.leveledUp,
+			return result({ widget, combo, comboBonus: bonus, comboDisplayOnly: true, outcome, xp: recorded.attempt.xp, level: report.level, leveledUp: recorded.leveledUp,
 				levelBar: report.levelBar, streak: report.streak, badges: recorded.badges,
 				guidance: outcome === "fail"
 					? "Experiment logged: failure still earns XP. Ask the learner what they will try differently. "
