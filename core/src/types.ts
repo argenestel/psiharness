@@ -491,3 +491,61 @@ export interface Progress {
 	failures: number;
 	badges: string[];
 }
+
+// ════════════════════════════════════════════ knowledge graph ("second brain") ══
+// One linked graph over everything psi knows: skills, their subskills, concept topics and concepts, and the
+// learner's memory notes. Learners navigate it like an Obsidian graph and build learning paths through it.
+
+export type KnowledgeNodeKind = "skill" | "subskill" | "topic" | "concept" | "note";
+
+export interface KnowledgeNode {
+	/** Stable, kind-prefixed: "skill:sql-lab", "subskill:sql-lab/joins", "topic:fourier-transform",
+	 * "concept:fourier-transform/orthogonality", "note:<memory id>". */
+	id: string;
+	kind: KnowledgeNodeKind;
+	title: string;
+	summary?: string;
+	/** Progress state: subskill status, concept mastery ("mastered" at BKT ≥ 0.95), skill level band. */
+	status?: "locked" | "next" | "practising" | "solid" | "mastered" | "new";
+	/** 0 … 1 where meaningful (skill hours/20, concept pKnown, subskill solved share). */
+	progress?: number;
+	tags?: string[];
+	/** Route in psi web to open this node, e.g. "#/skills/sql-lab". */
+	href?: string;
+}
+
+export type KnowledgeEdgeKind =
+	| "prerequisite" // from must come before to
+	| "contains"     // skill → subskill, topic → concept
+	| "related"      // inferred similarity (shared tags / title terms) across skills and topics
+	| "about"        // memory note → skill/topic/concept it mentions
+	| "link";        // learner-made link (second-brain style)
+
+export interface KnowledgeEdge {
+	from: string;
+	to: string;
+	kind: KnowledgeEdgeKind;
+	/** 0 … 1 for "related". */
+	weight?: number;
+}
+
+export interface KnowledgeGraph {
+	nodes: KnowledgeNode[];
+	edges: KnowledgeEdge[];
+	builtAt: string;
+}
+
+/** An ordered route through the knowledge graph toward a goal. */
+export interface LearningPath {
+	id: string;
+	title: string;
+	/** What the learner will be able to do at the end. */
+	goal: string;
+	/** Node ids in learning order. */
+	steps: string[];
+	/** Optional target node the path was generated toward. */
+	targetId?: string;
+	source: "learner" | "tutor" | "generated";
+	createdAt: string;
+	updatedAt: string;
+}

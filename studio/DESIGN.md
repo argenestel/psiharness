@@ -129,3 +129,30 @@ then retry."). Empty states invite an action.
 
 Keyboard reachable everywhere with visible ink focus rings (2 px, offset 2 px); WCAG AA contrast in both themes;
 aria-live for streaming replies and results; reduced motion respected; works at 360 px wide.
+
+## Knowledge graph and learning paths
+
+- **Graph (`#/graph`)** is the learner's second brain: every skill, step, topic, concept and memory note, linked.
+  It sits on plain `paper` (no graph-paper grid: the grid means "work happens here").
+- Nodes are drawn in ink and pencil only: skill = filled ink disc (largest), topic = ink ring, subskill/concept =
+  small ink dot, note = pencil square. Size follows importance (degree), never colour.
+- Progress uses the system's one rule: a node that is solid or mastered gets a highlighter halo; "next" gets a
+  2 px ink ring. Locked nodes are pencil at 50 % opacity.
+- Edges: prerequisite = pencil line with a small arrowhead; contains = thin pencil line; related = dotted pencil;
+  learner link = ink line; about (note) = hairline. Hover/focus dims everything outside the node's neighbourhood.
+- **The bold moment:** a selected learning path is drawn as one continuous highlighter stroke through its steps
+  in order, behind the nodes, like marking a route on a map. Nothing else on the graph uses highlighter fills
+  except mastered halos.
+- Interaction: drag to pan, wheel/pinch to zoom, click a node to open the side panel (title, summary, status,
+  progress, links in and out, actions: **Practise this**, **Ask the tutor**, **Make a path to here**, **Link to…**),
+  `/` focuses search, arrow keys move between connected nodes, Esc closes the panel. Filters as plain toggles
+  (Skills, Topics, Notes, Related links). A "Local" switch shows only the focused node's neighbourhood.
+  Accessible fallback: the same graph as a nested list for keyboard and screen-reader users.
+- **Paths (`#/paths`)**: plain list of paths (title, goal sentence, "4 of 9 steps done" with a thin highlighter
+  line). A path page shows its steps as an ordered checklist (a real sequence, so numbers are allowed), each step
+  linking to its node, plus **Continue this path** (opens a tutor chat on the next unfinished step) and **Edit
+  steps** (reorder, remove, add from search). **New path**: type a goal and either pick a target node ("Make a path
+  to here" generates the prerequisite route) or ask the tutor to build one.
+- **Model choice:** a quiet control in the composer footer and in New chat: "Model: grok-4.6" opening a list grouped
+  by provider with search. The choice persists per browser and can change mid-chat ("Switched to …" appears as a
+  single pencil line in the conversation).

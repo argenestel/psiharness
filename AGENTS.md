@@ -129,6 +129,32 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
   challenge runner), `js/memory.js` (memory panel). Libraries only from cdn.jsdelivr.net with exact versions:
   katex@0.16.11, pyodide@0.26.4, sql.js@1.11.0.
 
+### knowledge graph + learning paths (second brain)
+- `core/src/knowledge.ts`: `class KnowledgeStore` — `new KnowledgeStore(home = process.env.PSI_HOME ?? ~/.psi)`
+  - `build(): KnowledgeGraph` — derives nodes/edges from PracticeStore skills (skill, subskills, prerequisite +
+    contains edges, statuses/progress from progress + attempts), PsiStore topics (topic, concepts, prerequisite +
+    contains, mastery from learner.json), MemoryStore items (note nodes + "about" edges when the note's skill/topic
+    is set or its text names a node title), inferred "related" edges (token Jaccard over titles/tags/summaries
+    across different skills/topics, weight ≥ 0.25, max 3 per node), plus learner links.
+  - Learner links at `$PSI_HOME/graph/links.json`: `listLinks()`, `addLink(from, to)`, `removeLink(from, to)`.
+  - Paths at `$PSI_HOME/graph/paths/<id>.json`: `listPaths()`, `readPath(id)`, `savePath(draft)` (validates step ids
+    exist in the built graph), `deletePath(id)`.
+  - `pathTo(graph, targetId, opts?: { includeDone?: boolean }): string[]` — topologically ordered unfinished
+    prerequisite ancestors (via prerequisite + contains edges) ending at the target; done = status solid/mastered.
+  - `neighborhood(graph, id, depth = 1): KnowledgeGraph` — local graph view.
+- Web API: `GET /api/graph`, `GET /api/graph/neighborhood/:id?depth=`, `POST /api/graph/links` {from,to},
+  `DELETE /api/graph/links` {from,to}, `GET /api/paths`, `GET /api/paths/:id`, `POST /api/paths` {title, goal, steps?,
+  targetId?} (steps omitted + targetId → generated with pathTo), `PUT /api/paths/:id`, `DELETE /api/paths/:id`.
+- Models: `GET /api/models` → `{ default, models: [{ id: "provider/model", provider, name, context?, reasoning? }] }`
+  (from `pi --list-models`, cached 10 min; default = PSI_WEB_MODEL); `POST /api/chat` accepts `model`;
+  `POST /api/chat/:id/model` {model} switches a live chat (pi RPC `set_model`). The browser remembers the last
+  choice in localStorage `psi-model`.
+- Extension tool `psi_path` {action: "list"|"get"|"create"|"next", id?, title?, goal?, targetId?, steps?} so the tutor can
+  build and follow paths; injection names the active path and its next unfinished step.
+- Frontend: `js/graph.js` (`mountGraph(el, { navigate, focus? })` — force-directed canvas graph, zero deps),
+  `js/paths.js` (`mountPaths(el, { navigate, id? })`), `js/models.js` (`modelPicker({ value, onChange }) → HTMLElement`,
+  `getPreferredModel()`). Routes: `#/graph`, `#/graph/:nodeId`, `#/paths`, `#/paths/:id`.
+
 ### visual (`visual/src/index.ts` re-exports) — optional extras
 - `palettes.ts`: `type Palette = { name; bg; fg; muted; accent: string[]; deep; glow }`, `PALETTES`, `paletteFor(style, name?)`
 - `storyboard-html.ts`: `validateStoryboard(sb): string[]`, `renderStoryboardHtml(sb, opts?: { autoplay?: boolean; speech?: boolean }): string`
