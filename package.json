@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "ψ — a practice-first learning agent with long-term learner memory, built as a pi / oh-my-pi package.",
   "type": "module",
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "keywords": ["pi-package", "learning", "tutor", "manim", "explainer", "agent"],
   "repository": { "type": "git", "url": "git+https://github.com/argenestel/psiharness.git" },
   "engines": { "node": ">=22.18" },

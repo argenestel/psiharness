@@ -114,4 +114,5 @@ Images: `psi` (agent), `psi-manim` and `psi-full` (with the optional manim rende
 
 ## License
 
-MIT
+Free for personal and noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE.md).
+Commercial and enterprise use needs a separate license; see [COMMERCIAL.md](COMMERCIAL.md).
