@@ -93,3 +93,67 @@ test("JavaScript worker shares setup scope, captures output, and strips network 
 	assert.equal(replies[1].output, "trying");
 	assert.match(replies[1].error, /try again/);
 });
+
+const trailPath = "../public/js/trail.js";
+const { trailSummary, trailCounts, markLabel, outcomeWord } = await import(trailPath);
+const { runSummary, looksLikeCode } = await import(codelabPath);
+const { kindPhrase, keyHelp } = await import(widgetsPath);
+
+test("trail summary counts only recognised outcomes in plain words", () => {
+	assert.equal(trailSummary([]), "No attempts yet");
+	assert.equal(trailSummary([{ outcome: "success" }]), "1 attempt: 1 solved");
+	const attempts = [
+		...Array(8).fill({ outcome: "success" }), ...Array(3).fill({ outcome: "fail" }), { outcome: "skipped" },
+		{ outcome: "pending" }, null,
+	];
+	assert.equal(trailSummary(attempts), "12 attempts: 8 solved, 3 missed, 1 skipped");
+	assert.equal(trailSummary([{ outcome: "partial" }, { outcome: "fail" }]), "2 attempts: 1 partly right, 1 missed");
+	assert.deepEqual(trailCounts(attempts), { total: 12, success: 8, partial: 0, fail: 3, skipped: 1 });
+	assert.equal(outcomeWord("fail"), "missed");
+	assert.equal(outcomeWord("pending"), "");
+});
+
+test("mark labels name the attempt, outcome, XP, time and the lesson for a miss", () => {
+	const now = Date.parse("2026-11-01T12:00:00Z");
+	assert.equal(markLabel({ outcome: "fail", xp: 3, at: "2026-11-01T10:00:00Z", lesson: " Check the base case. " }, 3, now),
+		"Attempt 4, missed, +3 XP, 2 h ago. Lesson: Check the base case.");
+	assert.equal(markLabel({ outcome: "success", at: "2026-11-01T11:59:30Z" }, 0, now), "Attempt 1, solved, just now.");
+	assert.equal(markLabel({ outcome: "skipped" }, 1, now), "Attempt 2, skipped.");
+});
+
+test("challenge kinds read as plain phrases with format-aware keyboard help", () => {
+	assert.equal(kindPhrase("quickfire"), "Quick question");
+	assert.equal(kindPhrase("debug"), "Find the bug");
+	assert.equal(kindPhrase("boss"), "Boss challenge");
+	assert.equal(kindPhrase("predict", { format: "choice", prompt: "What does `print(len('psi'))` print?" }), "Predict the output");
+	assert.equal(kindPhrase("predict", { format: "choice", prompt: "What happens to the tangent?" }), "Predict what happens");
+	assert.equal(kindPhrase("unknown"), "Challenge");
+	assert.equal(keyHelp("code", { hints: true, mac: true }), "Cmd+Enter runs your code, H shows a hint");
+	assert.equal(keyHelp("text"), "Enter checks, Shift+Enter adds a line");
+	assert.equal(keyHelp("text", { short: true }), "Enter checks your answer");
+});
+
+test("run summaries list each check without repeating assertion messages", () => {
+	const run = runSummary({ ok: false, output: "hi", ms: 4, tests: [
+		{ label: "4 should be even", ok: true },
+		{ label: "5 should be odd", ok: false, message: "AssertionError: 5 should be odd" },
+		{ label: "is_even(0) is True", ok: false, message: "NameError: name 'is_even' is not defined" },
+		{ label: "later", ok: false, skipped: true },
+	] }, { language: "python", hasTests: true });
+	assert.equal(run.headline, "1 of 4 checks passed");
+	assert.deepEqual(run.rows.map((r: { state: string }) => r.state), ["pass", "fail", "fail", "skipped"]);
+	assert.equal(run.rows[1].message, "");
+	assert.equal(run.rows[2].message, "NameError: name 'is_even' is not defined");
+	assert.equal(run.rows[2].code, true);
+	assert.equal(run.rows[0].code, false);
+	assert.equal(runSummary({ ok: true, tests: [{ label: "a", ok: true }, { label: "b", ok: true }] }).headline,
+		"All 2 checks passed");
+	const sql = runSummary({ ok: false, error: "The result rows did not match the expected rows." }, { language: "sql", hasTests: true });
+	assert.equal(sql.rows[0].label, "Your rows don't match the expected rows yet");
+	const offline = runSummary({ ok: false, system: true, error: "Couldn't load Python from the CDN. Check your connection and run again." });
+	assert.equal(offline.system, true);
+	assert.equal(offline.rows.length, 0);
+	assert.match(offline.headline, /Check your connection/);
+	assert.equal(looksLikeCode("total == 10"), true);
+	assert.equal(looksLikeCode("zero is divisible by two"), false);
+});

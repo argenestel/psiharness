@@ -2,36 +2,60 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="theme-color" content="#0c1222">
-	<title>ψ Studio · Learn by doing</title>
-	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230c1222'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%2370dfc1' font-family='sans-serif'%3E%CF%88%3C/text%3E%3C/svg%3E">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<meta name="color-scheme" content="light dark">
+	<meta name="theme-color" content="#F5F7FB" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="#13213D" media="(prefers-color-scheme: dark)">
+	<title>psi</title>
+	<meta name="application-name" content="psi web (ψ Studio)">
+	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231B2A4A'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23FFE45C' font-family='sans-serif'%3E%CF%88%3C/text%3E%3C/svg%3E">
+	<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/bricolage-grotesque@5.1.1/opsz.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/atkinson-hyperlegible-next@5.2.4/index.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/atkinson-hyperlegible-next@5.2.4/700.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.1.1/index.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.1.1/700.min.css">
 	<link rel="stylesheet" href="/styles.css">
 	<link rel="stylesheet" href="/css/chat.css">
 	<link rel="stylesheet" href="/css/widgets.css">
+	<link rel="stylesheet" href="/css/practice.css">
 	<script src="/app.js" type="module"></script>
 </head>
-<body>
+<body data-bench="off">
 	<a class="psi-skip" href="#app">Skip to content</a>
-	<aside id="sidebar" class="psi-sidebar" aria-label="Learning navigation">
-		<a class="brand" href="#/" aria-label="psi home"><span>ψ</span> psi <small>LEARN BY DOING</small></a>
-		<a class="button psi-new-chat" href="#/new">＋ New chat</a>
-		<nav aria-label="Workspace" class="psi-sidebar-links"><a href="#/">⌂ Home</a><a href="#/memory">◇ Memory</a></nav>
-		<section class="psi-nav-section"><h2>Conversations</h2><nav id="saved-chats" aria-label="Saved chats">No conversations yet.</nav></section>
-		<section class="psi-nav-section"><h2>Your skills</h2><nav id="sidebar-skills" aria-label="Skills">Build your first skill.</nav></section>
-		<section class="psi-nav-section"><h2>Concepts <a href="#/topics">View all ↗</a></h2><nav id="sidebar-topics" aria-label="Topics">No topics yet.</nav></section>
-		<p class="psi-sidebar-note">Small attempts. Lasting understanding.<br>Every try earns progress.</p>
-	</aside>
-	<button id="drawer-shade" aria-label="Close navigation" tabindex="-1"></button>
-	<div class="psi-workspace">
-		<header class="topbar psi-topbar">
-			<button id="menu-toggle" aria-label="Toggle navigation" aria-controls="sidebar" aria-expanded="false">☰</button>
-			<div id="skill-hud" class="psi-hud" aria-label="Learning progress">Ready to learn · Level 1 · 🔥 0 · 0/20h</div>
-			<span id="connection" role="status">Connecting…</span>
-		</header>
-		<main id="app" tabindex="-1"><p class="empty">Opening your learning space…</p></main>
-		<footer>ψ · Try. Learn. Level up.</footer>
+	<div class="psi-shell">
+		<aside id="sidebar" class="psi-sidebar" aria-label="Navigation">
+			<a class="psi-brand" href="#/" aria-label="psi home"><span class="psi-glyph" aria-hidden="true">ψ</span>psi</a>
+			<a class="button psi-new-chat" href="#/new">New chat</a>
+			<section class="psi-nav-section" aria-labelledby="nav-chats">
+				<h2 id="nav-chats">Chats</h2>
+				<nav id="saved-chats" class="psi-nav-list" aria-labelledby="nav-chats"></nav>
+			</section>
+			<section class="psi-nav-section" aria-labelledby="nav-skills">
+				<h2 id="nav-skills">Skills</h2>
+				<nav id="sidebar-skills" class="psi-nav-list" aria-labelledby="nav-skills"></nav>
+			</section>
+			<nav class="psi-nav-section psi-nav-list" aria-label="Memory">
+				<a class="psi-nav-row" href="#/memory"><span class="psi-row-title">Memory</span></a>
+			</nav>
+			<section class="psi-nav-section psi-nav-concepts" aria-labelledby="nav-concepts">
+				<h2 id="nav-concepts">Concepts</h2>
+				<nav id="sidebar-topics" class="psi-nav-list" aria-labelledby="nav-concepts"></nav>
+			</section>
+			<p id="connection" class="psi-connection" role="status" hidden></p>
+		</aside>
+		<button id="drawer-shade" class="psi-shade" type="button" aria-label="Close panel" tabindex="-1" hidden></button>
+		<div class="psi-main">
+			<header class="psi-topbar">
+				<button id="menu-toggle" class="psi-icon-button" type="button" aria-label="Open navigation" aria-controls="sidebar"
+					aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+				<div class="psi-topbar-title"><strong id="topbar-title">psi</strong><span id="topbar-sub" hidden></span></div>
+				<button id="bench-toggle" type="button" aria-controls="bench" aria-expanded="false" hidden>Progress</button>
+			</header>
+			<main id="app" tabindex="-1"><p class="empty psi-view">Opening psi…</p></main>
+		</div>
+		<aside id="bench" class="psi-bench" aria-label="Your progress"></aside>
 	</div>
-	<dialog id="lightbox" aria-label="Artifact viewer"><button id="close-lightbox" class="close" aria-label="Close viewer">×</button><div id="lightbox-content"></div></dialog>
+	<dialog id="lightbox" aria-label="Artifact viewer"><button id="close-lightbox" class="close" type="button" aria-label="Close viewer">Close</button><div id="lightbox-content"></div></dialog>
 </body>
 </html>

@@ -36,13 +36,42 @@ export function formatBars(progress = {}) {
 		hours: `${Math.round(hours * 10) / 10}/20`, hoursPercent: barPercent(hours, 20) };
 }
 
+/** Chats newest first by updatedAt (unparseable dates last), stable for ties. */
+export function sortChats(chats) {
+	const time = (c) => { const t = Date.parse(c?.updatedAt ?? ""); return Number.isFinite(t) ? t : -Infinity; };
+	return (Array.isArray(chats) ? chats : []).map((c, i) => [c, i])
+		.sort(([a, i], [b, j]) => time(b) - time(a) || i - j).map(([c]) => c);
+}
+
+/** Routes whose layout includes the progress bench (only when a skill is active). */
+export function benchRoute(route) {
+	return route === "home" || route === "chat" || route === "new";
+}
+
+/** The shell's own route key for #app[data-route]: chat and new share the full-height chat layout. */
+export function layoutRoute(route) {
+	return route === "new" ? "chat" : route;
+}
+
+/** Concept-map node state from BKT mastery and the frontier. */
+export function conceptStatus(concept, mastery = {}, available = new Set()) {
+	if ((mastery[concept.id]?.pKnown || 0) >= 0.95) return "mastered";
+	if (mastery[concept.id]?.attempts > 0) return "learning";
+	return available.has(concept.id) ? "frontier" : "locked";
+}
+
+const CHAT_LIMIT = 12;
+
 function init() {
 const app = document.querySelector("#app");
 const dialog = document.querySelector("#lightbox");
 const connection = document.querySelector("#connection");
+const benchEl = document.querySelector("#bench");
+const benchToggle = document.querySelector("#bench-toggle");
+const menuToggle = document.querySelector("#menu-toggle");
+const shade = document.querySelector("#drawer-shade");
 let generation = 0;
 let reviewState;
-let liveLabel = "Connecting…";
 // Our own review writes echo back as filesystem change events; do not report those as external updates.
 let ownWriteUntil = 0;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({
@@ -50,24 +79,38 @@ const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({
 })[c]);
 const enc = encodeURIComponent;
 const titleOf = (id) => String(id).replace(/[-_]+/g, " ");
-const empty = (text) => `<div class="empty">${escapeHtml(text)}</div>`;
+const capital = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
+const empty = (text) => `<p class="empty">${escapeHtml(text)}</p>`;
 const pct = (n) => Math.round(Math.min(1, Math.max(0, n || 0)) * 100);
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+/** A rule track with a highlighter fill (a native <progress>: no inline styles, which the CSP forbids). */
+const meter = (value, label, thin = true) => `<progress class="psi-meter${thin ? " is-thin" : ""}" max="100" value="${value}"
+	aria-label="${escapeHtml(label)}">${value}%</progress>`;
 /** File name without directories or extension, used to match plan visuals to rendered artifacts. */
 const stem = (path) => String(path || "").split("/").pop().replace(/\.[^.]+$/, "");
-const pretty = (name) => {
-	const words = titleOf(stem(name)).trim();
-	return words ? words[0].toUpperCase() + words.slice(1) : name;
-};
+const pretty = (name) => capital(titleOf(stem(name)).trim()) || name;
 const kindOf = (a) => a.type.startsWith("text/html") ? "Interactive page" : a.type.startsWith("video/") ? "Video"
 	: a.type.startsWith("image/") ? "Image" : "File";
-function setConnection(text) { liveLabel = text; connection.textContent = text; }
+
+try {
+	const theme = localStorage.getItem("psi-theme");
+	if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+} catch { /* Storage can be blocked; the system theme still applies. */ }
+
+function setConnection(text, isError = false) {
+	connection.textContent = text;
+	connection.hidden = !text;
+	connection.classList.toggle("is-error", isError);
+}
+
+let uiModule;
+const ui = () => uiModule ??= import("./js/ui.js");
 
 async function api(path, options) {
 	const response = await fetch(path, options);
 	let data;
 	try { data = await response.json(); } catch { data = {}; }
-	if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+	if (!response.ok) throw new Error(data.message || data.error || `Request failed (${response.status})`);
 	return data;
 }
 function route() {
@@ -75,52 +118,33 @@ function route() {
 	return { topic: parsed.params.topic || "", view: parsed.params.view || "map" };
 }
 function topicPath(topic, view) { return `#/${enc(topic)}/${view}`; }
-function artwork() {
-	return `<svg class="universe" viewBox="0 0 700 290" aria-hidden="true">
-		<circle cx="535" cy="145" r="105" fill="#223259"/>
-		<ellipse cx="535" cy="145" rx="153" ry="43" fill="none" stroke="#7496e3" stroke-width="8"
-			transform="rotate(-24 535 145)"/>
-		<circle cx="535" cy="145" r="78" fill="#f4ac6c"/>
-		<path d="M475 112q65-38 124 15M461 150q79-35 149 14M478 192q58-23 110 7" fill="none" stroke="#e17d73"
-			stroke-width="17"/>
-		<circle cx="390" cy="56" r="19" fill="#70dfc1"/><circle cx="653" cy="238" r="9" fill="#ad9cf5"/>
-		<path d="M330 202l8-17 8 17 18 4-18 5-8 17-8-17-18-5zM644 54l5-11 5 11 12 3-12 3-5 12-5-12-12-3z" fill="#ffda89"/>
-		<g fill="#eaf0ff"><circle cx="288" cy="57" r="3"/><circle cx="394" cy="244" r="3"/><circle cx="677" cy="132" r="3"/>
-			<circle cx="455" cy="18" r="2"/></g>
-	</svg>`;
-}
-function topicCard(t) {
+function topicRow(t) {
 	const progress = t.concepts ? pct(t.mastered / t.concepts) : 0;
-	return `<a class="topic-card" href="${topicPath(t.topic, "map")}"><div class="card-top">
-		<svg class="ring" viewBox="0 0 64 64" role="img" aria-label="${progress}% mastered">
-			<circle class="ring-track" cx="32" cy="32" r="26"/>
-			<circle class="ring-value" cx="32" cy="32" r="26" pathLength="100" stroke-dasharray="${progress} 100"/>
-			<text x="32" y="37">${progress}%</text></svg>
-		<span class="badge">${t.due} due</span></div>
-		<h3>${escapeHtml(t.title)}</h3><p>${escapeHtml(t.bigIdea || "Discover the ideas that connect this topic.")}</p>
-		<div class="card-meta">${t.mastered}/${plural(t.concepts, "concept")} mastered · ${plural(t.artifacts, "artifact")}
-			<span aria-hidden="true">↗</span></div></a>`;
+	return `<li><div><h3><a href="${topicPath(t.topic, "map")}">${escapeHtml(t.title)}</a></h3>
+		${t.bigIdea ? `<p>${escapeHtml(t.bigIdea)}</p>` : ""}
+		<p class="psi-row-meta">${t.mastered} of ${plural(t.concepts, "concept")} mastered${t.due
+			? `, ${t.due} ${t.due === 1 ? "card" : "cards"} due` : ""}</p>
+		${meter(progress, `${t.title}: ${progress}% mastered`)}</div>
+		${t.due ? `<a class="button psi-row-action" href="${topicPath(t.topic, "review")}">Review</a>` : ""}</li>`;
 }
-const VIEWS = [["map", "Concept map", "Map"], ["lessons", "Lesson path", "Lessons"], ["gallery", "Gallery", "Gallery"],
-	["review", "Review", "Review"], ["progress", "Progress", "Progress"]];
+const VIEWS = [["map", "Map"], ["lessons", "Lessons"], ["gallery", "Gallery"], ["review", "Review"], ["progress", "Progress"]];
 async function render() {
 	const token = ++generation;
 	const { topic, view } = route();
 	reviewState = undefined;
-	if (events?.readyState === EventSource.OPEN) setConnection("● Live");
+	app.dataset.route = "concepts";
+	setBenchAvailable(false);
 	app.setAttribute("aria-busy", "true");
 	try {
 		if (!topic) {
 			const topics = await api("/api/topics");
 			if (token !== generation) return;
-			document.title = "ψ Studio · Your learning universe";
-			app.innerHTML = `<section class="hero">${artwork()}<div><span class="eyebrow">YOUR LEARNING UNIVERSE</span>
-				<h1>Small steps.<br>Cosmic understanding.</h1>
-				<p>Explore the connections behind big ideas.<br>Let curiosity lead the way.</p></div></section>
-				<div class="section-heading"><h2>Your topics</h2>
-				<span>${topics.length === 1 ? "1 world" : `${topics.length} worlds`} to explore</span></div>
-				<section class="topic-grid">${topics.map(topicCard).join("")
-					|| empty("No topics yet. Create a topic with /learn in psi, then return here.")}</section>`;
+			document.title = "Concepts · psi";
+			setTopbar("Concepts");
+			app.innerHTML = `<div class="psi-view psi-concepts"><header><h1>Concepts</h1>
+				<p>Concept maps, lessons and review cards your tutor has built with <code>/learn</code>.</p></header>
+				${topics.length ? `<ul class="psi-rows">${topics.map(topicRow).join("")}</ul>`
+					: empty("No concept maps yet. Start a chat and ask psi to explain a concept.")}</div>`;
 			return;
 		}
 		const base = `/api/topics/${enc(topic)}`;
@@ -129,13 +153,13 @@ async function render() {
 		const { graph, plan, learner, frontier } = detail;
 		const concepts = graph?.concepts || [];
 		const mastery = learner?.mastery || {};
-		document.title = `${graph?.title || titleOf(topic)} · ψ Studio`;
-		app.innerHTML = `<a class="back" href="#/topics">← All topics</a><div class="topic-heading">
-			<span class="eyebrow">FOLLOW YOUR CURIOSITY</span><h1>${escapeHtml(graph?.title || titleOf(topic))}</h1>
-			<p>${escapeHtml(graph?.bigIdea || "Your next big idea starts here.")}</p></div>
-			<nav class="tabs" aria-label="Topic views">${VIEWS.map(([id, label, short]) => `<a href="${topicPath(topic, id)}"
-				${id === view ? 'aria-current="page"' : ""}><span class="tab-long">${label}</span><span class="tab-short"
-				aria-hidden="true">${short}</span></a>`).join("")}</nav><section id="view"></section>`;
+		const title = graph?.title || capital(titleOf(topic));
+		document.title = `${title} · psi`;
+		setTopbar(title);
+		app.innerHTML = `<div class="psi-view psi-concepts"><a class="psi-back" href="#/topics">All concepts</a>
+			<header><h1>${escapeHtml(title)}</h1>${graph?.bigIdea ? `<p>${escapeHtml(graph.bigIdea)}</p>` : ""}</header>
+			<nav class="psi-tabs" aria-label="Topic views">${VIEWS.map(([id, label]) => `<a href="${topicPath(topic, id)}"
+				${id === view ? 'aria-current="page"' : ""}>${label}</a>`).join("")}</nav><section id="view"></section></div>`;
 		const container = document.querySelector("#view");
 		if (view === "map") renderMap(container, concepts, mastery, frontier || [], artifacts, plan);
 		else if (view === "lessons") renderLessons(container, plan, concepts, artifacts);
@@ -149,19 +173,14 @@ async function render() {
 			const reviews = await api(`${base}/reviews`);
 			if (token !== generation) return;
 			renderProgress(container, concepts, mastery, reviews);
-		} else container.innerHTML = empty("This view does not exist. Choose a tab above.");
+		} else container.innerHTML = empty("This view doesn't exist. Pick a tab above.");
 	} catch (error) {
 		if (token === generation) {
-			app.innerHTML = `<div class="empty"><h2>Couldn't open this view</h2><p>${escapeHtml(error.message)}</p>
-				<button id="retry">Try again</button> <a class="button-link" href="#/">Go home</a></div>`;
+			app.innerHTML = `<div class="psi-view empty"><h2>Couldn't open this page</h2><p>${escapeHtml(error.message)}</p>
+				<button id="retry" type="button">Try again</button> <a class="button-link" href="#/">Go home</a></div>`;
 			document.querySelector("#retry").onclick = render;
 		}
 	} finally { if (token === generation) app.removeAttribute("aria-busy"); }
-}
-function conceptStatus(c, mastery, available) {
-	if ((mastery[c.id]?.pKnown || 0) >= 0.95) return "mastered";
-	if (mastery[c.id]?.attempts > 0) return "learning";
-	return available.has(c.id) ? "frontier" : "locked";
 }
 function linkedArtifacts(c, artifacts, plan) {
 	const stems = (plan?.lessons || []).filter((l) => l.conceptId === c.id)
@@ -180,7 +199,7 @@ function wrapLabel(text, max = 20) {
 	if (lines.length > 2) lines.splice(1, lines.length, lines.slice(1).join(" "));
 	return lines.map((line) => line.length > max + 2 ? line.slice(0, max) + "…" : line);
 }
-const COL = 190, ROW = 138, TOP = 56;
+const COL = 180, ROW = 128, TOP = 48;
 /** Layered prerequisite layout with a barycentre pass so edges cross less often. */
 function layoutMap(concepts) {
 	const byId = new Map(concepts.map((c) => [c.id, c]));
@@ -195,7 +214,7 @@ function layoutMap(concepts) {
 	const layers = [];
 	for (const c of concepts) (layers[depth(c.id)] ||= []).push(c);
 	const rows = layers.filter(Boolean);
-	const width = Math.max(380, ...rows.map((l) => l.length * COL));
+	const width = Math.max(360, ...rows.map((l) => l.length * COL));
 	const positions = new Map();
 	const place = (layer, level) => layer.forEach((c, i) => positions.set(c.id,
 		{ x: (i + 0.5) * width / layer.length, y: TOP + level * ROW }));
@@ -209,18 +228,18 @@ function layoutMap(concepts) {
 		layer.sort((a, b) => key(a) - key(b));
 		place(layer, level);
 	});
-	return { byId, positions, width, height: TOP + (rows.length - 1) * ROW + 100 };
+	return { byId, positions, width, height: TOP + (rows.length - 1) * ROW + 90 };
 }
 function renderMap(container, concepts, mastery, frontier, artifacts, plan) {
 	if (!concepts.length) {
-		container.innerHTML = empty("No concept graph yet. Your tutor can create one with /map."); return;
+		container.innerHTML = empty("No concept map yet. Ask your tutor for one with /map."); return;
 	}
 	const available = new Set(frontier.map((c) => typeof c === "string" ? c : c.id));
 	const { byId, positions, width, height } = layoutMap(concepts);
 	const edges = concepts.flatMap((c) => c.prerequisites.map((p) => {
 		const from = positions.get(p), to = positions.get(c.id);
 		if (!from) return "";
-		const y1 = from.y + 76, y2 = to.y - 36, bend = Math.max(24, (y2 - y1) / 2);
+		const y1 = from.y + 62, y2 = to.y - 24, bend = Math.max(20, (y2 - y1) / 2);
 		return `<path class="edge" d="M${from.x} ${y1} C${from.x} ${y1 + bend},${to.x} ${y2 - bend},${to.x} ${y2}"
 			marker-end="url(#arrow)"/>`;
 	})).join("");
@@ -229,21 +248,21 @@ function renderMap(container, concepts, mastery, frontier, artifacts, plan) {
 		const label = wrapLabel(c.title)
 			.map((line, i) => `<tspan x="0" dy="${i ? 16 : 0}">${escapeHtml(line)}</tspan>`).join("");
 		return `<g class="node ${status}" data-id="${escapeHtml(c.id)}" role="button" tabindex="0"
-			aria-label="${escapeHtml(c.title)}, ${status}" transform="translate(${x},${y})"><circle class="halo" r="36"/>
-			<circle class="disc" r="28"/><text class="node-symbol" y="7">${status === "mastered" ? "✓" : "✦"}</text>
-			<text class="node-label" y="52">${label}</text><title>${escapeHtml(c.title)}</title></g>`;
+			aria-label="${escapeHtml(c.title)}, ${status}" transform="translate(${x},${y})"><circle class="halo" r="22"/>
+			<circle class="disc" r="16"/>${status === "learning" ? '<path class="half" d="M0 -16 A16 16 0 0 1 0 16 Z"/>' : ""}
+			<text class="node-label" y="38">${label}</text><title>${escapeHtml(c.title)}</title></g>`;
 	}).join("");
-	container.innerHTML = `<div class="legend">${["locked", "frontier", "learning", "mastered"]
-		.map((s) => `<span class="${s}">● ${s}</span>`).join("")}</div>
-		<div class="map-layout"><div class="map-scroll"><svg class="concept-map" width="${width}" height="${height}"
+	container.innerHTML = `<div class="psi-concepts"><p class="psi-legend">${["locked", "frontier", "learning", "mastered"]
+		.map((s) => `<span class="${s}"><i aria-hidden="true"></i>${s === "frontier" ? "ready to learn" : s}</span>`).join("")}</p>
+		<div class="psi-map-layout"><div class="psi-map-scroll"><svg class="concept-map" width="${width}" height="${height}"
 			viewBox="0 0 ${width} ${height}" aria-label="Concept prerequisite map"><defs><marker id="arrow"
-			viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+			viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
 			<path class="arrowhead" d="M0 0L10 5L0 10z"/></marker></defs>${edges}${nodes}</svg></div>
-		<aside id="concept-detail" class="panel" aria-live="polite">${empty("Choose a concept to discover its story.")}
-		</aside></div>`;
+		<aside id="concept-detail" class="psi-concept-detail" aria-live="polite">${empty("Pick a concept on the map to read about it.")}
+		</aside></div></div>`;
 	// Large graphs scroll sideways on phones instead of shrinking labels below legibility (CSSOM is CSP-safe).
 	const map = container.querySelector(".concept-map");
-	map.style.minWidth = `${Math.min(width, Math.max(340, width * 0.6))}px`;
+	map.style.minWidth = `${Math.min(width, Math.max(320, width * 0.6))}px`;
 	map.style.width = "100%"; map.style.maxWidth = `${Math.round(width * 1.25)}px`;
 	function select(id) {
 		const c = byId.get(id);
@@ -252,20 +271,19 @@ function renderMap(container, concepts, mastery, frontier, artifacts, plan) {
 		const lists = [["Watch out for", c.misconceptions], ["Picture this", c.visualHooks]]
 			.map(([label, items]) => items?.length
 				? `<h3>${label}</h3><ul>${items.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ul>` : "").join("");
-		const level = escapeHtml(c.difficulty);
-		detail.innerHTML = `<span class="eyebrow">${conceptStatus(c, mastery, available)} · LEVEL ${level}</span>
-			<h2>${escapeHtml(c.title)}</h2><p>${escapeHtml(c.summary)}</p>
-			${c.intuition ? `<blockquote>${escapeHtml(c.intuition)}</blockquote>` : ""}${lists}<h3>Linked artifacts</h3>
-			${links.length ? links.map((a, i) => `<button class="artifact-link" data-artifact="${i}">
-				${escapeHtml(pretty(a.name))}
-				<small>${kindOf(a)}</small></button>`).join("") : '<p class="muted">No linked visuals yet.</p>'}`;
+		const status = conceptStatus(c, mastery, available);
+		detail.innerHTML = `<h2>${escapeHtml(c.title)}</h2>
+			<p class="psi-row-meta">${capital(status === "frontier" ? "ready to learn" : status)}, difficulty ${escapeHtml(c.difficulty)} of 5</p>
+			<p>${escapeHtml(c.summary)}</p>
+			${c.intuition ? `<blockquote>${escapeHtml(c.intuition)}</blockquote>` : ""}${lists}
+			${links.length ? `<h3>Visuals</h3>${links.map((a, i) => `<button class="psi-artifact-link" type="button" data-artifact="${i}">
+				${escapeHtml(pretty(a.name))}<small>${kindOf(a)}</small></button>`).join("")}` : ""}`;
 		detail.querySelectorAll("[data-artifact]").forEach((button) => {
 			button.onclick = () => openArtifact(links[Number(button.dataset.artifact)]);
 		});
 		document.querySelectorAll(".node")
 			.forEach((node) => node.setAttribute("aria-pressed", String(node.dataset.id === id)));
-		// Below 900px the panel sits under the map; bring the story into view.
-		if (matchMedia("(max-width: 900px)").matches) detail.scrollIntoView({ behavior: "smooth", block: "start" });
+		if (matchMedia("(max-width: 767px)").matches) detail.scrollIntoView({ block: "start" });
 	}
 	container.querySelectorAll(".node").forEach((node) => {
 		node.onclick = () => select(node.dataset.id);
@@ -276,30 +294,29 @@ function renderMap(container, concepts, mastery, frontier, artifacts, plan) {
 }
 function renderLessons(container, plan, concepts, artifacts) {
 	if (!plan?.lessons?.length) {
-		container.innerHTML = empty("Your lesson path is waiting to be planned. Use /learn in psi."); return;
+		container.innerHTML = empty("No lessons planned yet. Ask your tutor to plan them with /learn."); return;
 	}
 	const openable = [];
-	const lessons = plan.lessons.map((lesson, i) => {
+	const lessons = plan.lessons.map((lesson) => {
 		const concept = concepts.find((c) => c.id === lesson.conceptId);
-		const beats = (lesson.beats || []).map((b) => `<div><span class="eyebrow">${escapeHtml(b.kind)}</span>
-			<p>${escapeHtml(b.text)}</p></div>`).join("");
+		const beats = (lesson.beats || []).map((b) => `<li><strong>${escapeHtml(capital(String(b.kind)))}</strong>
+			${escapeHtml(b.text)}</li>`).join("");
 		const visuals = (lesson.visuals || []).map((v) => {
 			const a = v.path ? artifacts.find((item) => stem(item.name) === stem(v.path)) : undefined;
 			if (a) {
 				openable.push(a);
-				return `<button class="visual-ref ready" data-open="${openable.length - 1}">
-					<strong>▷ ${escapeHtml(v.title)}</strong>
-					<span>${escapeHtml(v.goal)}</span></button>`;
+				return `<button type="button" data-open="${openable.length - 1}" title="${escapeHtml(v.goal)}">
+					Open ${escapeHtml(v.title)}</button>`;
 			}
-			return `<div class="visual-ref"><strong>◇ ${escapeHtml(v.title)}</strong><span>${escapeHtml(v.goal)}</span>
-				<small>${escapeHtml(v.kind || "visual")} · planned</small></div>`;
+			return `<span>${escapeHtml(v.title)} (planned)</span>`;
 		}).join("");
-		return `<li class="panel"><span class="lesson-number">${i + 1}</span><div>
-			<span class="badge">${escapeHtml(lesson.status)}</span>
-			<h2>${escapeHtml(concept?.title || titleOf(lesson.conceptId))}</h2><p>${escapeHtml(lesson.objective)}</p>
-			<div class="beats">${beats}</div>${visuals}</div></li>`;
+		return `<li><div><p class="psi-row-meta">${escapeHtml(capital(String(lesson.status || "planned")))}</p>
+			<h2>${escapeHtml(concept?.title || capital(titleOf(lesson.conceptId)))}</h2>
+			<p class="psi-objective">${escapeHtml(lesson.objective)}</p>
+			${beats ? `<ul class="psi-beats">${beats}</ul>` : ""}${visuals ? `<div class="psi-visuals">${visuals}</div>` : ""}</div></li>`;
 	}).join("");
-	container.innerHTML = `<p class="lead">${escapeHtml(plan.goal)}</p><ol class="lesson-list">${lessons}</ol>`;
+	container.innerHTML = `<div class="psi-concepts">${plan.goal ? `<p>${escapeHtml(plan.goal)}</p>` : ""}
+		<ol class="psi-lessons">${lessons}</ol></div>`;
 	container.querySelectorAll("[data-open]").forEach((b) => {
 		b.onclick = () => openArtifact(openable[Number(b.dataset.open)]);
 	});
@@ -314,16 +331,14 @@ function media(a, preview = false) {
 		return `<video src="${url}" ${preview ? 'muted preload="metadata"' : "controls autoplay"} playsinline></video>`;
 	}
 	if (a.type.startsWith("image/")) return `<img src="${url}" alt="${escapeHtml(pretty(a.name))}" loading="lazy">`;
-	return `<div class="file-preview">◇<p>${escapeHtml(a.name)}</p></div>`;
+	return `<div class="file-preview"><p>${escapeHtml(a.name)}</p></div>`;
 }
 function renderGallery(container, artifacts) {
-	container.innerHTML = `<div class="section-heading"><h2>Ideas you can see</h2>
-		<span>${plural(artifacts.length, "artifact")}</span></div>
-		<div class="gallery">${artifacts.map((a, i) => `<article class="artifact-card">
+	container.innerHTML = artifacts.length ? `<ul class="psi-gallery">${artifacts.map((a, i) => `<li>
 			<div class="preview">${media(a, true)}</div>
-			<button data-open="${i}"><span>${escapeHtml(pretty(a.name))}</span><span aria-hidden="true">↗</span></button>
-			<small>${kindOf(a)} · ${escapeHtml(a.name)}</small></article>`).join("")
-			|| empty("No artifacts yet. Create an explainer with /visualize or /explore.")}</div>`;
+			<button type="button" data-open="${i}">${escapeHtml(pretty(a.name))}</button>
+			<small>${kindOf(a)}, ${escapeHtml(a.name)}</small></li>`).join("")}</ul>`
+		: empty("No visuals yet. Ask your tutor to /visualize or /explore an idea.");
 	container.querySelectorAll("[data-open]").forEach((button) => {
 		button.onclick = () => openArtifact(artifacts[Number(button.dataset.open)]);
 	});
@@ -332,8 +347,7 @@ function openArtifact(a) {
 	if (!a) return;
 	document.querySelector("#lightbox-content").innerHTML = `<h2>${escapeHtml(pretty(a.name))}</h2>
 		<div class="lightbox-media">${media(a)}</div>
-		<a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">
-			Open ${escapeHtml(a.name)} in a new tab ↗</a>`;
+		<a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">Open in a new tab</a>`;
 	dialog.showModal();
 }
 function closeArtifact() {
@@ -347,43 +361,40 @@ function renderCard(message = "") {
 	const container = document.querySelector("#view");
 	const card = s.cards[s.index];
 	if (!card) {
-		container.innerHTML = `<div class="review-complete panel"><span class="completion-star">✦</span>
-			<h2>${s.reviewed ? "A little stronger, a little clearer." : "You're all caught up."}</h2>
-			<p>${plural(s.reviewed, "card")} reviewed. Come back when your next cards are due.</p>
-			<p role="status">${escapeHtml(message)}</p>
-			<a class="button" href="${topicPath(s.topic, "progress")}">See your progress →</a></div>`;
+		container.innerHTML = `<div class="psi-review"><h2>${s.reviewed ? "Review done" : "Nothing due right now"}</h2>
+			<p>${s.reviewed ? `You reviewed ${plural(s.reviewed, "card")}.` : "You're caught up."} Come back when the next cards are due.</p>
+			<p class="psi-review-message" role="status">${escapeHtml(message)}</p>
+			<a class="button" href="${topicPath(s.topic, "progress")}">See progress</a></div>`;
 		return;
 	}
-	const choices = card.kind === "mcq" ? `<div class="choices">${(card.choices || []).map((choice, i) => {
+	const choices = card.kind === "mcq" ? `<div class="psi-choices">${(card.choices || []).map((choice, i) => {
 		const state = !s.revealed ? "" : same(choice, card.answer) ? "correct" : i === s.choice ? "wrong" : "";
-		const verdict = state === "correct" ? '<span class="verdict">✓ answer</span>'
-			: state === "wrong" ? '<span class="verdict">your pick</span>' : "";
-		return `<button data-choice="${i}" class="${state}" ${s.revealed ? "disabled" : ""}>
-			${escapeHtml(choice)}${verdict}</button>`;
+		const verdict = state === "correct" ? '<span class="verdict">Answer</span>'
+			: state === "wrong" ? '<span class="verdict">Your pick</span>' : "";
+		return `<button type="button" data-choice="${i}" class="${state}" ${s.revealed ? "disabled" : ""}>
+			<span>${escapeHtml(choice)}</span>${verdict}</button>`;
 	}).join("")}</div>` : "";
-	const ratings = ["Again", "Hard", "Good", "Easy"].map((label, i) => `<button data-rating="${i + 1}"
-		${s.busy ? "disabled" : ""}>
-		<strong>${label}</strong><small>${i + 1}</small></button>`).join("");
-	container.innerHTML = `<div class="review-wrap"><div class="section-heading">
-		<span>${s.index + 1} / ${plural(s.cards.length, "card")}</span>
-		<span class="badge">${escapeHtml(card.kind)}</span></div><article class="flashcard panel">
-		<span class="eyebrow">${escapeHtml(titleOf(card.conceptId))}</span><h2>${escapeHtml(card.prompt)}</h2>${choices}
-		${s.revealed ? `<div class="answer"><span class="eyebrow">ANSWER</span><p>${escapeHtml(card.answer)}</p>
-			<p class="muted">How well did you remember? Rate your recall.</p></div><div class="ratings">${ratings}</div>`
-			: '<button id="reveal" class="primary">Reveal answer <small>Space</small></button>'}</article>
-		<p class="review-message" role="status">${escapeHtml(message)}</p></div>`;
+	const ratings = ["Again", "Hard", "Good", "Easy"].map((label, i) => `<button type="button" data-rating="${i + 1}"
+		${s.busy ? "disabled" : ""}>${label}<small>Key ${i + 1}</small></button>`).join("");
+	container.innerHTML = `<div class="psi-review"><p class="psi-review-count">Card ${s.index + 1} of ${s.cards.length}</p>
+		<article class="psi-flashcard"><p class="psi-row-meta">${escapeHtml(capital(titleOf(card.conceptId)))}</p>
+		<h2>${escapeHtml(card.prompt)}</h2>${choices}
+		${s.revealed ? `<div class="psi-answer"><strong>Answer</strong><p>${escapeHtml(card.answer)}</p>
+			<p class="muted">How well did you remember it?</p><div class="psi-ratings">${ratings}</div></div>`
+			: '<div><button id="reveal" type="button" class="primary">Show answer</button></div>'}</article>
+		<p class="psi-review-message" role="status">${escapeHtml(message)}</p></div>`;
 	container.querySelector("#reveal")?.addEventListener("click", () => { s.revealed = true; renderCard(); });
 	container.querySelectorAll("[data-choice]").forEach((button) => {
 		button.onclick = () => {
 			s.revealed = true; s.choice = Number(button.dataset.choice);
 			renderCard(same(card.choices[s.choice], card.answer)
-				? "Correct! Now rate how easy it felt." : "Not quite — compare with the answer.");
+				? "Right. Now rate how easy it felt." : "Not this time. Compare with the answer, then rate it.");
 		};
 	});
 	container.querySelectorAll("[data-rating]").forEach((button) => {
 		button.onclick = () => submitRating(Number(button.dataset.rating));
 	});
-	if (s.revealed) container.querySelector(".ratings")?.scrollIntoView({ block: "nearest" });
+	if (s.revealed) container.querySelector(".psi-ratings")?.scrollIntoView({ block: "nearest" });
 }
 async function submitRating(rating) {
 	const s = reviewState;
@@ -400,8 +411,8 @@ async function submitRating(rating) {
 		const days = Math.max(0, (Date.parse(updated.fsrs.due) - Date.now()) / 86400000);
 		const interval = days < 1 ? plural(Math.max(1, Math.round(days * 1440)), "minute") : plural(Math.round(days), "day");
 		s.index++; s.reviewed++; s.revealed = false; s.busy = false; s.choice = -1;
-		renderCard(`Saved · Next review in ${interval}.`);
-	} catch (error) { if (s.token === generation) { s.busy = false; renderCard(error.message); } }
+		renderCard(`Saved. You'll see that card again in ${interval}.`);
+	} catch (error) { if (s.token === generation) { s.busy = false; renderCard(`Couldn't save that rating. ${error.message}`); } }
 }
 function dayKey(date) {
 	const two = (n) => String(n).padStart(2, "0");
@@ -426,103 +437,153 @@ function renderProgress(container, concepts, mastery, reviews) {
 	const mastered = concepts.filter((c) => (mastery[c.id]?.pKnown || 0) >= 0.95).length;
 	const rows = concepts.map((c) => {
 		const m = mastery[c.id], value = pct(m?.pKnown);
-		return `<div class="mastery-row"><div><span>${escapeHtml(c.title)}</span>
-			<small>${value}% · ${plural(m?.attempts || 0, "attempt")}</small>
-			</div><progress value="${value}" max="100" aria-label="${escapeHtml(c.title)} mastery">${value}%</progress></div>`;
+		return `<li><span>${escapeHtml(c.title)}</span><span>${value}%, ${plural(m?.attempts || 0, "attempt")}</span>
+			${meter(value, `${c.title} mastery`)}</li>`;
 	}).join("");
-	container.innerHTML = `<div class="stats">
-		<div class="panel"><strong>${streak}</strong><span>day review streak</span></div>
-		<div class="panel"><strong>${reviews.length}</strong><span>retrievals practiced</span></div>
-		<div class="panel"><strong>${mastered}/${concepts.length}</strong><span>concepts mastered</span></div></div>
-		<section class="panel"><div class="section-heading"><h2>A little, often</h2>
-		<span>Last 13 weeks · local dates</span></div><div class="heatmap">${days}</div>
-		<p class="muted">Each square is a day. Brighter means more retrieval practice.</p></section>
-		<section class="panel mastery-panel"><h2>Your growing understanding</h2>
-		${rows || empty("No concepts to measure yet.")}</section>`;
+	container.innerHTML = `<div class="psi-concepts"><div class="psi-stats">
+		<div><strong>${streak}</strong><span>${streak === 1 ? "day" : "days"} in a row</span></div>
+		<div><strong>${reviews.length}</strong><span>cards reviewed</span></div>
+		<div><strong>${mastered} of ${concepts.length}</strong><span>concepts mastered</span></div></div>
+		<section class="psi-progress-section"><h2>Reviews, last 13 weeks</h2><div class="psi-heatmap">${days}</div>
+		<p class="muted">Each square is a day. The more yellow, the more cards you reviewed.</p></section>
+		<section class="psi-progress-section"><h2>Mastery by concept</h2>
+		${rows ? `<ul class="psi-mastery">${rows}</ul>` : empty("No concepts to measure yet.")}</section></div>`;
 }
 
+/* ---------- Shell: sidebar, top bar, bench, routing ---------- */
 let events;
 let mounted;
+let bench;
+let benchWanted = false;
 let shellGeneration = 0;
 let sharedApi;
 const navigate = (hash) => {
 	if (location.hash === hash) void renderRoute();
 	else location.hash = hash;
 };
+function syncShade() {
+	const open = document.body.classList.contains("psi-drawer-open") || document.body.classList.contains("psi-bench-open");
+	shade.hidden = !open;
+}
 const closeDrawer = () => {
 	document.body.classList.remove("psi-drawer-open");
-	document.querySelector("#menu-toggle").setAttribute("aria-expanded", "false");
+	menuToggle.setAttribute("aria-expanded", "false");
+	syncShade();
 };
+const closeBench = () => {
+	const wasOpen = document.body.classList.contains("psi-bench-open");
+	document.body.classList.remove("psi-bench-open");
+	benchToggle.setAttribute("aria-expanded", "false");
+	syncShade();
+	if (wasOpen && !benchToggle.hidden) benchToggle.focus();
+};
+function setTopbar(title, sub = "") {
+	document.querySelector("#topbar-title").textContent = title || "psi";
+	const subEl = document.querySelector("#topbar-sub");
+	subEl.textContent = sub; subEl.hidden = !sub;
+}
+/** The bench column shows only on bench routes with an active skill. */
+function setBenchAvailable(available) {
+	const show = Boolean(available && benchWanted);
+	document.body.dataset.bench = show ? "on" : "off";
+	benchToggle.hidden = !show;
+	if (!show) closeBench();
+}
+function ensureBench() {
+	if (bench) return;
+	bench = { pending: true };
+	import("./js/bench.js").then(({ mountBench }) => {
+		bench = mountBench(benchEl, {
+			onChange: (has) => { setBenchAvailable(has); void topbarForSkill(); },
+			onClose: closeBench,
+		});
+	}).catch(() => { bench = undefined; setBenchAvailable(false); });
+}
+async function topbarForSkill() {
+	const route = parseRoute(location.hash).route;
+	if (!benchRoute(route) || !bench?.skill || !sharedApi) return;
+	try {
+		const data = await sharedApi.get(`/api/skills/${enc(bench.skill)}`);
+		if (!benchRoute(parseRoute(location.hash).route)) return;
+		const { formatLevel } = await ui();
+		setTopbar(data.plan?.title || capital(titleOf(bench.skill)), formatLevel(data.progress?.xp).label);
+	} catch { /* The top bar keeps its last title. */ }
+}
+function link(href, title, meta) {
+	const a = document.createElement("a");
+	a.className = "psi-nav-row"; a.href = href;
+	const t = document.createElement("span"); t.className = "psi-row-title"; t.textContent = title; a.append(t);
+	if (meta) { const m = document.createElement("span"); m.className = "psi-row-meta"; m.textContent = meta; a.append(m); }
+	return a;
+}
+function note(text) {
+	const p = document.createElement("p"); p.className = "psi-nav-note"; p.textContent = text; return p;
+}
 async function refreshChrome() {
 	const token = ++shellGeneration;
 	const client = sharedApi || (await import("./js/api.js").catch(() => null))?.api;
 	if (!client || token !== shellGeneration) return;
 	sharedApi = client;
-	const list = async (path, selector, build, fallback) => {
+	const { relativeTime, chatTitle, formatLevel, hoursLabel } = await ui();
+	const fill = async (selector, load, build, fallback) => {
 		const el = document.querySelector(selector);
 		try {
-			const items = await client.get(path);
+			const items = await load();
 			if (token !== shellGeneration) return;
-			el.replaceChildren();
 			const nodes = await Promise.all(items.map(build));
 			if (token !== shellGeneration) return;
-			el.append(...nodes);
-			if (!items.length) el.textContent = fallback;
-		} catch { if (token === shellGeneration) el.textContent = "Unavailable right now"; }
-	};
-	const link = (text, href) => {
-		const a = document.createElement("a"); a.textContent = text; a.href = href; return a;
+			el.replaceChildren(...(nodes.length ? nodes : [note(fallback)]));
+		} catch { if (token === shellGeneration) el.replaceChildren(note("Couldn't load. Retrying when psi reconnects.")); }
 	};
 	await Promise.allSettled([
-		list("/api/chat", "#saved-chats", (c) => link(c.title || "Untitled chat", `#/chat/${enc(c.id)}`),
-			"Your next conversation starts here."),
-		list("/api/skills", "#sidebar-skills", async (s) => {
+		fill("#saved-chats", async () => sortChats(await client.get("/api/chat")).slice(0, CHAT_LIMIT),
+			(c) => link(`#/chat/${enc(c.id)}`, chatTitle(c.title || "New chat"), relativeTime(c.updatedAt)),
+			"No chats yet."),
+		fill("#sidebar-skills", () => client.get("/api/skills"), async (s) => {
 			const slug = typeof s === "string" ? s : s.skill;
 			const detail = typeof s === "string" ? await client.get(`/api/skills/${enc(slug)}`).catch(() => ({})) : s;
-			const a = link(detail.plan?.title || detail.title || titleOf(slug), `#/skills/${enc(slug)}`);
+			const title = detail.plan?.title || detail.title || capital(titleOf(slug));
 			const p = detail.progress || {};
-			const bar = formatBars(p);
-			const small = document.createElement("small");
-			small.textContent = `Level ${bar.level} · ${bar.hours}h`;
-			const progress = document.createElement("progress");
-			progress.max = 100; progress.value = bar.hoursPercent;
-			progress.setAttribute("aria-label", `${titleOf(slug)} practice hours`);
-			const levelProgress = document.createElement("progress");
-			levelProgress.max = 100; levelProgress.value = bar.levelPercent;
-			levelProgress.setAttribute("aria-label", `${titleOf(slug)} level progress`);
-			a.append(small, levelProgress, progress); return a;
-		}, "Build your first skill."),
-		list("/api/topics", "#sidebar-topics", (t) => link(t.title, topicPath(t.topic, "map")), "No topics yet."),
-		(async () => {
-			const hud = document.querySelector("#skill-hud");
-			try {
-				const state = await client.get("/api/state");
-				const data = state.activeSkill ? await client.get(`/api/skills/${enc(state.activeSkill)}`) : {};
-				if (token !== shellGeneration) return;
-				const bars = formatBars(data.progress);
-				hud.innerHTML = `<span class="psi-hud-skill">${escapeHtml(data.plan?.title || state.activeSkill || "Ready to learn")}</span>
-					<span class="psi-hud-level">Level ${bars.level}<progress max="100" value="${bars.levelPercent}"
-					aria-label="Level progress">${bars.levelPercent}%</progress></span>
-					<span>🔥 ${escapeHtml(data.progress?.streakDays || 0)}</span><span>${bars.hours}h</span>`;
-			} catch { if (token === shellGeneration) hud.textContent = "Your progress will appear here · Level 1 · 🔥 0 · 0/20h"; }
-		})(),
+			const a = link(`#/skills/${enc(slug)}`, title, formatLevel(p.xp).label);
+			const hours = barPercent(Number(p.minutesLogged) / 60, 20);
+			a.insertAdjacentHTML("beforeend", meter(hours, `${title}: ${hoursLabel(p.minutesLogged)}`));
+			return a;
+		}, "No skills yet. Add one from Home."),
+		fill("#sidebar-topics", () => client.get("/api/topics"), (t) => link(topicPath(t.topic, "map"), t.title), "")
+			.then(() => {
+				const nav = document.querySelector("#sidebar-topics");
+				nav.querySelector(".psi-nav-note")?.remove();
+				nav.append(link("#/topics", "All concepts"));
+			}),
 	]);
-	if (token === shellGeneration) document.querySelectorAll("#sidebar a").forEach((a) => {
-		if (a.hash === location.hash) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+	if (token === shellGeneration) markCurrent();
+}
+function markCurrent() {
+	const hash = location.hash || "#/";
+	document.querySelectorAll("#sidebar a").forEach((a) => {
+		const topic = parseRoute(hash).route === "topic" && a.hash === `#/${hash.slice(2).split("/")[0]}/map`;
+		if (a.hash === hash || topic) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
 	});
 }
 async function renderRoute() {
-	closeDrawer(); closeArtifact();
+	closeDrawer(); closeBench(); closeArtifact();
 	mounted?.destroy?.(); mounted = undefined;
 	const token = ++generation;
 	reviewState = undefined;
 	const parsed = parseRoute(location.hash);
+	benchWanted = benchRoute(parsed.route);
+	if (benchWanted) { ensureBench(); if (bench?.skill) setBenchAvailable(true); }
+	else setBenchAvailable(false);
+	markCurrent();
 	void refreshChrome();
 	if (parsed.route === "topic" || parsed.route === "topics") return render();
+	app.dataset.route = layoutRoute(parsed.route);
 	app.replaceChildren();
-	const host = document.createElement("div"); app.append(host);
-	host.innerHTML = empty("Opening your learning space…");
-	document.title = "ψ Studio · Learn by doing";
+	const host = document.createElement("div"); host.className = "psi-view-host"; app.append(host);
+	host.innerHTML = `<p class="empty psi-view">Opening…</p>`;
+	document.title = "psi";
+	setTopbar(parsed.route === "memory" ? "Memory" : parsed.route === "skill" ? capital(titleOf(parsed.params.skill)) : "psi");
+	if (benchWanted) void topbarForSkill();
 	app.setAttribute("aria-busy", "true");
 	try {
 		let view;
@@ -533,18 +594,20 @@ async function renderRoute() {
 		} else if (parsed.route === "memory") {
 			const { mountMemory } = await import("./js/memory.js");
 			if (token !== generation) return;
+			document.title = "Memory · psi";
 			view = mountMemory(host);
 		} else if (parsed.route === "skill") {
 			const { mountPractice } = await import("./js/practice.js");
 			if (token !== generation) return;
 			view = mountPractice(host, { skill: parsed.params.skill, navigate });
 		} else if (parsed.route === "chat" || parsed.route === "new") {
+			host.className = "psi-view-host psi-view";
 			const { api: client } = await import("./js/api.js");
 			const { mountChat } = await import("./js/chat.js");
 			if (token !== generation) return;
 			let chatId = parsed.params.chatId;
 			if (parsed.route === "new") {
-				host.innerHTML = empty("Starting a conversation…");
+				host.innerHTML = `<p class="empty">Starting a chat…</p>`;
 				const { skill, topic, prompt } = parsed.params;
 				const created = await client.post("/api/chat", { ...(skill && { skill }), ...(topic && { topic }) });
 				chatId = created.id;
@@ -552,17 +615,19 @@ async function renderRoute() {
 				if (prompt) await client.post(`/api/chat/${enc(chatId)}/prompt`, { message: prompt });
 				if (token !== generation) return;
 				history.replaceState(null, "", `#/chat/${enc(chatId)}`);
+				markCurrent();
 				void refreshChrome();
 			}
 			view = await mountChat(host, { chatId, skill: parsed.params.skill, topic: parsed.params.topic,
 				onChatCreated: (id) => navigate(`#/chat/${enc(id)}`) });
-		} else host.innerHTML = empty("This page does not exist. Choose a view in the sidebar.");
+		} else host.innerHTML = `<div class="psi-view">${empty("This page doesn't exist. Pick something in the sidebar.")}</div>`;
 		if (token === generation) mounted = view;
 		else view?.destroy?.();
 	} catch (error) {
 		if (token === generation) {
-			host.innerHTML = `<div class="empty"><h2>Couldn't open this view</h2><p>${escapeHtml(error.message)}</p>
-				<button id="shell-retry">Try again</button></div>`;
+			host.innerHTML = `<div class="psi-view empty"><h2>Couldn't open this page</h2>
+				<p>${escapeHtml(error.message)}. Check that psi web is running, then try again.</p>
+				<button id="shell-retry" type="button">Try again</button></div>`;
 			host.querySelector("#shell-retry").onclick = renderRoute;
 		}
 	} finally { if (token === generation) app.removeAttribute("aria-busy"); }
@@ -570,31 +635,53 @@ async function renderRoute() {
 document.querySelector("#close-lightbox").onclick = closeArtifact;
 dialog.addEventListener("cancel", (event) => { event.preventDefault(); closeArtifact(); });
 dialog.addEventListener("click", (event) => { if (event.target === dialog) closeArtifact(); });
-document.querySelector("#menu-toggle").onclick = () => {
+menuToggle.onclick = () => {
+	closeBench();
 	const open = document.body.classList.toggle("psi-drawer-open");
-	document.querySelector("#menu-toggle").setAttribute("aria-expanded", String(open));
+	menuToggle.setAttribute("aria-expanded", String(open));
+	syncShade();
+	if (open) document.querySelector("#sidebar .psi-brand")?.focus();
 };
-document.querySelector("#drawer-shade").onclick = closeDrawer;
+benchToggle.onclick = () => {
+	closeDrawer();
+	const open = document.body.classList.toggle("psi-bench-open");
+	benchToggle.setAttribute("aria-expanded", String(open));
+	syncShade();
+	if (open) benchEl.querySelector("a, button")?.focus();
+};
+shade.onclick = () => { closeDrawer(); closeBench(); };
 document.querySelector("#sidebar").addEventListener("click", (event) => {
 	if (event.target.closest("a")) closeDrawer();
 });
 document.querySelector(".psi-skip").onclick = (event) => { event.preventDefault(); app.focus(); };
 window.addEventListener("hashchange", () => { void renderRoute(); });
 window.addEventListener("keydown", (event) => {
-	if (event.key === "Escape") closeDrawer();
-	if (dialog.open || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+	if (event.key === "Escape") {
+		const drawer = document.body.classList.contains("psi-drawer-open");
+		closeDrawer(); closeBench();
+		if (drawer) menuToggle.focus();
+	}
+	if (dialog.open || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName) || event.target.isContentEditable) return;
 	if (event.altKey || event.ctrlKey || event.metaKey) return;
 	if (reviewState && event.code === "Space" && !reviewState.revealed && reviewState.cards[reviewState.index]) {
 		event.preventDefault(); reviewState.revealed = true; renderCard();
 	} else if (reviewState && /^[1-4]$/.test(event.key)) { event.preventDefault(); void submitRating(Number(event.key)); }
 });
+for (const name of ["psi:skills-changed", "psi:chats-changed", "psi:attempt"]) {
+	window.addEventListener(name, () => { void refreshChrome(); });
+}
+window.addEventListener("psi:bench", (event) => {
+	const open = event.detail?.open ?? !document.body.classList.contains("psi-bench-open");
+	if (open && !benchToggle.hidden) benchToggle.click(); else if (!open) closeBench();
+});
 events = new EventSource("/api/events");
-events.onopen = () => setConnection("● Live");
-events.onerror = () => setConnection("Reconnecting…");
+events.onopen = () => setConnection("");
+events.onerror = () => setConnection("Reconnecting to psi…", true);
 events.addEventListener("changed", () => {
 	void refreshChrome();
+	bench?.refresh?.();
 	if (Date.now() < ownWriteUntil) return;
-	if (reviewState) { setConnection("● Updates ready"); return; }
+	if (reviewState) return;
 	// Keep live conversations and form drafts intact during filesystem updates.
 	if (["topic", "topics"].includes(parseRoute(location.hash).route)) void render();
 });

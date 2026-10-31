@@ -1,90 +1,199 @@
 import { api } from "./api.js";
+import { el, emit, toast } from "./ui.js";
+import { firstSentence } from "./bench.js";
 
-/** Mount the practice-first landing page with independently loaded sections. */
-export function mountHome(el, { navigate }) {
+/** Built-in first problem for a learner with no packs imported; graded locally. */
+export const SAMPLE_CHALLENGE = Object.freeze({
+	type: "challenge", id: "sample-len-psi", skill: "sample", kind: "predict", level: 1, format: "choice",
+	prompt: "What does this Python print?\n\n```python\nprint(len('psi'))\n```",
+	choices: ["2", "3", "psi", "TypeError"], hintsCount: 2,
+});
+const SAMPLE_KEY = { expected: "3", hints: ["`len` counts the items in a sequence.", "A string is a sequence of characters: p, s, i."] };
+
+/** First unattempted challenge that answers without the code lab (the hero must be quick). */
+export function pickHeroChallenge(challenges) {
+	const open = (Array.isArray(challenges) ? challenges : [])
+		.filter((c) => c && c.format !== "code" && !c.attempted && (c.lastOutcome ?? null) === null);
+	const rank = (c) => ({ choice: 0, number: 1 })[c.format] ?? 2;
+	return open.map((c, i) => [c, i]).sort(([a, i], [b, j]) => rank(a) - rank(b) || i - j)[0]?.[0] ?? null;
+}
+
+/** Order imported skills so the active one is tried first. */
+export function heroSkillOrder(skills, active) {
+	const list = (Array.isArray(skills) ? skills : []).map((s) => typeof s === "string" ? s : s?.skill).filter(Boolean);
+	return active && list.includes(active) ? [active, ...list.filter((s) => s !== active)] : list;
+}
+
+/** Most recent session recap, or undefined. */
+export function latestRecap(recaps) {
+	return [...(Array.isArray(recaps) ? recaps : [])].filter((r) => r && r.date)
+		.sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+}
+
+/** A grader for the built-in sample so it works before any pack is imported. */
+function sampleApi() {
+	return {
+		get: async (path) => {
+			const n = Number(new URL(path, "https://psi.invalid").searchParams.get("n")) || 0;
+			return { hint: SAMPLE_KEY.hints[n] ?? null, n, total: SAMPLE_KEY.hints.length };
+		},
+		post: async (_path, body) => {
+			const ok = String(body?.answer ?? "").trim() === SAMPLE_KEY.expected;
+			return {
+				attempt: { id: `sample-${Date.now()}`, challengeId: SAMPLE_CHALLENGE.id, outcome: ok ? "success" : "fail", xp: ok ? 10 : 4 },
+				progress: { xp: ok ? 10 : 4 }, leveledUp: false, badges: [],
+			};
+		},
+	};
+}
+
+/** Mount the home page: a problem to try now (or Continue), the goal input, and skill packs. */
+export function mountHome(root, { navigate }) {
 	let disposed = false;
-	el.innerHTML = `<div class="psi-home"><section class="psi-hero">
-		<span class="eyebrow">A LITTLE CURIOSITY. A LOT OF POSSIBILITY.</span>
-		<h1>Learn any complex concept — by doing.</h1>
-		<p>Build intuition with small challenges. Try, make mistakes, and level up.<br>Every attempt is progress.</p>
-		<form class="psi-learn-form"><label for="learning-goal">What do you want to learn?</label>
-		<input id="learning-goal" name="goal" placeholder="What do you want to learn?" required maxlength="2000">
-		<div class="psi-actions"><button class="primary" type="submit" data-mode="concept">Understand a concept ↗</button>
-		<button type="submit" data-mode="skill">Build a skill →</button></div></form>
-		<div class="psi-chips" aria-label="Try a starting point"></div></section>
-		<div class="psi-home-columns"><section class="psi-section"><h2>Pick up where you left off</h2>
-		<div id="home-continue" class="psi-card" aria-live="polite">Loading your last session…</div></section>
-		<section class="psi-section"><h2>Keep it fresh</h2><div id="home-reviews" class="psi-card" aria-live="polite">Checking due reviews…</div></section></div>
-		<section class="psi-section"><div class="section-heading"><h2>Your first 20 hours start here</h2>
-		<span>Ready-to-practice skill packs</span></div><div id="home-packs" class="psi-grid" aria-live="polite">Finding practice packs…</div></section></div>`;
-	const input = el.querySelector("#learning-goal");
-	el.querySelector("form").onsubmit = (event) => {
-		event.preventDefault();
-		const text = input.value.trim();
-		if (!text) { input.focus(); return; }
-		const command = event.submitter?.dataset.mode === "skill" ? "/skill" : "/learn";
-		navigate(`#/new?prompt=${encodeURIComponent(`${command} ${text}`)}`);
-	};
-	for (const label of ["Python functions", "Recursion", "SQL joins", "Derivatives", "Vectors & matrices",
-		"Probability", "Newton's laws", "Big-O"]) {
-		const chip = document.createElement("button"); chip.type = "button"; chip.textContent = label;
-		chip.onclick = () => { input.value = label; input.focus(); };
-		el.querySelector(".psi-chips").append(chip);
-	}
-	const load = async (path, selector, build) => {
-		const target = el.querySelector(selector);
-		try {
-			const data = await api.get(path);
+	const enc = encodeURIComponent;
+	const hero = el("section", { class: "psi-home-hero", "aria-labelledby": "home-title" });
+	const goal = goalForm(navigate);
+	const packs = el("section", { class: "psi-home-section", "aria-labelledby": "home-packs" },
+		el("h2", { id: "home-packs" }, "Skill packs"), el("p", { class: "muted" }, "Loading skill packs…"));
+	root.replaceChildren(el("div", { class: "psi-home psi-view" }, hero, goal, packs));
+
+	async function loadHero() {
+		const [memory, state, skills] = await Promise.all([
+			api.get("/api/memory").catch(() => ({})), api.get("/api/state").catch(() => ({})),
+			api.get("/api/skills").catch(() => []),
+		]);
+		if (disposed) return;
+		const recap = latestRecap(memory.recaps);
+		if (recap) { renderContinue(recap); return; }
+		for (const slug of heroSkillOrder(skills, state.activeSkill)) {
+			const data = await api.get(`/api/skills/${enc(slug)}?unattempted=1`).catch(() => null);
 			if (disposed) return;
-			target.replaceChildren(); build(target, data);
-		} catch (error) {
-			if (!disposed) target.textContent = `Could not load this section. ${error.message}`;
+			const challenge = pickHeroChallenge(data?.challenges);
+			if (challenge) {
+				await renderChallenge({ type: "challenge", ...challenge, skill: slug }, data.plan?.title || slug, api);
+				return;
+			}
 		}
-	};
-	const text = (tag, value, parent) => {
-		const node = document.createElement(tag); node.textContent = value; parent.append(node); return node;
-	};
-	void load("/api/memory", "#home-continue", (target, memory) => {
-		const recap = [...(memory.recaps || [])].sort((a, b) => b.date.localeCompare(a.date))[0];
-		if (!recap) { text("p", "Your next discovery starts above. After a session, your next step will be waiting here.", target); return; }
-		text("h3", recap.skill || recap.topic || "Your last session", target);
-		text("p", recap.summary, target);
-		text("p", recap.next || "Ready for another small step?", target);
-		const button = text("button", "Continue learning →", target);
-		button.onclick = () => {
+		await renderChallenge(SAMPLE_CHALLENGE, "", sampleApi());
+	}
+
+	async function renderChallenge(widget, skillTitle, client) {
+		const after = el("div", { class: "psi-home-after", "aria-live": "polite" });
+		const sheet = el("div", { class: "psi-home-sheet" });
+		hero.replaceChildren(
+			el("h1", { id: "home-title" }, "Try one now"),
+			el("p", {}, skillTitle
+				? `A problem from ${skillTitle}. Missing it still counts as practice.`
+				: "Missing it still counts as practice."),
+			sheet, after);
+		const ctx = {
+			api: {
+				get: (path) => client.get(path),
+				post: async (path, body) => {
+					const result = await client.post(path, body);
+					if (!disposed && /\/attempt$/.test(path)) afterAttempt(widget, result, after);
+					return result;
+				},
+			},
+			// The sheet's own "Next challenge" asks the chat for another; on home, load the next one here.
+			send: async (message) => { if (!disposed && /^next challenge$/i.test(String(message).trim())) void loadHero(); },
+			toast: (message) => toast(message),
+		};
+		try {
+			const { renderToolWidget } = await import("./widgets.js");
+			if (disposed) return;
+			const node = renderToolWidget("psi_challenge", {}, { details: { widget } }, ctx);
+			if (node) sheet.replaceChildren(node);
+			else sheet.replaceChildren(el("p", { class: "muted" }, "This problem couldn't be shown. Start a skill below instead."));
+		} catch {
+			sheet.replaceChildren(el("p", { class: "muted" }, "This problem couldn't be shown. Start a skill below instead."));
+		}
+	}
+
+	function afterAttempt(widget, result, after) {
+		if (widget.skill !== "sample") { emit("psi:attempt", result); emit("psi:skills-changed"); }
+		after.replaceChildren(widget.skill === "sample"
+			? el("button", { type: "button", onclick: () => document.querySelector("#learning-goal")?.focus() }, "Start a skill")
+			: el("a", { class: "button", href: `#/skills/${enc(widget.skill)}` }, "Open skill"));
+	}
+
+	function renderContinue(recap) {
+		const label = recap.skill || recap.topic || "Your last session";
+		const go = () => {
 			const q = new URLSearchParams({ prompt: recap.next || "/practice" });
 			if (recap.skill) q.set("skill", recap.skill);
 			if (recap.topic) q.set("topic", recap.topic);
 			navigate(`#/new?${q}`);
 		};
-	});
-	void load("/api/topics", "#home-reviews", (target, topics) => {
-		const due = topics.filter((topic) => topic.due > 0);
-		if (!due.length) { text("p", "All caught up. Ideas stick with a little practice, spaced over time.", target); return; }
-		for (const topic of due) {
-			const a = text("a", `${topic.title} · ${topic.due} due →`, target);
-			a.className = "psi-review-link"; a.href = `#/${encodeURIComponent(topic.topic)}/review`;
+		hero.className = "psi-home-section";
+		hero.replaceChildren(
+			el("h1", { id: "home-title" }, "Welcome back"),
+			el("div", { class: "psi-continue" },
+				el("div", {},
+					el("h3", {}, label.replace(/[-_]+/g, " ")),
+					recap.summary ? el("p", {}, firstSentence(recap.summary, 200)) : null,
+					recap.next ? el("p", { class: "psi-continue-next" }, `Next: ${recap.next}`) : null),
+				el("button", { type: "button", class: "primary", onclick: go }, "Continue")));
+	}
+
+	async function loadPacks() {
+		let list;
+		try { list = await api.get("/api/packs"); } catch (error) {
+			if (!disposed) packs.lastElementChild.replaceWith(el("p", { class: "muted" },
+				`Couldn't load skill packs. ${error.message}`));
+			return;
 		}
+		if (disposed) return;
+		const rows = el("ul", { class: "psi-rows" });
+		for (const pack of list) rows.append(packRow(pack));
+		packs.lastElementChild.replaceWith(list.length ? rows
+			: el("p", { class: "muted" }, "No skill packs here yet. Start a skill above and psi will plan it with you."));
+	}
+
+	function packRow(pack) {
+		const slug = pack.slug || pack.skill;
+		const status = el("p", { class: "psi-row-status", role: "status" });
+		const open = () => el("a", { class: "button psi-row-action", href: `#/skills/${enc(pack.skill || slug)}` }, "Open skill");
+		const action = pack.imported ? open() : el("button", { type: "button", class: "psi-row-action", onclick: async () => {
+			action.disabled = true;
+			try {
+				const result = await api.post(`/api/packs/${enc(slug)}/import`, {});
+				if (disposed) return;
+				emit("psi:skills-changed");
+				navigate(`#/skills/${enc(result.skill || slug)}`);
+			} catch (error) {
+				if (!disposed) { status.textContent = `Couldn't add this skill. ${error.message}`; action.disabled = false; }
+			}
+		} }, "Add skill");
+		const count = Number(pack.challenges) || 0;
+		return el("li", {},
+			el("div", {},
+				el("h3", {}, pack.title || slug.replace(/[-_]+/g, " ")),
+				pack.targetPerformance ? el("p", {}, firstSentence(pack.targetPerformance, 140)) : null,
+				el("p", { class: "psi-row-meta" }, `${count} ${count === 1 ? "challenge" : "challenges"}`)),
+			action, status);
+	}
+
+	void loadHero().catch(() => { if (!disposed) void renderChallenge(SAMPLE_CHALLENGE, "", sampleApi()); });
+	void loadPacks();
+	return { destroy() { disposed = true; root.replaceChildren(); } };
+}
+
+function goalForm(navigate) {
+	const input = el("input", { id: "learning-goal", name: "goal", maxlength: "2000", autocomplete: "off",
+		placeholder: "e.g. SQL joins, derivatives, Spanish for cafés" });
+	const form = el("form", { class: "psi-goal" },
+		el("label", { for: "learning-goal" }, "What do you want to get good at?"),
+		input,
+		el("div", { class: "psi-goal-actions" },
+			el("button", { type: "submit", class: "primary", dataset: { mode: "skill" } }, "Start a skill"),
+			el("button", { type: "submit", dataset: { mode: "concept" } }, "Explain a concept")));
+	form.addEventListener("submit", (event) => {
+		event.preventDefault();
+		const text = input.value.trim();
+		if (!text) { input.focus(); return; }
+		const command = event.submitter?.dataset.mode === "concept" ? "/learn" : "/skill";
+		navigate(`#/new?prompt=${encodeURIComponent(`${command} ${text}`)}`);
 	});
-	void load("/api/packs", "#home-packs", (target, packs) => {
-		if (!packs.length) { text("p", "No packs available yet. Build a skill of your own above.", target); return; }
-		for (const pack of packs) {
-			const slug = typeof pack === "string" ? pack : pack.slug || pack.skill;
-			const card = document.createElement("article"); card.className = "psi-card";
-			text("span", "PRACTICE PACK", card).className = "eyebrow";
-			text("h3", pack.title || slug.replaceAll("-", " "), card);
-			text("p", pack.targetPerformance || pack.description || "Small challenges. A skill you can use.", card);
-			const button = text("button", "Import & practice →", card);
-			const status = text("p", "", card); status.setAttribute("role", "status");
-			button.onclick = async () => {
-				button.disabled = true;
-				try {
-					await api.post(`/api/packs/${encodeURIComponent(slug)}/import`, {});
-					if (!disposed) navigate(`#/skills/${encodeURIComponent(slug)}`);
-				} catch (error) { if (!disposed) { status.textContent = error.message; button.disabled = false; } }
-			};
-			target.append(card);
-		}
-	});
-	return { destroy() { disposed = true; el.replaceChildren(); } };
+	return form;
 }

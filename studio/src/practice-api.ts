@@ -5,7 +5,7 @@ import { PracticeStore, validateChallenge } from "../../core/src/practice.ts";
 import { StateStore } from "../../core/src/state.ts";
 import { MemoryStore } from "../../core/src/memory.ts";
 import { slugify } from "../../core/src/slug.ts";
-import type { Attempt, Challenge, MemoryKind, Outcome, PsiState } from "../../core/src/types.ts";
+import type { Attempt, Challenge, MemoryItem, MemoryKind, Outcome, PsiState } from "../../core/src/types.ts";
 
 const packsDir = fileURLToPath(new URL("../../examples/skills/", import.meta.url));
 const kinds: MemoryKind[] = ["goal", "preference", "background", "strength", "struggle", "misconception",
@@ -21,6 +21,10 @@ function noSymlink(file: string): void {
 	try { if (lstatSync(file).isSymbolicLink()) throw apiError(400, "Refusing symlink inside store"); }
 	catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
 }
+
+/** One attempt as the attempt trail sees it (GET /api/skills/:s/attempts). */
+export type AttemptSummary = Pick<Attempt, "id" | "challengeId" | "outcome" | "at" | "xp" | "hintsUsed" | "lesson">
+	& { answer: string };
 
 /** A challenge as the browser may see it: answer keys and the hint ladder stay on the server. */
 export type PublicChallenge = Omit<Challenge, "expected" | "acceptable" | "rubric" | "hints">
@@ -66,6 +70,36 @@ export class PracticeApi {
 			try { const value = JSON.parse(line); return value && typeof value.challengeId === "string" ? [value] : []; }
 			catch { return []; }
 		});
+	}
+
+	/** Newest-first attempt summaries for the attempt trail; answers are truncated, feedback omitted. */
+	private recentAttempts(skill: string, url: URL): AttemptSummary[] {
+		const raw = url.searchParams.get("limit");
+		const limit = raw === null || raw === "" ? 40 : Number(raw);
+		if (!Number.isSafeInteger(limit) || limit < 1) throw apiError(400, "limit must be a positive integer");
+		return this.attempts(skill).slice(-Math.min(limit, 200)).reverse().map((a) => ({
+			id: a.id, challengeId: a.challengeId, outcome: a.outcome, at: a.at, xp: Number(a.xp) || 0,
+			hintsUsed: Number(a.hintsUsed) || 0,
+			answer: typeof a.answer === "string" ? (a.answer.length > 200 ? a.answer.slice(0, 199) + "…" : a.answer) : "",
+			...(typeof a.lesson === "string" && a.lesson.trim() ? { lesson: a.lesson } : {}),
+		}));
+	}
+
+	/** Inline edit of one memory item's text and/or kind. */
+	private patchMemory(id: string, body: Record<string, unknown>): MemoryItem {
+		const patch: { text?: string; kind?: MemoryKind } = {};
+		if (body.text !== undefined) {
+			if (typeof body.text !== "string" || !body.text.trim()) throw apiError(400, "Expected non-empty text");
+			if (body.text.length > 2000) throw apiError(400, "Memory text is too long");
+			patch.text = body.text.trim();
+		}
+		if (body.kind !== undefined) {
+			if (!kinds.includes(body.kind as MemoryKind)) throw apiError(400, "Expected a valid memory kind");
+			patch.kind = body.kind as MemoryKind;
+		}
+		if (!Object.keys(patch).length) throw apiError(400, "Nothing to update: send text or kind");
+		if (!this.memory.read().items.some((item) => item.id === id)) throw apiError(404, "Memory item not found");
+		return this.memory.update(id, patch);
 	}
 
 	private packs(): { slug: string; title: string; skill: string; targetPerformance?: string;
@@ -128,11 +162,13 @@ export class PracticeApi {
 				if (!this.memory.forget(p[2])) throw apiError(404, "Memory item not found");
 				return { ok: true };
 			}
+			if (p.length === 3 && method === "PATCH") return this.patchMemory(p[2], body);
 		}
 		if (p[1] !== "skills") return undefined;
 		if (p.length === 2 && method === "GET") return this.practice.listSkills();
 		const skill = p[2];
 		if (!skill || !this.practice.listSkills().includes(skill)) throw apiError(404, "Skill not found");
+		if (p.length === 4 && p[3] === "attempts" && method === "GET") return this.recentAttempts(skill, url);
 		if (p.length === 3 && method === "GET") {
 			const history = this.attempts(skill);
 			const unattempted = ["1", "true"].includes(url.searchParams.get("unattempted") ?? "");

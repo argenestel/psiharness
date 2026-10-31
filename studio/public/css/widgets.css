@@ -1,73 +1,279 @@
+/* psi web — tool widgets, challenge sheet, code lab and the attempt trail. Tokens live in styles.css. */
+
 .psi-widget {
-	padding: 20px; margin-block: 14px; min-width: 0; border: 1px solid var(--line);
-	border-radius: 16px; background: var(--panel); color: var(--fg); overflow-wrap: anywhere;
+	--psi-display: var(--font-display, "Bricolage Grotesque Variable", "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif);
+	--psi-code: var(--font-code, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+	--psi-grid: color-mix(in srgb, var(--rule) 55%, transparent);
+	margin-block: 16px; min-width: 0; color: var(--ink); overflow-wrap: anywhere;
 }
-.psi-chip, .psi-memory-chip {
-	display: inline-block; padding: 3px 10px; margin: 3px 6px 3px 0; border: 1px solid var(--line);
-	border-radius: 20px; background: var(--panel-high); color: var(--purple); font-size: .8rem;
+.psi-widget :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* Graph paper: only where work happens (challenge sheet, code lab). */
+.psi-sheet, .psi-code-editor {
+	background-color: var(--sheet);
+	background-image:
+		linear-gradient(to right, var(--psi-grid) 1px, transparent 1px),
+		linear-gradient(to bottom, var(--psi-grid) 1px, transparent 1px);
+	background-size: 16px 16px;
 }
-.psi-memory-chip { color: var(--muted); }
-.psi-prompt { margin-block: 16px; white-space: pre-wrap; }
+
+/* ───────────────────────────────────────────── buttons ── */
+.psi-widget button {
+	font: inherit; font-weight: 700; font-size: 1rem; line-height: 1.2; min-height: 40px; padding: 9px 16px;
+	border-radius: 6px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); cursor: pointer;
+}
+.psi-widget button:hover:not(:disabled) { border-color: var(--pencil); }
+.psi-widget button.is-primary { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
+.psi-widget button.is-primary:hover:not(:disabled) { border-color: var(--ink); }
+.psi-widget button.is-quiet { border-color: transparent; background: transparent; color: var(--pencil); padding-inline: 8px; }
+.psi-widget button.is-quiet:hover:not(:disabled) { color: var(--ink); border-color: transparent; text-decoration: underline; }
+.psi-widget button:disabled { opacity: .55; cursor: default; }
+
+/* ───────────────────────────────────────────── challenge sheet ── */
+.psi-sheet { border: 1px solid var(--rule); border-radius: 10px; padding: 20px 24px 24px; }
+.psi-sheet:focus-within { box-shadow: 0 1px 0 var(--rule); border-color: var(--pencil); }
+.psi-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; }
+.psi-sheet-kind {
+	position: relative; isolation: isolate; margin: 0; padding: 2px 6px; margin-left: -6px;
+	font-family: var(--psi-display); font-weight: 800; font-size: 1.25rem; line-height: 1.2; letter-spacing: 0;
+}
+/* The solved swipe: drawn behind the kind, left to right. */
+.psi-sheet-kind::before {
+	content: ""; position: absolute; z-index: -1; inset: 1px -4px 0 -2px; background: var(--highlighter);
+	transform: skewX(-8deg) scaleX(0); transform-origin: left center; border-radius: 1px;
+}
+.psi-sheet.is-success .psi-sheet-kind { color: #1B2A4A; }
+.psi-sheet.is-success .psi-sheet-kind::before { transform: skewX(-8deg) scaleX(1); transition: transform .4s cubic-bezier(.3, .7, .3, 1); }
+/* Partly right: half a swipe under the kind. */
+.psi-sheet.is-partial .psi-sheet-kind::before {
+	inset: auto auto -3px -2px; width: 55%; height: 7px; transform: skewX(-8deg) scaleX(1);
+	transition: transform .4s cubic-bezier(.3, .7, .3, 1);
+}
+.psi-level { display: inline-flex; align-items: center; gap: 8px; color: var(--pencil); font-size: .8125rem; }
+.psi-level-meter { display: inline-flex; gap: 3px; }
+.psi-level-meter span { width: 10px; height: 10px; border: 1px solid var(--pencil); border-radius: 1px; }
+.psi-level-meter span.is-on { background: var(--ink); border-color: var(--ink); }
+.psi-prompt { margin-block: 14px 18px; font-size: 1.0625rem; line-height: 1.55; max-width: 68ch; }
+.psi-prompt > :first-child { margin-top: 0; }
 .psi-prompt > :last-child { margin-bottom: 0; }
-.psi-answer-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
-.psi-answer-fields legend { color: var(--muted); margin-bottom: 8px; font-size: .85rem; }
-.psi-answer-input, .psi-code-input {
-	font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line);
-	border-radius: 8px; padding: 10px; max-width: 100%; width: 100%;
+.psi-prompt pre { background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; overflow-x: auto; }
+.psi-prompt code, .psi-prompt pre { font-family: var(--psi-code); font-size: .875em; }
+/* KaTeX output sits in the sentence, not in a code box. */
+.psi-sheet code.psi-math, .psi-sheet .psi-math { font-family: inherit; font-size: 1em; border: 0; background: none; padding: 0; }
+.psi-short-input { max-width: 360px; }
+.psi-answer-fields { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 8px; }
+.psi-answer-fields legend, .psi-field-label {
+	padding: 0; margin-bottom: 6px; color: var(--pencil); font-size: .8125rem; font-weight: 700;
 }
-textarea.psi-answer-input { min-height: 90px; resize: vertical; }
-.psi-answer-fields:disabled { opacity: .75; }
-.psi-unit { display: block; color: var(--muted); font-size: .85rem; }
-.psi-choice { display: flex; align-items: baseline; gap: 12px; padding: 10px; cursor: pointer; }
-.psi-choice:has(input:checked) { background: var(--panel-high); border-radius: 8px; }
-.psi-choice input { accent-color: var(--mint); }
-.psi-math-preview { min-height: 40px; padding-block: 10px; overflow-x: auto; color: var(--mint); }
-.psi-widget-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-block: 14px; }
-.psi-hints p { border-left: 2px solid var(--gold); padding-left: 12px; }
+.psi-answer-fields:disabled { opacity: 1; }
+
+.psi-answer-input, .psi-field {
+	font: inherit; font-size: 1.0625rem; color: var(--ink); background: var(--sheet); border: 1px solid var(--pencil);
+	border-radius: 6px; padding: 10px 12px; width: 100%; max-width: 100%; min-width: 0;
+}
+.psi-answer-input:focus, .psi-field:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+.psi-field:focus-within .psi-answer-input { outline: none; }
+textarea.psi-answer-input { min-height: 112px; resize: vertical; line-height: 1.55; }
+.psi-answer-input:disabled { color: var(--ink); background: var(--sheet); border-style: dashed; }
+.psi-field { display: flex; align-items: baseline; gap: 8px; padding: 0 12px 0 0; max-width: 360px; }
+.psi-field .psi-answer-input { border: 0; flex: 1; background: transparent; }
+.psi-field:has(:disabled) { border-style: dashed; }
+.psi-unit { color: var(--pencil); white-space: nowrap; }
+.psi-math-input { max-width: 100%; }
+.psi-math-preview-label { margin: 6px 0 0; color: var(--pencil); font-size: .8125rem; font-weight: 700; }
+.psi-math-preview {
+	min-height: 48px; padding: 10px 12px; border: 1px dashed var(--rule); border-radius: 6px; overflow-x: auto;
+	background: var(--sheet); color: var(--ink);
+}
+.psi-math-preview.is-empty { color: var(--pencil); font-size: .875rem; }
+.psi-math-preview .psi-math { font-family: inherit; }
+
+/* Choice rows: full width, letter shown, keyboard selectable. */
+.psi-choices { display: grid; gap: 8px; }
+.psi-choice {
+	position: relative; display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 10px 14px;
+	border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); cursor: pointer; font-size: 1.0625rem;
+	font-weight: 400; color: var(--ink);
+}
+.psi-choice:hover { border-color: var(--pencil); }
+.psi-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+.psi-choice-letter {
+	flex: none; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--pencil);
+	border-radius: 6px; font-weight: 700; font-size: .875rem; color: var(--ink);
+}
+.psi-choice:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.psi-choice:has(input:checked) .psi-choice-letter { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
+.psi-choice:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+.psi-answer-fields:disabled .psi-choice { cursor: default; }
+.psi-answer-fields:disabled .psi-choice:not(:has(input:checked)) { opacity: .6; }
+
+.psi-hints { display: grid; gap: 10px; margin-top: 14px; }
+.psi-hints:empty { display: none; }
+.psi-hint { margin: 0; padding: 8px 12px; border-left: 2px solid var(--pencil); background: var(--sheet); }
+.psi-hint-label { display: block; color: var(--pencil); font-size: .8125rem; font-weight: 700; }
+.psi-sheet-actions { display: flex; gap: 8px 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+.psi-sheet-actions .psi-keys { color: var(--pencil); font-size: .8125rem; margin-left: auto; }
+.psi-keys kbd { font: inherit; font-weight: 700; }
+
+/* Result, in place. */
+.psi-sheet-result { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rule); display: grid; gap: 12px; }
+.psi-sheet-result:focus { outline: none; }
+.psi-result-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0; font-weight: 700; font-size: 1.0625rem; }
+.psi-result-line .psi-mark { width: 36px; height: 26px; flex: none; }
+.psi-xp {
+	display: inline-block; padding: 1px 8px; background: var(--highlighter); color: #1B2A4A; font-weight: 700;
+	border-radius: 2px; font-variant-numeric: tabular-nums;
+}
+.psi-result-note { margin: 0; color: var(--pencil); }
+.psi-feedback { margin: 0; max-width: 68ch; }
+.psi-level-up { margin: 0; font-weight: 700; }
+.psi-level-up strong { position: relative; display: inline-block; padding-bottom: 4px; }
+.psi-level-up strong::after {
+	content: ""; position: absolute; left: -2px; right: -2px; bottom: 0; height: 5px; background: var(--highlighter);
+	transform-origin: left center; animation: psi-draw .4s cubic-bezier(.3, .7, .3, 1) both;
+}
+.psi-badge-line { margin: 0; }
+.psi-lesson { display: grid; gap: 8px; }
+.psi-lesson textarea.psi-answer-input { min-height: 64px; }
+.psi-lesson label { font-weight: 700; }
+.psi-lesson-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.psi-saved-lesson { margin: 0; color: var(--pencil); }
+.psi-result-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ───────────────────────────────────────────── code lab ── */
+.psi-codelab { display: grid; gap: 8px; min-width: 0; }
+.psi-codelab-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.psi-codelab-lang { color: var(--pencil); font-size: .8125rem; font-weight: 700; }
 .psi-code-editor {
-	display: grid; grid-template-columns: auto minmax(0, 1fr); border: 1px solid var(--line);
-	border-radius: 8px; overflow: hidden; background: var(--bg); height: 260px; min-width: 0;
+	--psi-lines: 10;
+	display: grid; grid-template-columns: auto minmax(0, 1fr); border: 1px solid var(--pencil); border-radius: 6px;
+	overflow: hidden; min-width: 0; height: calc(var(--psi-lines) * 24px + 24px); max-height: 70vh;
 }
+.psi-code-editor:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
 .psi-code-gutter, .psi-code-input {
-	font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .9rem; line-height: 1.6;
-	tab-size: 4; padding: 12px; margin: 0; border: 0; border-radius: 0; height: 100%;
+	font-family: var(--psi-code); font-size: 14px; line-height: 24px; tab-size: 4;
+	padding: 12px; margin: 0; border: 0; border-radius: 0; height: 100%;
 }
 .psi-code-gutter {
-	text-align: right; color: var(--muted); background: var(--panel-high); user-select: none;
-	overflow: hidden; min-width: 3ch;
+	text-align: right; color: var(--pencil); background: transparent; user-select: none; overflow: hidden;
+	min-width: 4ch; padding-right: 10px; border-right: 1px solid var(--rule);
 }
-.psi-code-input { resize: none; white-space: pre; overflow: auto; }
-.psi-run-output, .psi-graph pre {
-	background: var(--bg); padding: 12px; border: 1px solid var(--line); border-radius: 8px;
-	white-space: pre-wrap; overflow-wrap: anywhere; max-height: 320px; overflow: auto;
-	font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+.psi-code-input {
+	width: 100%; resize: none; white-space: pre; overflow: auto; color: var(--ink); background: transparent;
+	outline: none; caret-color: var(--ink);
 }
-.psi-run-output.is-ok { border-color: var(--mint); }
-.psi-run-output.is-error { border-color: var(--coral); }
-.psi-result { border-color: var(--mint); }
-.psi-result > strong { display: block; }
-.psi-xp { display: inline-block; color: var(--gold); font-weight: 700; margin-block: 8px; }
-.psi-level-up { color: var(--gold); animation: psi-burst .65s ease-out; transform-origin: left center; }
-.psi-streak { display: block; color: var(--muted); margin-top: 8px; }
-.psi-lesson { display: grid; gap: 8px; margin-block: 16px; }
-.psi-progress-label { display: block; font-size: .85rem; color: var(--muted); margin-block: 8px; }
-.psi-progress-bar { accent-color: var(--mint); }
-.psi-progress-bar::-webkit-progress-value { background: var(--mint); }
-.psi-progress-bar::-moz-progress-bar { background: var(--mint); }
-.psi-progress-report + .psi-progress-report { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
-.psi-skill-checklist { list-style: none; padding: 0; margin-bottom: 0; }
-.psi-skill-checklist li { display: flex; align-items: baseline; gap: 10px; padding-block: 8px; flex-wrap: wrap; }
-.psi-skill-checklist input { accent-color: var(--mint); }
-.psi-graph summary { cursor: pointer; color: var(--mint); }
-.psi-artifact { display: flex; flex-direction: column; gap: 12px; }
-.psi-artifact > button { align-self: flex-end; }
-.psi-artifact iframe { width: 100%; height: 420px; border: 1px solid var(--line); border-radius: 8px; }
-.psi-artifact.is-expanded { position: fixed; inset: 16px; z-index: 1000; margin: 0; background: var(--bg); }
-.psi-artifact.is-expanded iframe { flex: 1; min-height: 0; }
-@keyframes psi-burst { 0% { transform: scale(.8); opacity: .4; } 55% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .psi-level-up { animation: none; } }
+.psi-code-input:disabled { color: var(--ink); }
+
+.psi-codelab-status { display: grid; gap: 6px; margin: 0; color: var(--pencil); font-size: .875rem; }
+.psi-codelab-status[hidden] { display: none; }
+.psi-codelab-status progress {
+	-webkit-appearance: none; appearance: none; width: min(320px, 100%); height: 4px; border: 0; background: var(--rule); color: var(--ink);
+}
+/* A download bar is not learner progress: ink, never highlighter. */
+.psi-codelab-status progress::-webkit-progress-bar { background: var(--rule); }
+.psi-codelab-status progress::-webkit-progress-value { background: var(--ink); }
+.psi-codelab-status progress::-moz-progress-bar { background: var(--ink); }
+.psi-run-output { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
+.psi-run-output[hidden] { display: none; }
+.psi-run-head { margin: 0; font-weight: 700; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.psi-run-head small { font-weight: 400; color: var(--pencil); }
+.psi-run-error { margin: 0; color: var(--alert); }
+.psi-tests { list-style: none; margin: 0; padding: 0; display: grid; }
+.psi-test { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 2px 10px; padding: 6px 0; border-top: 1px solid var(--rule); }
+.psi-test:first-child { border-top: 0; }
+.psi-test-mark { width: 18px; height: 18px; margin-top: 3px; }
+.psi-test-label { font-size: .9375rem; }
+.psi-test-label.is-code { font-family: var(--psi-code); font-size: .875rem; }
+.psi-test-message { grid-column: 2; color: var(--pencil); font-size: .875rem; white-space: pre-wrap; }
+.psi-test.is-skipped .psi-test-label { color: var(--pencil); }
+.psi-run-output details summary { cursor: pointer; color: var(--pencil); font-weight: 700; font-size: .875rem; }
+.psi-run-output pre, .psi-graph pre {
+	margin: 8px 0 0; padding: 10px 12px; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px;
+	white-space: pre-wrap; overflow-wrap: anywhere; max-height: 280px; overflow: auto;
+	font-family: var(--psi-code); font-size: .8125rem; line-height: 1.5; color: var(--ink);
+}
+.psi-run-table { overflow-x: auto; margin-top: 8px; }
+.psi-run-table table { border-collapse: collapse; font-family: var(--psi-code); font-size: .8125rem; }
+.psi-run-table th, .psi-run-table td { text-align: left; padding: 4px 12px 4px 0; border-bottom: 1px solid var(--rule); }
+.psi-run-table th { color: var(--pencil); font-weight: 700; }
+
+/* ───────────────────────────────────────────── marks (shared) ── */
+.psi-mark { display: block; overflow: visible; }
+.psi-mark-swipe { fill: none; stroke: var(--highlighter); stroke-width: 9; stroke-linecap: butt; }
+.psi-mark-ghost { fill: none; stroke: var(--rule); stroke-width: 1.5; stroke-dasharray: 2 3; }
+.psi-mark-ring { fill: none; stroke: var(--pencil); stroke-width: 1.8; stroke-linecap: round; }
+.psi-mark-dot { fill: var(--pencil); }
+.psi-mark-swipe, .psi-mark-ring { stroke-dasharray: 1 0; }
+.is-new .psi-mark-swipe, .is-new .psi-mark-ring, .psi-sheet-result.is-new .psi-mark-swipe, .psi-sheet-result.is-new .psi-mark-ring {
+	stroke-dasharray: 1 1; animation: psi-stroke .4s cubic-bezier(.3, .7, .3, 1) both;
+}
+@keyframes psi-stroke { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes psi-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ───────────────────────────────────────────── attempt trail ── */
+.psi-trail { position: relative; min-width: 0; padding-bottom: 2px; }
+.psi-trail-scroll { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; border-bottom: 1px solid var(--rule); }
+.psi-trail-marks { display: flex; gap: 2px; padding: 6px 2px 4px; width: max-content; min-width: 100%; }
+.psi-trail-mark { flex: none; display: block; border-radius: 2px; cursor: default; }
+/* The trail is the one bold element: marks draw a little larger than inline marks. */
+.psi-trail-mark .psi-mark { width: 34px; height: 24px; }
+.psi-trail-mark:focus { outline: none; }
+.psi-trail-mark:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.psi-trail-empty { margin: 8px 0 0; color: var(--pencil); font-size: .875rem; }
+.psi-trail-empty[hidden] { display: none; }
+.psi-trail-tip {
+	position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; width: max-content; max-width: min(320px, 100%);
+	padding: 8px 10px; background: var(--sheet); color: var(--ink); border: 1px solid var(--pencil); border-radius: 6px;
+	font-size: .875rem; line-height: 1.4; pointer-events: none;
+}
+.psi-trail-tip[hidden] { display: none; }
+.psi-trail-lesson { display: block; margin-top: 2px; color: var(--pencil); }
+
+/* ───────────────────────────────────────────── quiet tool widgets ── */
+.psi-tool-block { padding: 14px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); display: grid; gap: 10px; }
+.psi-tool-block h3 { margin: 0; font-family: var(--psi-display); font-weight: 600; font-size: 1.0625rem; }
+.psi-tool-meta { margin: 0; color: var(--pencil); font-size: .875rem; }
+.psi-fill { position: relative; height: 4px; background: var(--rule); max-width: 320px; }
+.psi-fill > span { position: absolute; inset: 0 auto 0 0; background: var(--highlighter); }
+.psi-stat-row { display: flex; gap: 6px 20px; flex-wrap: wrap; margin: 0; }
+.psi-stat-row span { white-space: nowrap; }
+.psi-progress-report + .psi-progress-report { padding-top: 14px; border-top: 1px solid var(--rule); }
+.psi-progress-report { display: grid; gap: 10px; }
+.psi-skill-checklist { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+.psi-skill-checklist li {
+	counter-increment: step; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: baseline;
+	gap: 10px; padding: 8px 0; border-top: 1px solid var(--rule);
+}
+.psi-skill-checklist li:first-child { border-top: 0; }
+.psi-skill-checklist li::before { content: counter(step) "."; color: var(--pencil); font-variant-numeric: tabular-nums; }
+.psi-skill-checklist .psi-status { color: var(--pencil); font-size: .875rem; }
+.psi-skill-checklist .psi-step-title { justify-self: start; }
+.psi-skill-checklist li.is-solid .psi-step-title { background: linear-gradient(transparent 55%, var(--highlighter) 55%); color: inherit; }
+.psi-memory-line { margin: 8px 0; color: var(--pencil); }
+.psi-graph summary { cursor: pointer; color: var(--pencil); }
+.psi-artifact { display: grid; gap: 8px; }
+.psi-artifact-bar { display: flex; justify-content: flex-end; }
+.psi-artifact iframe { display: block; width: 100%; height: 420px; border: 1px solid var(--rule); border-radius: 0; background: var(--sheet); }
+.psi-artifact.is-expanded { position: fixed; inset: 0; z-index: 1000; margin: 0; padding: 12px; background: var(--paper); }
+.psi-artifact.is-expanded iframe { height: auto; flex: 1; min-height: 0; }
+.psi-artifact.is-expanded { grid-template-rows: auto minmax(0, 1fr); }
+
+@media (prefers-reduced-motion: reduce) {
+	.psi-sheet.is-success .psi-sheet-kind::before, .psi-sheet.is-partial .psi-sheet-kind::before { transition: none; }
+	.psi-level-up strong::after, .is-new .psi-mark-swipe, .is-new .psi-mark-ring,
+	.psi-sheet-result.is-new .psi-mark-swipe, .psi-sheet-result.is-new .psi-mark-ring { animation: none; stroke-dasharray: 1 0; }
+}
 @media (max-width: 540px) {
-	.psi-widget { padding: 14px; }
+	.psi-sheet { padding: 16px 14px 18px; }
+	.psi-sheet-actions .psi-keys { display: none; }
+	.psi-sheet-actions button { flex: 1 1 auto; }
 	.psi-artifact iframe { height: 300px; }
-	.psi-artifact.is-expanded { inset: 8px; }
+	.psi-field { max-width: 100%; }
 }
+.psi-sr {
+	position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0);
+	white-space: nowrap; border: 0;
+}
+.psi-test-pass { fill: var(--highlighter); stroke: #1B2A4A; stroke-width: 1; }
+.psi-test-skip { fill: none; stroke: var(--pencil); stroke-width: 1.2; }
+.psi-run-output.is-system { border-color: var(--alert); }

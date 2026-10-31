@@ -1,5 +1,5 @@
 const CDN = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
-const OFFLINE = "Offline: could not load Pyodide from the CDN. Code runs in your browser once you are back online.";
+const OFFLINE = "Couldn't load Python from the CDN. Check your connection and run again.";
 let runtime;
 const lastLine = (text) => String(text).trim().split("\n").filter(Boolean).at(-1) ?? "";
 self.onmessage = async ({ data: { id, setup = "", code = "", tests = "", cases } }) => {
@@ -9,9 +9,17 @@ self.onmessage = async ({ data: { id, setup = "", code = "", tests = "", cases }
 	try {
 		if (!runtime) {
 			try {
+				// Stage messages let the page explain the one-time download while it happens.
+				self.postMessage({ id, stage: "loader" });
 				importScripts(`${CDN}pyodide.js`);
+				self.postMessage({ id, stage: "runtime" });
 				runtime = await self.loadPyodide({ indexURL: CDN });
-			} catch { runtime = undefined; throw new Error(OFFLINE); }
+				self.postMessage({ id, stage: "ready" });
+			} catch {
+				runtime = undefined;
+				self.postMessage({ id, ok: false, offline: true, output: "", error: OFFLINE, ms: performance.now() - started });
+				return;
+			}
 		}
 		const capture = (text) => { if (lines.length < 1000) lines.push(text.slice(0, 10000)); };
 		runtime.setStdout({ batched: capture });

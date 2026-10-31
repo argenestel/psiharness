@@ -9,10 +9,13 @@ const apiPath = "../public/js/api.js";
 let parseMarkdown: (text: string) => any;
 let parseInline: (text: string) => any;
 let safeLink: (text: string) => any;
+let languageLabel: (language?: string) => string;
 let reduceRecord: (state: any, record: any) => any;
+let chat: Record<string, any>;
 before(async () => {
-	({ parseMarkdown, parseInline, safeLink } = await import(markdownPath));
-	({ reduceRecord } = await import(chatPath));
+	({ parseMarkdown, parseInline, safeLink, languageLabel } = await import(markdownPath));
+	chat = await import(chatPath);
+	({ reduceRecord } = chat);
 });
 
 test("HTML and attribute payloads remain literal text in the AST", async () => {
@@ -155,4 +158,94 @@ test("reducer honors block endings, HUD clears, wrapped events, and handled prom
 	assert.equal(state.hud["setStatus:s"], "");
 	state = reduceRecord(state, { type: "response", command: "prompt", success: true, data: { disposition: "handled" } });
 	assert.equal(state.busy, false);
+});
+
+const tool = (name: string, args: object = {}, extra: object = {}) => ({ id: name + JSON.stringify(args), name, args,
+	done: true, isError: false, result: { content: [], details: {} }, ...extra });
+
+test("tool activity collapses into one plain sentence without middle dots", () => {
+	const { summarizeTools } = chat;
+	assert.equal(summarizeTools([]), "");
+	assert.equal(summarizeTools([tool("psi_skill_plan", { action: "create" }),
+		tool("psi_memory_remember", { text: "a" }), tool("psi_memory_remember", { text: "b" })]),
+	"Planned your skill and saved 2 notes about you");
+	assert.equal(summarizeTools([tool("read"), tool("read"), tool("psi_practice_session", { action: "start" }),
+		tool("psi_memory_remember")]), "Read the teaching notes, started a practice session and saved a note about you");
+	// The challenge sheet and attempt result speak for themselves.
+	assert.equal(summarizeTools([tool("psi_challenge"), tool("psi_attempt")]), "");
+	assert.equal(summarizeTools([tool("psi_skill_plan", { action: "next" })]), "Picked your next subskill");
+	assert.equal(summarizeTools([tool("read"), tool("psi_memory_remember"), tool("psi_skill_plan", { action: "get" }),
+		tool("psi_practice_session", { action: "status" }), tool("psi_memory_recall")]),
+	"Read the teaching notes, saved a note about you and 3 more steps");
+	assert.equal(summarizeTools([tool("mystery_tool")]), "Used mystery_tool");
+	assert.equal(summarizeTools([tool("psi_skill_plan", { action: "create" }), tool("psi_challenge", {}, { done: false })]),
+		"Writing a challenge…");
+	assert.equal(summarizeTools([tool("psi_recap"), tool("psi_challenge", {}, { result: { details: { errors: ["x"] } } })]),
+		"Saved a recap of this session. One step didn't work");
+	assert.equal(summarizeTools([tool("psi_hint", {}, { isError: true }), tool("psi_attempt", {}, { isError: true })]),
+		"2 steps didn't work");
+	for (const name of ["psi_skill_plan", "psi_memory_remember", "read", "psi_progress_report", "x"]) {
+		assert.doesNotMatch(summarizeTools([tool(name)]), /·|→/);
+	}
+});
+
+test("slash suggestions match the first word only", () => {
+	const { matchCommands } = chat;
+	assert.deepEqual(matchCommands("/pr").map((c: { name: string }) => c.name), ["practice", "progress"]);
+	assert.ok(matchCommands("/").length > 10);
+	assert.deepEqual(matchCommands("/skill python"), []);
+	assert.deepEqual(matchCommands("skill"), []);
+	assert.ok(matchCommands("/sk").every((c: { description: string }) => c.description.length > 0));
+});
+
+test("expanded command templates echo as the command the learner typed", () => {
+	const { commandEcho } = chat;
+	assert.equal(commandEcho('Help me learn "python loops". Active skill slug: python-loops.\nFollow Josh'),
+		"/skill python loops");
+	assert.equal(commandEcho('Help me learn "entropy" (topic: entropy). First diagnose'), "/learn entropy");
+	assert.equal(commandEcho('Practice session started for py; focus: "next subskill";\nplanned'), "/practice");
+	assert.equal(commandEcho('Practice session started for py; focus: "slicing";\nplanned'), "/practice slicing");
+	assert.equal(commandEcho('Active skill: py. Create one harder boss challenge mixing solid subskills; wait. Request: ""'),
+		"/boss");
+	assert.equal(commandEcho("What does len do?"), undefined);
+});
+
+test("empty-chat starters are concrete and follow the skill plan", () => {
+	const { starterPrompts } = chat;
+	assert.equal(starterPrompts().length, 3);
+	const prompts = starterPrompts({ title: "Python foundations", subskills: [
+		{ title: "Loops", priority: 2, status: "active" }, { title: "Variables", priority: 1, status: "solid" },
+		{ title: "Strings", priority: 1, status: "active" }] });
+	assert.equal(prompts.length, 3);
+	assert.match(prompts[0], /“Strings”/);
+	assert.match(prompts[1], /Python foundations/);
+});
+
+test("turns group consecutive assistant messages with their tools", () => {
+	const { groupTurns } = chat;
+	const messages = [{ role: "user" }, { role: "assistant" }, { role: "assistant" }, { role: "user" }, { role: "assistant" }];
+	const groups = groupTurns(messages, [{ id: "a", turn: 1 }, { id: "b", turn: 2 }, { id: "c", turn: 4 }]);
+	assert.deepEqual(groups.map((g: { role: string; messages: number[] }) => [g.role, g.messages]),
+		[["user", [0]], ["assistant", [1, 2]], ["user", [3]], ["assistant", [4]]]);
+	assert.deepEqual(groups[1].tools.map((t: { id: string }) => t.id), ["a", "b"]);
+	assert.deepEqual(groups[3].tools.map((t: { id: string }) => t.id), ["c"]);
+	const orphan = groupTurns([{ role: "user" }], [{ id: "x", turn: -1 }]);
+	assert.equal(orphan.at(-1).role, "assistant");
+	assert.equal(orphan.at(-1).tools[0].id, "x");
+});
+
+test("errors are specific, and tool details never show answer keys", () => {
+	const { sendErrorText, toolDetail } = chat;
+	assert.equal(sendErrorText(new TypeError("Failed to fetch")),
+		"Couldn't reach the tutor. Check that psi web is running, then retry.");
+	assert.match(sendErrorText(new Error("Chat not found.")), /Chat not found\. Retry/);
+	const detail = toolDetail({ args: { prompt: "6*7?", expected: "42", acceptable: ["42"], hints: ["six sevens"] },
+		result: { content: [{ type: "text", text: "ok" }] } });
+	assert.match(detail, /6\*7/);
+	assert.doesNotMatch(detail, /expected|acceptable|"42"|sevens/);
+	const read = toolDetail({ name: "read", args: { path: "/home/x/skills/practice-loop/SKILL.md" },
+		result: { content: [{ type: "text", text: "long file" }] } });
+	assert.equal(read, "path: practice-loop/SKILL.md");
+	assert.equal(languageLabel("py"), "Python");
+	assert.equal(languageLabel(""), "Code");
 });

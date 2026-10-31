@@ -149,6 +149,14 @@ export function highlightTokens(text, language = "") {
 	if (start < text.length) tokens.push({ type: "plain", text: text.slice(start) });
 	return tokens;
 }
+const LANGUAGE_NAMES = { python: "Python", py: "Python", javascript: "JavaScript", js: "JavaScript", ts: "TypeScript",
+	typescript: "TypeScript", sql: "SQL", sqlite: "SQL", bash: "Shell", sh: "Shell", shell: "Shell", json: "JSON",
+	html: "HTML", css: "CSS", text: "Text", txt: "Text" };
+/** Human label for a fence language ("py" → "Python"); unknown names pass through, empty → "Code". */
+export function languageLabel(language = "") {
+	const key = String(language).toLowerCase();
+	return LANGUAGE_NAMES[key] ?? (key ? String(language) : "Code");
+}
 function highlight(parent, text, language) {
 	for (const token of highlightTokens(text, language)) {
 		parent.append(token.type === "plain" ? document.createTextNode(token.text)
@@ -162,11 +170,13 @@ function build(block) {
 	if (block.inline) inline(el, block.inline);
 	if (block.type === "code") {
 		el.className = "psi-code";
-		const caption = node("figcaption", block.language || "text");
-		const copy = node("button", "Copy"); copy.type = "button"; copy.setAttribute("aria-label", "Copy code");
+		const caption = node("figcaption");
+		caption.append(node("span", languageLabel(block.language), "psi-code-lang"));
+		const copy = node("button", "Copy", "psi-code-copy"); copy.type = "button";
+		copy.setAttribute("aria-label", "Copy code");
 		copy.addEventListener("click", async () => {
-			try { await navigator.clipboard.writeText(block.text); copy.textContent = "Copied ✓"; }
-			catch { copy.textContent = "Copy unavailable"; }
+			try { await navigator.clipboard.writeText(block.text); copy.textContent = "Copied"; }
+			catch { copy.textContent = "Couldn't copy"; }
 			setTimeout(() => { copy.textContent = "Copy"; }, 1600);
 		});
 		caption.append(copy);
@@ -176,11 +186,18 @@ function build(block) {
 	if (block.items) for (const item of block.items) { const li = node("li"); inline(li, item); el.append(li); }
 	if (block.blocks) el.append(...block.blocks.map(build));
 	if (block.rows) {
+		const head = node("thead"), body = node("tbody");
 		block.rows.forEach((row, index) => {
 			const tr = node("tr");
-			for (const cell of row) { const td = node(index === 0 ? "th" : "td"); inline(td, cell); tr.append(td); }
-			el.append(tr);
+			for (const cell of row) {
+				const td = node(index === 0 ? "th" : "td"); if (index === 0) td.scope = "col";
+				inline(td, cell); tr.append(td);
+			}
+			(index === 0 ? head : body).append(tr);
 		});
+		el.append(head, body);
+		const scroll = node("div", undefined, "psi-table"); scroll.append(el);
+		return scroll;
 	}
 	return el;
 }

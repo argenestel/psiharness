@@ -1,88 +1,226 @@
 import { api } from "./api.js";
+import { el } from "./ui.js";
 
-/** Mount editable, local learner memory and recent session recaps. */
-export function mountMemory(el) {
-	let disposed = false;
-	let version = 0;
-	el.innerHTML = `<section class="psi-memory"><span class="eyebrow">YOUR LEARNING COMPANION</span>
-		<h1>A memory that grows with you.</h1><p>psi stores this only on your machine. You decide what it remembers.</p>
-		<form class="psi-memory-form psi-card"><h2>Remember something about me</h2>
-		<div class="psi-form-row"><label>Kind<select name="kind"></select></label>
-		<label class="psi-grow">Memory<input name="text" required maxlength="4000" placeholder="I learn best with concrete examples"></label>
-		<button class="primary" type="submit">Add memory</button></div></form>
-		<p class="psi-memory-status" role="status"></p><div class="psi-memory-columns">
-		<section><h2>What psi remembers</h2><div id="memory-items">Loading memories…</div></section>
-		<section><div class="psi-card"><h2>Learner profile</h2><pre id="memory-summary">Loading profile…</pre></div>
-		<div class="psi-section"><h2>Recent sessions</h2><div id="memory-recaps">Loading recaps…</div></div></section></div></section>`;
-	const kinds = ["goal", "background", "preference", "strength", "struggle", "misconception", "insight", "motivation", "constraint"];
-	const select = el.querySelector("select");
-	for (const kind of kinds) { const option = document.createElement("option"); option.value = kind; option.textContent = kind; select.append(option); }
-	const status = el.querySelector(".psi-memory-status");
-	const append = (parent, tag, value, className = "") => {
-		const node = document.createElement(tag); node.textContent = value; node.className = className;
-		parent.append(node); return node;
-	};
-	const load = async () => {
+const reason = (error) => String(error?.message ?? error).replace(/[.\s]+$/, "");
+/** "What happened, what to do" for a failed request. */
+const failure = (error) => error instanceof TypeError || /failed to fetch|network/i.test(error?.message ?? "")
+	? "psi web didn't answer. Check that it's running, then try again." : `${reason(error)}.`;
+
+/** PATCH through api.js when it has a helper, otherwise with the same X-Psi + JSON conventions. */
+async function patch(path, body) {
+	if (typeof api.patch === "function") return api.patch(path, body);
+	const response = await fetch(path, { method: "PATCH", body: JSON.stringify(body ?? {}),
+		headers: { "X-Psi": "1", "Content-Type": "application/json", Accept: "application/json" } });
+	let data;
+	try { data = await response.json(); } catch { data = {}; }
+	if (!response.ok) throw new Error(data.message || data.error || `Request failed (${response.status})`);
+	return data;
+}
+
+/** Plain-language groups, in display order; the first kind is what a new item in that group is saved as. */
+export const MEMORY_GROUPS = [
+	{ name: "Goals", kinds: ["goal"] },
+	{ name: "How you like to learn", kinds: ["preference"] },
+	{ name: "What clicked", kinds: ["insight", "strength"] },
+	{ name: "Where you get stuck", kinds: ["struggle", "misconception"] },
+	{ name: "Background", kinds: ["background"] },
+	{ name: "Constraints", kinds: ["constraint"] },
+	{ name: "Motivation", kinds: ["motivation"] },
+];
+
+/** Group name for a memory kind. */
+export function groupFor(kind) {
+	return MEMORY_GROUPS.find((g) => g.kinds.includes(kind)) ?? MEMORY_GROUPS[0];
+}
+
+/** Where a memory came from, in words. */
+export function sourceWords(source) {
+	return source === "observed" || source === "inferred" ? "psi noticed" : "You told psi";
+}
+
+function kindSelect(selected, label) {
+	const select = el("select", { "aria-label": label },
+		MEMORY_GROUPS.map((g) => el("option", { value: g.kinds[0] }, g.name)));
+	select.value = groupFor(selected).kinds[0];
+	return select;
+}
+
+function dateWords(iso) {
+	const d = new Date(iso);
+	if (!Number.isFinite(d.getTime())) return "";
+	const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+	if (days < 1 && d.getDate() === new Date().getDate()) return "Today";
+	if (days < 2) return "Yesterday";
+	return d.toLocaleDateString(undefined, { month: "short", day: "numeric",
+		...(d.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) });
+}
+
+/** Mount #/memory: what psi knows about the learner, editable inline. */
+export function mountMemory(host) {
+	let disposed = false, version = 0;
+	const status = el("p", { class: "psi-mem-status", role: "status", "aria-live": "polite" });
+	const say = (text) => { if (!disposed) status.textContent = text; };
+	const list = el("div", { class: "psi-mem-groups" }, el("p", { class: "psi-sk-quiet" }, "Loading what psi knows…"));
+	const recaps = el("section", { class: "psi-mem-recaps", "aria-labelledby": "psi-mem-recaps-h", hidden: true });
+
+	const input = el("textarea", { name: "text", rows: "2", maxlength: "400", required: true,
+		"aria-label": "Something about you",
+		placeholder: "I learn best from a worked example before the theory." });
+	const kind = kindSelect("preference", "What kind of thing is this");
+	const add = el("button", { type: "submit", class: "primary" }, "Remember this");
+	const form = el("form", { class: "psi-mem-add" },
+		el("label", { class: "psi-mem-add-label", for: "psi-mem-add-text" }, "Tell psi something"),
+		Object.assign(input, { id: "psi-mem-add-text" }),
+		el("div", { class: "psi-mem-add-row" }, kind, add));
+	input.addEventListener("keydown", (event) => {
+		if (event.key === "Enter" && !event.shiftKey && !event.isComposing) { event.preventDefault(); form.requestSubmit(); }
+	});
+	form.addEventListener("submit", async (event) => {
+		event.preventDefault();
+		const text = input.value.trim();
+		if (!text) { input.focus(); return; }
+		add.disabled = true;
+		try {
+			await api.post("/api/memory", { kind: kind.value, text });
+			if (disposed) return;
+			input.value = ""; say("Saved. psi will use this from your next message.");
+			await load();
+			input.focus();
+		} catch (error) { say(`Couldn't save that. ${failure(error)}`); }
+		finally { if (!disposed) add.disabled = false; }
+	});
+
+	host.replaceChildren(el("section", { class: "psi-mem psi-view" },
+		el("header", { class: "psi-mem-head" },
+			el("h1", {}, "What psi knows about you"),
+			el("p", { class: "psi-sk-quiet" }, "Stored only on this machine, in your psi folder.")),
+		form, status, list, recaps));
+
+	function itemRow(item) {
+		const row = el("li", { class: "psi-mem-item", dataset: { id: item.id } });
+		const view = () => {
+			row.classList.remove("is-editing", "is-confirming");
+			row.replaceChildren(
+				el("div", { class: "psi-mem-item-main" },
+					el("p", { class: "psi-mem-text" }, item.text),
+					el("span", { class: "psi-sk-quiet psi-mem-source" }, sourceWords(item.source))),
+				el("div", { class: "psi-mem-actions" },
+					el("button", { type: "button", class: "quiet", "aria-label": `Edit: ${item.text}`, onclick: edit }, "Edit"),
+					el("button", { type: "button", class: "quiet", "aria-label": `Remove: ${item.text}`, onclick: confirm },
+						"Remove")));
+		};
+		const edit = () => {
+			row.classList.add("is-editing");
+			const text = el("textarea", { rows: "2", maxlength: "400", "aria-label": "Edit this memory" });
+			text.value = item.text;
+			const group = kindSelect(item.kind, "What kind of thing is this");
+			const save = el("button", { type: "submit", class: "primary" }, "Save");
+			const editForm = el("form", { class: "psi-mem-edit" }, text,
+				el("div", { class: "psi-mem-add-row" }, group, save,
+					el("button", { type: "button", onclick: () => { view(); row.querySelector("button")?.focus(); } }, "Cancel")));
+			text.addEventListener("keydown", (event) => {
+				if (event.key === "Escape") { event.preventDefault(); view(); row.querySelector("button")?.focus(); }
+				if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+					event.preventDefault(); editForm.requestSubmit();
+				}
+			});
+			editForm.addEventListener("submit", async (event) => {
+				event.preventDefault();
+				const value = text.value.trim();
+				if (!value) { text.focus(); return; }
+				const changes = {};
+				if (value !== item.text) changes.text = value;
+				if (groupFor(item.kind) !== groupFor(group.value)) changes.kind = group.value;
+				if (!Object.keys(changes).length) { view(); return; }
+				save.disabled = true;
+				try {
+					await patch(`/api/memory/${encodeURIComponent(item.id)}`, changes);
+					if (disposed) return;
+					say("Updated.");
+					await load();
+					focusRow(item.id);
+				} catch (error) { save.disabled = false; say(`Couldn't update that. ${failure(error)}`); }
+			});
+			row.replaceChildren(editForm);
+			text.focus(); text.setSelectionRange(text.value.length, text.value.length);
+		};
+		const confirm = () => {
+			row.classList.add("is-confirming");
+			const back = () => { view(); row.querySelector("button")?.focus(); };
+			const keep = el("button", { type: "button", onclick: back }, "Keep it");
+			const remove = el("button", { type: "button", class: "psi-mem-remove", onclick: async () => {
+				remove.disabled = true;
+				try {
+					await api.del(`/api/memory/${encodeURIComponent(item.id)}`);
+					if (disposed) return;
+					const neighbour = (row.nextElementSibling ?? row.previousElementSibling)?.dataset.id;
+					say("Removed. psi won't use it again.");
+					await load();
+					focusRow(neighbour);
+				} catch (error) { remove.disabled = false; say(`Couldn't remove that. ${failure(error)}`); }
+			} }, "Remove");
+			row.replaceChildren(
+				el("div", { class: "psi-mem-item-main" },
+					el("p", { class: "psi-mem-text" }, item.text),
+					el("span", { class: "psi-mem-ask" }, "Remove this from psi's memory?")),
+				el("div", { class: "psi-mem-actions" }, remove, keep));
+			keep.focus();
+		};
+		view();
+		return row;
+	}
+
+	/** Keep keyboard focus on the page after a re-render: the row's first button, else the add box. */
+	function focusRow(id) {
+		const target = id && list.querySelector(`.psi-mem-item[data-id="${CSS.escape(id)}"] button`);
+		(target || input).focus({ preventScroll: Boolean(target) });
+	}
+
+	function renderItems(items) {
+		list.replaceChildren();
+		if (!items.length) {
+			list.append(el("div", { class: "psi-mem-empty" },
+				el("p", {}, "psi doesn't know anything about you yet."),
+				el("p", { class: "psi-sk-quiet" }, "Tell psi one thing about how you like to learn.")));
+			kind.value = "preference";
+			return;
+		}
+		for (const group of MEMORY_GROUPS) {
+			const mine = items.filter((item) => group.kinds.includes(item.kind))
+				.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+			if (!mine.length) continue;
+			const id = `psi-mem-${group.kinds[0]}`;
+			list.append(el("section", { class: "psi-mem-group", "aria-labelledby": id },
+				el("h2", { id }, group.name), el("ul", { class: "psi-mem-list" }, mine.map(itemRow))));
+		}
+	}
+
+	function renderRecaps(items) {
+		const recent = [...items].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, 5);
+		recaps.hidden = !recent.length;
+		recaps.replaceChildren(el("h2", { id: "psi-mem-recaps-h" }, "Recent sessions"),
+			el("ul", { class: "psi-mem-list" }, recent.map((r) => el("li", { class: "psi-mem-recap" },
+				el("time", { class: "psi-sk-quiet", datetime: r.date }, dateWords(r.date)),
+				el("div", {},
+					el("p", { class: "psi-mem-text" }, r.summary),
+					r.next ? el("p", { class: "psi-mem-next" }, el("strong", {}, "Next: "), r.next) : null)))));
+	}
+
+	async function load() {
 		const token = ++version;
 		try {
 			const data = await api.get("/api/memory");
 			if (disposed || token !== version) return;
-			const items = el.querySelector("#memory-items"); items.replaceChildren();
-			const groups = new Map();
-			for (const item of data.items || []) {
-				if (!groups.has(item.kind)) groups.set(item.kind, []);
-				groups.get(item.kind).push(item);
-			}
-			if (!groups.size) append(items, "p", "Nothing saved yet. Add a goal or learning preference above.", "psi-card");
-			for (const [kind, memories] of groups) {
-				const section = append(items, "section", "", "psi-card psi-memory-group");
-				append(section, "h3", kind);
-				for (const memory of memories) {
-					const row = append(section, "div", "", "psi-memory-item");
-					append(row, "p", memory.text);
-					const confidence = Math.round(Math.max(0, Math.min(1, Number(memory.confidence) || 0)) * 100);
-					append(row, "small", `${memory.source || "learner"} · ${confidence}% confidence`, "muted");
-					const button = append(row, "button", "Delete"); button.type = "button";
-					button.setAttribute("aria-label", `Delete memory: ${memory.text}`);
-					button.onclick = async () => {
-						if (!confirm("Delete this memory?")) return;
-						button.disabled = true;
-						try { await api.del(`/api/memory/${encodeURIComponent(memory.id)}`); if (!disposed) { status.textContent = "Memory deleted."; await load(); } }
-						catch (error) { if (!disposed) { status.textContent = error.message; button.disabled = false; } }
-					};
-				}
-			}
-			el.querySelector("#memory-summary").textContent = data.summary || "Your learner profile will appear as psi gets to know you.";
-			const recaps = el.querySelector("#memory-recaps"); recaps.replaceChildren();
-			for (const recap of [...(data.recaps || [])].sort((a, b) => b.date.localeCompare(a.date))) {
-				const card = append(recaps, "article", "", "psi-card psi-recap");
-				const time = append(card, "time", new Date(recap.date).toLocaleDateString()); time.dateTime = recap.date;
-				append(card, "h3", recap.skill || recap.topic || "Learning session");
-				append(card, "p", recap.summary);
-				if (recap.wins?.length) append(card, "p", `Wins: ${recap.wins.join(" · ")}`);
-				if (recap.next) append(card, "p", `Next: ${recap.next}`);
-			}
-			if (!data.recaps?.length) append(recaps, "p", "Your session recaps will collect here.", "muted");
+			renderItems(data.items ?? []);
+			renderRecaps(data.recaps ?? []);
 		} catch (error) {
-			if (!disposed && token === version) {
-				status.textContent = `Could not load memory. ${error.message}`;
-				for (const selector of ["#memory-items", "#memory-summary", "#memory-recaps"]) {
-					el.querySelector(selector).textContent = "Unavailable right now. Your saved memories are unchanged.";
-				}
-			}
+			if (disposed || token !== version) return;
+			list.replaceChildren(el("div", { class: "psi-mem-empty" },
+				el("p", { class: "psi-sk-error" }, `Couldn't load your memory. ${failure(error)}`),
+				el("button", { type: "button", onclick: () => void load() }, "Try again")));
 		}
-	};
-	el.querySelector("form").onsubmit = async (event) => {
-		event.preventDefault();
-		const input = el.querySelector("input"); const text = input.value.trim();
-		if (!text) { input.focus(); return; }
-		const button = el.querySelector("button[type=submit]"); button.disabled = true;
-		try {
-			await api.post("/api/memory", { kind: select.value, text });
-			if (!disposed) { input.value = ""; status.textContent = "Memory saved."; await load(); }
-		} catch (error) { if (!disposed) status.textContent = error.message; }
-		finally { if (!disposed) button.disabled = false; }
-	};
+	}
+
 	void load();
-	return { destroy() { disposed = true; version++; el.replaceChildren(); } };
+	return { destroy() { disposed = true; version++; host.replaceChildren(); } };
 }

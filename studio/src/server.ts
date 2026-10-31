@@ -37,6 +37,8 @@ const mime: Record<string, string> = {
 };
 
 const KATEX = "https://cdn.jsdelivr.net/npm/katex@0.16.11/";
+/** Pinned @fontsource packages named in studio/DESIGN.md (CSS + woff2 files). */
+const FONTS = "https://cdn.jsdelivr.net/npm/@fontsource/ https://cdn.jsdelivr.net/npm/@fontsource-variable/";
 const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
 const SQLJS = "https://cdn.jsdelivr.net/npm/sql.js@1.11.0/dist/";
 
@@ -57,8 +59,8 @@ export function studioCsp(hashes = runnerFrameHashes()): string {
 	return [
 		"default-src 'self'",
 		`script-src 'self' ${KATEX} ${PYODIDE} ${SQLJS} ${hashes.join(" ")} 'unsafe-eval'`.replace(/ +/g, " "),
-		`style-src 'self' ${KATEX}`,
-		`font-src 'self' ${KATEX}`,
+		`style-src 'self' ${KATEX} ${FONTS}`,
+		`font-src 'self' ${KATEX} ${FONTS}`,
 		"img-src 'self' data: blob:",
 		"media-src 'self' blob:",
 		// Browsers that still apply the document policy to dedicated workers need the CDN runtimes here too.
@@ -235,10 +237,13 @@ export async function startStudio({
 			if (req.method !== "GET" && req.method !== "HEAD" && req.headers["x-psi"] !== "1") {
 				throw new HttpError(403, "Expected X-Psi: 1");
 			}
-			if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "POST" && req.method !== "DELETE") {
+			if (!["GET", "HEAD", "POST", "DELETE", "PATCH"].includes(req.method ?? "GET")) {
 				throw new HttpError(405, "Method not allowed");
 			}
 			if (req.method === "DELETE" && !(p[0] === "api" && ["chat", "memory"].includes(p[1]))) {
+				throw new HttpError(405, "Method not allowed");
+			}
+			if (req.method === "PATCH" && !(p[0] === "api" && p[1] === "memory")) {
 				throw new HttpError(405, "Method not allowed");
 			}
 			if (p[0] === "api") {
@@ -297,7 +302,7 @@ export async function startStudio({
 					throw new HttpError(404, "API route not found");
 				}
 				if (["skills", "memory", "state", "packs"].includes(p[1])) {
-					const body = method === "POST" ? await jsonBody(req) : {};
+					const body = method === "POST" || method === "PATCH" ? await jsonBody(req) : {};
 					const result = await practice.handle(method, p, url, body);
 					if (result === undefined) throw new HttpError(404, "API route not found");
 					json(res, result); return;

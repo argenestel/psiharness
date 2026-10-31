@@ -1,12 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, readFileSync, readdirSync } from "node:fs";
+import { Server } from "node:http";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { Readable } from "node:stream";
+import { EventEmitter } from "node:events";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PracticeApi, publicChallenge } from "../src/practice-api.ts";
 import { PracticeStore } from "../../core/src/practice.ts";
 import { StateStore } from "../../core/src/state.ts";
+import { PsiStore } from "../../core/src/store.ts";
+import { startStudio } from "../src/server.ts";
 import type { Challenge } from "../../core/src/types.ts";
 
 const packsDir = fileURLToPath(new URL("../../examples/skills/", import.meta.url));
@@ -141,4 +147,84 @@ test("publicChallenge keeps expected rows only for code challenges graded in the
 	const text = publicChallenge({ ...base, format: "text", expected: "secret", acceptable: ["s2"] });
 	assert.equal("expected" in text, false);
 	assert.equal("acceptable" in text, false);
+});
+
+test("attempts route returns newest-first summaries with truncated answers and a bounded limit", async (t) => {
+	const { call } = fixture(t);
+	await call("POST", "/api/packs/mental-math/import");
+	const source = packChallenges("mental-math").find((c) => c.expected)!;
+	const path = `/api/skills/mental-math/challenges/${source.id}/attempt`;
+	assert.deepEqual(await call("GET", "/api/skills/mental-math/attempts"), []);
+	await call("POST", path, { answer: source.expected });
+	await call("POST", path, { answer: "x".repeat(500), lesson: "Check the tens first", hintsUsed: 1 });
+	const list = await call("GET", "/api/skills/mental-math/attempts");
+	assert.equal(list.length, 2);
+	assert.deepEqual(list.map((a: { outcome: string }) => a.outcome), ["fail", "success"]);
+	const [miss, hit] = list;
+	assert.deepEqual(Object.keys(miss).sort(),
+		["answer", "at", "challengeId", "hintsUsed", "id", "lesson", "outcome", "xp"]);
+	assert.equal(miss.lesson, "Check the tens first");
+	assert.equal(miss.hintsUsed, 1);
+	assert.ok(miss.answer.length <= 200 && miss.answer.endsWith("…"));
+	assert.equal("lesson" in hit, false);
+	assert.equal(hit.challengeId, source.id);
+	assert.ok(hit.xp > 0 && Date.parse(hit.at) <= Date.parse(miss.at));
+	assert.equal((await call("GET", "/api/skills/mental-math/attempts?limit=1"))[0].id, miss.id);
+	assert.equal((await call("GET", "/api/skills/mental-math/attempts?limit=999")).length, 2);
+	for (const bad of ["0", "-3", "x", "1.5"]) {
+		await assert.rejects(call("GET", `/api/skills/mental-math/attempts?limit=${bad}`), { status: 400 });
+	}
+	await assert.rejects(call("GET", "/api/skills/missing/attempts"), { status: 404 });
+});
+
+test("Memory API edits an item's text and kind in place with validation", async (t) => {
+	const { call } = fixture(t);
+	const item = await call("POST", "/api/memory", { kind: "preference", text: "Short sessions work for me" });
+	const edited = await call("PATCH", `/api/memory/${item.id}`, { text: "  Twenty-minute sessions work best  " });
+	assert.equal(edited.id, item.id);
+	assert.equal(edited.text, "Twenty-minute sessions work best");
+	assert.equal(edited.kind, "preference");
+	assert.equal((await call("PATCH", `/api/memory/${item.id}`, { kind: "constraint" })).kind, "constraint");
+	const saved = (await call("GET", "/api/memory")).items;
+	assert.deepEqual([saved.length, saved[0].text, saved[0].kind], [1, "Twenty-minute sessions work best", "constraint"]);
+	for (const body of [{}, { text: "" }, { text: 3 }, { kind: "bad" }, { text: "x".repeat(2001) }]) {
+		await assert.rejects(call("PATCH", `/api/memory/${item.id}`, body), { status: 400 });
+	}
+	await assert.rejects(call("PATCH", "/api/memory/mem-missing", { text: "hi" }), { status: 404 });
+});
+
+// The real request listener, without opening a socket (as in request-handler.test.ts).
+test("server wires PATCH /api/memory/:id behind X-Psi and the attempts route", async (t) => {
+	const home = mkdtempSync(join(tmpdir(), "psi-practice-http-"));
+	t.after(() => rmSync(home, { recursive: true, force: true }));
+	let native!: Server;
+	t.mock.method(Server.prototype, "listen", function (this: Server, ...args: unknown[]) {
+		native = this; (args.at(-1) as () => void)(); return this;
+	});
+	t.mock.method(Server.prototype, "address", () => ({ port: 4173, address: "127.0.0.1", family: "IPv4" }));
+	t.mock.method(Server.prototype, "close", function (this: Server, callback: () => void) { callback(); return this; });
+	const studio = await startStudio({ port: 0, store: new PsiStore(home), agentBin: join(home, "missing") });
+	t.after(() => studio.close());
+	const call = async (path: string, method = "GET", body?: unknown, headers: Record<string, string> = {}) => {
+		const req = Readable.from([Buffer.from(body === undefined ? "" : JSON.stringify(body))]) as unknown as IncomingMessage;
+		req.url = path; req.method = method;
+		req.headers = { host: "localhost", "content-type": "application/json", ...headers };
+		let output = "", status = 200, finish!: () => void;
+		const done = new Promise<void>((resolve) => { finish = resolve; });
+		const res = Object.assign(new EventEmitter(), { headersSent: false, setHeader() {},
+			writeHead(code: number) { status = code; this.headersSent = true; },
+			end(data = "") { output += data; finish(); } });
+		native.emit("request", req, res as unknown as ServerResponse);
+		await done;
+		return { status, body: output ? JSON.parse(output) : undefined };
+	};
+	const psi = { "x-psi": "1" };
+	const item = (await call("/api/memory", "POST", { kind: "goal", text: "Learn mental math" }, psi)).body;
+	assert.equal((await call(`/api/memory/${item.id}`, "PATCH", { text: "Learn SQL" })).status, 403);
+	const edited = await call(`/api/memory/${item.id}`, "PATCH", { text: "Learn SQL joins" }, psi);
+	assert.deepEqual([edited.status, edited.body.text], [200, "Learn SQL joins"]);
+	assert.equal((await call("/api/skills", "PATCH", {}, psi)).status, 405);
+	assert.equal((await call("/api/packs/mental-math/import", "POST", {}, psi)).status, 200);
+	const attempts = await call("/api/skills/mental-math/attempts?limit=5");
+	assert.deepEqual([attempts.status, attempts.body], [200, []]);
 });
