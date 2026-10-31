@@ -68,3 +68,18 @@ export function newBadges(p: Progress, a: Attempt, context: {
 	for (const level of [5, 10]) if (p.level >= level) earned.push(`level-${level}`);
 	return earned.filter((badge) => !p.badges.includes(badge));
 }
+
+/** Success XP multiplier: ×1 below three, ×1.2 at three–four, ×1.5 at five or more; never apply to fails. */
+export function comboBonus(combo: number): number {
+	return combo >= 5 ? 1.5 : combo >= 3 ? 1.2 : 1;
+}
+
+/** Return an encouraging title for a learner's level. */
+export function levelTitle(level: number): string {
+	if (level >= 10) return "Expert in the making";
+	if (level >= 7) return "Confident";
+	if (level >= 5) return "Solid foundations";
+	if (level >= 3) return "Building momentum";
+	if (level >= 2) return "Finding your feet";
+	return "Getting started";
+}

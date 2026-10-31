@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import * as assert from "node:assert/strict";
-import { levelFor, newBadges, updateStreak, xpFor } from "../src/gamify.ts";
+import { comboBonus, levelFor, levelTitle, newBadges, updateStreak, xpFor } from "../src/gamify.ts";
 import type { Attempt, ChallengeKind, Progress } from "../src/types.ts";
 
 function progress(patch: Partial<Progress> = {}): Progress {
@@ -94,4 +94,19 @@ test("no-hints requires five consecutive hint-free successes including the curre
 	assert.deepEqual(newBadges(p, attempt(), { history: history.slice(1) }), []);
 	assert.deepEqual(newBadges(p, attempt(), { history: [attempt({ outcome: "partial" }), ...history.slice(1)] }), []);
 	assert.deepEqual(newBadges(p, attempt(), { history: [attempt({ hintsUsed: 1 }), ...history.slice(1)] }), []);
+});
+
+test("comboBonus returns the documented success XP multiplier at every boundary", () => {
+	for (const [combo, expected] of [[-1, 1], [0, 1], [1, 1], [2, 1], [3, 1.2], [4, 1.2], [5, 1.5], [100, 1.5]]) {
+		assert.equal(comboBonus(combo), expected);
+	}
+});
+
+test("levelTitle covers all bands and levels below one", () => {
+	const titles = ["Getting started", "Finding your feet", "Building momentum", "Building momentum",
+		"Solid foundations", "Solid foundations", "Confident", "Confident", "Confident", "Expert in the making"];
+	for (const [i, title] of titles.entries()) assert.equal(levelTitle(i + 1), title);
+	assert.equal(levelTitle(-10), titles[0]);
+	assert.equal(levelTitle(0), titles[0]);
+	assert.equal(levelTitle(100), titles[9]);
 });

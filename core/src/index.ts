@@ -9,3 +9,6 @@ export * from "./gamify.ts";
 export * from "./practice.ts";
 export * from "./state.ts";
 export * from "./knowledge.ts";
+export * from "./sources.ts";
+export * from "./lessons.ts";
+export * from "./profile.ts";
