@@ -549,3 +549,113 @@ export interface LearningPath {
 	createdAt: string;
 	updatedAt: string;
 }
+
+// ══════════════════════════════════════ teach first, grounded in ranked sources ══
+// Fixes "it feels like a viva": every new step is TAUGHT (explanation + worked example) before it is tested,
+// and every explanation cites ranked, checkable sources so the learner can verify the tutor.
+
+export type SourceKind =
+	| "official-docs" // language/library/standard documentation (docs.python.org, MDN, sqlite.org)
+	| "textbook"      // published or open textbooks (OpenStax, university press)
+	| "course"        // university or established course material (MIT OCW, Khan Academy)
+	| "paper"         // peer-reviewed or preprint research
+	| "reference"     // encyclopedias and reference works (Wikipedia, NIST DLMF)
+	| "video"         // lectures and explainers (3Blue1Brown)
+	| "article"       // blogs and articles
+	| "forum";        // Q&A and discussion (Stack Overflow)
+
+/** A checkable reference, ranked for credibility. */
+export interface Source {
+	/** "src-" + short hash of the normalized URL. */
+	id: string;
+	url: string;
+	title: string;
+	publisher?: string;
+	kind: SourceKind;
+	/** 0 … 100 from rankSource(); higher = more trustworthy for learning. */
+	rank: number;
+	/** Plain-language reasons shown to the learner, e.g. "Official Python documentation", "Open textbook (CC BY)". */
+	rankReasons: string[];
+	/** Reuse terms when known, e.g. "CC BY 4.0". */
+	license?: string;
+	/** Short supporting quote (≤ 300 chars) captured when the source was read. */
+	excerpt?: string;
+	publishedAt?: string;
+	accessedAt: string;
+}
+
+/** Points a statement at a source. */
+export interface Citation {
+	sourceId: string;
+	/** Exact supporting words from the source (≤ 200 chars). */
+	quote?: string;
+	/** Section, page, or anchor. */
+	locator?: string;
+}
+
+/** What gets taught before a subskill is practised: explain → worked example → common pitfalls. */
+export interface SkillLesson {
+	skill: string;
+	subskillId: string;
+	title: string;
+	/** 2–4 short paragraphs in plain language (markdown + LaTeX). */
+	explanation: string;
+	/** 2–4 one-line takeaways. */
+	keyIdeas: string[];
+	/** Fully worked example the learner reads before trying one. */
+	workedExample?: { problem: string; steps: string[]; answer: string };
+	/** Common mistakes and why they happen. */
+	pitfalls?: string[];
+	/** Every lesson cites at least one source. */
+	citations: Citation[];
+	createdAt: string;
+	updatedAt: string;
+}
+
+/** How the tutor balances teaching and testing; the learner picks it. */
+export type TutorMode =
+	| "teach"    // explain + worked examples first; checks are light and optional
+	| "practice" // short lesson, then challenges (default)
+	| "test";    // challenges only — for review and bosses
+
+/** Result of checking a statement against stored sources. */
+export interface Verification {
+	claim: string;
+	verdict: "supported" | "contradicted" | "unclear";
+	citations: Citation[];
+	note: string;
+}
+
+// ═════════════════════════════════════════════════════════════════ game layer ══
+
+/** Learner-wide profile for the game layer, at $PSI_HOME/profile.json. */
+export interface GameProfile {
+	dailyGoal: { kind: "challenges" | "minutes"; target: number };
+	tutorMode: TutorMode;
+	updatedAt: string;
+}
+
+export interface Achievement {
+	id: string;
+	title: string;
+	/** What earns it, in plain words. */
+	description: string;
+	earned: boolean;
+	earnedAt?: string;
+}
+
+/** Everything the "you" view and HUD need in one call. */
+export interface LearnerSummary {
+	today: { date: string; challenges: number; minutes: number; xp: number; goalMet: boolean };
+	dailyGoal: GameProfile["dailyGoal"];
+	streakDays: number;
+	/** Last 84 days, oldest first: attempts per day. */
+	calendar: { date: string; attempts: number }[];
+	totalXp: number;
+	level: number;
+	/** Plain level title, e.g. "Getting started", "Building momentum", "Solid foundations". */
+	levelTitle: string;
+	/** Current in-session run of correct answers (drives the combo bonus). */
+	combo: number;
+	achievements: Achievement[];
+}

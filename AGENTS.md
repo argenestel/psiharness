@@ -139,12 +139,12 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
   - Learner links at `$PSI_HOME/graph/links.json`: `listLinks()`, `addLink(from, to)`, `removeLink(from, to)`.
   - Paths at `$PSI_HOME/graph/paths/<id>.json`: `listPaths()`, `readPath(id)`, `savePath(draft)` (validates step ids
     exist in the built graph), `deletePath(id)`.
-  - `pathTo(graph, targetId, opts?: { includeDone?: boolean }): string[]` — topologically ordered unfinished
+  - `knowledgePathTo(graph, targetId, opts?: { includeDone?: boolean }): string[]` — topologically ordered unfinished
     prerequisite ancestors (via prerequisite + contains edges) ending at the target; done = status solid/mastered.
   - `neighborhood(graph, id, depth = 1): KnowledgeGraph` — local graph view.
 - Web API: `GET /api/graph`, `GET /api/graph/neighborhood/:id?depth=`, `POST /api/graph/links` {from,to},
   `DELETE /api/graph/links` {from,to}, `GET /api/paths`, `GET /api/paths/:id`, `POST /api/paths` {title, goal, steps?,
-  targetId?} (steps omitted + targetId → generated with pathTo), `PUT /api/paths/:id`, `DELETE /api/paths/:id`.
+  targetId?} (steps omitted + targetId → generated with knowledgePathTo), `PUT /api/paths/:id`, `DELETE /api/paths/:id`.
 - Models: `GET /api/models` → `{ default, models: [{ id: "provider/model", provider, name, context?, reasoning? }] }`
   (from `pi --list-models`, cached 10 min; default = PSI_WEB_MODEL); `POST /api/chat` accepts `model`;
   `POST /api/chat/:id/model` {model} switches a live chat (pi RPC `set_model`). The browser remembers the last
@@ -154,6 +154,33 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - Frontend: `js/graph.js` (`mountGraph(el, { navigate, focus? })` — force-directed canvas graph, zero deps),
   `js/paths.js` (`mountPaths(el, { navigate, id? })`), `js/models.js` (`modelPicker({ value, onChange }) → HTMLElement`,
   `getPreferredModel()`). Routes: `#/graph`, `#/graph/:nodeId`, `#/paths`, `#/paths/:id`.
+
+### teach first + ranked sources + game layer
+- Types: `Source`, `SourceKind`, `Citation`, `SkillLesson`, `TutorMode`, `Verification`, `GameProfile`, `Achievement`,
+  `LearnerSummary` in core/src/types.ts.
+- `core/src/sources.ts`: `rankSource(input: { url; kind?; publisher?; license?; publishedAt? }): { rank; kind; rankReasons }`
+  (trusted-domain table + kind weights + recency + license openness; plain-language reasons), `sourceId(url)`,
+  `TRUSTED_SOURCES` (curated starting points per subject: python, javascript, sql, algorithms, calculus, linear algebra,
+  physics, probability, general), `class SourceStore` — `$PSI_HOME/skills/<s>/sources.json`: `list(skill)` (rank desc),
+  `add(skill, draft)` (dedupe by normalized URL, ranks it), `get(skill, id)`, `remove(skill, id)`.
+- `core/src/lessons.ts`: `class LessonStore` — `$PSI_HOME/skills/<s>/lessons/<subskillId>.json`: `read`, `write`
+  (requires ≥ 1 citation whose sourceId exists in the skill's sources), `list(skill)`.
+- `core/src/profile.ts`: `class ProfileStore` — `$PSI_HOME/profile.json` (`read(): GameProfile` default
+  {dailyGoal:{kind:"challenges",target:5}, tutorMode:"practice"}, `update(patch)`), `summarize(now?): LearnerSummary`
+  across all skills (today, calendar, streak, totalXp, level + levelTitle, combo = trailing run of successes in the active
+  session, achievements = definitions in `ACHIEVEMENTS` evaluated from progress/attempts/lessons/paths).
+- `gamify.ts`: `comboBonus(combo): number` (×1 under 3, ×1.2 at 3–4, ×1.5 at 5+ on base XP; never applies to fails),
+  `levelTitle(level)`.
+- Bundled packs ship `examples/skills/<s>/sources.json` and `lessons/<subskillId>.json`; `psi import-skill` and
+  `POST /api/packs/:slug/import` copy them.
+- Extension tools (planned): `psi_lesson` {action: "show"|"write", subskillId?, lesson?} (show presents a lesson card
+  widget; write saves a lesson with citations), `psi_sources` {action: "list"|"add"|"remove", skill?, url?, title?, kind?,
+  excerpt?, license?}, `psi_fetch` {url} (reads a web page as text, ≤ 20 k chars, http/https only, no private IPs),
+  `psi_search` {query} (web search results to find sources), `psi_verify` {claim, skill?} → Verification;
+  `/mode teach|practice|test`, `/verify <claim>`, `/sources`. Teaching contract: new or failed-twice subskill → lesson
+  first; one question per message at most; every factual explanation cites [n] sources from the skill's list.
+- Web API (planned): `GET /api/me` → LearnerSummary, `PUT /api/me/profile` {dailyGoal?, tutorMode?},
+  `GET /api/skills/:s/sources`, `GET /api/skills/:s/lessons/:subskillId`.
 
 ### visual (`visual/src/index.ts` re-exports) — optional extras
 - `palettes.ts`: `type Palette = { name; bg; fg; muted; accent: string[]; deep; glow }`, `PALETTES`, `paletteFor(style, name?)`
