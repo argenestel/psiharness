@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { handleGraphRoute } from "./graph-api.ts";
 import { AgentHub } from "./agent.ts";
 import { PracticeApi } from "./practice-api.ts";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -232,6 +233,7 @@ export async function startStudio({
 		res.setHeader("Content-Security-Policy", csp);
 		try {
 			if (!allowedHost(req.headers.host, host)) throw new HttpError(421, "Unrecognized Host header");
+			if (await handleGraphRoute(req, res, store.root, hub, agentBin)) return;
 			const p = partsOf(req.url ?? "/");
 			// A custom header forces a CORS preflight, which this server never grants: cross-site pages cannot write.
 			if (req.method !== "GET" && req.method !== "HEAD" && req.headers["x-psi"] !== "1") {

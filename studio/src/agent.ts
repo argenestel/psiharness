@@ -471,6 +471,20 @@ export class AgentHub {
 		return result;
 	}
 
+	/** Switch the live RPC model and retain it for subsequent child restarts. */
+	async setModel(id: string, model: string): Promise<void> {
+		const chat = this.chat(id);
+		const slash = model.indexOf("/");
+		if (slash <= 0 || slash === model.length - 1 || /\s/.test(model)) throw failure(400, "Invalid provider/id model");
+		const response = await this.send(id, { type: "set_model", provider: model.slice(0, slash),
+			modelId: model.slice(slash + 1) }, 10000);
+		if (!response || response.success !== true) {
+			throw failure(400, typeof response?.error === "string" ? response.error : "Model switch failed");
+		}
+		chat.model = model;
+		this.publish(chat, { type: "psi_model_switched", model });
+	}
+
 	/** Subscribe and atomically replay records newer than the supplied sequence. */
 	subscribe(id: string, res: ServerResponse, since = 0): void {
 		const chat = this.chat(id);

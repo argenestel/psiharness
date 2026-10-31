@@ -55,7 +55,8 @@ test("dispatch rejects unknown, empty, erroneous, and mismatched tool results wi
 test("dispatch supports the extension's plain details and requested widget details", () => {
 	assert.equal(widgetKindFor("psi_attempt", { details: { outcome: "fail", xp: 5 } }), "attempt");
 	assert.equal(widgetKindFor("psi_skill_plan", { details: { plan: { subskills: [] } } }), "plan");
-	assert.equal(widgetKindFor("psi_memory_remember", { details: { text: "Learns by doing" } }), "memory");
+	// Saved notes show only in the turn's activity line, never as a duplicate inline chip.
+	assert.equal(widgetKindFor("psi_memory_remember", { details: { text: "Learns by doing" } }), null);
 	assert.equal(widgetKindFor("psi_progress_report", { details: { skills: [] } }), "progress");
 	assert.equal(widgetKindFor("psi_concept_graph", { details: { mermaid: "graph TD" } }), "graph");
 	assert.equal(widgetKindFor("psi_storyboard", { content: [{ type: "text", text: "/artifacts/sql/a.html" }] }), "artifact");
