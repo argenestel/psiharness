@@ -5,56 +5,12 @@
 		"title": "Interactive Linear Algebra, 6.1 Dot Products and Orthogonality",
 		"publisher": "Dan Margalit and Joseph Rabinoff, Georgia Institute of Technology",
 		"kind": "textbook",
-		"rank": 93,
+		"rank": 85,
 		"rankReasons": [
-			"Open textbook",
-			"Written by Georgia Tech mathematics faculty",
-			"Open license (GNU FDL): free to read and reuse"
+			"Textbook (+85)"
 		],
 		"license": "GNU FDL",
 		"excerpt": "Notice that the dot product of two vectors is a scalar.",
-		"accessedAt": "2026-10-31T20:06:18Z"
-	},
-	{
-		"id": "src-8cc77a6500",
-		"url": "https://www.3blue1brown.com/lessons/vectors",
-		"title": "Vectors, what even are they? (Essence of Linear Algebra, chapter 1)",
-		"publisher": "3Blue1Brown",
-		"kind": "video",
-		"rank": 65,
-		"rankReasons": [
-			"Lesson by a well-known math explainer",
-			"From 3Blue1Brown (Grant Sanderson), a widely used visual math course"
-		],
-		"excerpt": "What defines a given vector is its length and the direction it's pointing, but as long as those two facts are the same you can move it around and it's still the same vector.",
-		"accessedAt": "2026-10-31T20:06:18Z"
-	},
-	{
-		"id": "src-220da4375e",
-		"url": "https://www.3blue1brown.com/lessons/span",
-		"title": "Linear combinations, span, and basis vectors (Essence of Linear Algebra, chapter 2)",
-		"publisher": "3Blue1Brown",
-		"kind": "video",
-		"rank": 65,
-		"rankReasons": [
-			"Lesson by a well-known math explainer",
-			"From 3Blue1Brown (Grant Sanderson), a widely used visual math course"
-		],
-		"excerpt": "The set of all possible vectors you can reach with linear combinations of a given pair of vectors is called the \"span\" of those two vectors.",
-		"accessedAt": "2026-10-31T20:06:18Z"
-	},
-	{
-		"id": "src-77a7b11614",
-		"url": "https://www.3blue1brown.com/lessons/linear-transformations",
-		"title": "Linear transformations and matrices (Essence of Linear Algebra, chapter 3)",
-		"publisher": "3Blue1Brown",
-		"kind": "video",
-		"rank": 65,
-		"rankReasons": [
-			"Lesson by a well-known math explainer",
-			"From 3Blue1Brown (Grant Sanderson), a widely used visual math course"
-		],
-		"excerpt": "Visually speaking, a transformation is \"linear\" if it has two properties: all lines must remain lines, without getting curved, and the origin must remain fixed in place.",
 		"accessedAt": "2026-10-31T20:06:18Z"
 	},
 	{
@@ -65,24 +21,24 @@
 		"kind": "video",
 		"rank": 65,
 		"rankReasons": [
-			"Lesson by a well-known math explainer",
-			"From 3Blue1Brown (Grant Sanderson), a widely used visual math course"
+			"Educational video (+60)",
+			"Trusted domain (+5)"
 		],
 		"excerpt": "You first apply the transformation represented by the matrix on the right, then you apply the transformation represented by the matrix on the left.",
 		"accessedAt": "2026-10-31T20:06:18Z"
 	},
 	{
-		"id": "src-740650a69c",
-		"url": "https://www.3blue1brown.com/lessons/determinant",
-		"title": "The determinant (Essence of Linear Algebra, chapter 6)",
+		"id": "src-220da4375e",
+		"url": "https://www.3blue1brown.com/lessons/span",
+		"title": "Linear combinations, span, and basis vectors (Essence of Linear Algebra, chapter 2)",
 		"publisher": "3Blue1Brown",
 		"kind": "video",
 		"rank": 65,
 		"rankReasons": [
-			"Lesson by a well-known math explainer",
-			"From 3Blue1Brown (Grant Sanderson), a widely used visual math course"
+			"Educational video (+60)",
+			"Trusted domain (+5)"
 		],
-		"excerpt": "This special scaling factor, the factor by which a linear transformation changes areas, is called the \"determinant\" of that transformation.",
+		"excerpt": "The set of all possible vectors you can reach with linear combinations of a given pair of vectors is called the \"span\" of those two vectors.",
 		"accessedAt": "2026-10-31T20:06:18Z"
 	},
 	{
@@ -93,10 +49,52 @@
 		"kind": "video",
 		"rank": 65,
 		"rankReasons": [
-			"Lesson by a well-known math explainer",
-			"From 3Blue1Brown (Grant Sanderson), a widely used visual math course"
+			"Educational video (+60)",
+			"Trusted domain (+5)"
 		],
 		"excerpt": "But when the determinant is zero, and the transformation associated with the system of equations squishes space into a smaller dimension, there is no inverse.",
+		"accessedAt": "2026-10-31T20:06:18Z"
+	},
+	{
+		"id": "src-740650a69c",
+		"url": "https://www.3blue1brown.com/lessons/determinant",
+		"title": "The determinant (Essence of Linear Algebra, chapter 6)",
+		"publisher": "3Blue1Brown",
+		"kind": "video",
+		"rank": 65,
+		"rankReasons": [
+			"Educational video (+60)",
+			"Trusted domain (+5)"
+		],
+		"excerpt": "This special scaling factor, the factor by which a linear transformation changes areas, is called the \"determinant\" of that transformation.",
+		"accessedAt": "2026-10-31T20:06:18Z"
+	},
+	{
+		"id": "src-77a7b11614",
+		"url": "https://www.3blue1brown.com/lessons/linear-transformations",
+		"title": "Linear transformations and matrices (Essence of Linear Algebra, chapter 3)",
+		"publisher": "3Blue1Brown",
+		"kind": "video",
+		"rank": 65,
+		"rankReasons": [
+			"Educational video (+60)",
+			"Trusted domain (+5)"
+		],
+		"excerpt": "Visually speaking, a transformation is \"linear\" if it has two properties: all lines must remain lines, without getting curved, and the origin must remain fixed in place.",
+		"accessedAt": "2026-10-31T20:06:18Z"
+	},
+	{
+		"id": "src-8cc77a6500",
+		"url": "https://www.3blue1brown.com/lessons/vectors",
+		"title": "Vectors, what even are they? (Essence of Linear Algebra, chapter 1)",
+		"publisher": "3Blue1Brown",
+		"kind": "video",
+		"rank": 65,
+		"rankReasons": [
+			"Educational video (+60)",
+			"Trusted domain (+5)"
+		],
+		"excerpt": "What defines a given vector is its length and the direction it's pointing, but as long as those two facts are the same you can move it around and it's still the same vector.",
 		"accessedAt": "2026-10-31T20:06:18Z"
 	},
 	{
@@ -107,8 +105,8 @@
 		"kind": "video",
 		"rank": 65,
 		"rankReasons": [
-			"Lesson by a well-known math explainer",
-			"From 3Blue1Brown (Grant Sanderson), a widely used visual math course"
+			"Educational video (+60)",
+			"Trusted domain (+5)"
 		],
 		"excerpt": "But some special vectors do remain on their own span, meaning the effect the matrix has on such a vector is to just stretch or squish it, like a scalar.",
 		"accessedAt": "2026-10-31T20:06:18Z"

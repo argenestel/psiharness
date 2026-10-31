@@ -88,6 +88,10 @@ container's own writable pi volume; the host copy is never modified. Alternative
 `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` in `docker/.env` (start from `docker/.env.example`). The web agent's model is
 `PSI_WEB_MODEL` (default `xai/grok-4.6`); the host port is `PSI_WEB_PORT` (default 4173).
 
+Compose defaults `PSI_CODE_EXEC=1` for tutor demos inside `web`/`psi`; set it to `0` in `docker/.env`
+to disable execution. Learner code challenges stay in the browser. See [Code execution](../docker/README.md#code-execution)
+for bash opt-in, limits, and the current missing `psi_run` implementation.
+
 ```sh
 docker compose -f docker/compose.yml run --rm psi                    # terminal tutor in a container
 docker compose -f docker/compose.yml --profile full up -d web-full   # web with Manim video rendering (:4175)

@@ -67,6 +67,33 @@ Instead:
 The web agent uses `PSI_WEB_MODEL` (default `xai/grok-4.6`); override it in `docker/.env` or the shell. The
 entrypoint logs only which files it copied and warns when no credentials are present; it never prints secrets.
 
+## Code execution
+
+Compose sets `PSI_CODE_EXEC=1` for `web` and `psi` so tutor code demos and verification can run inside
+the container with `psi_run`: Python via `python3`, JavaScript via Node, and SQL via Python's `sqlite3`.
+The base image installs Python and checks `import sqlite3` during the build. Learner code challenges
+still run in the browser sandbox (Pyodide, JavaScript Worker, or sql.js).
+
+**Implementation gap in this checkout:** `extension/` and `studio/` currently contain no `psi_run` tool
+or handling for `PSI_CODE_EXEC` / `PSI_CODE_EXEC_BASH`. These Docker settings prepare the runtime but do
+not add the tool. The intended per-run limits are a 10 s timeout, 64 KB output cap, a fresh temporary
+working directory, and a stripped environment without inherited secrets; none of those container-runner
+guarantees could be verified from the current code. The browser challenge runner separately has a 10 s
+execution timeout (90 s for initial Python/SQL runtime loading).
+
+Set `PSI_CODE_EXEC=0` in `docker/.env` to disable in-container `psi_run` execution once the tool is
+implemented. Bash stays off by default (`PSI_CODE_EXEC_BASH=0`); allowing it requires both
+`PSI_CODE_EXEC=1` and `PSI_CODE_EXEC_BASH=1`. Recreate `web` after changing either setting:
+
+```sh
+docker compose -f docker/compose.yml up -d web
+```
+
+New `docker compose ... run --rm psi` containers pick up the settings automatically. These defaults
+apply to the `web` and `psi` Compose services; plain `docker run` requires explicit `-e` flags.
+The shared hardening keeps `/tmp` on a 256 MB executable tmpfs with `nosuid,nodev`, and limits open
+files to 4096 (soft) / 8192 (hard) and processes/threads per UID to 1024, alongside service pids/memory caps.
+
 ## Data: backup, restore, reset
 
 | Volume | Mounted at | Contents |
@@ -114,7 +141,7 @@ Images run as `psi` (UID 1000); Node runs the TypeScript source directly. The en
 
 | Image | Includes | Local size |
 | --- | --- | --- |
-| `psi:latest` | Node 22.23.4, pi 1.4.0, psi source (web UI, skills, prompts, extension, example packs) | ~650 MB |
+| `psi:latest` | Node 22.23.4, Python 3 with sqlite3, pi 1.4.0, psi source | ~650 MB (estimate) |
 | `psi:omp` | Base plus Bun and omp 18.14.0 | ~1 GB (estimate) |
 | `psi-manim:latest` | Python 3.12, Manim, FFmpeg, slim TeX set, psi_manim | ~3.0 GB |
 | `psi-full:latest` | Base plus Python 3.11 venv and the Manim stack | ~3.5 GB |

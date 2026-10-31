@@ -14,8 +14,13 @@ x-hardening: &hardening
   cap_drop: [ALL]
   security_opt: ["no-new-privileges:true"]
   init: true
+  ulimits:
+    nofile:
+      soft: 4096
+      hard: 8192
+    nproc: 1024
   tmpfs:
-    - /tmp:size=256m,mode=1777
+    - /tmp:size=256m,mode=1777,exec,nosuid,nodev
     - /home/psi/.cache:size=128m,uid=1000,gid=1000,mode=0700
 
 services:
@@ -59,6 +64,8 @@ services:
       - PSI_STUDIO_PORT=4173
       - PSI_STUDIO_ALLOWED_HOSTS=localhost,127.0.0.1
       - PSI_WEB_MODEL=${PSI_WEB_MODEL:-xai/grok-4.6}
+      - PSI_CODE_EXEC=${PSI_CODE_EXEC:-1}
+      - PSI_CODE_EXEC_BASH=${PSI_CODE_EXEC_BASH:-0}
     volumes:
       - psi-data:/data
       - pi-home:/home/psi/.pi
@@ -137,6 +144,8 @@ services:
       - ANTHROPIC_API_KEY
       - OPENAI_API_KEY
       - PSI_HOME=/data
+      - PSI_CODE_EXEC=${PSI_CODE_EXEC:-1}
+      - PSI_CODE_EXEC_BASH=${PSI_CODE_EXEC_BASH:-0}
     volumes:
       - psi-data:/data
       - pi-home:/home/psi/.pi

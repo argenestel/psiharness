@@ -1,37 +1,5 @@
 [
 	{
-		"id": "src-9cfb294e54",
-		"url": "https://openstax.org/books/prealgebra-2e/pages/6-1-understand-percent",
-		"title": "Prealgebra 2e, 6.1 Understand Percent",
-		"publisher": "OpenStax, Rice University",
-		"kind": "textbook",
-		"rank": 93,
-		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
-		],
-		"license": "CC BY-NC-SA 4.0",
-		"excerpt": "A percent is a ratio whose denominator is 100.",
-		"accessedAt": "2026-10-31T20:14:58Z"
-	},
-	{
-		"id": "src-a0775b39fb",
-		"url": "https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent",
-		"title": "Prealgebra 2e, 6.2 Solve General Applications of Percent",
-		"publisher": "OpenStax, Rice University",
-		"kind": "textbook",
-		"rank": 93,
-		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
-		],
-		"license": "CC BY-NC-SA 4.0",
-		"excerpt": "Then we find what percent the amount of increase is of the original amount.",
-		"accessedAt": "2026-10-31T20:14:58Z"
-	},
-	{
 		"id": "src-677425621e",
 		"url": "https://openstax.org/books/prealgebra-2e/pages/7-3-distributive-property",
 		"title": "Prealgebra 2e, 7.3 Distributive Property",
@@ -39,9 +7,9 @@
 		"kind": "textbook",
 		"rank": 93,
 		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "If you think about doing the math in this way, you are using the Distributive Property.",
@@ -55,9 +23,9 @@
 		"kind": "textbook",
 		"rank": 93,
 		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "To square a binomial: square the first term square the last term double their product",
@@ -71,28 +39,44 @@
 		"kind": "textbook",
 		"rank": 93,
 		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "Rather, estimation means using prior experience and sound physical reasoning to arrive at a rough idea of a quantity's value.",
 		"accessedAt": "2026-10-31T20:14:58Z"
 	},
 	{
-		"id": "src-afe45d7b23",
-		"url": "https://en.wikipedia.org/wiki/Trachtenberg_system",
-		"title": "Trachtenberg system",
-		"publisher": "Wikipedia",
-		"kind": "reference",
-		"rank": 68,
+		"id": "src-9cfb294e54",
+		"url": "https://openstax.org/books/prealgebra-2e/pages/6-1-understand-percent",
+		"title": "Prealgebra 2e, 6.1 Understand Percent",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
 		"rankReasons": [
-			"Reference work",
-			"Community-edited encyclopedia: good for definitions, check its cited references for details",
-			"Open license (CC BY-SA 4.0): free to read and reuse"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
-		"license": "CC BY-SA 4.0",
-		"excerpt": "Rule: Add the digit to its neighbor. (By \"neighbor\" we mean the digit on the right.)",
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "A percent is a ratio whose denominator is 100.",
+		"accessedAt": "2026-10-31T20:14:58Z"
+	},
+	{
+		"id": "src-a0775b39fb",
+		"url": "https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent",
+		"title": "Prealgebra 2e, 6.2 Solve General Applications of Percent",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "Then we find what percent the amount of increase is of the original amount.",
 		"accessedAt": "2026-10-31T20:14:58Z"
 	},
 	{
@@ -101,14 +85,30 @@
 		"title": "Fermi problem",
 		"publisher": "Wikipedia",
 		"kind": "reference",
-		"rank": 68,
+		"rank": 73,
 		"rankReasons": [
-			"Reference work",
-			"Community-edited encyclopedia: good for definitions, check its cited references for details",
-			"Open license (CC BY-SA 4.0): free to read and reuse"
+			"Reference work (+65)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 4.0) (+3)"
 		],
 		"license": "CC BY-SA 4.0",
 		"excerpt": "The estimation technique is named after physicist Enrico Fermi as he was known for his ability to make good approximate calculations with little or no actual data.",
+		"accessedAt": "2026-10-31T20:14:58Z"
+	},
+	{
+		"id": "src-afe45d7b23",
+		"url": "https://en.wikipedia.org/wiki/Trachtenberg_system",
+		"title": "Trachtenberg system",
+		"publisher": "Wikipedia",
+		"kind": "reference",
+		"rank": 73,
+		"rankReasons": [
+			"Reference work (+65)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 4.0) (+3)"
+		],
+		"license": "CC BY-SA 4.0",
+		"excerpt": "Rule: Add the digit to its neighbor. (By \"neighbor\" we mean the digit on the right.)",
 		"accessedAt": "2026-10-31T20:14:58Z"
 	}
 ]

@@ -1,34 +1,18 @@
 [
 	{
-		"id": "src-fe0a1c39d0",
-		"url": "https://openstax.org/books/calculus-volume-1/pages/2-2-the-limit-of-a-function",
-		"title": "Calculus Volume 1, 2.2 The Limit of a Function",
+		"id": "src-2941dabe27",
+		"url": "https://openstax.org/books/calculus-volume-1/pages/3-6-the-chain-rule",
+		"title": "Calculus Volume 1, 3.6 The Chain Rule",
 		"publisher": "OpenStax, Rice University",
 		"kind": "textbook",
 		"rank": 93,
 		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
-		"excerpt": "It is possible for the limit of a function to exist at a point, and for the function to be defined at this point, but the limit of the function and the value of the function at the point may be different.",
-		"accessedAt": "2026-10-31T20:03:10Z"
-	},
-	{
-		"id": "src-4d7763323f",
-		"url": "https://openstax.org/books/calculus-volume-1/pages/3-1-defining-the-derivative",
-		"title": "Calculus Volume 1, 3.1 Defining the Derivative",
-		"publisher": "OpenStax, Rice University",
-		"kind": "textbook",
-		"rank": 93,
-		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
-		],
-		"license": "CC BY-NC-SA 4.0",
-		"excerpt": "to estimate the rate of change, or the rate at which one variable changes in relation to another variable.",
+		"excerpt": "we use the chain rule, which states that the derivative of a composite function is the derivative of the outer function evaluated at the inner function times the derivative of the inner function.",
 		"accessedAt": "2026-10-31T20:03:10Z"
 	},
 	{
@@ -39,44 +23,28 @@
 		"kind": "textbook",
 		"rank": 93,
 		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "Although it might be tempting to assume that the derivative of the product is the product of the derivatives, similar to the sum and difference rules, the product rule does not follow this pattern.",
 		"accessedAt": "2026-10-31T20:03:10Z"
 	},
 	{
-		"id": "src-2941dabe27",
-		"url": "https://openstax.org/books/calculus-volume-1/pages/3-6-the-chain-rule",
-		"title": "Calculus Volume 1, 3.6 The Chain Rule",
+		"id": "src-4d7763323f",
+		"url": "https://openstax.org/books/calculus-volume-1/pages/3-1-defining-the-derivative",
+		"title": "Calculus Volume 1, 3.1 Defining the Derivative",
 		"publisher": "OpenStax, Rice University",
 		"kind": "textbook",
 		"rank": 93,
 		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
-		"excerpt": "we use the chain rule, which states that the derivative of a composite function is the derivative of the outer function evaluated at the inner function times the derivative of the inner function.",
-		"accessedAt": "2026-10-31T20:03:10Z"
-	},
-	{
-		"id": "src-da3fc9a9b3",
-		"url": "https://openstax.org/books/calculus-volume-1/pages/4-7-applied-optimization-problems",
-		"title": "Calculus Volume 1, 4.7 Applied Optimization Problems",
-		"publisher": "OpenStax, Rice University",
-		"kind": "textbook",
-		"rank": 93,
-		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
-		],
-		"license": "CC BY-NC-SA 4.0",
-		"excerpt": "This step typically involves looking for critical points and evaluating a function at endpoints.",
+		"excerpt": "to estimate the rate of change, or the rate at which one variable changes in relation to another variable.",
 		"accessedAt": "2026-10-31T20:03:10Z"
 	},
 	{
@@ -87,26 +55,44 @@
 		"kind": "textbook",
 		"rank": 93,
 		"rankReasons": [
-			"Open textbook",
-			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
-			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "Area is always positive, but a definite integral can still produce a negative number (a net signed area).",
 		"accessedAt": "2026-10-31T20:03:10Z"
 	},
 	{
-		"id": "src-6bda8cf9bf",
-		"url": "https://www.3blue1brown.com/lessons/derivatives",
-		"title": "The paradox of the derivative (Essence of Calculus, chapter 2)",
-		"publisher": "3Blue1Brown",
-		"kind": "video",
-		"rank": 65,
+		"id": "src-da3fc9a9b3",
+		"url": "https://openstax.org/books/calculus-volume-1/pages/4-7-applied-optimization-problems",
+		"title": "Calculus Volume 1, 4.7 Applied Optimization Problems",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
 		"rankReasons": [
-			"Lesson by a well-known math explainer",
-			"From 3Blue1Brown (Grant Sanderson), a widely used visual math course"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
-		"excerpt": "Change is something that happens between separate points in time, and when you blind yourself to all but a single instant, there is no more room for change.",
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "This step typically involves looking for critical points and evaluating a function at endpoints.",
+		"accessedAt": "2026-10-31T20:03:10Z"
+	},
+	{
+		"id": "src-fe0a1c39d0",
+		"url": "https://openstax.org/books/calculus-volume-1/pages/2-2-the-limit-of-a-function",
+		"title": "Calculus Volume 1, 2.2 The Limit of a Function",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "It is possible for the limit of a function to exist at a point, and for the function to be defined at this point, but the limit of the function and the value of the function at the point may be different.",
 		"accessedAt": "2026-10-31T20:03:10Z"
 	},
 	{
@@ -117,10 +103,24 @@
 		"kind": "video",
 		"rank": 65,
 		"rankReasons": [
-			"Lesson by a well-known math explainer",
-			"From 3Blue1Brown (Grant Sanderson), a widely used visual math course"
+			"Educational video (+60)",
+			"Trusted domain (+5)"
 		],
 		"excerpt": "Area under the curve is equal to the distance traveled.",
+		"accessedAt": "2026-10-31T20:03:10Z"
+	},
+	{
+		"id": "src-6bda8cf9bf",
+		"url": "https://www.3blue1brown.com/lessons/derivatives",
+		"title": "The paradox of the derivative (Essence of Calculus, chapter 2)",
+		"publisher": "3Blue1Brown",
+		"kind": "video",
+		"rank": 65,
+		"rankReasons": [
+			"Educational video (+60)",
+			"Trusted domain (+5)"
+		],
+		"excerpt": "Change is something that happens between separate points in time, and when you blind yourself to all but a single instant, there is no more room for change.",
 		"accessedAt": "2026-10-31T20:03:10Z"
 	}
 ]

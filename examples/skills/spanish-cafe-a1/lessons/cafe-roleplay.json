@@ -9,14 +9,14 @@
 		"Soften requests with the conditional and por favor."
 	],
 	"workedExample": {
-		"problem": "Script three learner turns for a morning visit: you are Marta, the server is a stranger, and you want a black coffee.",
+		"problem": "You have already greeted the server, a stranger. Script your next three turns: say that you are Marta, order a black coffee politely, and ask the server's name.",
 		"steps": [
-			"Turn 1, morning greeting: Buenos días.",
-			"Turn 2, introduce yourself with llamarse: Me llamo Marta.",
-			"Turn 3, polite order with un + masculine café and the conditional of querer: Querría un café negro, por favor.",
-			"Check consistency: nothing addresses the server as tú, so the formal register holds."
+			"Introduce yourself with llamarse in the first person: Me llamo Marta.",
+			"Order with un + masculine café and the polite conditional of querer: Querría un café negro, por favor.",
+			"Stranger, so ask with usted and the third-person form: ¿Cómo se llama usted?",
+			"Check consistency: every turn stays formal, with no tú forms."
 		],
-		"answer": "Buenos días. Me llamo Marta. Querría un café negro, por favor."
+		"answer": "Me llamo Marta. Querría un café negro, por favor. ¿Cómo se llama usted?"
 	},
 	"pitfalls": [
 		"Switching between tú and usted in the same conversation.",
@@ -55,6 +55,6 @@
 			"locator": "euro, 3"
 		}
 	],
-	"createdAt": "2026-10-31T20:17:59Z",
-	"updatedAt": "2026-10-31T20:17:59Z"
+	"createdAt": "2026-10-31T20:20:04Z",
+	"updatedAt": "2026-10-31T20:20:04Z"
 }

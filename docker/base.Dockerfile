@@ -9,8 +9,9 @@ ENV BUN_INSTALL=/opt/bun
 ENV PATH="/opt/bun/bin:${PATH}"
 
 RUN apt-get update \
-	&& apt-get install -y --no-install-recommends git ca-certificates \
+	&& apt-get install -y --no-install-recommends git ca-certificates python3 \
 	&& rm -rf /var/lib/apt/lists/* \
+	&& python3 -c "import sqlite3" \
 	&& npm i -g "@earendil-works/pi-coding-agent@${PI_VERSION}" \
 	&& npm cache clean --force
 RUN if [ "$INSTALL_OMP" = "1" ]; then \

@@ -1,103 +1,19 @@
 [
 	{
-		"id": "src-3ebc7531f3",
-		"url": "https://www.rae.es/dpd/d%C3%ADa",
-		"title": "Diccionario panhispánico de dudas: día (buen día o buenos días)",
-		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
-		"kind": "reference",
-		"rank": 70,
-		"rankReasons": [
-			"Reference work",
-			"From the Real Academia Española, the official authority on Spanish usage"
-		],
-		"excerpt": "La fórmula de saludo que se emplea durante la mañana es, en el español general, buenos días.",
-		"accessedAt": "2026-10-31T20:17:59Z"
-	},
-	{
-		"id": "src-068c2dfec4",
-		"url": "https://dle.rae.es/llamar",
-		"title": "Diccionario de la lengua española: llamar",
-		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
-		"kind": "reference",
-		"rank": 70,
-		"rankReasons": [
-			"Reference work",
-			"From the Real Academia Española, the official authority on Spanish usage"
-		],
-		"excerpt": "Tener el nombre o la denominación que se expresa.",
-		"accessedAt": "2026-10-31T20:17:59Z"
-	},
-	{
-		"id": "src-27f107450b",
-		"url": "https://dle.rae.es/caf%C3%A9",
-		"title": "Diccionario de la lengua española: café",
-		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
-		"kind": "reference",
-		"rank": 70,
-		"rankReasons": [
-			"Reference work",
-			"From the Real Academia Española, the official authority on Spanish usage"
-		],
-		"excerpt": "1.b. m. Bebida que se hace por infusión de la semilla tostada y molida",
-		"accessedAt": "2026-10-31T20:17:59Z"
-	},
-	{
-		"id": "src-78ebc2bc3b",
-		"url": "https://www.rae.es/dpd/uno",
-		"title": "Diccionario panhispánico de dudas: uno, una",
-		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
-		"kind": "reference",
-		"rank": 70,
-		"rankReasons": [
-			"Reference work",
-			"From the Real Academia Española, the official authority on Spanish usage"
-		],
-		"excerpt": "Como determinante, toma la forma un ante sustantivos masculinos, los preceda inmediatamente o no",
-		"accessedAt": "2026-10-31T20:17:59Z"
-	},
-	{
-		"id": "src-3dc5338e1a",
-		"url": "https://www.rae.es/dpd/ciento",
-		"title": "Diccionario panhispánico de dudas: ciento (cien)",
-		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
-		"kind": "reference",
-		"rank": 70,
-		"rankReasons": [
-			"Reference work",
-			"From the Real Academia Española, the official authority on Spanish usage"
-		],
-		"excerpt": "Este numeral cardinal (→ cardinales) se apocopa en la forma cien cuando antecede al sustantivo al que cuantifica, aunque entre ambos se interponga otra palabra",
-		"accessedAt": "2026-10-31T20:17:59Z"
-	},
-	{
-		"id": "src-6759ef745b",
-		"url": "https://www.rae.es/dpd/euro",
-		"title": "Diccionario panhispánico de dudas: euro",
-		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
-		"kind": "reference",
-		"rank": 70,
-		"rankReasons": [
-			"Reference work",
-			"From the Real Academia Española, the official authority on Spanish usage"
-		],
-		"excerpt": "La fracción del euro recibe los nombres de céntimo",
-		"accessedAt": "2026-10-31T20:17:59Z"
-	},
-	{
 		"id": "src-c381265324",
 		"url": "https://en.wikipedia.org/wiki/Romance_copula",
-		"title": "Romance copula (Spanish: ser and estar)",
+		"title": "Romance copula",
 		"publisher": "Wikipedia",
 		"kind": "reference",
-		"rank": 68,
+		"rank": 73,
 		"rankReasons": [
-			"Reference work",
-			"Community-edited encyclopedia: good for definitions, check its cited references for details",
-			"Open license (CC BY-SA 4.0): free to read and reuse"
+			"Reference work (+65)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 4.0) (+3)"
 		],
 		"license": "CC BY-SA 4.0",
 		"excerpt": "In Spanish, location is regarded as a state, and therefore is indicated with estar",
-		"accessedAt": "2026-10-31T20:17:59Z"
+		"accessedAt": "2026-10-31T20:20:04Z"
 	},
 	{
 		"id": "src-d2539babcf",
@@ -105,14 +21,92 @@
 		"title": "Spanish verbs",
 		"publisher": "Wikipedia",
 		"kind": "reference",
-		"rank": 68,
+		"rank": 73,
 		"rankReasons": [
-			"Reference work",
-			"Community-edited encyclopedia: good for definitions, check its cited references for details",
-			"Open license (CC BY-SA 4.0): free to read and reuse"
+			"Reference work (+65)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 4.0) (+3)"
 		],
 		"license": "CC BY-SA 4.0",
 		"excerpt": "Courtesy: Using this mood softens a request, making it more polite.",
-		"accessedAt": "2026-10-31T20:17:59Z"
+		"accessedAt": "2026-10-31T20:20:04Z"
+	},
+	{
+		"id": "src-068c2dfec4",
+		"url": "https://dle.rae.es/llamar",
+		"title": "Diccionario de la lengua española: llamar",
+		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
+		"kind": "reference",
+		"rank": 65,
+		"rankReasons": [
+			"Reference work (+65)"
+		],
+		"excerpt": "Tener el nombre o la denominación que se expresa.",
+		"accessedAt": "2026-10-31T20:20:04Z"
+	},
+	{
+		"id": "src-27f107450b",
+		"url": "https://dle.rae.es/caf%C3%A9",
+		"title": "Diccionario de la lengua española: café",
+		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
+		"kind": "reference",
+		"rank": 65,
+		"rankReasons": [
+			"Reference work (+65)"
+		],
+		"excerpt": "1.b. m. Bebida que se hace por infusión de la semilla tostada y molida",
+		"accessedAt": "2026-10-31T20:20:04Z"
+	},
+	{
+		"id": "src-3dc5338e1a",
+		"url": "https://www.rae.es/dpd/ciento",
+		"title": "Diccionario panhispánico de dudas: ciento (cien)",
+		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
+		"kind": "reference",
+		"rank": 65,
+		"rankReasons": [
+			"Reference work (+65)"
+		],
+		"excerpt": "Este numeral cardinal (→ cardinales) se apocopa en la forma cien cuando antecede al sustantivo al que cuantifica, aunque entre ambos se interponga otra palabra",
+		"accessedAt": "2026-10-31T20:20:04Z"
+	},
+	{
+		"id": "src-3ebc7531f3",
+		"url": "https://www.rae.es/dpd/d%C3%ADa",
+		"title": "Diccionario panhispánico de dudas: día (buen día o buenos días)",
+		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
+		"kind": "reference",
+		"rank": 65,
+		"rankReasons": [
+			"Reference work (+65)"
+		],
+		"excerpt": "La fórmula de saludo que se emplea durante la mañana es, en el español general, buenos días.",
+		"accessedAt": "2026-10-31T20:20:04Z"
+	},
+	{
+		"id": "src-6759ef745b",
+		"url": "https://www.rae.es/dpd/euro",
+		"title": "Diccionario panhispánico de dudas: euro",
+		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
+		"kind": "reference",
+		"rank": 65,
+		"rankReasons": [
+			"Reference work (+65)"
+		],
+		"excerpt": "La fracción del euro recibe los nombres de céntimo",
+		"accessedAt": "2026-10-31T20:20:04Z"
+	},
+	{
+		"id": "src-78ebc2bc3b",
+		"url": "https://www.rae.es/dpd/uno",
+		"title": "Diccionario panhispánico de dudas: uno, una",
+		"publisher": "Real Academia Española and Asociación de Academias de la Lengua Española (ASALE)",
+		"kind": "reference",
+		"rank": 65,
+		"rankReasons": [
+			"Reference work (+65)"
+		],
+		"excerpt": "Como determinante, toma la forma un ante sustantivos masculinos, los preceda inmediatamente o no",
+		"accessedAt": "2026-10-31T20:20:04Z"
 	}
 ]
