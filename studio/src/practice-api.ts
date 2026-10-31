@@ -28,9 +28,11 @@ export type PublicChallenge = Omit<Challenge, "expected" | "acceptable" | "rubri
 
 /** Strip answer keys (code challenges keep setup/tests/starterCode, which the browser sandbox runs). */
 export function publicChallenge(c: Challenge, history: Attempt[] = []): PublicChallenge {
-	const { expected: _e, acceptable: _a, rubric: _r, hints, ...safe } = c;
+	const { expected, acceptable: _a, rubric: _r, hints, ...safe } = c;
 	const mine = history.filter((a) => a.challengeId === c.id);
-	return { ...safe, hintsCount: Array.isArray(hints) ? hints.length : 0, attempts: mine.length,
+	// SQL code challenges are graded in the browser by comparing result rows to `expected`.
+	const sandbox = c.format === "code" && expected !== undefined ? { expected } : {};
+	return { ...safe, ...sandbox, hintsCount: Array.isArray(hints) ? hints.length : 0, attempts: mine.length,
 		attempted: mine.length > 0, lastOutcome: mine.at(-1)?.outcome ?? null };
 }
 

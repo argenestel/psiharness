@@ -8,7 +8,7 @@ export function safeLink(value) {
 /** Parse inline tokens without interpreting HTML or executing content. */
 export function parseInline(text) {
 	const tokens = [];
-	const pattern = /(`+)([\s\S]*?)\1|\$\$([\s\S]*?)\$\$|\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$([^$\n]+)\$|\[([^\]]*)\]\(([^\s]*?)\)|\*\*([^*]+)\*\*|__([^_]+)__|\*([^*]+)\*|_([^_]+)_/g;
+	const pattern = /(`+)([\s\S]*?)\1|\$\$([\s\S]*?)\$\$|\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$([^$\n]+)\$|\[([^\]]*)\]\(([^\s]*?)\)|\*\*([^*]+)\*\*|(?<![\p{L}\p{N}_])__([^_\n]+)__(?![\p{L}\p{N}_])|\*([^*\n]+)\*|(?<![\p{L}\p{N}_])_([^_\n]+)_(?![\p{L}\p{N}_])/gu;
 	let start = 0;
 	for (const match of text.matchAll(pattern)) {
 		if (match.index > start) tokens.push({ type: "text", text: text.slice(start, match.index) });
@@ -120,15 +120,40 @@ function inline(parent, tokens) {
 		parent.append(el);
 	}
 }
-function highlight(parent, text, language) {
-	if (!["python", "py", "js", "javascript", "sql"].includes(language.toLowerCase())) { parent.textContent = text; return; }
-	const re = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b\d+(?:\.\d+)?\b|\b(?:def|class|return|if|else|for|while|import|from|as|True|False|None|const|let|var|function|async|await|new|throw|SELECT|FROM|WHERE|JOIN|ON|AS|INSERT|INTO|VALUES|UPDATE|SET|AND|OR|NULL)\b|#[^\n]*|\/\/[^\n]*|--[^\n]*)/g;
+const KEYWORDS = {
+	python: "def class return if elif else for while in not is and or import from as with try except finally raise "
+		+ "lambda pass break continue yield global nonlocal assert del True False None async await",
+	javascript: "const let var function return if else for while do of in new class extends throw try catch finally "
+		+ "async await yield typeof instanceof switch case break continue default import export from true false null "
+		+ "undefined this",
+	sql: "select from where join left right inner outer full cross on as insert into values update set delete create "
+		+ "table and or not null is in like between group by order having limit offset distinct union all case when then "
+		+ "else end primary key references integer text real count sum avg min max with",
+};
+const ALIASES = { py: "python", js: "javascript", ts: "javascript", typescript: "javascript", sqlite: "sql" };
+/** Classify code into string/number/keyword/comment tokens; unknown languages stay plain text. */
+export function highlightTokens(text, language = "") {
+	const lang = ALIASES[language.toLowerCase()] ?? language.toLowerCase();
+	if (!KEYWORDS[lang]) return [{ type: "plain", text }];
+	const comment = lang === "python" ? "#[^\\n]*" : lang === "sql" ? "--[^\\n]*" : "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/";
+	const words = KEYWORDS[lang].split(" ").join("|");
+	const re = new RegExp(`(${comment})|("(?:\\\\.|[^"\\\\\\n])*"|'(?:\\\\.|[^'\\\\\\n])*'|\`(?:\\\\.|[^\`\\\\])*\`)`
+		+ `|(\\b\\d+(?:\\.\\d+)?\\b)|(\\b(?:${words})\\b)`, lang === "sql" ? "gi" : "g");
+	const tokens = [];
 	let start = 0;
 	for (const match of text.matchAll(re)) {
-		parent.append(document.createTextNode(text.slice(start, match.index)), node("span", match[0], "psi-syntax"));
+		if (match.index > start) tokens.push({ type: "plain", text: text.slice(start, match.index) });
+		tokens.push({ type: match[1] ? "comment" : match[2] ? "string" : match[3] ? "number" : "keyword", text: match[0] });
 		start = match.index + match[0].length;
 	}
-	parent.append(document.createTextNode(text.slice(start)));
+	if (start < text.length) tokens.push({ type: "plain", text: text.slice(start) });
+	return tokens;
+}
+function highlight(parent, text, language) {
+	for (const token of highlightTokens(text, language)) {
+		parent.append(token.type === "plain" ? document.createTextNode(token.text)
+			: node("span", token.text, `psi-tok-${token.type}`));
+	}
 }
 function build(block) {
 	if (block.type === "math") return math(block);
@@ -140,8 +165,9 @@ function build(block) {
 		const caption = node("figcaption", block.language || "text");
 		const copy = node("button", "Copy"); copy.type = "button"; copy.setAttribute("aria-label", "Copy code");
 		copy.addEventListener("click", async () => {
-			try { await navigator.clipboard.writeText(block.text); copy.textContent = "Copied"; }
+			try { await navigator.clipboard.writeText(block.text); copy.textContent = "Copied ✓"; }
 			catch { copy.textContent = "Copy unavailable"; }
+			setTimeout(() => { copy.textContent = "Copy"; }, 1600);
 		});
 		caption.append(copy);
 		const pre = node("pre"), code = node("code"); highlight(code, block.text, block.language);

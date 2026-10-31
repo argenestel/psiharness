@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PracticeApi } from "../src/practice-api.ts";
+import { PracticeApi, publicChallenge } from "../src/practice-api.ts";
 import { PracticeStore } from "../../core/src/practice.ts";
 import { StateStore } from "../../core/src/state.ts";
 import type { Challenge } from "../../core/src/types.ts";
@@ -127,4 +127,13 @@ test("Memory API persists, summarizes and deletes observations with validation",
 	assert.deepEqual(await call("DELETE", `/api/memory/${memory.id}`), { ok: true });
 	assert.deepEqual((await call("GET", "/api/memory")).items, []);
 	await assert.rejects(call("DELETE", `/api/memory/${memory.id}`), { status: 404 });
+});
+
+test("publicChallenge keeps expected rows only for code challenges graded in the browser", () => {
+	const base = { id: "c", skill: "s", kind: "apply", level: 1, prompt: "p", hints: ["h"], createdAt: "2026-01-01" } as const;
+	const sql = publicChallenge({ ...base, format: "code", language: "sql", tests: "-- t", expected: "[[1]]" });
+	assert.equal((sql as { expected?: string }).expected, "[[1]]");
+	const text = publicChallenge({ ...base, format: "text", expected: "secret", acceptable: ["s2"] });
+	assert.equal("expected" in text, false);
+	assert.equal("acceptable" in text, false);
 });
