@@ -5,10 +5,11 @@
 		"title": "random: Generate pseudo-random numbers (Python 3 documentation)",
 		"publisher": "Python Software Foundation",
 		"kind": "official-docs",
-		"rank": 95,
+		"rank": 98,
 		"rankReasons": [
 			"Official documentation (+90)",
-			"Trusted domain (+5)"
+			"Trusted domain (+5)",
+			"Open license (PSF License 2.0) (+3)"
 		],
 		"license": "PSF License 2.0",
 		"excerpt": "By reusing a seed value, the same sequence should be reproducible from run to run as long as multiple threads are not running.",

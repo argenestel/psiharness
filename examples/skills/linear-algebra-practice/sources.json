@@ -5,9 +5,11 @@
 		"title": "Interactive Linear Algebra, 6.1 Dot Products and Orthogonality",
 		"publisher": "Dan Margalit and Joseph Rabinoff, Georgia Institute of Technology",
 		"kind": "textbook",
-		"rank": 85,
+		"rank": 93,
 		"rankReasons": [
-			"Textbook (+85)"
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (GNU FDL) (+3)"
 		],
 		"license": "GNU FDL",
 		"excerpt": "Notice that the dot product of two vectors is a scalar.",

@@ -72,6 +72,12 @@ const TRUSTED_DOMAINS: readonly TrustedDomain[] = [
 	{ host: "seeing-theory.brown.edu", kind: "textbook", publisher: "Brown University",
 		label: "Seeing Theory interactive textbook" },
 	{ host: "en.wikipedia.org", kind: "reference", publisher: "Wikipedia", label: "Wikipedia reference" },
+	{ host: "rae.es", kind: "reference", publisher: "Real Academia Española",
+		label: "Real Academia Española (official Spanish dictionary)", inferredBase: 85 },
+	{ host: "dle.rae.es", kind: "reference", publisher: "Real Academia Española",
+		label: "Diccionario de la lengua española (RAE)", inferredBase: 85 },
+	{ host: "textbooks.math.gatech.edu", kind: "textbook", publisher: "Georgia Institute of Technology",
+		label: "Open university textbook (Georgia Tech)" },
 	{ host: "arxiv.org", kind: "paper", publisher: "arXiv", label: "arXiv research paper" },
 	{ host: "nist.gov", kind: "reference", publisher: "NIST", label: "NIST reference" },
 	{ host: "dlmf.nist.gov", kind: "reference", publisher: "NIST",
@@ -292,8 +298,8 @@ function isOlderThanTenCalendarYears(publishedAt: Date, now: Date): boolean {
 
 function openLicense(license: string | undefined, kind: SourceKind): boolean {
 	if (!license) return false;
-	return /^cc/i.test(license.trim()) || /public\s+domain/i.test(license) ||
-		(kind === "official-docs" && /^(?:mit|bsd)\b/i.test(license.trim()));
+	return /^cc/i.test(license.trim()) || /public\s+domain/i.test(license) || /\bGNU\s+FDL\b|GNU Free Documentation/i.test(license) ||
+		(kind === "official-docs" && /^(?:mit|bsd|psf)\b|Python Software Foundation License/i.test(license.trim()));
 }
 
 function hashSourceUrl(canonical: string): string {
