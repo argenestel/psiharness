@@ -66,25 +66,25 @@ test("Studio serves learning data, reviews, artifacts and live changes", { timeo
 	await t.test("review validates input before persisting", async () => {
 		for (const rating of [0, 5, "3", null]) {
 			const response = await get(`/api/topics/t/cards/${card.id}/review`, {
-				method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rating }),
+				method: "POST", headers: { "Content-Type": "application/json", "X-Psi": "1" }, body: JSON.stringify({ rating }),
 			});
 			assert.equal(response.status, 400);
 		}
 		assert.equal((await get(`/api/topics/t/cards/${card.id}/review`, {
-			method: "POST", headers: { "Content-Type": "application/json" }, body: "{",
+			method: "POST", headers: { "Content-Type": "application/json", "X-Psi": "1" }, body: "{",
 		})).status, 400);
 		assert.equal((await get(`/api/topics/t/cards/${card.id}/review`, {
-			method: "POST", headers: { "Content-Type": "application/json", Origin: "https://other.example" },
+			method: "POST", headers: { "Content-Type": "application/json", "X-Psi": "1", Origin: "https://other.example" },
 			body: '{"rating":3}',
 		})).status, 403);
 		assert.equal((await get("/api/topics/t/cards/absent/review", {
-			method: "POST", headers: { "Content-Type": "application/json" }, body: '{"rating":3}',
+			method: "POST", headers: { "Content-Type": "application/json", "X-Psi": "1" }, body: '{"rating":3}',
 		})).status, 404);
 		assert.equal(store.readCards("t")[0].fsrs.reps, 0);
 	});
 	await t.test("review changes FSRS, mastery and history", async () => {
 		const response = await get(`/api/topics/t/cards/${card.id}/review`, {
-			method: "POST", headers: { "Content-Type": "application/json" }, body: '{"rating":3}',
+			method: "POST", headers: { "Content-Type": "application/json", "X-Psi": "1" }, body: '{"rating":3}',
 		});
 		assert.equal(response.status, 200);
 		const updated = await response.json();
@@ -159,7 +159,7 @@ test("Studio serves learning data, reviews, artifacts and live changes", { timeo
 		assert.equal(response.headers.get("x-content-type-options"), "nosniff");
 		assert.equal((await get("/app.js")).headers.get("content-type"), "text/javascript; charset=utf-8");
 		assert.equal((await get("/styles.css")).headers.get("content-type"), "text/css; charset=utf-8");
-		assert.equal((await get("/api/topics", { method: "DELETE" })).status, 405);
+		assert.equal((await get("/api/topics", { method: "DELETE", headers: { "X-Psi": "1" } })).status, 405);
 	});
 	await t.test("review history tolerates an incomplete concurrent line", async () => {
 		await appendFile(join(store.topicDir("t"), "reviews.jsonl"), '{"unfinished":');
