@@ -277,8 +277,14 @@ export function reduceRecord(state = {}, record) {
  */
 export function errorRuns(messages = []) {
 	const counts = new Map();
-	let run;
+	let run, lastUser;
 	messages.forEach((message, index) => {
+		// Retrying resends the same message; that keeps the run going instead of starting a new notice.
+		if (message?.role === "user") {
+			const same = run && String(message.text ?? "") === lastUser;
+			lastUser = String(message.text ?? "");
+			if (same) return;
+		}
 		const text = String(message?.text ?? "").trim();
 		const key = message?.role === "assistant" && message.error && message.stopReason !== "aborted" && !text
 			? String(message.error) : undefined;
@@ -291,6 +297,13 @@ export function errorRuns(messages = []) {
 			counts.set(index, 1);
 		} else if (message?.role === "user" || text) run = undefined;
 	});
+	// An error the tutor recovered from (pi retried and then answered in the same turn) is no longer news.
+	for (const [index, count] of counts) {
+		if (!count) continue;
+		for (let next = index + 1; next < messages.length && messages[next]?.role !== "user"; next++) {
+			if (messages[next]?.role === "assistant" && String(messages[next].text ?? "").trim()) { counts.set(index, 0); break; }
+		}
+	}
 	return counts;
 }
 
@@ -483,7 +496,7 @@ export function mountChat(el, options = {}) {
 		if (view.text === shown) return;
 		view.text = shown;
 		view.bubble.textContent = shown;
-		view.bubble.classList.toggle("is-command", !!label);
+		view.bubble.classList.toggle("is-command", !!label && label.startsWith("/"));
 	}
 	function renderAssistant(view, message, streaming, repeats = 1) {
 		updateMarkdown(view, message.text);

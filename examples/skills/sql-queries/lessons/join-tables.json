@@ -1,0 +1,52 @@
+{
+	"skill": "sql-queries",
+	"subskillId": "join-tables",
+	"title": "Joins: pairing rows across tables",
+	"explanation": "A **join** combines rows from two tables, with an `ON` condition saying which rows belong together. Conceptually the database considers every pairing and keeps those where `ON` is true. So the result has one row **per matching pair**: a customer with three orders appears three times. That repetition is the join's *grain* — know it before you count or sum anything.\n\n```sql\nSELECT o.order_id, c.name\nFROM orders AS o\nJOIN customers AS c ON c.customer_id = o.customer_id;\n```\n\nAn **inner join** (`JOIN`) drops rows that have no match. A **`LEFT JOIN`** keeps every row of the left table at least once; when there is no match, the right table's columns are filled with `NULL`. That makes \"who has no orders?\" a `LEFT JOIN ... WHERE o.order_id IS NULL`.\n\nWhere you put a condition matters with `LEFT JOIN`: a condition in `ON` only limits which right-hand rows match, while the same condition in `WHERE` filters the final rows — and it throws away the `NULL`-filled rows you meant to keep.",
+	"keyIdeas": [
+		"A join yields one row per matching pair — check the grain.",
+		"Inner `JOIN` drops unmatched rows.",
+		"`LEFT JOIN` keeps every left row; missing right columns become `NULL`.",
+		"Right-table filters belong in `ON` when you must keep unmatched left rows."
+	],
+	"workedExample": {
+		"problem": "Data: customers above; products `(1,'Green tea','tea',8)`, `(2,'Black tea','tea',12)`, `(3,'Oolong','tea',15)`, `(4,'Teapot','ware',30)`, `(5,'Cup','ware',6)`; orders `(10,1,…,'paid')`, `(11,1,…,'paid')`, `(12,2,…,'cancelled')`, `(13,3,…,'paid')`, `(14,2,…,'paid')`, `(15,4,…,'pending')`; order_items `(1,10,1,2)`, `(2,10,5,2)`, `(3,11,4,1)`, `(4,12,2,3)`, `(5,13,3,1)`, `(6,13,1,4)`, `(7,14,2,2)`, `(8,15,5,1)`. For **paid** orders, list each tea item's customer city, product name, and quantity.",
+		"steps": [
+			"Needed columns span four tables: city (customers), status (orders), quantity (order_items), name and category (products).",
+			"Chain the joins along the keys: customers → orders on `customer_id`, orders → order_items on `order_id`, order_items → products on `product_id`.",
+			"The grain is one row per order item, so a product bought twice appears twice.",
+			"Filter with `WHERE o.status = 'paid' AND p.category = 'tea'`, then sort for a stable result.",
+			"Run it:\n```sql\nSELECT c.city, p.name, oi.quantity\nFROM customers AS c\nJOIN orders AS o ON o.customer_id = c.customer_id\nJOIN order_items AS oi ON oi.order_id = o.order_id\nJOIN products AS p ON p.product_id = oi.product_id\nWHERE o.status = 'paid' AND p.category = 'tea'\nORDER BY c.city, p.name, oi.quantity;\n```"
+		],
+		"answer": "4 rows:\n\n| city | name | quantity |\n|---|---|---|\n| Lima | Green tea | 2 |\n| Lima | Green tea | 4 |\n| Lima | Oolong | 1 |\n| Quito | Black tea | 2 |"
+	},
+	"pitfalls": [
+		"Summing a column after joining to a many-row table, so each value is counted once per match.",
+		"Filtering the right table of a `LEFT JOIN` in `WHERE`, which silently turns it into an inner join.",
+		"Forgetting the `ON` condition (or joining on the wrong key), which pairs every row with every row."
+	],
+	"citations": [
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "If there is an ON clause then the ON expression is evaluated for each row of the cartesian product as a boolean expression. Only rows for which the expression evaluates to true are included",
+			"locator": "2.2 Join processing"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "then after the ON or USING filtering clauses have been applied, an extra row is added to the output for each row in the original left-hand input dataset that does not",
+			"locator": "2.2 Join processing"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "The added rows contain NULL values in the columns that would normally contain values copied from the right-hand input dataset.",
+			"locator": "2.2 Join processing"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "Only rows for which the WHERE clause expression evaluates to true are included",
+			"locator": "2.3 WHERE clause filtering"
+		}
+	],
+	"createdAt": "2026-10-31T20:05:49.000Z",
+	"updatedAt": "2026-10-31T20:05:49.000Z"
+}

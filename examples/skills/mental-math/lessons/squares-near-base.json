@@ -1,0 +1,39 @@
+{
+	"skill": "mental-math",
+	"subskillId": "squares-near-base",
+	"title": "Square numbers near 50 and 100",
+	"explanation": "A number near a friendly base is base ± distance. Square it with the binomial pattern [1]:\n$(b\\pm d)^2=b^2\\pm2bd+d^2.$\nThe middle term is double the product of the two terms [2], and the last term $d^2$ is always **added**, whichever side of the base you are on.\n\nWith base 100, $2bd=200d$, so $(100+d)^2=10000+200d+d^2$. With base 50, $2bd=100d$, so $(50\\pm d)^2=2500\\pm100d+d^2$. Both are quick in your head.\n\nSanity check: the square of a number just below the base must be a bit less than the base squared, and just above must be a bit more.",
+	"keyIdeas": [
+		"$(b\\pm d)^2=b^2\\pm2bd+d^2$, and $d^2$ is always added.",
+		"Base 50: $2500\\pm100d+d^2$. Base 100: $10000\\pm200d+d^2$.",
+		"Below the base gives a little under $b^2$; above gives a little over."
+	],
+	"workedExample": {
+		"problem": "Compute $47^2$ and $103^2$.",
+		"steps": [
+			"$47=50-3$: $2500-2\\cdot50\\cdot3+9=2500-300+9=2209$.",
+			"$103=100+3$: $10000+2\\cdot100\\cdot3+9=10000+600+9=10609$.",
+			"Sanity check: $2209<2500$ and $10609>10000$, as expected."
+		],
+		"answer": "$47^2=2209$ and $103^2=10609$"
+	},
+	"pitfalls": [
+		"Subtracting $d^2$ when the number is below the base (it is $+d^2$ either way).",
+		"Dropping the middle term: $(b-d)^2\\ne b^2-d^2$.",
+		"Using the wrong middle term for the base (100d for base 50, 200d for base 100)."
+	],
+	"citations": [
+		{
+			"sourceId": "src-6be5caf938",
+			"quote": "To square a binomial: square the first term square the last term double their product",
+			"locator": "6.4: Binomial Squares Pattern"
+		},
+		{
+			"sourceId": "src-6be5caf938",
+			"quote": "So the middle term is double the product of the two terms of the binomial.",
+			"locator": "6.4: Square a Binomial Using the Binomial Squares Pattern"
+		}
+	],
+	"createdAt": "2026-10-31T20:14:58Z",
+	"updatedAt": "2026-10-31T20:14:58Z"
+}

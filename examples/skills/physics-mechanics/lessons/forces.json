@@ -1,0 +1,45 @@
+{
+	"skill": "physics-mechanics",
+	"subskillId": "forces",
+	"title": "Newton's second law and free-body diagrams",
+	"explanation": "Push a shopping cart harder and it speeds up faster; load it with bricks and the same push does less. OpenStax states both intuitions: acceleration is directly proportional to, and in the same direction as, the net external force [1], and inversely proportional to the mass [2]. Together: $a=\\frac{F_{net}}{m}$, or $F_{net}=m\\,a$.\n\nThe word *net* is the whole game. Draw a **free-body diagram**: the object as a dot, with every force acting on it as an arrow [3]. Choose a positive direction for each axis, then add the components with signs. Forces that cancel produce no acceleration along that axis.\n\nOnly forces *on* the object go in its diagram. Forces it exerts on other things belong in their diagrams.",
+	"keyIdeas": [
+		"$F_{net}=m\\,a$: acceleration follows the net force and shrinks with mass.",
+		"Draw every force on the object; add components with signs.",
+		"Balanced forces on an axis mean zero acceleration on that axis."
+	],
+	"workedExample": {
+		"problem": "A $4$ kg sled is pulled right with $25$ N while a rope pulls it left with $5$ N (no friction). Find its acceleration.",
+		"steps": [
+			"Free-body diagram (horizontal): 25 N to the right, 5 N to the left. Take right as positive.",
+			"Net force: $F_{net}=25-5=20$ N, to the right.",
+			"Acceleration: $a=\\frac{20}{4}=5$ m/s².",
+			"Direction check: the larger pull points right, and so does $a$."
+		],
+		"answer": "$5$ m/s² to the right"
+	},
+	"pitfalls": [
+		"Using one force instead of the net force in $F=ma$.",
+		"Adding force magnitudes without signs when forces point opposite ways.",
+		"Putting forces the object exerts on others into its own free-body diagram."
+	],
+	"citations": [
+		{
+			"sourceId": "src-e54a688549",
+			"quote": "It seems reasonable that acceleration would be directly proportional to and in the same direction as the net external force acting on a system.",
+			"locator": "5.3 Newton's Second Law"
+		},
+		{
+			"sourceId": "src-e54a688549",
+			"quote": "It also seems reasonable that acceleration should be inversely proportional to the mass of the system.",
+			"locator": "5.3 Newton's Second Law"
+		},
+		{
+			"sourceId": "src-e54a688549",
+			"quote": "The free-body diagram shows all of the forces acting on the system of interest.",
+			"locator": "5.3: Figure 5.10"
+		}
+	],
+	"createdAt": "2026-10-31T20:09:09Z",
+	"updatedAt": "2026-10-31T20:09:09Z"
+}

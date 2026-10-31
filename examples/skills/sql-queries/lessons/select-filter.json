@@ -1,0 +1,62 @@
+{
+	"skill": "sql-queries",
+	"subskillId": "select-filter",
+	"title": "SELECT columns, WHERE rows",
+	"explanation": "A query has two basic jobs: choose **which columns** to show and **which rows** to keep. `SELECT name, city FROM customers` lists two columns for every row. Add `WHERE` to keep only some rows: the condition is evaluated for each row, and only rows where it is **true** make it into the result.\n\n```sql\nSELECT name, unit_price\nFROM products\nWHERE category = 'ware' AND unit_price >= 10;\n```\n\nText values go in **single quotes** (`'ware'`). Combine conditions with `AND`/`OR`, and use parentheses whenever you mix them: `AND` has higher precedence than `OR`, so `a AND b OR c` means `(a AND b) OR c`. To test against a list of values, `status IN ('cancelled', 'pending')` reads better than a chain of `OR`s.\n\n`NULL` means \"unknown\", and `= NULL` is never true. Test for it with `IS NULL` / `IS NOT NULL`. `SELECT DISTINCT` removes duplicate rows from the result.",
+	"keyIdeas": [
+		"`SELECT` picks columns; `WHERE` keeps rows whose condition is true.",
+		"String literals use single quotes.",
+		"Parenthesise mixed `AND`/`OR` conditions.",
+		"Use `IS NULL`, not `= NULL`; `DISTINCT` removes duplicate rows."
+	],
+	"workedExample": {
+		"problem": "With customers `(1,'Ana','Lima','2026-01-01')`, `(2,'Ben','Quito','2026-01-02')`, `(3,'Cal','Lima','2026-01-03')`, `(4,'Dia','Bogota','2026-01-05')`, `(5,'Eli','Quito','2026-01-08')`: list the names of customers who signed up **before 2026-01-05** and live in Quito **or** Bogota.",
+		"steps": [
+			"Column asked for: `name`.",
+			"Two requirements: the date (`signup_date < '2026-01-05'`) and the city (Quito or Bogota).",
+			"Mixing `AND` with `OR` needs parentheses: `AND (city = 'Quito' OR city = 'Bogota')`.",
+			"Without them, `AND` binds first and Dia (Bogota, 2026-01-05) would wrongly appear.",
+			"Run it:\n```sql\nSELECT name\nFROM customers\nWHERE signup_date < '2026-01-05' AND (city = 'Quito' OR city = 'Bogota');\n```"
+		],
+		"answer": "1 row:\n\n| name |\n|---|\n| Ben |"
+	},
+	"pitfalls": [
+		"Writing `a AND b OR c` and meaning `a AND (b OR c)` — the rows that only match `c` sneak in.",
+		"Comparing with `= NULL`, which never matches; use `IS NULL`.",
+		"Putting text in double quotes (`\"paid\"`), which some databases read as a column name."
+	],
+	"citations": [
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "If a WHERE clause is specified, the WHERE expression is evaluated for each row in the input data as a boolean expression. Only rows for which the WHERE clause expression evaluates to true are included",
+			"locator": "2.3 WHERE clause filtering"
+		},
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "A string constant is formed by enclosing the string in single quotes (').",
+			"locator": "Literal Values"
+		},
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "SQLite understands these operators, listed in precedence1 order (top to bottom / highest to lowest)",
+			"locator": "2. Operators (AND is listed above OR)"
+		},
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "The IN and NOT IN operators take an expression on the left and a list of values or a subquery on the right.",
+			"locator": "8. The IN and NOT IN operators"
+		},
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "The IS and IS NOT operators work like = and != except when one or both of the operands are NULL.",
+			"locator": "Operators"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "If the query is a \"SELECT DISTINCT\" query, duplicate rows are removed from the set of result rows.",
+			"locator": "Simple Select Processing"
+		}
+	],
+	"createdAt": "2026-10-31T20:05:49.000Z",
+	"updatedAt": "2026-10-31T20:05:49.000Z"
+}

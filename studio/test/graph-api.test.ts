@@ -97,6 +97,10 @@ test("graph decoding, links, paths CRUD and mutation guard", async (t) => {
 	assert.equal((await request(`/api/paths/${created.id}`)).status, 200);
 	assert.equal((await request(`/api/paths/${created.id}`, "PUT", { ...draft, title: "Updated" })).status, 200);
 	assert.equal((await request(`/api/paths/${created.id}`, "DELETE")).status, 200);
+	// "Make a path to here": steps are generated from the target node.
+	const generated = await request("/api/paths", "POST", { title: "To B", goal: "Reach B", targetId: to });
+	assert.equal(generated.status, 200);
+	assert.ok((await generated.json()).steps.includes(to));
 	for (const method of ["GET", "PUT", "DELETE"]) {
 		assert.equal((await request(`/api/paths/${created.id}`, method, method === "PUT" ? draft : undefined)).status, 404);
 	}

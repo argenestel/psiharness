@@ -1,0 +1,46 @@
+{
+	"skill": "physics-mechanics",
+	"subskillId": "kinematics-1d",
+	"title": "One-dimensional motion with constant acceleration",
+	"explanation": "Constant acceleration means velocity changes by the same amount every second: $v=v_0+a\\,t$. Many real motions can be described this way using their average acceleration [1], and a motion whose acceleration changes sharply can be split into parts, each with its own constant acceleration [2].\n\nDisplacement needs one more idea. When acceleration is constant, velocity changes linearly, so the average velocity is just the simple average of the initial and final velocities [3], $\\bar v=\\frac{v_0+v}{2}$. Then $\\Delta x=\\bar v\\,t$. Substituting $v=v_0+a\\,t$ gives the workhorse equation $\\Delta x=v_0\\,t+\\tfrac12 a\\,t^2$.\n\nSigns matter. Pick a positive direction first; a velocity or acceleration pointing the other way is negative. A car braking while moving forward has a negative acceleration.",
+	"keyIdeas": [
+		"$v=v_0+a\\,t$ when acceleration is constant.",
+		"Average velocity $=\\frac{v_0+v}{2}$ (only for constant acceleration).",
+		"$\\Delta x=v_0\\,t+\\tfrac12 a\\,t^2$.",
+		"Choose a positive direction before writing any signs."
+	],
+	"workedExample": {
+		"problem": "A scooter moving at $1$ m/s speeds up at $4$ m/s² for $3$ s. Find its final speed and displacement.",
+		"steps": [
+			"Velocity: $v=1+4\\cdot3=13$ m/s.",
+			"Average velocity: $\\frac{1+13}{2}=7$ m/s.",
+			"Displacement: $7\\cdot3=21$ m.",
+			"Cross-check: $v_0t+\\tfrac12at^2=3+\\tfrac12\\cdot4\\cdot9=3+18=21$ m."
+		],
+		"answer": "Final speed $13$ m/s; displacement $21$ m"
+	},
+	"pitfalls": [
+		"Using $\\Delta x=v\\,t$ with the final speed, which overestimates when the object is speeding up.",
+		"Forgetting the $\\tfrac12$ in $\\tfrac12 a t^2$.",
+		"Dropping signs: a slowing object has acceleration opposite its velocity."
+	],
+	"citations": [
+		{
+			"sourceId": "src-071cba9ce5",
+			"quote": "Furthermore, in many other situations we can describe motion accurately by assuming a constant acceleration equal to the average acceleration for that motion.",
+			"locator": "3.4: Notation, assumptions"
+		},
+		{
+			"sourceId": "src-071cba9ce5",
+			"quote": "motion can be considered in separate parts, each of which has its own constant acceleration",
+			"locator": "3.4: Notation, assumptions"
+		},
+		{
+			"sourceId": "src-071cba9ce5",
+			"quote": "is just the simple average of the initial and final velocities",
+			"locator": "3.4: Displacement and Position from Velocity, Equation 3.11"
+		}
+	],
+	"createdAt": "2026-10-31T20:09:09Z",
+	"updatedAt": "2026-10-31T20:09:09Z"
+}

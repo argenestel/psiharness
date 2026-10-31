@@ -1,0 +1,40 @@
+{
+	"skill": "calculus-intuition",
+	"subskillId": "product-chain",
+	"title": "Product and chain rules",
+	"explanation": "**Product rule picture.** Think of $f(x)\\,g(x)$ as the area of a rectangle with sides $f(x)$ and $g(x)$. Nudge $x$ by $dx$ and both sides grow a little. The area gains one thin strip $f'(x)\\,dx \\cdot g(x)$ along one side and another, $f(x)\\cdot g'(x)\\,dx$, along the other (the tiny corner piece is negligible). Divide by $dx$: $(fg)'=f'g+fg'$. It is tempting to guess $(fg)'=f'g'$, but OpenStax warns that the product rule does not follow that pattern [1].\n\n**Chain rule picture.** A composite $h(x)=f(g(x))$ is two machines in a row. A small change in $x$ is scaled by $g'(x)$ in the inner machine, and that change in $g$ is then scaled by $f'$ evaluated at the inner output. Scalings multiply: $h'(x)=f'(g(x))\\,g'(x)$. In OpenStax's words, the derivative of the outer function evaluated at the inner function times the derivative of the inner function [2].",
+	"keyIdeas": [
+		"$(fg)'=f'g+fg'$: each factor changes while the other holds still.",
+		"$\\big(f(g(x))\\big)'=f'(g(x))\\,g'(x)$: rates of chained machines multiply.",
+		"Evaluate the outer derivative at the inner output, not at $x$."
+	],
+	"workedExample": {
+		"problem": "Differentiate $h(x)=(x^2+1)^3$ and sanity-check at $x=1$.",
+		"steps": [
+			"Inner function $g(x)=x^2+1$, so $g'(x)=2x$.",
+			"Outer function $f(u)=u^3$, so $f'(u)=3u^2$, evaluated at $u=x^2+1$.",
+			"Multiply: $h'(x)=3(x^2+1)^2\\cdot2x=6x(x^2+1)^2$.",
+			"Check at $x=1$: the formula gives $6\\cdot1\\cdot2^2=24$; the centred estimate $\\frac{h(1.001)-h(0.999)}{0.002}\\approx24.00$ agrees."
+		],
+		"answer": "$h'(x)=6x(x^2+1)^2$"
+	},
+	"pitfalls": [
+		"Multiplying derivatives, $(fg)'=f'g'$. It fails already for $x\\cdot x$: the true derivative is $2x$, not $1$.",
+		"Forgetting the inner derivative: writing $3(x^2+1)^2$ and stopping.",
+		"Evaluating the outer derivative at $x$ instead of at $g(x)$."
+	],
+	"citations": [
+		{
+			"sourceId": "src-32d382313a",
+			"quote": "Although it might be tempting to assume that the derivative of the product is the product of the derivatives, similar to the sum and difference rules, the product rule does not follow this pattern.",
+			"locator": "3.3 Differentiation Rules: The Product Rule"
+		},
+		{
+			"sourceId": "src-2941dabe27",
+			"quote": "the derivative of a composite function is the derivative of the outer function evaluated at the inner function times the derivative of the inner function",
+			"locator": "3.6 The Chain Rule: Deriving the Chain Rule"
+		}
+	],
+	"createdAt": "2026-10-31T20:03:10Z",
+	"updatedAt": "2026-10-31T20:03:10Z"
+}

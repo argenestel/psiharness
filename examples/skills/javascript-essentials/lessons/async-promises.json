@@ -2,7 +2,7 @@
 	"skill": "javascript-essentials",
 	"subskillId": "async-promises",
 	"title": "Promises and async/await",
-	"explanation": "A **Promise** is an object representing the eventual success or failure of an asynchronous operation. Instead of passing callbacks into a function, you attach them to the promise it returns. `.then()` itself returns a *new* promise, which is why calls chain.\n\nAn `async` function always returns a Promise: it resolves with whatever the function returns, or rejects with whatever it throws. Inside it, `await promise` suspends the function until that promise settles, letting asynchronous code read like ordinary top-to-bottom code:\n\n```js\nconst wait = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\nasync function main() {\n  const a = await wait(20, \"first\");   // pauses here until resolved\n  const b = await wait(10, \"second\");  // starts only after `a` is done\n  return `${a} then ${b}`;\n}\nmain().then((text) => console.log(text)); // first then second\n```\n\nAwaiting one call after another runs them **in sequence**. When the operations are independent, start them all and wait together with `Promise.all([...])`, which runs them concurrently and resolves to an array of results in the same order. If any of them rejects, `Promise.all` rejects immediately; `Promise.allSettled` instead waits for every result.",
+	"explanation": "A **Promise** is an object representing the eventual success or failure of an asynchronous operation. Instead of passing callbacks into a function, you attach them to the promise it returns. `.then()` itself returns a *new* promise, which is why calls chain.\n\nAn `async` function always returns a Promise: it resolves with whatever the function returns, or rejects with whatever it throws. Inside it, `await promise` suspends the function until that promise settles, letting asynchronous code read like ordinary top-to-bottom code:\n\n```js\nconst wait = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\nasync function main() {\n  const a = await wait(20, \"first\");   // pauses here until resolved\n  const b = await wait(10, \"second\");  // starts only after `a` is done\n  return `${a} then ${b}`;\n}\nmain().then((text) => console.log(text)); // first then second\n```\n\nAwaiting one call after another runs them **in sequence**. When the operations are independent, start them all and wait together with `Promise.all([...])`, which runs them concurrently and gives you an array of their results. If any of them rejects, `Promise.all` rejects immediately; `Promise.allSettled` instead waits until every operation is complete.",
 	"keyIdeas": [
 		"A Promise stands for a value that will arrive (or fail) later.",
 		"`async` functions always return a Promise; `await` pauses until it settles.",
@@ -38,7 +38,12 @@
 		},
 		{
 			"sourceId": "src-e16806a7c5",
-			"quote": "Each time when an async function is called, it returns a new Promise which will be resolved with the value returned by the async function, or rejected with an exception uncaught within the async function.",
+			"quote": "Each time when an async function is called, it returns a new Promise which will be resolved with the value returned by the async function",
+			"locator": "Description"
+		},
+		{
+			"sourceId": "src-e16806a7c5",
+			"quote": "or rejected with an exception uncaught within the async function.",
 			"locator": "Description"
 		},
 		{
@@ -53,10 +58,15 @@
 		},
 		{
 			"sourceId": "src-c1910e1157",
+			"quote": "Promise.allSettled() is another composition tool that ensures all operations are complete before resolving.",
+			"locator": "Composition"
+		},
+		{
+			"sourceId": "src-c1910e1157",
 			"quote": "These methods all run promises concurrently — a sequence of promises are started simultaneously and do not wait for each other.",
 			"locator": "Composition"
 		}
 	],
-	"createdAt": "2026-10-31T19:57:18.000Z",
-	"updatedAt": "2026-10-31T19:57:18.000Z"
+	"createdAt": "2026-10-31T19:58:33.000Z",
+	"updatedAt": "2026-10-31T19:58:33.000Z"
 }

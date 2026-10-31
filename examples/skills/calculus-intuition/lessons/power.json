@@ -1,0 +1,40 @@
+{
+	"skill": "calculus-intuition",
+	"subskillId": "power",
+	"title": "The power rule: bring the exponent down",
+	"explanation": "Differentiate $x^2$, $x^3$, $x^4$ from the definition and a pattern appears: the exponent comes down in front and the power drops by one. Here is why. Expand $(x+h)^n = x^n + n\\,x^{n-1}h + (\\text{terms containing } h^2)$. In the difference quotient $\\frac{(x+h)^n-x^n}{h}$ the $x^n$ cancels and dividing by $h$ leaves $n\\,x^{n-1}$ plus terms that still contain $h$. Those vanish as $h\\to0$, so $\\frac{d}{dx}x^n = n\\,x^{n-1}$.\n\nOpenStax proves the rule this way and states that it holds for all positive integer powers of $x$ [1]. Combined with the sum, difference, and constant multiple rules [2], you can differentiate any polynomial term by term: constants in front ride along, and sums split apart.\n\nIntuition check: $x^n$ for larger $n$ climbs faster as $x$ grows, and its slope $n\\,x^{n-1}$ grows faster too.",
+	"keyIdeas": [
+		"$\\frac{d}{dx}x^n = n\\,x^{n-1}$ for positive integers $n$.",
+		"Constant multiples stay in front; sums and differences are differentiated term by term.",
+		"The rule comes from expanding $(x+h)^n$: only the term linear in $h$ survives the limit."
+	],
+	"workedExample": {
+		"problem": "Differentiate $f(x)=2x^5-3x^2$.",
+		"steps": [
+			"Split the difference: differentiate each term separately.",
+			"First term: the constant $2$ stays; $\\frac{d}{dx}x^5=5x^4$, giving $10x^4$.",
+			"Second term: the constant $-3$ stays; $\\frac{d}{dx}x^2=2x$, giving $-6x$.",
+			"Combine the terms."
+		],
+		"answer": "$f'(x)=10x^4-6x$"
+	},
+	"pitfalls": [
+		"Lowering the exponent but forgetting to bring it down as a factor ($x^5\\to x^4$ instead of $5x^4$).",
+		"Using the power rule on $2^x$, where the variable sits in the exponent. The rule is for $x^n$ with a constant exponent.",
+		"Dropping the constant multiple, e.g. writing $5x^4$ for the derivative of $2x^5$."
+	],
+	"citations": [
+		{
+			"sourceId": "src-32d382313a",
+			"quote": "The following theorem states that the power rule holds for all positive integer powers of x",
+			"locator": "3.3 Differentiation Rules: The Power Rule"
+		},
+		{
+			"sourceId": "src-32d382313a",
+			"quote": "We find our next differentiation rules by looking at derivatives of sums, differences, and constant multiples of functions.",
+			"locator": "3.3: The Sum, Difference, and Constant Multiple Rules"
+		}
+	],
+	"createdAt": "2026-10-31T20:03:10Z",
+	"updatedAt": "2026-10-31T20:03:10Z"
+}

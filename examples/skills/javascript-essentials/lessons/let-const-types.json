@@ -2,12 +2,12 @@
 	"skill": "javascript-essentials",
 	"subskillId": "let-const-types",
 	"title": "let, const, and value types",
-	"explanation": "Declare variables with `let` (can be re-assigned) or `const` (cannot be re-assigned). Both are **block-scoped**: a variable declared inside `{ ... }` — an `if` body, a loop body, or a bare block — does not exist outside it. Prefer `const` by default and switch to `let` only when the value must change.\n\n`const` protects the *binding*, not the value. A `const` array can still be pushed to, and a `const` object's properties can still change; only `x = somethingElse` is forbidden:\n\n```js\nconst tags = [\"html\"];\ntags.push(\"css\");            // fine: mutation, not re-assignment\nconsole.log(tags);           // [ 'html', 'css' ]\ntry {\n  tags = [];                 // re-assignment\n} catch (err) {\n  console.log(err.name);     // TypeError\n}\n```\n\nJavaScript has seven primitive types — Boolean, null, undefined, Number, BigInt, String, Symbol — plus Object (arrays and functions are objects). `typeof` reports the type as a string. One historic quirk: `typeof null` is `\"object\"`, so check for `null` explicitly with `value === null`.",
+	"explanation": "Declare variables with `let` (can be re-assigned) or `const` (cannot be re-assigned). Both are **block-scoped**: a variable declared inside `{ ... }` — an `if` body, a loop body, or a bare block — does not exist outside it. Prefer `const` by default and switch to `let` only when the value must change.\n\n`const` protects the *binding*, not the value. A `const` array can still be pushed to, and a `const` object's properties can still change; only `x = somethingElse` is forbidden:\n\n```js\nconst tags = [\"html\"];\ntags.push(\"css\");            // fine: mutation, not re-assignment\nconsole.log(tags);           // [ 'html', 'css' ]\ntry {\n  tags = [];                 // re-assignment\n} catch (err) {\n  console.log(err.name);     // TypeError\n}\n```\n\nValues come in eight data types: seven **primitives** — Boolean, null, undefined, Number, BigInt, String, Symbol — plus **Object**. Primitives are simple values; everything else (plain objects, arrays, functions) is an object. Notice that `null` (deliberately \"no value\") and `undefined` (\"never given a value\") are two different primitives.",
 	"keyIdeas": [
 		"`let` can be re-assigned, `const` cannot; both are block-scoped.",
 		"`const` stops re-assignment, not mutation of an object's contents.",
-		"Seven primitives + Object; `typeof` names them as strings.",
-		"`typeof null === \"object\"` — test for null with `=== null`."
+		"Eight data types: seven primitives plus Object.",
+		"`null` and `undefined` are distinct primitive values."
 	],
 	"workedExample": {
 		"problem": "Predict what this logs, then explain each line:\n```js\nconst limits = { max: 3 };\nlet count = 1;\nif (count < limits.max) {\n  let count = 10;\n  limits.max = 5;\n}\nconsole.log(count, limits.max, typeof limits, typeof count);\n```",
@@ -16,7 +16,7 @@
 			"Inside the `if` block, `let count = 10` declares a *new* block-scoped `count` that shadows the outer one.",
 			"When the block ends, the inner `count` disappears; the outer `count` is still `1`.",
 			"`typeof` an object literal is `\"object\"`; `typeof 1` is `\"number\"`.",
-			"Run it with assertions:\n```js\nimport assert from \"node:assert/strict\";\nconst limits = { max: 3 };\nlet count = 1;\nif (count < limits.max) {\n  let count = 10;\n  limits.max = 5;\n}\nassert.deepEqual([count, limits.max, typeof limits, typeof count], [1, 5, \"object\", \"number\"]);\nconsole.log(count, limits.max, typeof limits, typeof count);\n```"
+			"Run it with assertions:\n```js\nimport assert from \"node:assert/strict\";\nconst limits = { max: 3 };\nlet count = 1;\nif (count < limits.max) {\n  let count = 10;\n  limits.max = 5;\n}\nassert.deepEqual([count, limits.max, typeof limits, typeof count], [1, 5, \"object\", \"number\"]);\nassert.equal(typeof null, \"object\"); // the historic quirk behind the pitfall below\nconsole.log(count, limits.max, typeof limits, typeof count);\n```"
 		],
 		"answer": "It logs `1 5 object number`: the inner `let` shadowed `count` only inside the block, while the `const` object was mutated."
 	},
@@ -45,8 +45,13 @@
 			"sourceId": "src-8813e1ff9c",
 			"quote": "The latest ECMAScript standard defines eight data types: Seven data types that are primitives: Boolean. true and false. null.",
 			"locator": "Data types"
+		},
+		{
+			"sourceId": "src-8813e1ff9c",
+			"quote": "undefined. A top-level property whose value is not defined.",
+			"locator": "Data types"
 		}
 	],
-	"createdAt": "2026-10-31T19:57:18.000Z",
-	"updatedAt": "2026-10-31T19:57:18.000Z"
+	"createdAt": "2026-10-31T19:58:33.000Z",
+	"updatedAt": "2026-10-31T19:58:33.000Z"
 }

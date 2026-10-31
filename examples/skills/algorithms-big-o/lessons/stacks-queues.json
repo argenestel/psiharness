@@ -1,0 +1,67 @@
+{
+	"skill": "algorithms-big-o",
+	"subskillId": "stacks-queues",
+	"title": "Stacks (LIFO) and queues (FIFO)",
+	"explanation": "A **stack** returns the *most recently added* item first: last-in, first-out (LIFO). A Python list is a good stack — `append()` pushes onto the top and `pop()` with no index removes from the top, both O(1). Reach for a stack whenever the most recent unfinished thing must be dealt with first: matching nested brackets, undo history, evaluating expressions, or depth-first exploration.\n\nA **queue** returns the *oldest* item first: first-in, first-out (FIFO). Don't build one with `list.pop(0)` — removing from the front of a list shifts every other element, which is O(n). Use `collections.deque`, which was designed for fast appends and pops at both ends:\n\n```python\nfrom collections import deque\n\nstack = []\nstack.append(\"a\"); stack.append(\"b\")\nprint(stack.pop())          # b  (last in, first out)\n\nqueue = deque()\nqueue.append(\"a\"); queue.append(\"b\")\nprint(queue.popleft())      # a  (first in, first out)\n```\n\nChoosing between them is about *order of service*: if the newest item must be handled before older ones, it's a stack; if items must be handled in arrival order (task queues, breadth-first search), it's a queue.",
+	"keyIdeas": [
+		"Stack = LIFO: `append()` + `pop()` on a list.",
+		"Queue = FIFO: `collections.deque` with `append()` + `popleft()`.",
+		"`list.pop(0)` is O(n) — avoid it for queues.",
+		"Newest-first problems → stack; arrival-order problems → queue."
+	],
+	"workedExample": {
+		"problem": "Evaluate an expression in reverse Polish notation (operators come after their operands), e.g. `\"3 4 + 2 *\"` meaning (3 + 4) × 2. Support `+ - *` on integers.",
+		"steps": [
+			"Scan tokens left to right; the operands an operator needs are always the two most recent values — a stack.",
+			"Number token → push it.",
+			"Operator token → pop the right operand first, then the left; push `left op right`. Order matters for `-`.",
+			"At the end exactly one value must remain on the stack; anything else means a malformed expression.",
+			"Run it:\n```python\ndef eval_rpn(text):\n    stack = []\n    ops = {'+': lambda a, b: a + b, '-': lambda a, b: a - b, '*': lambda a, b: a * b}\n    for token in text.split():\n        if token in ops:\n            if len(stack) < 2:\n                raise ValueError('not enough operands')\n            right = stack.pop()\n            left = stack.pop()\n            stack.append(ops[token](left, right))\n        else:\n            stack.append(int(token))\n    if len(stack) != 1:\n        raise ValueError('malformed expression')\n    return stack[0]\n\nassert eval_rpn('3 4 + 2 *') == 14\nassert eval_rpn('10 3 -') == 7\nassert eval_rpn('5') == 5\nprint(eval_rpn('3 4 + 2 *'))\n```"
+		],
+		"answer": "`14`: push 3, push 4, `+` → 7, push 2, `*` → 14. Each token is pushed or popped a constant number of times, so evaluation is linear."
+	},
+	"pitfalls": [
+		"Popping operands in the wrong order, so `10 3 -` gives -7 instead of 7.",
+		"Using `list.pop(0)` for a queue, turning an O(n) algorithm into O(n²).",
+		"Not checking for an empty stack before popping, which raises `IndexError` on malformed input."
+	],
+	"citations": [
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "The list methods make it very easy to use a list as a stack, where the last element added is the first element retrieved (\"last-in, first-out\").",
+			"locator": "5.1.1 Using Lists as Stacks"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "To add an item to the top of the stack, use append(). To retrieve an item from the top of the stack, use pop() without an explicit index.",
+			"locator": "5.1.1 Using Lists as Stacks"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "It is also possible to use a list as a queue, where the first element added is the first element retrieved (\"first-in, first-out\"); however, lists are not efficient for this purpose.",
+			"locator": "5.1.2 Using Lists as Queues"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "doing inserts or pops from the beginning of a list is slow (because all of the other elements have to be shifted by one).",
+			"locator": "5.1.2 Using Lists as Queues"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "To implement a queue, use collections.deque which was designed to have fast appends and pops from both ends.",
+			"locator": "5.1.2 Using Lists as Queues"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "While appends and pops from the end of list are fast",
+			"locator": "5.1.2 Using Lists as Queues"
+		},
+		{
+			"sourceId": "src-38d6feee57",
+			"quote": "Append (l.append(x)) [1] O(1)",
+			"locator": "list"
+		}
+	],
+	"createdAt": "2026-10-31T20:10:14.000Z",
+	"updatedAt": "2026-10-31T20:10:14.000Z"
+}

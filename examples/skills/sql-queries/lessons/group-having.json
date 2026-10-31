@@ -1,0 +1,67 @@
+{
+	"skill": "sql-queries",
+	"subskillId": "group-having",
+	"title": "GROUP BY, aggregates, and HAVING",
+	"explanation": "`GROUP BY` collapses rows that share a value into **one row per group**, and aggregate functions — `COUNT`, `SUM`, `AVG`, `MIN`, `MAX` — summarise each group. Every selected column should either be in the `GROUP BY` or be wrapped in an aggregate.\n\n```sql\nSELECT category, COUNT(*) AS products, MAX(unit_price) AS top_price\nFROM products\nGROUP BY category;\n```\n\nThere are two filters, at two different moments. **`WHERE` runs before grouping** and decides which rows go into the aggregates; it cannot mention aggregates. **`HAVING` runs after grouping** and keeps or discards whole groups, usually by an aggregate (`HAVING COUNT(*) >= 2`).\n\n`COUNT(*)` counts rows, while `COUNT(col)` counts only rows where `col` is not `NULL`. That difference matters after a `LEFT JOIN`: counting the right table's id gives 0 for unmatched rows, whereas `COUNT(*)` would give 1. Similarly, `SUM` over a group with no non-`NULL` values returns `NULL`, not 0 — plan for that when a report needs zeros.",
+	"keyIdeas": [
+		"`GROUP BY` makes one row per group; aggregates summarise it.",
+		"`WHERE` filters rows before grouping; `HAVING` filters groups after.",
+		"`COUNT(*)` counts rows; `COUNT(col)` skips `NULL`s.",
+		"`SUM` with no non-`NULL` inputs is `NULL`, not 0."
+	],
+	"workedExample": {
+		"problem": "Using the customers above, count customers per city among those who signed up **on or after 2026-01-02**, keeping only cities with at least 2 such customers.",
+		"steps": [
+			"Row filter on the raw rows → `WHERE signup_date >= '2026-01-02'` (Ana is excluded before grouping).",
+			"One row per city → `GROUP BY city` with `COUNT(*)`.",
+			"Group filter on the aggregate → `HAVING COUNT(*) >= 2`.",
+			"Lima keeps only Cal (1) and Bogota has Dia (1); Quito has Ben and Eli (2).",
+			"Run it:\n```sql\nSELECT city, COUNT(*) AS customers\nFROM customers\nWHERE signup_date >= '2026-01-02'\nGROUP BY city\nHAVING COUNT(*) >= 2;\n```"
+		],
+		"answer": "1 row:\n\n| city | customers |\n|---|---|\n| Quito | 2 |"
+	},
+	"pitfalls": [
+		"Putting an aggregate in `WHERE` (`WHERE COUNT(*) > 1`) — that belongs in `HAVING`.",
+		"Using `COUNT(*)` after a `LEFT JOIN` and reporting 1 instead of 0 for unmatched rows.",
+		"Reporting `SUM(...)` straight from a `LEFT JOIN` and showing blanks (`NULL`) where the business wanted 0 — wrap it as `COALESCE(SUM(x), 0)`."
+	],
+	"citations": [
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "A simple SELECT statement is an aggregate query if it contains either a GROUP BY clause or one or more aggregate functions in the result-set.",
+			"locator": "Simple Select Processing"
+		},
+		{
+			"sourceId": "src-fc7081e6b7",
+			"quote": "WHERE selects input rows before groups and aggregates are computed (thus, it controls which rows go into the aggregate computation)",
+			"locator": "2.7 Aggregate Functions"
+		},
+		{
+			"sourceId": "src-fc7081e6b7",
+			"quote": "whereas HAVING selects group rows after groups and aggregates are computed.",
+			"locator": "2.7 Aggregate Functions"
+		},
+		{
+			"sourceId": "src-fc7081e6b7",
+			"quote": "Thus, the WHERE clause must not contain aggregate functions",
+			"locator": "2.7 Aggregate Functions"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "If a HAVING clause is specified, it is evaluated once for each group of rows as a boolean expression. If the result of evaluating the HAVING clause is false, the group is discarded.",
+			"locator": "Generation of the set of result rows"
+		},
+		{
+			"sourceId": "src-234ab73856",
+			"quote": "The count(X) function returns a count of the number of times that X is not NULL in a group. The count(*) function (with no arguments) returns the total number of rows in the group.",
+			"locator": "count()"
+		},
+		{
+			"sourceId": "src-234ab73856",
+			"quote": "If there are no non-NULL input rows then sum() returns NULL but total() returns 0.0.",
+			"locator": "sum() and total()"
+		}
+	],
+	"createdAt": "2026-10-31T20:05:49.000Z",
+	"updatedAt": "2026-10-31T20:05:49.000Z"
+}

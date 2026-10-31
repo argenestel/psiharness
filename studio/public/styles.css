@@ -185,7 +185,9 @@ body[data-bench="off"] .psi-shell { grid-template-columns: var(--sidebar-w) minm
 body[data-bench="off"] .psi-bench { display: none; }
 
 .psi-main { grid-area: main; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-#app { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scroll-padding-top: var(--s6); }
+/* position: relative keeps absolutely positioned helpers (screen-reader text, measuring nodes) inside the scroller,
+   so they never stretch the document and let the whole shell scroll. */
+#app { position: relative; flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scroll-padding-top: var(--s6); }
 #app:focus-visible { outline-offset: -2px; }
 .psi-view { padding: var(--s8) var(--s12) var(--s12); max-width: calc(var(--measure) + 2 * var(--s12) + 160px); }
 #app[data-route="chat"] { overflow: hidden; display: flex; flex-direction: column; }

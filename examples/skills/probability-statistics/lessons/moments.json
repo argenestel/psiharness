@@ -1,0 +1,40 @@
+{
+	"skill": "probability-statistics",
+	"subskillId": "moments",
+	"title": "Expectation and variance",
+	"explanation": "The **expected value** is the long-run average if you repeated the experiment forever. To compute it, multiply each value by its probability and add the products [1]: $E[X]=\\sum x\\,P(x)$. Think of the probabilities as weights on a seesaw; $E[X]$ is the balance point.\n\n**Variance** measures spread around that balance point. Take each value's deviation from the mean, square it, weight it by its probability, and add [2]: $\\operatorname{Var}(X)=\\sum (x-\\mu)^2P(x)$. The standard deviation is the square root of that sum [2], which puts the spread back in the original units. Squaring makes every deviation count positively and makes far-off values count a lot.\n\nA useful shortcut gives the same number: $\\operatorname{Var}(X)=E[X^2]-\\mu^2$.",
+	"keyIdeas": [
+		"$E[X]=\\sum x\\,P(x)$: the probability-weighted balance point.",
+		"$\\operatorname{Var}(X)=\\sum (x-\\mu)^2P(x)=E[X^2]-\\mu^2$.",
+		"Standard deviation = square root of variance, in the original units."
+	],
+	"workedExample": {
+		"problem": "Find the mean and variance of one roll $X$ of a fair six-sided die.",
+		"steps": [
+			"Mean: $\\frac{1+2+3+4+5+6}{6}=\\frac{21}{6}=3.5$.",
+			"$E[X^2]=\\frac{1+4+9+16+25+36}{6}=\\frac{91}{6}$.",
+			"Variance: $\\frac{91}{6}-3.5^2=\\frac{91}{6}-\\frac{49}{4}=\\frac{35}{12}\\approx2.92$.",
+			"Spread check: the standard deviation $\\sqrt{35/12}\\approx1.71$ is a sensible typical distance from 3.5."
+		],
+		"answer": "$E[X]=3.5$, $\\operatorname{Var}(X)=\\frac{35}{12}\\approx2.92$"
+	},
+	"pitfalls": [
+		"Expecting the expected value to be a possible outcome (a die never shows 3.5).",
+		"Computing $E[X]^2$ when you need $E[X^2]$.",
+		"Forgetting to weight squared deviations by their probabilities."
+	],
+	"citations": [
+		{
+			"sourceId": "src-f75bb01a74",
+			"quote": "To find the expected value or long term average, μ, simply multiply each value of the random variable by its probability and add the products.",
+			"locator": "4.2: Expected value table"
+		},
+		{
+			"sourceId": "src-f75bb01a74",
+			"quote": "find each deviation from its expected value, square it, multiply it by its probability, add the products, and take the square root.",
+			"locator": "4.2: Standard deviation of a probability distribution"
+		}
+	],
+	"createdAt": "2026-10-31T20:12:22Z",
+	"updatedAt": "2026-10-31T20:12:22Z"
+}

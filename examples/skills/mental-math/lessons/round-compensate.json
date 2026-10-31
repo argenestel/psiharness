@@ -1,0 +1,39 @@
+{
+	"skill": "mental-math",
+	"subskillId": "round-compensate",
+	"title": "Multiply near round numbers: round, then compensate",
+	"explanation": "Numbers like 99, 49, or 102 sit right next to friendly round numbers. Rewrite them as round ± a little and distribute: $37\\times99=37\\times(100-1)=3700-37$. OpenStax shows this kind of splitting with movie tickets; if you think about the maths this way, you are using the distributive property [1].\n\nWhen the two factors sit symmetrically around a round number, there's an even faster pattern. $(a+b)(a-b)=a^2-b^2$: to multiply conjugates, square the first term, square the last term, and write the product as a difference of squares [2]. For example $51\\times49=50^2-1^2$.\n\nAlways compensate in the right direction. If you rounded a factor up, the round product is too big and you subtract the extra; if you rounded down, you add it back.",
+	"keyIdeas": [
+		"Rewrite as round ± small: $n\\times99=n\\times100-n$.",
+		"Symmetric pairs: $(a+b)(a-b)=a^2-b^2$.",
+		"Rounded up means subtract the extra; rounded down means add it back."
+	],
+	"workedExample": {
+		"problem": "Compute $99\\times37$ and $51\\times49$ mentally.",
+		"steps": [
+			"$99\\times37=100\\times37-37=3700-37=3663$.",
+			"$51$ and $49$ sit 1 either side of 50: $50^2-1^2=2500-1=2499$.",
+			"Size check: both answers sit just below the round products 3700 and 2500, as expected."
+		],
+		"answer": "$99\\times37=3663$ and $51\\times49=2499$"
+	},
+	"pitfalls": [
+		"Compensating in the wrong direction (adding when you rounded up).",
+		"Subtracting the wrong amount: $37\\times99$ needs $-37$, not $-99$.",
+		"Using $a^2-b^2$ when the factors are not symmetric about $a$."
+	],
+	"citations": [
+		{
+			"sourceId": "src-677425621e",
+			"quote": "If you think about doing the math in this way, you are using the Distributive Property.",
+			"locator": "7.3 Distributive Property"
+		},
+		{
+			"sourceId": "src-6be5caf938",
+			"quote": "To multiply conjugates, square the first term, square the last term, and write the product as a difference of squares.",
+			"locator": "6.4: Multiply Conjugates Using the Product of Conjugates Pattern"
+		}
+	],
+	"createdAt": "2026-10-31T20:14:58Z",
+	"updatedAt": "2026-10-31T20:14:58Z"
+}

@@ -1,0 +1,49 @@
+{
+	"skill": "mental-math",
+	"subskillId": "percentages",
+	"title": "Percentages and percent change",
+	"explanation": "\"Per cent\" means *per hundred* [1]: a percent is a ratio whose denominator is 100 [2]. So $35\\%$ of something is $\\frac{35}{100}$ of it. Mentally, build percentages from easy blocks. $10\\%$ moves the decimal point one place left, $5\\%$ is half of that, and $1\\%$ moves it two places.\n\nPercent **change** compares a change with where you started. First find the amount of increase, new minus original [3]. Then ask what percent that increase is of the **original** amount [4]: $\\text{percent change}=\\frac{\\text{new}-\\text{original}}{\\text{original}}\\times100\\%$.\n\nThe base matters. Going from 50 to 60 is a 20% increase, but going back from 60 to 50 is a smaller percent decrease, because the base is now 60.",
+	"keyIdeas": [
+		"Percent means per hundred.",
+		"Build percentages from 10%, 5%, and 1% blocks.",
+		"Percent change = change ÷ original × 100%."
+	],
+	"workedExample": {
+		"problem": "A bag costs $60$. Find $35\\%$ of the price, then the percent increase if the price rises to $75$.",
+		"steps": [
+			"$10\\%$ of 60 is 6, so $30\\%$ is 18; $5\\%$ is half of $10\\%$, 3; so $35\\%$ is $18+3=21$.",
+			"Increase: $75-60$, a rise of a quarter of 60.",
+			"Compare with the original: $\\frac{75-60}{60}=\\frac14=25\\%$."
+		],
+		"answer": "$35\\%$ of 60 is $21$; the rise to 75 is a $25\\%$ increase"
+	},
+	"pitfalls": [
+		"Dividing the change by the new amount instead of the original.",
+		"Moving the decimal point the wrong number of places (10% is one place, 1% is two).",
+		"Treating percentage points and percent change as the same thing."
+	],
+	"citations": [
+		{
+			"sourceId": "src-9cfb294e54",
+			"quote": "It is really two words, \"per cent,\" and means per one hundred.",
+			"locator": "6.1 Understand Percent"
+		},
+		{
+			"sourceId": "src-9cfb294e54",
+			"quote": "A percent is a ratio whose denominator is 100.",
+			"locator": "6.1: Definition of percent"
+		},
+		{
+			"sourceId": "src-a0775b39fb",
+			"quote": "To find the percent increase, first we find the amount of increase, which is the difference between the new amount and the original amount.",
+			"locator": "6.2: Find Percent Increase and Percent Decrease"
+		},
+		{
+			"sourceId": "src-a0775b39fb",
+			"quote": "Then we find what percent the amount of increase is of the original amount.",
+			"locator": "6.2: Find Percent Increase and Percent Decrease"
+		}
+	],
+	"createdAt": "2026-10-31T20:14:58Z",
+	"updatedAt": "2026-10-31T20:14:58Z"
+}

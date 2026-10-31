@@ -1,0 +1,41 @@
+{
+	"skill": "physics-mechanics",
+	"subskillId": "friction",
+	"title": "Friction: a responsive grip and a sliding drag",
+	"explanation": "Push gently on a heavy box and it does not move: static friction pushes back exactly as hard as you push, up to a limit. OpenStax calls static friction \"a responsive force\" that matches whatever force is exerted, up to its maximum [1]. That maximum is $f_{s,\\max}=\\mu_s N$, where $N$ is the normal force. Below the limit, the actual friction equals your push, not $\\mu_s N$.\n\nPush past the limit and the box slides. Now kinetic friction acts, with magnitude $f_k=\\mu_k N$, opposite the sliding motion. It is usually smaller than the static maximum, which is why it is easier to keep a box moving than to get it started [2].\n\nRecipe: find $N$ from the vertical forces, compare the applied force with $\\mu_s N$, then use either 'friction = push' (stuck) or $F_{net}=F-\\mu_kN$ (sliding).",
+	"keyIdeas": [
+		"Static friction matches the push, up to $\\mu_s N$.",
+		"Sliding: kinetic friction $\\mu_k N$ opposes the motion.",
+		"Kinetic friction is usually less than the maximum static friction.",
+		"Both bounds scale with the normal force $N$."
+	],
+	"workedExample": {
+		"problem": "A $6$ kg crate rests on a level floor ($\\mu_s=0.5$, $\\mu_k=0.3$, $g=10$ m/s²). What happens if you push horizontally with $20$ N? With $40$ N?",
+		"steps": [
+			"Normal force: $N=mg=60$ N, so the static limit is $0.5\\cdot60=30$ N.",
+			"20 N is below 30 N: the crate stays put, and friction is exactly 20 N.",
+			"40 N exceeds 30 N: it slides, with kinetic friction $0.3\\cdot60=18$ N.",
+			"Net force $40-18=22$ N, so $a=\\frac{22}{6}=\\frac{11}{3}\\approx3.67$ m/s²."
+		],
+		"answer": "At 20 N it stays still (friction 20 N); at 40 N it slides with $a=\\frac{11}{3}\\approx3.67$ m/s²"
+	},
+	"pitfalls": [
+		"Setting static friction equal to $\\mu_s N$ even when the push is smaller.",
+		"Using the static coefficient after the object starts sliding.",
+		"Taking $N$ as the weight when other vertical forces act (an angled push or a lift)."
+	],
+	"citations": [
+		{
+			"sourceId": "src-46d8555e80",
+			"quote": "Static friction is a responsive force that increases to be equal and opposite to whatever force is exerted, up to its maximum limit.",
+			"locator": "6.2 Friction: Static and Kinetic Friction"
+		},
+		{
+			"sourceId": "src-46d8555e80",
+			"quote": "Once in motion, it is easier to keep it in motion than it was to get it started, indicating that the kinetic frictional force is less than the static frictional force.",
+			"locator": "6.2: Static and Kinetic Friction"
+		}
+	],
+	"createdAt": "2026-10-31T20:09:09Z",
+	"updatedAt": "2026-10-31T20:09:09Z"
+}

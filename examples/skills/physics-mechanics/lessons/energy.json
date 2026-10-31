@@ -1,0 +1,45 @@
+{
+	"skill": "physics-mechanics",
+	"subskillId": "energy",
+	"title": "Work and kinetic energy",
+	"explanation": "Push something along a distance and you do **work** on it: for a constant force along the motion, $W=F\\,d$. More generally, work over a small step is the dot product of the force and the displacement [1], so only the part of the force along the motion counts.\n\nThe payoff is the work-energy theorem: the net work done on an object equals the change in its kinetic energy [2], with $K=\\tfrac12 m v^2$. Net work speeds things up; negative net work slows them down, since an object that slows has a negative change in kinetic energy [3].\n\nThis lets you skip time entirely. Instead of finding acceleration and duration, add up the work and read off the new speed.",
+	"keyIdeas": [
+		"Constant force along the motion: $W=F\\,d$.",
+		"Kinetic energy $K=\\tfrac12mv^2$ grows with the square of speed.",
+		"Work-energy theorem: $W_{net}=\\Delta K$."
+	],
+	"workedExample": {
+		"problem": "A $2$ kg cart starts at rest. A constant net force of $9$ N pushes it $4$ m along a level track. Find the work done and its final speed.",
+		"steps": [
+			"Work: $W=9\\cdot4=36$ J.",
+			"Work-energy theorem: $\\Delta K=36$ J, and $K_i=0$, so $K_f=36$ J.",
+			"Solve $\\tfrac12\\cdot2\\cdot v^2=36$: $v^2=36$, so $v=6$ m/s.",
+			"Units check: N·m = J, and J/kg = m²/s²."
+		],
+		"answer": "$36$ J of work; final speed $6$ m/s"
+	},
+	"pitfalls": [
+		"Forgetting to square the speed in $\\tfrac12mv^2$, or dropping the $\\tfrac12$.",
+		"Counting a force perpendicular to the motion as doing work.",
+		"Using one force instead of the net force in the work-energy theorem."
+	],
+	"citations": [
+		{
+			"sourceId": "src-7c5e876b4a",
+			"quote": "which is the dot product of the net force and the displacement",
+			"locator": "7.3 Work-Energy Theorem: derivation"
+		},
+		{
+			"sourceId": "src-7c5e876b4a",
+			"quote": "The net work done on a particle equals the change in the particle's kinetic energy",
+			"locator": "7.3: Work-Energy Theorem"
+		},
+		{
+			"sourceId": "src-7c5e876b4a",
+			"quote": "when an object slows down, its final kinetic energy is less than its initial kinetic energy, the change in its kinetic energy is negative, and so is the net work done on it",
+			"locator": "7.3: Figure 7.11"
+		}
+	],
+	"createdAt": "2026-10-31T20:09:09Z",
+	"updatedAt": "2026-10-31T20:09:09Z"
+}

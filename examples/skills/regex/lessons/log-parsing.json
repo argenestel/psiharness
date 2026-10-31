@@ -1,0 +1,72 @@
+{
+	"skill": "regex",
+	"subskillId": "log-parsing",
+	"title": "Parsing log lines: putting it together",
+	"explanation": "Real parsing combines everything: **anchors** to match the whole line, **classes and quantifiers** with exact widths for each field, **named groups** for the fields you want back, and **alternation** for a fixed vocabulary such as log levels. Build the pattern one field at a time and test each addition against a good line and a bad one.\n\nTo pull *every* occurrence of a field out of a line, use a global regex with `matchAll`. It returns an iterator of all matches, each including its capture groups — something `match` with `g` can't give you. `matchAll` throws a `TypeError` if the regex lacks the `g` flag.\n\n```js\nconst line = \"cc: ana@home bo@work\";\nfor (const m of line.matchAll(/(\\w+)@(\\w+)/g)) console.log(m[1], m[2]);  // ana home / bo work\n```\n\nOne real-world trap: a regex with the `g` (or `y`) flag is **stateful**. It stores `lastIndex`, the position where the next search starts, and `test()`/`exec()` update it. Reusing the same global regex object across different strings can therefore make `test()` alternate between `true` and `false`. Use a non-global regex for yes/no checks, reset `lastIndex = 0`, or use `matchAll`, which works on an internal copy.",
+	"keyIdeas": [
+		"Anchor the whole line; give each field an exact class and width.",
+		"Named groups document the fields you extract.",
+		"`matchAll` (requires `g`) yields every match with its groups.",
+		"Global regexes keep `lastIndex` state — don't reuse them for `test()`."
+	],
+	"workedExample": {
+		"problem": "Parse an access-log request like `\"GET /docs/index.html HTTP/1.1 404 512\"` into method, path, status, and bytes. Reject `\"FETCH /x HTTP/1.1 200 5\"` (unknown method) and `\"GET /x HTTP/1.1 20 5\"` (status must be 3 digits).",
+		"steps": [
+			"Method is a fixed vocabulary → alternation in a named group: `(?<method>GET|POST|PUT|DELETE)`.",
+			"The path is a run of non-spaces: `(?<path>\\S+)`. The protocol is literal text with escaped `/` and `.`: `HTTP\\/\\d\\.\\d`.",
+			"Status is exactly three digits `(?<status>\\d{3})`; bytes is one or more digits `(?<bytes>\\d+)`.",
+			"Join the fields with single spaces and anchor with `^...$` so malformed lines fail instead of half-matching.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nconst request = /^(?<method>GET|POST|PUT|DELETE) (?<path>\\S+) HTTP\\/\\d\\.\\d (?<status>\\d{3}) (?<bytes>\\d+)$/;\nconst m = \"GET /docs/index.html HTTP/1.1 404 512\".match(request);\nassert.deepEqual({ ...m.groups }, { method: \"GET\", path: \"/docs/index.html\", status: \"404\", bytes: \"512\" });\nassert.equal(\"FETCH /x HTTP/1.1 200 5\".match(request), null);\nassert.equal(\"GET /x HTTP/1.1 20 5\".match(request), null);\n// the lastIndex trap, demonstrated:\nconst digits = /\\d+/g;\nassert.deepEqual([digits.test(\"a1\"), digits.test(\"a1\")], [true, false]);\nconsole.log(m.groups);\n```"
+		],
+		"answer": "`{ method: \"GET\", path: \"/docs/index.html\", status: \"404\", bytes: \"512\" }`; both malformed lines return `null`."
+	},
+	"pitfalls": [
+		"Leaving the pattern unanchored, so a malformed line still \"matches\" a fragment and produces wrong fields.",
+		"Reusing one `/.../g` regex for `test()` on many strings and getting alternating results because of `lastIndex`.",
+		"Using `.*` for fields; a greedy `.*` can swallow the separators of later fields."
+	],
+	"citations": [
+		{
+			"sourceId": "src-3326cd8bc3",
+			"quote": "The matchAll() method of String values returns an iterator of all results matching this string against a regular expression, including capturing groups.",
+			"locator": "Description"
+		},
+		{
+			"sourceId": "src-3326cd8bc3",
+			"quote": "If regexp is a regex, then it must have the global (g) flag set, or a TypeError is thrown.",
+			"locator": "Parameters"
+		},
+		{
+			"sourceId": "src-c57a87abf6",
+			"quote": "The lastIndex data property of a RegExp instance specifies the index at which to start the next match.",
+			"locator": "Introduction"
+		},
+		{
+			"sourceId": "src-c57a87abf6",
+			"quote": "This property is set only if the regular expression instance used the g flag to indicate a global search, or the y flag to indicate a sticky search.",
+			"locator": "Description"
+		},
+		{
+			"sourceId": "src-c57a87abf6",
+			"quote": "console.log(re.test(\"foo baz\")); // false, because lastIndex is non-zero",
+			"locator": "Avoiding side effects"
+		},
+		{
+			"sourceId": "src-c57a87abf6",
+			"quote": "remember to reset lastIndex after each input is completely processed.",
+			"locator": "Avoiding side effects"
+		},
+		{
+			"sourceId": "src-3326cd8bc3",
+			"quote": "matchAll internally makes a clone of the regexp — so, unlike regexp.exec(), lastIndex does not change as the string is scanned.",
+			"locator": "Examples"
+		},
+		{
+			"sourceId": "src-c4a55b141a",
+			"quote": "Named capturing group: Matches \"x\" and stores it on the groups property of the returned matches under the name specified by <Name>.",
+			"locator": "Types: (?<Name>x)"
+		}
+	],
+	"createdAt": "2026-10-31T20:15:38.000Z",
+	"updatedAt": "2026-10-31T20:15:38.000Z"
+}

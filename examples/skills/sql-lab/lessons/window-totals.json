@@ -1,0 +1,57 @@
+{
+	"skill": "sql-lab",
+	"subskillId": "window-totals",
+	"title": "Running totals and group totals with window aggregates",
+	"explanation": "Ordinary aggregates — `SUM`, `COUNT`, `AVG` — become window functions when you add `OVER (...)`. Instead of collapsing rows, each row gets the aggregate of its **window frame**:\n\n- `SUM(x) OVER (PARTITION BY g)` (no `ORDER BY`) — every row in group `g` is a peer, so each row sees the **whole group's total**.\n- `SUM(x) OVER (ORDER BY t ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` — a **running total**: everything from the start of the partition up to this row.\n\nWhy spell out `ROWS`? With `ORDER BY` but no frame, the default frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, which includes the current row's **peers**. Rows that tie on the sort key then all show the same, \"jumped-ahead\" total. `ROWS` counts physical rows one at a time.\n\n```sql\nSELECT item_id, quantity,\n       SUM(quantity) OVER (ORDER BY item_id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running\nFROM order_items;\n```\n\nWhen the data is more detailed than the report (item rows, but you want per-order or per-day totals), aggregate first — often in a `WITH` common table expression, a temporary named result that exists only for that statement — and then apply the window to the aggregated rows.",
+	"keyIdeas": [
+		"Aggregate + `OVER` = per-row total without collapsing rows.",
+		"No `ORDER BY` in the window → each row sees its whole partition.",
+		"Running totals: `ORDER BY ... ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`.",
+		"Aggregate to the report's grain first (a CTE helps), then window."
+	],
+	"workedExample": {
+		"problem": "Show, for each order date, how many orders were placed that day and the running total of orders so far.",
+		"steps": [
+			"The report's grain is one row per **day**, but `orders` has one row per order — aggregate first.",
+			"Put the daily counts in a CTE: `WITH daily AS (SELECT order_date, COUNT(*) AS n FROM orders GROUP BY order_date)`.",
+			"Then run the window over the daily rows: `SUM(n) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`.",
+			"Check by hand: 1, then 1 + 2 = 3, then 3 + 3 = 6, then 6 + 1 = 7.",
+			"Run it:\n```sql\nWITH daily AS (\n  SELECT order_date, COUNT(*) AS n FROM orders GROUP BY order_date\n)\nSELECT order_date, n,\n       SUM(n) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running\nFROM daily\nORDER BY order_date;\n```"
+		],
+		"answer": "4 rows:\n\n| order_date | n | running |\n|---|---|---|\n| 2026-01-01 | 1 | 1 |\n| 2026-01-02 | 2 | 3 |\n| 2026-01-03 | 3 | 6 |\n| 2026-01-04 | 1 | 7 |"
+	},
+	"pitfalls": [
+		"Relying on the default `RANGE` frame with a non-unique sort key, so tied rows share one running total.",
+		"Running a window directly over item rows when the report is per order, so each order's total repeats or is counted per item.",
+		"Adding `GROUP BY` to get group totals and losing the individual rows you wanted to keep."
+	],
+	"citations": [
+		{
+			"sourceId": "src-5d1b9daac5",
+			"quote": "The default frame-spec is: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW EXCLUDE NO OTHERS",
+			"locator": "2.2 Frame Specifications"
+		},
+		{
+			"sourceId": "src-5d1b9daac5",
+			"quote": "The default means that aggregate window functions read all rows from the beginning of the partition up to and including the current row and its peers.",
+			"locator": "2.2 Frame Specifications"
+		},
+		{
+			"sourceId": "src-5d1b9daac5",
+			"quote": "rows with the same values for all ORDER BY expressions are considered \"peers\". Or, if there are no ORDER BY terms, all rows are peers.",
+			"locator": "2.2.1 Frame Type"
+		},
+		{
+			"sourceId": "src-318c5ed79d",
+			"quote": "Common Table Expressions or CTEs act like temporary views that exist only for the duration of a single SQL statement.",
+			"locator": "1. Overview"
+		},
+		{
+			"sourceId": "src-318c5ed79d",
+			"quote": "Ordinary common table expressions are helpful for making queries easier to understand by factoring subqueries out of the main SQL statement.",
+			"locator": "1. Overview"
+		}
+	],
+	"createdAt": "2026-10-31T20:05:49.000Z",
+	"updatedAt": "2026-10-31T20:05:49.000Z"
+}

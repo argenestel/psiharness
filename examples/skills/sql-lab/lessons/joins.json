@@ -1,0 +1,52 @@
+{
+	"skill": "sql-lab",
+	"subskillId": "joins",
+	"title": "Joins: pairing rows across tables",
+	"explanation": "A **join** combines rows from two tables, with an `ON` condition saying which rows belong together. Conceptually the database considers every pairing and keeps those where `ON` is true. So the result has one row **per matching pair**: a customer with three orders appears three times. That repetition is the join's *grain* — know it before you count or sum anything.\n\n```sql\nSELECT o.order_id, c.name\nFROM orders AS o\nJOIN customers AS c ON c.customer_id = o.customer_id;\n```\n\nAn **inner join** (`JOIN`) drops rows that have no match. A **`LEFT JOIN`** keeps every row of the left table at least once; when there is no match, the right table's columns are filled with `NULL`. That makes \"who has no orders?\" a `LEFT JOIN ... WHERE o.order_id IS NULL`.\n\nWhere you put a condition matters with `LEFT JOIN`: a condition in `ON` only limits which right-hand rows match, while the same condition in `WHERE` filters the final rows — and it throws away the `NULL`-filled rows you meant to keep.",
+	"keyIdeas": [
+		"A join yields one row per matching pair — check the grain.",
+		"Inner `JOIN` drops unmatched rows.",
+		"`LEFT JOIN` keeps every left row; missing right columns become `NULL`.",
+		"Right-table filters belong in `ON` when you must keep unmatched left rows."
+	],
+	"workedExample": {
+		"problem": "Which products were in **cancelled** orders, and in what quantity? Return `order_id`, product name, and quantity.",
+		"steps": [
+			"The status lives in `orders`, quantities in `order_items`, names in `products` — three tables.",
+			"Join `order_items` to `orders` on `order_id`, then to `products` on `product_id`; each output row is one item line (the grain).",
+			"An inner join is right here: we only want items that have both an order and a product.",
+			"Filter with `WHERE o.status = 'cancelled'`.",
+			"Run it:\n```sql\nSELECT o.order_id, p.name, oi.quantity\nFROM orders AS o\nJOIN order_items AS oi ON oi.order_id = o.order_id\nJOIN products AS p ON p.product_id = oi.product_id\nWHERE o.status = 'cancelled';\n```"
+		],
+		"answer": "1 row:\n\n| order_id | name | quantity |\n|---|---|---|\n| 104 | Coffee | 3 |"
+	},
+	"pitfalls": [
+		"Summing a column after joining to a many-row table, so each value is counted once per match.",
+		"Filtering the right table of a `LEFT JOIN` in `WHERE`, which silently turns it into an inner join.",
+		"Forgetting the `ON` condition (or joining on the wrong key), which pairs every row with every row."
+	],
+	"citations": [
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "If there is an ON clause then the ON expression is evaluated for each row of the cartesian product as a boolean expression. Only rows for which the expression evaluates to true are included",
+			"locator": "2.2 Join processing"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "then after the ON or USING filtering clauses have been applied, an extra row is added to the output for each row in the original left-hand input dataset that does not",
+			"locator": "2.2 Join processing"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "The added rows contain NULL values in the columns that would normally contain values copied from the right-hand input dataset.",
+			"locator": "2.2 Join processing"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "Only rows for which the WHERE clause expression evaluates to true are included",
+			"locator": "2.3 WHERE clause filtering"
+		}
+	],
+	"createdAt": "2026-10-31T20:05:49.000Z",
+	"updatedAt": "2026-10-31T20:05:49.000Z"
+}

@@ -1,0 +1,40 @@
+{
+	"skill": "linear-algebra-practice",
+	"subskillId": "compose",
+	"title": "Composition is multiplication",
+	"explanation": "Apply one transformation, then another. The overall effect is again a linear transformation, called the **composition** [1], and it has its own matrix. To find it, follow $\\hat\\imath$ and $\\hat\\jmath$ through both steps; their final landing spots are the columns of the product.\n\nOrder is written right to left, like function notation: in $AB$ you first apply $B$ (on the right), then $A$ (on the left) [2]. And order matters. A shear then a stretch need not equal the stretch then the shear, so in general $AB\\ne BA$.\n\nTo multiply by hand: column $j$ of $AB$ is $A$ applied to column $j$ of $B$. Rows of $A$ dotted with columns of $B$ give the same numbers.",
+	"keyIdeas": [
+		"$AB$ means: do $B$ first, then $A$ (read right to left).",
+		"Column $j$ of $AB$ is $A$ times column $j$ of $B$.",
+		"Matrix multiplication is usually not commutative: $AB\\ne BA$ in general."
+	],
+	"workedExample": {
+		"problem": "Let $H=\\begin{pmatrix}1&2\\\\0&1\\end{pmatrix}$ (a shear) and $D=\\begin{pmatrix}1&0\\\\0&3\\end{pmatrix}$ (a vertical stretch). Find the matrix for 'shear, then stretch' and compare it with 'stretch, then shear'.",
+		"steps": [
+			"'Shear, then stretch' is $DH$ ($H$ acts first, so it sits on the right).",
+			"Columns of $DH$: $D(1,0)=(1,0)$ and $D(2,1)=(2,3)$, so $DH=\\begin{pmatrix}1&2\\\\0&3\\end{pmatrix}$.",
+			"Reverse order: $HD$ has columns $H(1,0)=(1,0)$ and $H(0,3)=(6,3)$, so $HD=\\begin{pmatrix}1&6\\\\0&3\\end{pmatrix}$.",
+			"Test on $(0,1)$: $DH$ sends it to $(2,3)$, $HD$ to $(6,3)$. Different, so order matters."
+		],
+		"answer": "$DH=\\begin{pmatrix}1&2\\\\0&3\\end{pmatrix}$, while $HD=\\begin{pmatrix}1&6\\\\0&3\\end{pmatrix}$"
+	},
+	"pitfalls": [
+		"Reading $AB$ left to right and applying $A$ first.",
+		"Assuming $AB=BA$; it holds only in special cases.",
+		"Multiplying entry by entry instead of rows by columns."
+	],
+	"citations": [
+		{
+			"sourceId": "src-05344760b6",
+			"quote": "This new linear transformation is commonly called the \"composition\" of the two separate transformations we applied.",
+			"locator": "Composition"
+		},
+		{
+			"sourceId": "src-05344760b6",
+			"quote": "You first apply the transformation represented by the matrix on the right, then you apply the transformation represented by the matrix on the left.",
+			"locator": "Composition is Multiplication"
+		}
+	],
+	"createdAt": "2026-10-31T20:06:18Z",
+	"updatedAt": "2026-10-31T20:06:18Z"
+}

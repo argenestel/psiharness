@@ -1,0 +1,67 @@
+{
+	"skill": "algorithms-big-o",
+	"subskillId": "sorting",
+	"title": "Sorting: cost, stability, and keys",
+	"explanation": "Comparison sorts that split the work in half, such as **merge sort**, run in O(n log n). Merge sort splits the list in half, sorts each half recursively (a list of zero or one item is already sorted — the base case), then **merges** the two sorted halves. There are about log n levels of splitting, and merging all the pieces on one level costs about n, so the total is n log n. The price is extra memory: merge sort needs O(n) additional space to hold the halves.\n\nIn practice you call Python's built-in `sorted()` or `list.sort()`, also O(n log n). Two features do most of the work:\n\n- `key=` — a function applied to each element once, before comparing. Return a **tuple** to sort by several fields: `key=lambda r: (r.priority, r.name)`. Use `reverse=True` for descending order.\n- **Stability** — items with equal keys keep their original order. That lets you sort in passes (secondary key first, then primary), and it is why a good merge takes from the left half on ties (`<=`).\n\n```python\npeople = [(\"bo\", 30), (\"al\", 25), (\"cy\", 30)]\nby_age = sorted(people, key=lambda p: p[1])\nprint(by_age)    # [('al', 25), ('bo', 30), ('cy', 30)] -- bo stays before cy\nprint(sorted(people, key=lambda p: (-p[1], p[0])))  # age desc, then name asc\n```",
+	"keyIdeas": [
+		"Merge sort: split, sort halves, merge — O(n log n) time, O(n) extra space.",
+		"`key=` maps each item to what you compare; tuples give multi-level order.",
+		"Python's sort is stable: equal keys keep their input order.",
+		"Use `reverse=True` (or negate numeric keys) for descending order."
+	],
+	"workedExample": {
+		"problem": "Sort log records `(level, time)` so that `ERROR` comes before `WARN` before `INFO`, and within a level by time ascending: `[(\"INFO\", 3), (\"ERROR\", 5), (\"WARN\", 1), (\"ERROR\", 2), (\"INFO\", 1)]`.",
+		"steps": [
+			"Level names don't sort alphabetically in the order we want, so map them to numbers: `{\"ERROR\": 0, \"WARN\": 1, \"INFO\": 2}`.",
+			"Build a tuple key `(rank[level], time)`: the first field decides, the second breaks ties.",
+			"Alternatively, use stability: sort by time first, then by level rank — the second sort keeps time order within each level.",
+			"Either way the cost is one or two library sorts; check that both give the same order.",
+			"Run it:\n```python\nlogs = [('INFO', 3), ('ERROR', 5), ('WARN', 1), ('ERROR', 2), ('INFO', 1)]\nrank = {'ERROR': 0, 'WARN': 1, 'INFO': 2}\none_pass = sorted(logs, key=lambda r: (rank[r[0]], r[1]))\ntwo_pass = sorted(sorted(logs, key=lambda r: r[1]), key=lambda r: rank[r[0]])\nexpected = [('ERROR', 2), ('ERROR', 5), ('WARN', 1), ('INFO', 1), ('INFO', 3)]\nassert one_pass == expected and two_pass == expected\nassert logs[0] == ('INFO', 3)   # sorted() returned new lists\nprint(one_pass)\n```"
+		],
+		"answer": "`[('ERROR', 2), ('ERROR', 5), ('WARN', 1), ('INFO', 1), ('INFO', 3)]` — by a tuple key in one pass, or by two stable sorts (secondary key first)."
+	},
+	"pitfalls": [
+		"Calling `list.sort()` and using its return value — it sorts in place and returns `None`; use `sorted()` for a new list.",
+		"Doing two-pass sorts in the wrong order (primary key first), which destroys the primary ordering.",
+		"Forgetting that merge sort's slicing allocates new lists — the O(n) extra space is real."
+	],
+	"citations": [
+		{
+			"sourceId": "src-39bc578f72",
+			"quote": "Merge sort is a recursive algorithm that continually splits a list in half. If the list is empty or has one item, it is sorted by definition (the base case).",
+			"locator": "5.11 The Merge Sort"
+		},
+		{
+			"sourceId": "src-39bc578f72",
+			"quote": "A merge sort is an \\(O(n\\log{n})\\) algorithm.",
+			"locator": "5.11 The Merge Sort (analysis)"
+		},
+		{
+			"sourceId": "src-39bc578f72",
+			"quote": "It is important to notice that the merge_sort function requires extra space to hold the two halves as they are extracted with the slicing operations.",
+			"locator": "5.11 The Merge Sort (analysis)"
+		},
+		{
+			"sourceId": "src-38d6feee57",
+			"quote": "Sort (l.sort()) [4] O(n log n)",
+			"locator": "list"
+		},
+		{
+			"sourceId": "src-be20e7fa9b",
+			"quote": "have a key parameter to specify a function (or other callable) to be called on each list element prior to making comparisons.",
+			"locator": "Key Functions"
+		},
+		{
+			"sourceId": "src-be20e7fa9b",
+			"quote": "Sorts are guaranteed to be stable. That means that when multiple records have the same key, their original order is preserved.",
+			"locator": "Sort Stability and Complex Sorts"
+		},
+		{
+			"sourceId": "src-be20e7fa9b",
+			"quote": "Both list.sort() and sorted() accept a reverse parameter with a boolean value. This is used to flag descending sorts.",
+			"locator": "Ascending and Descending"
+		}
+	],
+	"createdAt": "2026-10-31T20:10:14.000Z",
+	"updatedAt": "2026-10-31T20:10:14.000Z"
+}

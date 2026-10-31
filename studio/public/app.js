@@ -127,13 +127,17 @@ function route() {
 	return { topic: parsed.params.topic || "", view: parsed.params.view || "map" };
 }
 function topicPath(topic, view) { return `#/${enc(topic)}/${view}`; }
+/** A topic's display name: its graph title, or the slug in words when the tutor hasn't titled it yet. */
+const topicTitle = (t) => t.title && t.title !== t.topic ? t.title : capital(titleOf(t.topic));
 function topicRow(t) {
 	const progress = t.concepts ? pct(t.mastered / t.concepts) : 0;
-	return `<li><div><h3><a href="${topicPath(t.topic, "map")}">${escapeHtml(t.title)}</a></h3>
+	const title = topicTitle(t);
+	const meta = t.concepts ? `${t.mastered} of ${plural(t.concepts, "concept")} mastered${t.due
+		? `, ${t.due} ${t.due === 1 ? "card" : "cards"} due` : ""}` : "Notes only, no concept map yet";
+	return `<li><div><h3><a href="${topicPath(t.topic, "map")}">${escapeHtml(title)}</a></h3>
 		${t.bigIdea ? `<p>${escapeHtml(t.bigIdea)}</p>` : ""}
-		<p class="psi-row-meta">${t.mastered} of ${plural(t.concepts, "concept")} mastered${t.due
-			? `, ${t.due} ${t.due === 1 ? "card" : "cards"} due` : ""}</p>
-		${meter(progress, `${t.title}: ${progress}% mastered`)}</div>
+		<p class="psi-row-meta">${meta}</p>
+		${progress > 0 ? meter(progress, `${title}: ${progress}% mastered`) : ""}</div>
 		${t.due ? `<a class="button psi-row-action" href="${topicPath(t.topic, "review")}">Review</a>` : ""}</li>`;
 }
 const VIEWS = [["map", "Map"], ["lessons", "Lessons"], ["gallery", "Gallery"], ["review", "Review"], ["progress", "Progress"]];
@@ -446,8 +450,9 @@ function renderProgress(container, concepts, mastery, reviews) {
 	const mastered = concepts.filter((c) => (mastery[c.id]?.pKnown || 0) >= 0.95).length;
 	const rows = concepts.map((c) => {
 		const m = mastery[c.id], value = pct(m?.pKnown);
-		return `<li><span>${escapeHtml(c.title)}</span><span>${value}%, ${plural(m?.attempts || 0, "attempt")}</span>
-			${meter(value, `${c.title} mastery`)}</li>`;
+		const attempts = m?.attempts || 0;
+		return `<li><span>${escapeHtml(c.title)}</span><span>${attempts ? `${value}%, ${plural(attempts, "attempt")}` : "Not started"}</span>
+			${value > 0 ? meter(value, `${c.title} mastery`) : ""}</li>`;
 	}).join("");
 	container.innerHTML = `<div class="psi-concepts"><div class="psi-stats">
 		<div><strong>${streak}</strong><span>${streak === 1 ? "day" : "days"} in a row</span></div>
@@ -547,7 +552,10 @@ async function refreshChrome() {
 			const nodes = await Promise.all(items.map(build));
 			if (token !== shellGeneration) return;
 			el.replaceChildren(...(nodes.length ? nodes : [note(fallback)]));
-		} catch { if (token === shellGeneration) el.replaceChildren(note("Couldn't load. Retrying when psi reconnects.")); }
+		} catch {
+			// Keep what the list showed; the one "Reconnecting to psi…" line under the sidebar covers the outage.
+			if (token === shellGeneration && !el.querySelector("a")) el.replaceChildren();
+		}
 	};
 	await Promise.allSettled([
 		fill("#saved-chats", async () => sortChats(await client.get("/api/chat")).slice(0, CHAT_LIMIT),
@@ -568,7 +576,7 @@ async function refreshChrome() {
 			return a;
 		}, "No skills yet. Add one from Home."),
 		fill("#sidebar-topics", () => client.get("/api/topics"), (t) => link(topicPath(t.topic, "map"),
-			t.title && t.title !== t.topic ? t.title : capital(titleOf(t.topic))), "")
+			topicTitle(t)), "")
 			.then(() => {
 				const nav = document.querySelector("#sidebar-topics");
 				nav.querySelector(".psi-nav-note")?.remove();
@@ -623,6 +631,12 @@ async function renderRoute() {
 			const { mountPractice } = await import("./js/practice.js");
 			if (token !== generation) return;
 			view = mountPractice(host, { skill: parsed.params.skill, navigate });
+			// The top bar starts from the slug ("Sql lab"); swap in the plan's own title ("SQL Lab").
+			void import("./js/api.js").then(({ api: client }) => client.get(`/api/skills/${enc(parsed.params.skill)}`))
+				.then((data) => {
+					if (token !== generation || !data?.plan?.title) return;
+					setTopbar(data.plan.title); document.title = `${data.plan.title} · psi`;
+				}).catch(() => {});
 		} else if (parsed.route === "graph") {
 			const { mountGraph } = await import("./js/graph.js");
 			if (token !== generation) return;

@@ -1,0 +1,41 @@
+{
+	"skill": "physics-mechanics",
+	"subskillId": "kinematics-2d",
+	"title": "Two-dimensional motion: two 1D problems in parallel",
+	"explanation": "Throw a ball and its sideways and up-down motions do not interfere: motions along perpendicular axes are independent and can be analysed separately [1]. So a projectile is two 1D problems sharing one clock.\n\nHorizontally, with negligible air resistance, there is no acceleration [2]: $x=v_x\\,t$. Vertically, gravity gives a constant downward acceleration $g$: $v_y(t)=v_{y0}-g\\,t$ and $y=v_{y0}\\,t-\\tfrac12 g\\,t^2$.\n\nThe vertical motion sets the timing (when it peaks, when it lands), and the horizontal motion uses that time to find the distance. For a launch and landing at the same height, $y=0$ again at $t=\\frac{2v_{y0}}{g}$.",
+	"keyIdeas": [
+		"Split the motion into horizontal and vertical parts that share time $t$.",
+		"No drag: horizontal velocity is constant, $x=v_x t$.",
+		"Vertical: constant acceleration $g$ downward, $y=v_{y0}t-\\tfrac12gt^2$.",
+		"Use the vertical motion to find the time, then the horizontal motion to find the range."
+	],
+	"workedExample": {
+		"problem": "A ball is launched with $v_x=6$ m/s and $v_{y0}=25$ m/s and lands at launch height. With $g=10$ m/s² and no drag, find the flight time and range.",
+		"steps": [
+			"Vertical: $y=25t-5t^2=t(25-5t)$, which is zero again at $t=5$ s.",
+			"Horizontal: the velocity stays 6 m/s for the whole flight.",
+			"Range: $x=6\\cdot5=30$ m.",
+			"Sanity check: the horizontal speed did not affect the flight time."
+		],
+		"answer": "Flight time $5$ s; range $30$ m"
+	},
+	"pitfalls": [
+		"Letting the horizontal velocity change during the flight (no drag means no horizontal acceleration).",
+		"Using the total launch speed in the vertical equation instead of its vertical component.",
+		"Mixing signs: if up is positive, gravity's acceleration is negative."
+	],
+	"citations": [
+		{
+			"sourceId": "src-250971f50a",
+			"quote": "The most important fact to remember here is that motions along perpendicular axes are independent and thus can be analyzed separately.",
+			"locator": "4.3 Projectile Motion: introduction"
+		},
+		{
+			"sourceId": "src-250971f50a",
+			"quote": "there is no acceleration along the horizontal axis when air resistance is negligible",
+			"locator": "4.3: choice of axes"
+		}
+	],
+	"createdAt": "2026-10-31T20:09:09Z",
+	"updatedAt": "2026-10-31T20:09:09Z"
+}

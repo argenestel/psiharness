@@ -1,0 +1,51 @@
+{
+	"skill": "regex",
+	"subskillId": "alternation",
+	"title": "Alternation: this or that",
+	"explanation": "The pipe `|` means **or**: `/green|red/` matches \"green\" or \"red\". Each side is called an *alternative*, and the engine tries them from left to right at each position.\n\n`|` has the **lowest precedence** of all regex operators — it splits the *entire* pattern (or the enclosing group) into alternatives. That is convenient for multi-character words (`Crow|Servo` means \"Crow\" or \"Servo\", not \"Cro\" + (\"w\" or \"S\") + \"ervo\"), but it surprises people when anchors are involved: `^yes|no$` means \"`yes` at the start\" **or** \"`no` at the end\", so it accepts `\"yesterday\"`.\n\n```js\nconsole.log(/^yes|no$/.test(\"yesterday\"));     // true  -- only the first alternative needed to match\nconsole.log(/^(?:yes|no)$/.test(\"yesterday\")); // false -- group the alternatives, then anchor\nconsole.log(/^(?:yes|no)$/.test(\"no\"));        // true\n```\n\nSo: wrap alternatives in a group — usually non-capturing `(?:...)` — whenever they share surrounding pattern such as anchors or a common prefix/suffix. And if the alternatives are single characters, a character class (`[abc]`) is simpler than `a|b|c`.",
+	"keyIdeas": [
+		"`a|b` matches either alternative.",
+		"`|` has the lowest precedence: it splits the whole pattern or group.",
+		"Group alternatives with `(?:...)` before anchoring or adding context.",
+		"For single characters, prefer a class `[abc]`."
+	],
+	"workedExample": {
+		"problem": "Accept image file names made of letters, digits, `_` or `-`, ending in `.jpg`, `.jpeg`, or `.png`. Accept `\"cat.jpg\"`, `\"my-photo.jpeg\"`, `\"logo_2.png\"`; reject `\"notes.txt\"`, `\"image.png.exe\"`, and `\".png\"`.",
+		"steps": [
+			"The name part is one or more allowed characters: `[\\w-]+`.",
+			"The extensions are alternatives that share the same position after a literal dot: `\\.(?:jpe?g|png)` — `jpe?g` covers both jpg and jpeg.",
+			"Anchor the whole thing, with the group keeping `^` and `$` outside the alternation: `^[\\w-]+\\.(?:jpe?g|png)$`.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nconst image = /^[\\w-]+\\.(?:jpe?g|png)$/;\nfor (const ok of [\"cat.jpg\", \"my-photo.jpeg\", \"logo_2.png\"]) assert.ok(image.test(ok), ok);\nfor (const bad of [\"notes.txt\", \"image.png.exe\", \".png\"]) assert.ok(!image.test(bad), bad);\nassert.ok(/^[\\w-]+\\.jpe?g|png$/.test(\"x.txtpng\")); // ungrouped: 'png$' alone is enough\nconsole.log(\"image pattern ok\");\n```"
+		],
+		"answer": "`/^[\\w-]+\\.(?:jpe?g|png)$/`. Without the group, `^[\\w-]+\\.jpe?g|png$` would accept anything that merely ends in `png`, such as `\"x.txtpng\"`."
+	},
+	"pitfalls": [
+		"Anchoring ungrouped alternatives (`^a|b$`) and accidentally anchoring only the first and last alternative.",
+		"Using a capturing group for alternation and shifting the numbers of later captures.",
+		"Ordering alternatives so a shorter one wins first (`/in|int/` finds `in` inside `\"int\"`)."
+	],
+	"citations": [
+		{
+			"sourceId": "src-b8bd6b96e4",
+			"quote": "Disjunction: Matches either \"x\" or \"y\". Each component, separated by a pipe (|), is called an alternative.",
+			"locator": "Types: x|y"
+		},
+		{
+			"sourceId": "src-5915b11be6",
+			"quote": "| has very low precedence in order to make it work reasonably when you're alternating multi-character strings. Crow|Servo will match either 'Crow' or 'Servo'",
+			"locator": "More metacharacters: |"
+		},
+		{
+			"sourceId": "src-c4a55b141a",
+			"quote": "Non-capturing group: Matches \"x\" but does not remember the match.",
+			"locator": "Types: (?:x)"
+		},
+		{
+			"sourceId": "src-b8bd6b96e4",
+			"quote": "Note: A disjunction is another way to specify \"a set of choices\"",
+			"locator": "Types: x|y"
+		}
+	],
+	"createdAt": "2026-10-31T20:15:38.000Z",
+	"updatedAt": "2026-10-31T20:15:38.000Z"
+}

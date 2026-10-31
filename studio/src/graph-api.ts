@@ -47,7 +47,7 @@ export async function handleGraphRoute(req: IncomingMessage, res: ServerResponse
 		}
 		// Keep model discovery usable while the independently owned knowledge module is being developed.
 		const modulePath = "../../core/src/knowledge.ts";
-		const { KnowledgeStore, neighborhood, pathTo } = await import(modulePath);
+		const { KnowledgeStore, neighborhood, knowledgePathTo } = await import(modulePath);
 		const store = new KnowledgeStore(home);
 		let result: unknown;
 		if (path === "/api/graph" && method === "GET") result = store.build();
@@ -76,7 +76,7 @@ export async function handleGraphRoute(req: IncomingMessage, res: ServerResponse
 				const title = text(body.title, "title"), goal = text(body.goal, "goal");
 				let steps = body.steps;
 				const targetId = body.targetId === undefined ? undefined : text(body.targetId, "targetId");
-				if (steps === undefined && targetId) steps = pathTo(store.build(), targetId);
+				if (steps === undefined && targetId) steps = knowledgePathTo(store.build(), targetId);
 				if (!Array.isArray(steps) || steps.some((s) => typeof s !== "string" || !s.trim())) {
 					throw apiError(400, "Expected steps array or targetId");
 				}

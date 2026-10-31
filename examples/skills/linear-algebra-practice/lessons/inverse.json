@@ -1,0 +1,45 @@
+{
+	"skill": "linear-algebra-practice",
+	"subskillId": "inverse",
+	"title": "Inverse transformations: rewind the motion",
+	"explanation": "Solving $A\\,x=v$ asks: which input arrow lands on $v$? Geometrically, play the transformation backwards. That reverse motion is itself a linear transformation, the inverse $A^{-1}$ [1], and $x=A^{-1}v$. Doing $A$ and then $A^{-1}$ (in either order) leaves every vector where it started.\n\nRewinding only works if nothing was lost. When $\\det A=0$, the map squishes the plane onto a line (or a point); information is lost, and there is no inverse [2]. As 3Blue1Brown puts it, you cannot unsquish a line to turn it into a plane [3].\n\nIn practice: solve the two equations hidden in $A\\,x=v$, then always check by multiplying $A$ times your answer.",
+	"keyIdeas": [
+		"$A^{-1}$ undoes $A$: $A^{-1}A\\,x=x$.",
+		"An inverse exists exactly when $\\det A\\ne0$.",
+		"Solve $A\\,x=v$, then verify by computing $A\\,x$."
+	],
+	"workedExample": {
+		"problem": "Solve $\\begin{pmatrix}2&1\\\\1&1\\end{pmatrix}x=(5,3)$.",
+		"steps": [
+			"Check invertibility: $\\det=2\\cdot1-1\\cdot1=1\\ne0$, so exactly one solution exists.",
+			"Write the equations: $2x_1+x_2=5$ and $x_1+x_2=3$.",
+			"Subtract: $x_1=2$; then $x_2=3-2=1$.",
+			"Verify: $(2\\cdot2+1\\cdot1,\\ 1\\cdot2+1\\cdot1)=(5,3)$."
+		],
+		"answer": "$x=(2,1)$"
+	},
+	"pitfalls": [
+		"Assuming every square matrix has an inverse; $\\det=0$ rules it out.",
+		"Inverting entry by entry ($a\\to1/a$), which only works for diagonal matrices.",
+		"Skipping the check: multiply back to confirm you land on the target."
+	],
+	"citations": [
+		{
+			"sourceId": "src-22c01a3f3b",
+			"quote": "When you play the transformation in reverse, it actually corresponds with a separate linear transformation, commonly called the inverse of A",
+			"locator": "Inverse Matrix"
+		},
+		{
+			"sourceId": "src-22c01a3f3b",
+			"quote": "But when the determinant is zero, and the transformation associated with the system of equations squishes space into a smaller dimension, there is no inverse.",
+			"locator": "Inverses"
+		},
+		{
+			"sourceId": "src-22c01a3f3b",
+			"quote": "You cannot unsquish a line to turn it into a plane.",
+			"locator": "Inverses"
+		}
+	],
+	"createdAt": "2026-10-31T20:06:18Z",
+	"updatedAt": "2026-10-31T20:06:18Z"
+}

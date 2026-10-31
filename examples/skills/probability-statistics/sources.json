@@ -1,0 +1,130 @@
+[
+	{
+		"id": "src-8b0b59a550",
+		"url": "https://docs.python.org/3/library/random.html",
+		"title": "random: Generate pseudo-random numbers (Python 3 documentation)",
+		"publisher": "Python Software Foundation",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"From the Python Software Foundation's own docs",
+			"Open license (PSF License 2.0): free to read and reuse"
+		],
+		"license": "PSF License 2.0",
+		"excerpt": "By reusing a seed value, the same sequence should be reproducible from run to run as long as multiple threads are not running.",
+		"accessedAt": "2026-10-31T20:12:22Z"
+	},
+	{
+		"id": "src-80154f607f",
+		"url": "https://openstax.org/books/introductory-statistics-2e/pages/3-1-terminology",
+		"title": "Introductory Statistics 2e, 3.1 Terminology",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "The sample space of an experiment is the set of all possible outcomes.",
+		"accessedAt": "2026-10-31T20:12:22Z"
+	},
+	{
+		"id": "src-d183aad23b",
+		"url": "https://openstax.org/books/introductory-statistics-2e/pages/3-3-two-basic-rules-of-probability",
+		"title": "Introductory Statistics 2e, 3.3 Two Basic Rules of Probability",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "The Addition Rule If A and B are defined on a sample space, then: P ( A OR B ) = P ( A ) + P ( B ) - P ( A AND B ).",
+		"accessedAt": "2026-10-31T20:12:22Z"
+	},
+	{
+		"id": "src-f75bb01a74",
+		"url": "https://openstax.org/books/introductory-statistics-2e/pages/4-2-mean-or-expected-value-and-standard-deviation",
+		"title": "Introductory Statistics 2e, 4.2 Mean or Expected Value and Standard Deviation",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "To find the expected value or long term average, μ, simply multiply each value of the random variable by its probability and add the products.",
+		"accessedAt": "2026-10-31T20:12:22Z"
+	},
+	{
+		"id": "src-18a583e1b5",
+		"url": "https://openstax.org/books/introductory-statistics-2e/pages/6-1-the-standard-normal-distribution",
+		"title": "Introductory Statistics 2e, 6.1 The Standard Normal Distribution",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "For example, if the mean of a normal distribution is five and the standard deviation is two, the value 11 is three standard deviations above (or to the right of) the mean.",
+		"accessedAt": "2026-10-31T20:12:22Z"
+	},
+	{
+		"id": "src-57a0bc3f08",
+		"url": "https://openstax.org/books/introductory-statistics-2e/pages/7-1-the-central-limit-theorem-for-sample-means-averages",
+		"title": "Introductory Statistics 2e, 7.1 The Central Limit Theorem for Sample Means (Averages)",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "As sample sizes increase, the distribution of means more closely follows the normal distribution.",
+		"accessedAt": "2026-10-31T20:12:22Z"
+	},
+	{
+		"id": "src-d2513a66cd",
+		"url": "https://en.wikipedia.org/wiki/Binomial_distribution",
+		"title": "Binomial distribution",
+		"publisher": "Wikipedia",
+		"kind": "reference",
+		"rank": 68,
+		"rankReasons": [
+			"Reference work",
+			"Community-edited encyclopedia: good for definitions, check its cited references for details",
+			"Open license (CC BY-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-SA 4.0",
+		"excerpt": "counts the number of ways to choose the positions of the k successes among the n trials",
+		"accessedAt": "2026-10-31T20:12:22Z"
+	},
+	{
+		"id": "src-404f13fd9d",
+		"url": "https://en.wikipedia.org/wiki/Bayes%27_theorem",
+		"title": "Bayes' theorem",
+		"publisher": "Wikipedia",
+		"kind": "reference",
+		"rank": 68,
+		"rankReasons": [
+			"Reference work",
+			"Community-edited encyclopedia: good for definitions, check its cited references for details",
+			"Open license (CC BY-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-SA 4.0",
+		"excerpt": "For example, if all patients with pancreatic cancer have certain symptoms, it does not follow that anyone who has those symptoms has pancreatic cancer.",
+		"accessedAt": "2026-10-31T20:12:22Z"
+	}
+]

@@ -1,0 +1,41 @@
+{
+	"skill": "calculus-intuition",
+	"subskillId": "limits",
+	"title": "Limits by numbers: the trend near a point",
+	"explanation": "A limit asks: as $x$ creeps toward $a$ from both sides, what value does $f(x)$ settle toward? It is a question about the *neighbourhood* of $a$, not about the point itself. OpenStax's definition only needs $f$ defined near $a$, \"with the possible exception of $a$ itself\" [1]. So a function with a hole at $a$, or with a strange value planted there, can still have a perfectly good limit.\n\nThe hands-on method is a table. Pick inputs like $a\\pm0.1$, $a\\pm0.01$, $a\\pm0.001$ and watch the outputs. If values from the left and from the right both head toward the same number $L$, we write $\\lim_{x\\to a} f(x)=L$. If the two sides head to different numbers, the two-sided limit does not exist.\n\nOpenStax states the key subtlety plainly: the limit and the function's value at the point \"may be different\" [2]. Keep the two questions apart: *where is the graph heading?* and *what is plotted exactly at $a$?*",
+	"keyIdeas": [
+		"A limit describes what $f(x)$ approaches near $a$, not what $f(a)$ is.",
+		"Tabulate from both sides with shrinking offsets (0.1, 0.01, 0.001).",
+		"The two-sided limit exists only when both one-sided trends exist and agree."
+	],
+	"workedExample": {
+		"problem": "Find $\\lim_{x\\to5}h(x)$ for $h(x)=\\frac{x^2-25}{x-5}$.",
+		"steps": [
+			"Notice $h(5)$ is $\\frac00$, undefined, so plugging in tells us nothing.",
+			"Left side: $h(4.9)=9.9$ and $h(4.99)=9.99$.",
+			"Right side: $h(5.1)=10.1$ and $h(5.01)=10.01$.",
+			"Both sides close in on the same number, so the limit exists and equals it.",
+			"Check with algebra: for $x\\ne5$, $h(x)=\\frac{(x-5)(x+5)}{x-5}=x+5$, which approaches $10$."
+		],
+		"answer": "$\\lim_{x\\to5}h(x)=10$, even though $h(5)$ is undefined."
+	},
+	"pitfalls": [
+		"Plugging in $x=a$, getting 'undefined', and concluding there is no limit. A hole does not stop a limit from existing.",
+		"Checking only one side. At a jump the left and right trends disagree.",
+		"Choosing $x=a$ itself in the table (division by zero) or offsets too large to show the trend."
+	],
+	"citations": [
+		{
+			"sourceId": "src-fe0a1c39d0",
+			"quote": "with the possible exception of a itself, and let L be a real number",
+			"locator": "2.2 The Limit of a Function: Definition (intuitive)"
+		},
+		{
+			"sourceId": "src-fe0a1c39d0",
+			"quote": "for the function to be defined at this point, but the limit of the function and the value of the function at the point may be different",
+			"locator": "2.2: Intuitive Definition of a Limit, observation after Example 2.6"
+		}
+	],
+	"createdAt": "2026-10-31T20:03:10Z",
+	"updatedAt": "2026-10-31T20:03:10Z"
+}

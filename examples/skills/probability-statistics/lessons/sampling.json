@@ -1,0 +1,45 @@
+{
+	"skill": "probability-statistics",
+	"subskillId": "sampling",
+	"title": "Sampling and the central limit theorem",
+	"explanation": "One observation can land anywhere in the population's spread. An **average** of $n$ independent observations is calmer: highs and lows partly cancel. The central limit theorem makes this precise. As sample sizes increase, the distribution of sample means more closely follows a normal distribution [1].\n\nThat distribution of means has the same mean as the population [2], and its standard deviation (the **standard error**) is the population SD divided by the square root of $n$ [3]: $\\sigma_{\\bar X}=\\frac{\\sigma}{\\sqrt n}$. Precision grows slowly: the square root means extra data buys less and less.\n\nTo ask how unusual a sample mean is, standardise with the standard error: $z=\\frac{\\bar x-\\mu}{\\sigma/\\sqrt n}$.",
+	"keyIdeas": [
+		"Sample means vary less than single observations.",
+		"For large n, sample means are approximately normal (CLT).",
+		"Standard error $=\\frac{\\sigma}{\\sqrt n}$.",
+		"Standardise a sample mean with the standard error, not with $\\sigma$."
+	],
+	"workedExample": {
+		"problem": "A population has mean $50$ and SD $20$. For samples of size $n=100$, find the standard error and the z-score of a sample mean of $53$.",
+		"steps": [
+			"Standard error: $\\frac{20}{\\sqrt{100}}=\\frac{20}{10}=2$.",
+			"z-score of the sample mean: $\\frac{53-50}{2}=1.5$.",
+			"Compare: a single observation of 53 would be only $\\frac{3}{20}=0.15$ SDs above the mean."
+		],
+		"answer": "Standard error $2$; $z=1.5$ for a sample mean of $53$"
+	},
+	"pitfalls": [
+		"Using $\\sigma$ instead of $\\sigma/\\sqrt n$ when standardising a sample mean.",
+		"Thinking the CLT makes individual observations normal; it is about averages.",
+		"Dividing by $n$ instead of $\\sqrt n$."
+	],
+	"citations": [
+		{
+			"sourceId": "src-57a0bc3f08",
+			"quote": "As sample sizes increase, the distribution of means more closely follows the normal distribution.",
+			"locator": "7.1 The Central Limit Theorem for Sample Means"
+		},
+		{
+			"sourceId": "src-57a0bc3f08",
+			"quote": "The normal distribution has the same mean as the original distribution and a variance that equals the original variance divided by the sample size.",
+			"locator": "7.1 The Central Limit Theorem for Sample Means"
+		},
+		{
+			"sourceId": "src-57a0bc3f08",
+			"quote": "the standard deviation of the sampling distribution is the standard deviation of the original distribution divided by the square root of n",
+			"locator": "7.1 The Central Limit Theorem for Sample Means"
+		}
+	],
+	"createdAt": "2026-10-31T20:12:22Z",
+	"updatedAt": "2026-10-31T20:12:22Z"
+}

@@ -1,0 +1,40 @@
+{
+	"skill": "mental-math",
+	"subskillId": "multiply-eleven",
+	"title": "Multiply by eleven: add each digit to its neighbour",
+	"explanation": "Eleven is ten plus one, so $n\\times11=n\\times10+n$: the number shifted one place left, plus the number itself. Splitting a product like this is the distributive property at work [1]. Write the two copies one above the other, offset by one place, and the column sums are each digit plus its right-hand neighbour.\n\nThat is the Trachtenberg rule: add the digit to its neighbour, where the neighbour is the digit on the right [2]. For a two-digit number $ab$, the answer is $a$, then $a+b$, then $b$. If $a+b$ is 10 or more, write its last digit and carry the 1 into the left digit.\n\nThe same rule works for longer numbers. Imagine a zero at each end, work from right to left, and add each digit to its right-hand neighbour, carrying as needed.",
+	"keyIdeas": [
+		"$n\\times11=n\\times10+n$ (distributive property).",
+		"Each digit of the answer is a digit plus its right-hand neighbour.",
+		"Work right to left and carry when a pair sums to 10 or more."
+	],
+	"workedExample": {
+		"problem": "Compute $57\\times11$ mentally.",
+		"steps": [
+			"Outer digits stay: the answer starts with 5 and ends with 7.",
+			"Middle: $5+7=12$, so write 2 and carry 1.",
+			"Add the carry to the left digit: $5+1=6$.",
+			"Read it off: $627$. Check: $570+57=627$."
+		],
+		"answer": "$627$"
+	},
+	"pitfalls": [
+		"Writing the two-digit pair sum in the middle without carrying (e.g. 5|12|7).",
+		"Adding the carry to the wrong digit; it goes to the next digit on the left.",
+		"Forgetting the outer digits for numbers with three or more digits."
+	],
+	"citations": [
+		{
+			"sourceId": "src-677425621e",
+			"quote": "If you think about doing the math in this way, you are using the Distributive Property.",
+			"locator": "7.3 Distributive Property: Simplify Expressions Using the Distributive Property"
+		},
+		{
+			"sourceId": "src-afe45d7b23",
+			"quote": "Rule: Add the digit to its neighbor. (By \"neighbor\" we mean the digit on the right.)",
+			"locator": "Multiplying by 11"
+		}
+	],
+	"createdAt": "2026-10-31T20:14:58Z",
+	"updatedAt": "2026-10-31T20:14:58Z"
+}

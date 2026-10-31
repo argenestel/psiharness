@@ -1,0 +1,57 @@
+{
+	"skill": "regex",
+	"subskillId": "groups-captures",
+	"title": "Groups: capture, name, or just group",
+	"explanation": "Parentheses do two jobs: they **group** part of a pattern (so a quantifier or alternation applies to it), and by default they **capture** the text that part matched.\n\n- `(x)` — capturing group. Captures are numbered by the position of their **left parenthesis**: `match[1]`, `match[2]`, …\n- `(?<name>x)` — named capturing group, available as `match.groups.name`. Names make long patterns readable.\n- `(?:x)` — non-capturing group: groups without remembering. Use it when you only need grouping, so the capture numbers stay meaningful.\n\n```js\nconst m = \"3x4\".match(/^(\\d+)x(\\d+)$/);\nconsole.log(m[0], m[1], m[2]);                 // 3x4 3 4\nconst n = \"v2.7\".match(/^v(?<major>\\d+)\\.(?<minor>\\d+)$/);\nconsole.log(n.groups.major, n.groups.minor);   // 2 7\nconsole.log(\"nanana batman\".match(/^(?:na)+ batman$/).length); // 1 -- no captures, just the full match\n```\n\nOne trap: `String.prototype.match` with the `g` flag returns only the full matches and **drops the groups**. When you need captures for every match, use `matchAll` (it requires `g`) or call `exec` in a loop.",
+	"keyIdeas": [
+		"`(...)` groups and captures; numbering follows left parentheses.",
+		"`(?<name>...)` captures into `match.groups.name`.",
+		"`(?:...)` groups without capturing.",
+		"With `g`, `match` drops captures — use `matchAll`."
+	],
+	"workedExample": {
+		"problem": "Parse a 24-hour time like `\"14:05\"` into `{ hour: \"14\", minute: \"05\" }` with named groups, rejecting `\"9:5\"` and `\"14:05pm\"`.",
+		"steps": [
+			"Each part is exactly two digits: `\\d{2}`.",
+			"Name the captures so the code reads clearly: `(?<hour>\\d{2}):(?<minute>\\d{2})`.",
+			"Anchor with `^...$` so extra text such as `pm` makes the match fail.",
+			"Read the values from `match.groups`; a failed match returns `null`, so check before reading.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nconst clock = /^(?<hour>\\d{2}):(?<minute>\\d{2})$/;\nconst m = \"14:05\".match(clock);\nassert.deepEqual({ ...m.groups }, { hour: \"14\", minute: \"05\" });\nassert.equal(m[1], \"14\");                 // named groups are numbered too\nassert.equal(\"9:5\".match(clock), null);\nassert.equal(\"14:05pm\".match(clock), null);\nconsole.log(m.groups.hour, m.groups.minute);\n```"
+		],
+		"answer": "`/^(?<hour>\\d{2}):(?<minute>\\d{2})$/` gives `groups.hour === \"14\"` and `groups.minute === \"05\"`; the two bad inputs return `null`."
+	},
+	"pitfalls": [
+		"Adding a grouping-only parenthesis and shifting every later capture number; use `(?:...)` for grouping.",
+		"Calling `.match(/.../g)` and expecting `[1]` to be a capture — with `g` you get only full matches.",
+		"Reading `match.groups.x` without checking for `null` when the pattern didn't match."
+	],
+	"citations": [
+		{
+			"sourceId": "src-c4a55b141a",
+			"quote": "Capturing group: Matches x and remembers the match.",
+			"locator": "Types: (x)"
+		},
+		{
+			"sourceId": "src-c4a55b141a",
+			"quote": "In results, matches to capturing groups typically in an array whose members are in the same order as the left parentheses in the capturing group.",
+			"locator": "Types: (x)"
+		},
+		{
+			"sourceId": "src-c4a55b141a",
+			"quote": "Named capturing group: Matches \"x\" and stores it on the groups property of the returned matches under the name specified by <Name>.",
+			"locator": "Types: (?<Name>x)"
+		},
+		{
+			"sourceId": "src-c4a55b141a",
+			"quote": "Non-capturing group: Matches \"x\" but does not remember the match.",
+			"locator": "Types: (?:x)"
+		},
+		{
+			"sourceId": "src-c4a55b141a",
+			"quote": "String.prototype.match() won't return groups if the /.../g flag is set. However, you can still use String.prototype.matchAll() to get all matches.",
+			"locator": "Types: (x)"
+		}
+	],
+	"createdAt": "2026-10-31T20:15:38.000Z",
+	"updatedAt": "2026-10-31T20:15:38.000Z"
+}

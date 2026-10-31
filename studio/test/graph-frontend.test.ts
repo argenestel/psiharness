@@ -201,4 +201,8 @@ test("layout merge keeps other nodes and rounds positions", () => {
 	const out = g.mergeLayout({ keep: [1, 2] }, [{ id: "n", x: 1.234, y: -5.678 }, { id: "bad", x: NaN, y: 0 }]);
 	assert.deepEqual(out, { keep: [1, 2], n: [1.2, -5.7] });
 	assert.deepEqual(g.mergeLayout(null, []), {});
+	assert.deepEqual(g.layoutFor({ wide: { a: [1, 2] } }, "wide"), { a: [1, 2] });
+	assert.deepEqual(g.layoutFor({ wide: { a: [1, 2] } }, "tall"), {});
+	assert.deepEqual(g.layoutFor(null, "wide"), {});
+	assert.deepEqual(g.layoutFor({ wide: [1] }, "wide"), {});
 });

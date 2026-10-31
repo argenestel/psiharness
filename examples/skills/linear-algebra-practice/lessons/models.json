@@ -1,0 +1,40 @@
+{
+	"skill": "linear-algebra-practice",
+	"subskillId": "models",
+	"title": "Build transformation pipelines",
+	"explanation": "Graphics and simulation code chains transformations: scale, then rotate, then shear. Instead of pushing every point through each step, multiply the step matrices once, remembering that the first step sits on the **right** [1]. One combined matrix then does the whole pipeline in a single product per point.\n\nRepeating a pipeline $k$ times is the matrix power $M^k$. Areas are easy to track without moving any points: each pass scales every area by $|\\det M|$ [2], so after $k$ passes the factor is $|\\det M|^k$. Orientation flips on a pass exactly when that pass has a negative determinant, so an even number of flips restores it.\n\nDebugging habit: push $\\hat\\imath$ and $\\hat\\jmath$ through the pipeline by hand and compare with the columns of your combined matrix.",
+	"keyIdeas": [
+		"Pipeline 'first $B$, then $A$' is the single matrix $AB$.",
+		"$k$ repeats of a pass = $M^k$; areas scale by $|\\det M|^k$.",
+		"Check a pipeline by tracking where $\\hat\\imath$ and $\\hat\\jmath$ land."
+	],
+	"workedExample": {
+		"problem": "One pass rotates by $90^\\circ$ counter-clockwise, $R=\\begin{pmatrix}0&-1\\\\1&0\\end{pmatrix}$, then scales by $2$, $S=2I$. Find the pass matrix, its determinant, and the area of a unit square after two passes.",
+		"steps": [
+			"Rotation first, so the pass matrix is $M=SR=\\begin{pmatrix}0&-2\\\\2&0\\end{pmatrix}$.",
+			"$\\det M=0\\cdot0-(-2)\\cdot2=4>0$: each pass multiplies area by 4 and keeps orientation.",
+			"Two passes: $M^2=\\begin{pmatrix}-4&0\\\\0&-4\\end{pmatrix}$, with $\\det M^2=16=4^2$.",
+			"The unit square ends with area $1\\times16=16$."
+		],
+		"answer": "$M=\\begin{pmatrix}0&-2\\\\2&0\\end{pmatrix}$, $\\det M=4$; after two passes the area is $16$"
+	},
+	"pitfalls": [
+		"Multiplying the step matrices in the order they are applied (left to right) instead of right to left.",
+		"Adding determinants across passes instead of multiplying them.",
+		"Using det instead of |det| for area after an orientation flip."
+	],
+	"citations": [
+		{
+			"sourceId": "src-05344760b6",
+			"quote": "You first apply the transformation represented by the matrix on the right, then you apply the transformation represented by the matrix on the left.",
+			"locator": "Composition is Multiplication"
+		},
+		{
+			"sourceId": "src-740650a69c",
+			"quote": "So since the areas of all those tiny grid squares are being scaled by a certain amount, the area of the blob as a whole will be scaled by that amount.",
+			"locator": "Scaling areas"
+		}
+	],
+	"createdAt": "2026-10-31T20:06:18Z",
+	"updatedAt": "2026-10-31T20:06:18Z"
+}

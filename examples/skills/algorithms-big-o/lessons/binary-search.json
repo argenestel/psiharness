@@ -1,0 +1,52 @@
+{
+	"skill": "algorithms-big-o",
+	"subskillId": "binary-search",
+	"title": "Binary search keeps a shrinking window",
+	"explanation": "Binary search finds a target in **sorted** data by looking at the middle item. If it is the target, you are done; if the target is larger, the whole left half (and the middle) can be thrown away; if smaller, the right half. Each comparison eliminates about half of what remains — *n*, then *n/2*, *n/4*, … — so the number of comparisons is logarithmic: O(log n). For a million items that is about 20 comparisons.\n\nThink in terms of a **window** `[lo, hi)` that always contains the answer if it exists:\n\n```python\ndef find(sorted_values, target):\n    lo, hi = 0, len(sorted_values)        # window is [lo, hi)\n    while lo < hi:                        # non-empty window\n        mid = (lo + hi) // 2\n        if sorted_values[mid] < target:\n            lo = mid + 1                  # answer is right of mid\n        elif sorted_values[mid] > target:\n            hi = mid                      # answer is left of mid\n        else:\n            return mid\n    return -1\n\nassert find([2, 5, 8, 12], 8) == 2 and find([2, 5, 8, 12], 7) == -1\n```\n\nThe two classic bugs are window bugs: forgetting `+ 1` (so `lo` never moves past `mid` and the loop never ends) and mixing an inclusive `hi` with a half-open loop condition. Pick one convention, write the invariant as a comment, and test empty input, the first item, the last item, and a missing value. And remember the precondition: the data must already be sorted — sorting first costs more than a single linear scan.",
+	"keyIdeas": [
+		"Compare with the middle; discard the half that cannot hold the answer.",
+		"Halving each step gives O(log n) comparisons.",
+		"Maintain a window invariant and make sure every iteration shrinks it.",
+		"Only valid on sorted data."
+	],
+	"workedExample": {
+		"problem": "Without `math.isqrt` or `**`, find the integer square root of a non-negative integer `n` — the largest `r` with `r * r <= n` — using binary search over possible answers (e.g. `n = 40` → `6`).",
+		"steps": [
+			"The candidates `0 … n` are \"sorted\" by the yes/no question `r * r <= n`: it is true for small r and false after some point.",
+			"Search for the last `r` where the question is true. Keep `lo` = a value known to be true (0) and `hi` = a value known to be false (`n + 1`).",
+			"Look at `mid = (lo + hi) // 2`: if `mid * mid <= n`, move `lo = mid`; otherwise `hi = mid`. The window always shrinks because `lo < mid < hi`.",
+			"Stop when `hi == lo + 1`; `lo` is the answer. Each step halves the window, so this takes about log₂ n steps.",
+			"Run it:\n```python\ndef int_sqrt(n):\n    lo, hi = 0, n + 1          # lo*lo <= n is true, hi*hi <= n is false\n    while hi - lo > 1:\n        mid = (lo + hi) // 2\n        if mid * mid <= n:\n            lo = mid\n        else:\n            hi = mid\n    return lo\n\nassert int_sqrt(40) == 6\nassert [int_sqrt(k) for k in (0, 1, 3, 4, 99, 100)] == [0, 1, 1, 2, 9, 10]\nprint(int_sqrt(40))\n```"
+		],
+		"answer": "`int_sqrt(40)` is `6` (6 × 6 = 36 ≤ 40 < 49 = 7 × 7), found in about log₂ 41 ≈ 6 iterations."
+	},
+	"pitfalls": [
+		"Writing `lo = mid` in a loop whose `mid` can equal `lo`, so the window stops shrinking and the loop never ends.",
+		"Running binary search on unsorted data and trusting the wrong answer it returns.",
+		"Not testing the edges: empty input, target smaller than everything, larger than everything, and duplicates."
+	],
+	"citations": [
+		{
+			"sourceId": "src-abdce53cbf",
+			"quote": "a binary search will start by examining the middle item. If that item is the one we are searching for, we are done.",
+			"locator": "5.4 The Binary Search"
+		},
+		{
+			"sourceId": "src-abdce53cbf",
+			"quote": "If the item we are searching for is greater than the middle item, we know that the entire first (left) half of the list as well as the middle item can be eliminated from further consideration.",
+			"locator": "5.4 The Binary Search"
+		},
+		{
+			"sourceId": "src-abdce53cbf",
+			"quote": "The maximum number of comparisons is logarithmic with respect to the number of items in the list.",
+			"locator": "5.4.1 Analysis of Binary Search"
+		},
+		{
+			"sourceId": "src-abdce53cbf",
+			"quote": "However, for large lists, sorting even once can be so expensive that simply performing a sequential search from the start may be the best choice.",
+			"locator": "5.4.1 Analysis of Binary Search"
+		}
+	],
+	"createdAt": "2026-10-31T20:10:14.000Z",
+	"updatedAt": "2026-10-31T20:10:14.000Z"
+}

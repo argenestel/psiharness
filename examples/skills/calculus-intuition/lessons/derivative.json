@@ -1,0 +1,40 @@
+{
+	"skill": "calculus-intuition",
+	"subskillId": "derivative",
+	"title": "Slope under a microscope",
+	"explanation": "Zoom in far enough on a smooth curve and it starts to look like a straight line. The slope of that line is the **derivative**. 3Blue1Brown points out why the phrase \"instantaneous rate of change\" sounds paradoxical: change happens *between* separate moments, and a single instant leaves no room for change [2]. So we never compute a rate at one instant directly. We compute average rates over shorter and shorter intervals and ask what they approach.\n\nThat is the definition: $f'(a)=\\lim_{h\\to0}\\frac{f(a+h)-f(a)}{h}$, a limit of secant slopes (provided the limit exists). Geometrically it is the slope of the tangent line; when $f$ is position against time, OpenStax identifies the tangent slope with the instantaneous velocity [1].\n\nA practical self-check: halve your step $h$ and recompute. When the estimates stop changing in the digits you care about, you have found the slope.",
+	"keyIdeas": [
+		"The derivative is the limit of secant slopes as the interval shrinks to zero width.",
+		"It is the slope of the tangent line, the line a smooth curve resembles when you zoom in.",
+		"For position against time, the derivative is the instantaneous velocity."
+	],
+	"workedExample": {
+		"problem": "Estimate, then find exactly, the slope of $f(x)=x^2$ at $x=-1$.",
+		"steps": [
+			"Secant on $[-1,-0.9]$: $\\frac{0.81-1}{0.1}=-1.9$.",
+			"Secant on $[-1,-0.99]$: $\\frac{0.9801-1}{0.01}=-1.99$.",
+			"The estimates approach $-2$; the curve is falling at $x=-1$.",
+			"Exactly: $\\frac{(-1+h)^2-1}{h}=\\frac{-2h+h^2}{h}=-2+h\\to-2$ as $h\\to0$."
+		],
+		"answer": "$f'(-1)=-2$: near $x=-1$ the curve drops about 2 units of height per unit of $x$."
+	},
+	"pitfalls": [
+		"Setting $h=0$ straight into the difference quotient gives $\\frac00$; you need the limit, not the value at $h=0$.",
+		"Confusing the derivative at a point with the function's value there. A derivative is a slope, in output units per input unit.",
+		"Computing one secant slope and calling it exact."
+	],
+	"citations": [
+		{
+			"sourceId": "src-4d7763323f",
+			"quote": "the slope of the tangent line (shown in red) is the instantaneous velocity of the object at time",
+			"locator": "3.1: Velocities and Rates of Change, Figure 3.8"
+		},
+		{
+			"sourceId": "src-6bda8cf9bf",
+			"quote": "Change is something that happens between separate points in time, and when you blind yourself to all but a single instant, there is no more room for change.",
+			"locator": "The paradox of the derivative: introduction"
+		}
+	],
+	"createdAt": "2026-10-31T20:03:10Z",
+	"updatedAt": "2026-10-31T20:03:10Z"
+}

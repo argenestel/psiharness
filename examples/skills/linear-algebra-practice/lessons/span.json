@@ -1,0 +1,45 @@
+{
+	"skill": "linear-algebra-practice",
+	"subskillId": "span",
+	"title": "Linear combinations and span",
+	"explanation": "A **linear combination** of $v$ and $w$ is $a\\,v+b\\,w$: scale each arrow, then add [1]. Think of $a$ and $b$ as two dials. As the dials turn, the tip of $a\\,v+b\\,w$ moves around the plane.\n\nThe **span** is every place you can reach with those dials, the set of all possible linear combinations [2]. For two arrows pointing in genuinely different directions, the dials reach the whole plane. If the two arrows line up, both dials push along the same line, so no combination can leave it [3]; one of the vectors is redundant.\n\nFinding the weights for a target is a small puzzle: write the target coordinate by coordinate and solve the two equations. Predict first: which weight alone controls the coordinate that only one vector affects?",
+	"keyIdeas": [
+		"Linear combination: $a\\,v+b\\,w$, scale then add.",
+		"Span: every vector those combinations can reach.",
+		"Two non-aligned vectors in the plane span the whole plane; aligned vectors span only a line."
+	],
+	"workedExample": {
+		"problem": "Find $a$ and $b$ with $a(1,1)+b(2,1)=(7,3)$.",
+		"steps": [
+			"Write it coordinate by coordinate: $a+2b=7$ and $a+b=3$.",
+			"Subtract the second equation from the first: $b=4$.",
+			"Back-substitute: $a=3-4=-1$.",
+			"Check: $-1\\cdot(1,1)+4\\cdot(2,1)=(-1+8,\\,-1+4)=(7,3)$."
+		],
+		"answer": "$a=-1$, $b=4$"
+	},
+	"pitfalls": [
+		"Assuming any two vectors span the plane; aligned vectors only span a line.",
+		"Mixing up which equation belongs to which coordinate when setting up the system.",
+		"Forgetting that weights may be negative or fractional."
+	],
+	"citations": [
+		{
+			"sourceId": "src-220da4375e",
+			"quote": "Any time you're scaling two vectors and adding them like this, it's called a \"linear combination\" of those two vectors.",
+			"locator": "Linear Combinations"
+		},
+		{
+			"sourceId": "src-220da4375e",
+			"quote": "The set of all possible vectors you can reach with linear combinations of a given pair of vectors is called the \"span\" of those two vectors.",
+			"locator": "Span"
+		},
+		{
+			"sourceId": "src-220da4375e",
+			"quote": "if your two original vectors happen to line up, the lines produced by the scalar multiplication will be the same line, so adding them together can't yield a vector outside of that line",
+			"locator": "Linear Combinations"
+		}
+	],
+	"createdAt": "2026-10-31T20:06:18Z",
+	"updatedAt": "2026-10-31T20:06:18Z"
+}

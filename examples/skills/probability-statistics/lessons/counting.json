@@ -1,0 +1,44 @@
+{
+	"skill": "probability-statistics",
+	"subskillId": "counting",
+	"title": "Count the sample space",
+	"explanation": "Every probability question starts with one: *what could happen?* The **sample space** is the set of all possible outcomes [1]. You can list it, draw a tree diagram, or draw a Venn diagram [2]. When outcomes are equally likely, probability is just counting: favourable outcomes ÷ total outcomes.\n\nTrees show why counts multiply. If the first stage has $m$ branches and each of those splits into $n$, there are $m\\times n$ leaves. Choosing $k$ items one after another from $n$ without replacement gives $n(n-1)\\cdots(n-k+1)$ **ordered** arrangements.\n\nIf order does not matter, each unordered group was counted once for every ordering of its $k$ items, which is $k!$ times. Divide: $\\binom{n}{k}=\\frac{n!}{k!\\,(n-k)!}$. The same number counts the ways to choose which $k$ of $n$ trials are successes [3].",
+	"keyIdeas": [
+		"Sample space = the set of all possible outcomes.",
+		"Stages multiply: m choices then n choices gives m × n outcomes.",
+		"Unordered choices: divide the ordered count by $k!$, giving $\\binom{n}{k}$."
+	],
+	"workedExample": {
+		"problem": "A café sells $6$ different pastries. How many different boxes of $3$ different pastries can you pick (order in the box doesn't matter)?",
+		"steps": [
+			"Ordered picks: $6\\cdot5\\cdot4=120$.",
+			"Each box of 3 appears in $3!=6$ orders in that list.",
+			"Unordered: $\\frac{120}{6}=20$, which matches $\\binom{6}{3}=20$."
+		],
+		"answer": "$20$ boxes"
+	},
+	"pitfalls": [
+		"Counting ordered arrangements when the question treats groups as the same.",
+		"Forgetting that without replacement each stage has one fewer choice.",
+		"Assuming outcomes are equally likely when they are not (e.g. sums of two dice)."
+	],
+	"citations": [
+		{
+			"sourceId": "src-80154f607f",
+			"quote": "The sample space of an experiment is the set of all possible outcomes.",
+			"locator": "3.1 Terminology"
+		},
+		{
+			"sourceId": "src-80154f607f",
+			"quote": "Three ways to represent a sample space are: to list the possible outcomes, to create a tree diagram, or to create a Venn diagram.",
+			"locator": "3.1 Terminology"
+		},
+		{
+			"sourceId": "src-d2513a66cd",
+			"quote": "counts the number of ways to choose the positions of the k successes among the n trials",
+			"locator": "Probability mass function"
+		}
+	],
+	"createdAt": "2026-10-31T20:12:22Z",
+	"updatedAt": "2026-10-31T20:12:22Z"
+}

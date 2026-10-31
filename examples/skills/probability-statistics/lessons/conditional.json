@@ -1,0 +1,52 @@
+{
+	"skill": "probability-statistics",
+	"subskillId": "conditional",
+	"title": "Conditional probability and Bayes",
+	"explanation": "$P(A\\mid B)$ is the probability that $A$ happens given that $B$ has already happened [1]. The condition **shrinks the world**: a conditional reduces the sample space [2] to just the outcomes where $B$ is true, and we ask what fraction of those also have $A$. So $P(A\\mid B)=\\frac{P(A\\cap B)}{P(B)}$.\n\nBayes' theorem turns a conditional around. In medical testing it computes the chance of disease given a positive test, using how prevalent the disease is and how well the test works [3]. The cleanest way to feel it is with **natural frequencies**: imagine 1000 people, split them by disease status, then by test result, and count.\n\nDirection matters. As Wikipedia's example warns, if all patients with a disease show a symptom, it does not follow that everyone with the symptom has the disease [4]. $P(+\\mid D)$ and $P(D\\mid +)$ can be very different, especially when the disease is rare.",
+	"keyIdeas": [
+		"$P(A\\mid B)=\\frac{P(A\\cap B)}{P(B)}$: restrict to the world where $B$ happened.",
+		"Bayes combines prevalence (prior) with test accuracy.",
+		"Natural frequencies (imagine 1000 people) make Bayes problems countable.",
+		"$P(+\\mid D)\\ne P(D\\mid +)$ in general."
+	],
+	"workedExample": {
+		"problem": "A condition affects $2\\%$ of people. A test catches $90\\%$ of cases and gives a false positive for $5\\%$ of healthy people. If someone tests positive, how likely are they to have the condition?",
+		"steps": [
+			"Imagine 1000 people: 20 have the condition, 980 do not.",
+			"True positives: $90\\%$ of 20 $=18$.",
+			"False positives: $5\\%$ of 980 $=49$.",
+			"Restrict to the positives: $18+49=67$ people, of whom 18 have the condition.",
+			"$P(\\text{condition}\\mid +)=\\frac{18}{67}\\approx0.27$."
+		],
+		"answer": "$\\frac{18}{67}\\approx0.27$, far lower than the test's $90\\%$ hit rate"
+	},
+	"pitfalls": [
+		"Confusing $P(+\\mid D)$ (sensitivity) with $P(D\\mid +)$.",
+		"Ignoring the base rate: a rare condition means many positives are false.",
+		"Dividing by the whole population instead of by the size of the conditioning group."
+	],
+	"citations": [
+		{
+			"sourceId": "src-80154f607f",
+			"quote": "P ( A | B ) is the probability that event A will occur given that the event B has already occurred.",
+			"locator": "3.1 Terminology: conditional probability"
+		},
+		{
+			"sourceId": "src-80154f607f",
+			"quote": "A conditional reduces the sample space.",
+			"locator": "3.1 Terminology"
+		},
+		{
+			"sourceId": "src-404f13fd9d",
+			"quote": "using quantities that specify how prevalent the disease is in the population and how well the test works",
+			"locator": "Examples: Medical diagnosis"
+		},
+		{
+			"sourceId": "src-404f13fd9d",
+			"quote": "For example, if all patients with pancreatic cancer have certain symptoms, it does not follow that anyone who has those symptoms has pancreatic cancer.",
+			"locator": "Examples: Medical diagnosis"
+		}
+	],
+	"createdAt": "2026-10-31T20:12:22Z",
+	"updatedAt": "2026-10-31T20:12:22Z"
+}

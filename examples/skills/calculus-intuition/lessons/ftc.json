@@ -1,0 +1,40 @@
+{
+	"skill": "calculus-intuition",
+	"subskillId": "ftc",
+	"title": "The fundamental theorem: accumulation and slope undo each other",
+	"explanation": "Define an accumulation function $A(x)=\\int_a^x r(t)\\,dt$: the area under a rate $r$ from a fixed left edge $a$ to a moving right edge $x$. Push $x$ a tiny bit further, by $dx$, and you add a thin strip of height about $r(x)$ and width $dx$. So $A$ grows at rate $r(x)$: $A'(x)=r(x)$ when $r$ is continuous. 3Blue1Brown's heading says it in seven words: derivative of area function is the function [2].\n\nThat is Part 1 of the Fundamental Theorem of Calculus, which \"establishes the relationship between differentiation and integration\" [1]. Part 2 turns it into a shortcut: if $f$ is continuous on $[a,b]$ and $F$ is any antiderivative of $f$, then $\\int_a^b f(x)\\,dx = F(b)-F(a)$ [1]. Total accumulated change equals the ending value minus the starting value of anything whose rate is $f$.\n\nRead rate graphs with this in mind: the sign of $r$ tells you whether the accumulated amount is rising or falling at that moment.",
+	"keyIdeas": [
+		"$A(x)=\\int_a^x r(t)\\,dt$ has $A'(x)=r(x)$ (Part 1).",
+		"$\\int_a^b f(x)\\,dx=F(b)-F(a)$ for any antiderivative $F$ (Part 2).",
+		"Net change = final minus initial; add the starting amount separately."
+	],
+	"workedExample": {
+		"problem": "Water flows into a barrel at $r(t)=3t^2$ L/min. How much enters between $t=1$ and $t=2$ minutes?",
+		"steps": [
+			"Find an antiderivative: $F(t)=t^3$, since $F'(t)=3t^2$.",
+			"Apply Part 2: $\\int_1^2 3t^2\\,dt=F(2)-F(1)$.",
+			"Compute: $8-1=7$.",
+			"Units: (L/min) × min = L."
+		],
+		"answer": "$7$ L"
+	},
+	"pitfalls": [
+		"Reporting $F(b)-F(a)$ as the final amount. It is the net change; add the initial amount if the question asks for a total.",
+		"When the upper limit is itself a function, such as $\\int_0^{g(x)}$, forgetting the chain-rule factor $g'(x)$ from the moving edge.",
+		"Applying Part 2 to a rate that is not continuous on the interval."
+	],
+	"citations": [
+		{
+			"sourceId": "src-89dfc083c9",
+			"quote": "Part 1 establishes the relationship between differentiation and integration.",
+			"locator": "5.3 The Fundamental Theorem of Calculus, Part 1"
+		},
+		{
+			"sourceId": "src-18bde1ce91",
+			"quote": "Derivative of area function is the function",
+			"locator": "Integration: Derivative of area function is the function"
+		}
+	],
+	"createdAt": "2026-10-31T20:03:10Z",
+	"updatedAt": "2026-10-31T20:03:10Z"
+}

@@ -1,0 +1,67 @@
+{
+	"skill": "algorithms-big-o",
+	"subskillId": "complexity-analysis",
+	"title": "Reading Big-O from code",
+	"explanation": "Big-O describes how the number of steps grows as the input size *n* grows, independent of any particular computer. Count the basic operations as a function of *n*, then keep only the **dominant term** and drop constant factors: `5n² + 27n + 1005` steps is simply O(n²), because for large *n* the n² term overpowers the rest.\n\nYou can read the dominant term straight from the loop structure:\n\n```python\ndef total(values):           # one pass: O(n)\n    s = 0\n    for v in values:\n        s += v\n    return s\n\ndef count_pairs(values):     # a loop inside a loop: O(n^2)\n    pairs = 0\n    for a in values:\n        for b in values:\n            pairs += 1\n    return pairs\n\nassert total([1, 2, 3]) == 6 and count_pairs([1, 2, 3]) == 9\n```\n\nLoops that run one *after* another add (`n + n = 2n`, still O(n)); loops *nested* inside each other multiply (`n · n`). Halving the remaining work each step gives O(log n). The common classes, from fastest to slowest growth, are O(1), O(log n), O(n), O(n log n), O(n²), O(n³), O(2ⁿ). Also watch the hidden cost of built-ins: `x in some_list` scans the list (O(n)), while `x in some_set` is O(1) on average. Extra **space** is analysed the same way — count the memory your algorithm allocates beyond the input.",
+	"keyIdeas": [
+		"Count steps as a function of n; keep the dominant term, drop constants.",
+		"Sequential loops add; nested loops multiply.",
+		"Halving the problem each step is logarithmic.",
+		"Built-ins have costs too: `in` on a list is linear, on a set is constant on average."
+	],
+	"workedExample": {
+		"problem": "Two ways to check whether a list has any repeated value. Give the time and extra-space growth of each:\n```python\ndef has_repeat_slow(values):\n    for i in range(len(values)):\n        for j in range(i + 1, len(values)):\n            if values[i] == values[j]:\n                return True\n    return False\n\ndef has_repeat_fast(values):\n    seen = set()\n    for v in values:\n        if v in seen:\n            return True\n        seen.add(v)\n    return False\n```",
+		"steps": [
+			"`has_repeat_slow`: the inner loop runs n-1, n-2, …, 1 times — about n²/2 comparisons in the worst case (no repeats).",
+			"Drop the constant ½ and the lower-order terms: quadratic time, O(n²). It allocates nothing that grows with n, so extra space is O(1).",
+			"`has_repeat_fast`: one pass, and each `in`/`add` on a set is constant time on average, so the total is linear, O(n) average.",
+			"But the set can grow to hold all n values, so extra space is O(n) — you traded memory for speed.",
+			"Check both agree:\n```python\ndef has_repeat_slow(values):\n    for i in range(len(values)):\n        for j in range(i + 1, len(values)):\n            if values[i] == values[j]:\n                return True\n    return False\n\ndef has_repeat_fast(values):\n    seen = set()\n    for v in values:\n        if v in seen:\n            return True\n        seen.add(v)\n    return False\n\nfor data in ([], [1], [3, 1, 4, 1], [5, 6, 7], list(range(500)) + [42]):\n    assert has_repeat_slow(data) == has_repeat_fast(data)\nprint('both agree')\n```"
+		],
+		"answer": "Slow version: O(n²) time, O(1) extra space. Fast version: O(n) average time, O(n) extra space."
+	},
+	"pitfalls": [
+		"Counting a constant number of passes as \"slower Big-O\" — three separate O(n) loops are still O(n).",
+		"Missing hidden loops: `if x in my_list` or `my_list.index(x)` inside a loop makes it quadratic.",
+		"Reporting only time and forgetting the extra space a helper set, dict, or copied list uses."
+	],
+	"citations": [
+		{
+			"sourceId": "src-21391ff64e",
+			"quote": "When trying to characterize an algorithm's efficiency in terms of execution time, independent of any particular program or computer, it is important to quantify the number of operations or steps",
+			"locator": "2.3 Big O Notation"
+		},
+		{
+			"sourceId": "src-21391ff64e",
+			"quote": "when n is really large, the other two terms become insignificant in the role that they play in determining the final result.",
+			"locator": "2.3 Big O Notation"
+		},
+		{
+			"sourceId": "src-21391ff64e",
+			"quote": "since there are three statements that are performed \\(n^{2}\\) times due to the nested iteration.",
+			"locator": "2.3 Big O Notation (worked analysis)"
+		},
+		{
+			"sourceId": "src-21391ff64e",
+			"quote": "Table 1: Common Functions for Big O f(n) Name",
+			"locator": "2.3 Big O Notation, Table 1"
+		},
+		{
+			"sourceId": "src-abdce53cbf",
+			"quote": "each comparison eliminates about half of the remaining items from consideration.",
+			"locator": "5.4.1 Analysis of Binary Search"
+		},
+		{
+			"sourceId": "src-38d6feee57",
+			"quote": "x in l O(n)",
+			"locator": "list"
+		},
+		{
+			"sourceId": "src-38d6feee57",
+			"quote": "x in s O(1)",
+			"locator": "set, frozenset"
+		}
+	],
+	"createdAt": "2026-10-31T20:10:14.000Z",
+	"updatedAt": "2026-10-31T20:10:14.000Z"
+}

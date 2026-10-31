@@ -1,0 +1,61 @@
+{
+	"skill": "regex",
+	"subskillId": "character-classes",
+	"title": "Character classes: one character from a set",
+	"explanation": "A **character class** in square brackets matches exactly **one** character from the set: `[xyz]` matches one of x, y, z; `[a-f]` uses a hyphen for a range; and `[a-fA-F]` combines ranges. Put `^` first to negate it: `[^,;]` matches one character that is *not* a comma or semicolon. Inside a class most special characters lose their meaning — `[.]` is a literal dot.\n\nThere are shorthand classes for the common sets:\n\n- `\\d` — a digit, same as `[0-9]`; `\\D` — any non-digit.\n- `\\w` — a \"word\" character, same as `[A-Za-z0-9_]` (note the digits and underscore); `\\W` — the opposite.\n- `\\s` — whitespace (space, tab, newline, …); `\\S` — non-whitespace.\n- `.` — any character except line terminators.\n\n```js\nconsole.log(\"B2 is the suite\".match(/\\d/)[0]);   // \"2\"\nconsole.log(\"50%\".match(/\\W/)[0]);              // \"%\"\nconsole.log(/[.]/.test(\"a.b\"), /[.]/.test(\"ab\")); // true false\n```\n\nA class always consumes one character, so `[abc]` never matches an empty string; to match several characters from the set, add a quantifier (next lesson).",
+	"keyIdeas": [
+		"`[...]` matches one character from the set; `-` makes ranges.",
+		"`[^...]` (caret first) matches one character *not* in the set.",
+		"`\\d \\w \\s` and their capitals `\\D \\W \\S` are shorthand classes.",
+		"`.` matches any character except line terminators."
+	],
+	"workedExample": {
+		"problem": "Find every character in `\"Room 4B, floor -2!\"` that is **not** a letter, a digit, or a space.",
+		"steps": [
+			"List what is allowed: letters `A-Za-z`, digits `0-9`, and a space.",
+			"\"Not in this set\" is a negated class: put `^` first → `[^A-Za-z0-9 ]`.",
+			"Add the `g` flag so `match` returns every hit instead of just the first.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nconst text = \"Room 4B, floor -2!\";\nconst others = text.match(/[^A-Za-z0-9 ]/g);\nassert.deepEqual(others, [\",\", \"-\", \"!\"]);\nassert.equal(\"plain words 42\".match(/[^A-Za-z0-9 ]/g), null); // no matches -> null\nconsole.log(others);\n```"
+		],
+		"answer": "`[\",\", \"-\", \"!\"]` using `/[^A-Za-z0-9 ]/g`."
+	},
+	"pitfalls": [
+		"Expecting `\\w` to mean letters only — it also matches digits and `_`.",
+		"Writing `^` in the middle of a class (`[a^b]`), where it is a literal caret, not a negation.",
+		"Forgetting that an unanchored class can match anywhere: `/[xyz]/` accepts `\"axb\"` because one character matched."
+	],
+	"citations": [
+		{
+			"sourceId": "src-b8bd6b96e4",
+			"quote": "Character class: Matches any one of the enclosed characters. You can specify a range of characters by using a hyphen",
+			"locator": "Types: [xyz] [a-c]"
+		},
+		{
+			"sourceId": "src-b8bd6b96e4",
+			"quote": "Negated character class: Matches anything that is not enclosed in the square brackets.",
+			"locator": "Types: [^xyz] [^a-c]"
+		},
+		{
+			"sourceId": "src-b8bd6b96e4",
+			"quote": "Digit character class escape: Matches any digit (Arabic numeral). Equivalent to [0-9].",
+			"locator": "Types: \\d"
+		},
+		{
+			"sourceId": "src-b8bd6b96e4",
+			"quote": "Matches any alphanumeric character from the basic Latin alphabet, including the underscore. Equivalent to [A-Za-z0-9_].",
+			"locator": "Types: \\w"
+		},
+		{
+			"sourceId": "src-b8bd6b96e4",
+			"quote": "Wildcard: Matches any single character except line terminators",
+			"locator": "Types: ."
+		},
+		{
+			"sourceId": "src-b8bd6b96e4",
+			"quote": "Inside a character class, the dot loses its special meaning and matches a literal dot.",
+			"locator": "Types: ."
+		}
+	],
+	"createdAt": "2026-10-31T20:15:38.000Z",
+	"updatedAt": "2026-10-31T20:15:38.000Z"
+}

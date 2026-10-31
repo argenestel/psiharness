@@ -461,8 +461,30 @@ function challengeSheet(d, ctx) {
 		}
 	});
 	sync();
+	// A sheet replayed from history (or reopened later) says how it went last time instead of looking untouched.
+	if (d.skill && d.id && d.skill !== "sample") {
+		void apiFor(ctx).then((api) => api.get(endpoint)).then((info) => {
+			if (!graded && !busy && PREVIOUS_WORDS[info?.lastOutcome]) showPrevious(info.lastOutcome);
+		}).catch(() => { /* The sheet works without it. */ });
+	}
+	function showPrevious(outcome) {
+		const note = node("p", "psi-sheet-previous");
+		note.append(markSvg(outcome), node("span", "", PREVIOUS_WORDS[outcome]));
+		if (outcome === "success") {
+			graded = true; sync();
+			const again = button("Try it again", () => {
+				graded = false; note.remove(); sync();
+				(input ?? radios[0] ?? lab?.input)?.focus();
+			});
+			note.append(again);
+		}
+		sheet.insertBefore(note, fields);
+	}
 	return sheet;
 }
+
+const PREVIOUS_WORDS = { success: "You solved this earlier.", partial: "You got this partly right earlier.",
+	fail: "You missed this earlier. Another try counts too.", skipped: "You skipped this earlier." };
 
 function outcomeLine(outcome, xp) {
 	const line = node("p", "psi-result-line");

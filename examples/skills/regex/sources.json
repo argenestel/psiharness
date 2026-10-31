@@ -1,0 +1,130 @@
+[
+	{
+		"id": "src-9b2e38fa03",
+		"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions",
+		"title": "JavaScript Guide: Regular expressions",
+		"publisher": "MDN Web Docs (Mozilla)",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
+			"Openly licensed (CC BY-SA 2.5)"
+		],
+		"license": "CC BY-SA 2.5",
+		"excerpt": "Regular expressions are patterns used to match character combinations in strings. In JavaScript, regular expressions are also objects.",
+		"accessedAt": "2026-10-31T20:15:38.000Z"
+	},
+	{
+		"id": "src-b8bd6b96e4",
+		"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions/Character_classes",
+		"title": "JavaScript Guide: Regular expressions — Character classes",
+		"publisher": "MDN Web Docs (Mozilla)",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
+			"Openly licensed (CC BY-SA 2.5)"
+		],
+		"license": "CC BY-SA 2.5",
+		"excerpt": "Character class: Matches any one of the enclosed characters.",
+		"accessedAt": "2026-10-31T20:15:38.000Z"
+	},
+	{
+		"id": "src-bb68cbc8a5",
+		"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions/Assertions",
+		"title": "JavaScript Guide: Regular expressions — Assertions",
+		"publisher": "MDN Web Docs (Mozilla)",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
+			"Openly licensed (CC BY-SA 2.5)"
+		],
+		"license": "CC BY-SA 2.5",
+		"excerpt": "Lookahead assertion: Matches \"x\" only if \"x\" is followed by \"y\".",
+		"accessedAt": "2026-10-31T20:15:38.000Z"
+	},
+	{
+		"id": "src-d27926157b",
+		"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions/Quantifiers",
+		"title": "JavaScript Guide: Regular expressions — Quantifiers",
+		"publisher": "MDN Web Docs (Mozilla)",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
+			"Openly licensed (CC BY-SA 2.5)"
+		],
+		"license": "CC BY-SA 2.5",
+		"excerpt": "By default quantifiers like * and + are \"greedy\", meaning that they try to match as many times as possible.",
+		"accessedAt": "2026-10-31T20:15:38.000Z"
+	},
+	{
+		"id": "src-c4a55b141a",
+		"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions/Groups_and_backreferences",
+		"title": "JavaScript Guide: Regular expressions — Groups and backreferences",
+		"publisher": "MDN Web Docs (Mozilla)",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
+			"Openly licensed (CC BY-SA 2.5)"
+		],
+		"license": "CC BY-SA 2.5",
+		"excerpt": "Capturing group: Matches x and remembers the match.",
+		"accessedAt": "2026-10-31T20:15:38.000Z"
+	},
+	{
+		"id": "src-c57a87abf6",
+		"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex",
+		"title": "JavaScript Reference: RegExp.prototype.lastIndex",
+		"publisher": "MDN Web Docs (Mozilla)",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
+			"Openly licensed (CC BY-SA 2.5)"
+		],
+		"license": "CC BY-SA 2.5",
+		"excerpt": "The lastIndex data property of a RegExp instance specifies the index at which to start the next match.",
+		"accessedAt": "2026-10-31T20:15:38.000Z"
+	},
+	{
+		"id": "src-3326cd8bc3",
+		"url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/matchAll",
+		"title": "JavaScript Reference: String.prototype.matchAll()",
+		"publisher": "MDN Web Docs (Mozilla)",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
+			"Openly licensed (CC BY-SA 2.5)"
+		],
+		"license": "CC BY-SA 2.5",
+		"excerpt": "The matchAll() method of String values returns an iterator of all results matching this string against a regular expression, including capturing groups.",
+		"accessedAt": "2026-10-31T20:15:38.000Z"
+	},
+	{
+		"id": "src-5915b11be6",
+		"url": "https://docs.python.org/3/howto/regex.html",
+		"title": "Python HOWTO: Regular Expression HOWTO",
+		"publisher": "Python Software Foundation",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official Python documentation (docs.python.org)",
+			"Openly licensed (PSF License Version 2)"
+		],
+		"license": "PSF License Version 2",
+		"excerpt": "| has very low precedence in order to make it work reasonably when you're alternating multi-character strings.",
+		"accessedAt": "2026-10-31T20:15:38.000Z"
+	}
+]

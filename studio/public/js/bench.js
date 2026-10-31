@@ -114,10 +114,11 @@ export function mountBench(root, { skill, onChange, onClose } = {}) {
 			el("section", { class: "psi-bench-facts", "aria-label": "Progress" },
 				el("div", { class: "psi-bench-block" },
 					el("div", { class: "psi-bench-level" }, levelNumber, el("span", {}, level.toNextLabel)),
-					meter(level.percent, `${level.label}, ${level.toNextLabel}`)),
+					// Fills appear once there is progress; an empty track reads as a divider.
+					level.percent > 0 ? meter(level.percent, `${level.label}, ${level.toNextLabel}`) : null),
 				el("div", { class: "psi-bench-fact" },
 					el("span", {}, hoursLabel(progress.minutesLogged)),
-					meter(hoursPct, hoursLabel(progress.minutesLogged), true)),
+					hoursPct > 0 ? meter(hoursPct, hoursLabel(progress.minutesLogged), true) : null),
 				el("p", {}, streak || "Practice today to start a streak.")),
 		));
 	}

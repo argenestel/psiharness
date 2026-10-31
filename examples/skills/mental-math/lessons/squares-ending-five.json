@@ -1,0 +1,34 @@
+{
+	"skill": "mental-math",
+	"subskillId": "squares-ending-five",
+	"title": "Square numbers ending in five",
+	"explanation": "Write a number ending in 5 as $10a+5$, where $a$ is everything before the 5 (for 65, $a=6$). Square it with the binomial-square pattern: square the first term, square the last term, double their product [1]:\n$(10a+5)^2=100a^2+2\\cdot10a\\cdot5+25=100a^2+100a+25=100\\,a(a+1)+25.$\n\nSo the recipe is: multiply $a$ by the next whole number, then append 25. The last two digits are always 25, and the front is $a(a+1)$.\n\nCheck with a small case you know: $15^2=225$, and $1\\times2=2$ followed by 25 gives 225.",
+	"keyIdeas": [
+		"$(10a+5)^2=100\\,a(a+1)+25$.",
+		"Multiply the leading part by one more than itself, then append 25.",
+		"Works for any leading part, including multi-digit ones."
+	],
+	"workedExample": {
+		"problem": "Compute $65^2$ and $105^2$.",
+		"steps": [
+			"$65$: $a=6$, and $6\\times7=42$. Append 25: $4225$.",
+			"$105$: $a=10$, and $10\\times11=110$. Append 25: $11025$.",
+			"Check $65^2$ with the pattern: $3600+2\\cdot60\\cdot5+25=3600+600+25=4225$."
+		],
+		"answer": "$65^2=4225$ and $105^2=11025$"
+	},
+	"pitfalls": [
+		"Multiplying $a$ by itself instead of by $a+1$.",
+		"Appending 5 or 50 instead of 25.",
+		"Forgetting the middle term when squaring a sum: $(60+5)^2\\ne60^2+5^2$."
+	],
+	"citations": [
+		{
+			"sourceId": "src-6be5caf938",
+			"quote": "To square a binomial: square the first term square the last term double their product",
+			"locator": "6.4: Square a Binomial Using the Binomial Squares Pattern"
+		}
+	],
+	"createdAt": "2026-10-31T20:14:58Z",
+	"updatedAt": "2026-10-31T20:14:58Z"
+}

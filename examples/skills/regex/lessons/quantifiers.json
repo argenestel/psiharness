@@ -1,0 +1,61 @@
+{
+	"skill": "regex",
+	"subskillId": "quantifiers",
+	"title": "Quantifiers: how many times, and greedy vs lazy",
+	"explanation": "A **quantifier** says how many times the item just before it may repeat. The item can be one character, a class, or a group:\n\n| Quantifier | Meaning |\n|---|---|\n| `x*` | 0 or more |\n| `x+` | 1 or more |\n| `x?` | 0 or 1 (optional) |\n| `x{n}` | exactly n |\n| `x{n,}` | at least n |\n| `x{n,m}` | between n and m |\n\nBy default quantifiers are **greedy**: they take as many repetitions as possible and give some back only if the rest of the pattern would otherwise fail. Put `?` after a quantifier (`*?`, `+?`, `{n,m}?`) to make it **lazy**: it stops at the minimum that lets the match succeed.\n\n```js\nconst quote = 'say \"hi\" and \"bye\"';\nconsole.log(quote.match(/\".*\"/)[0]);    // \"hi\" and \"bye\"   (greedy: runs to the last quote)\nconsole.log(quote.match(/\".*?\"/)[0]);   // \"hi\"             (lazy: stops at the first closing quote)\n```\n\nA quantifier applies only to the single item before it: `ab+` means \"a, then one or more b\". To repeat a longer piece, group it first: `(?:ab)+`.",
+	"keyIdeas": [
+		"`* + ? {n} {n,} {n,m}` repeat the previous item.",
+		"Greedy is the default: as many as possible, backing off if needed.",
+		"A trailing `?` makes a quantifier lazy (as few as possible).",
+		"Quantifiers bind to one item; group to repeat more."
+	],
+	"workedExample": {
+		"problem": "Validate prices: a whole number, optionally followed by a dot and **one or two** decimal digits. `\"3\"`, `\"3.5\"`, and `\"12.50\"` pass; `\"3.\"`, `\"3.555\"`, and `\".5\"` fail.",
+		"steps": [
+			"At least one digit before the dot: `\\d+`.",
+			"The decimal part is optional as a whole, so group it and make the group optional: `(?:\\.\\d{1,2})?` — the dot is escaped to be literal.",
+			"Anchor both ends so nothing extra can sneak in: `^\\d+(?:\\.\\d{1,2})?$`.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nconst price = /^\\d+(?:\\.\\d{1,2})?$/;\nfor (const ok of [\"3\", \"3.5\", \"12.50\"]) assert.ok(price.test(ok), ok);\nfor (const bad of [\"3.\", \"3.555\", \".5\", \"\"]) assert.ok(!price.test(bad), bad);\nconsole.log(\"price pattern ok\");\n```"
+		],
+		"answer": "`/^\\d+(?:\\.\\d{1,2})?$/` — `+` requires a whole part, `{1,2}` limits the decimals, and `?` makes the decimal part optional."
+	},
+	"pitfalls": [
+		"Using `.*` between delimiters and swallowing everything up to the *last* delimiter (greedy).",
+		"Writing `ab+` when you meant \"repeat ab\" — the `+` applies only to `b`.",
+		"Using `*` where at least one is required, so the empty string matches."
+	],
+	"citations": [
+		{
+			"sourceId": "src-d27926157b",
+			"quote": "Matches the preceding item \"x\" 0 or more times.",
+			"locator": "Types: x*"
+		},
+		{
+			"sourceId": "src-d27926157b",
+			"quote": "Matches the preceding item \"x\" 1 or more times.",
+			"locator": "Types: x+"
+		},
+		{
+			"sourceId": "src-d27926157b",
+			"quote": "matches at least \"n\" and at most \"m\" occurrences of the preceding item \"x\".",
+			"locator": "Types: x{n,m}"
+		},
+		{
+			"sourceId": "src-d27926157b",
+			"quote": "By default quantifiers like * and + are \"greedy\", meaning that they try to match as many times as possible.",
+			"locator": "Types: x*? x+? …"
+		},
+		{
+			"sourceId": "src-d27926157b",
+			"quote": "The ? character after the quantifier makes the quantifier \"non-greedy\": meaning that it will stop as soon as it finds the minimum number of matches.",
+			"locator": "Types: x*? x+? …"
+		},
+		{
+			"sourceId": "src-5915b11be6",
+			"quote": "If later portions of the pattern don't match, the matching engine will then back up and try again with fewer repetitions.",
+			"locator": "Repeating Things"
+		}
+	],
+	"createdAt": "2026-10-31T20:15:38.000Z",
+	"updatedAt": "2026-10-31T20:15:38.000Z"
+}

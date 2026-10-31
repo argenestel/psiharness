@@ -1,0 +1,62 @@
+{
+	"skill": "algorithms-big-o",
+	"subskillId": "hash-maps",
+	"title": "Hash maps: constant-time lookups on average",
+	"explanation": "A Python `dict` (and `set`) is a hash table. Looking up, inserting, or deleting a key — `key in d`, `d[key]`, `d[key] = v` — takes **O(1) on average**, no matter how many keys there are. Compare that with a list, where `x in my_list` checks items one by one: O(n).\n\nThe classic speed-up: when a nested loop is really asking \"have I seen something that matches this?\", replace the inner loop with a dictionary lookup. You pay O(n) extra memory to save a factor of *n* in time.\n\n```python\nprices = {\"tea\": 4, \"jam\": 6}\nprices[\"mug\"] = 9                 # insert: O(1) average\nprint(\"jam\" in prices)            # membership: O(1) average -> True\nprint(prices.get(\"pen\", 0))       # missing key with a default -> 0\n```\n\n\"Average\" matters: the guarantee assumes the hash function spreads keys out so collisions are rare. In the worst case — every key hashing to the same slot — each operation degrades to O(n). Keys must be hashable (immutable values such as strings, numbers, and tuples of them), and a dict remembers insertion order, which helps when output order should follow the input.",
+	"keyIdeas": [
+		"`in`, get, set, and delete on a dict/set are O(1) on average.",
+		"Use a dict/set to replace an inner \"search\" loop: O(n²) → O(n).",
+		"You trade O(n) extra space for the speed.",
+		"Worst case (many collisions) degrades to O(n)."
+	],
+	"workedExample": {
+		"problem": "Build a word index for lines of text — map each lowercase word to the sorted list of line numbers (from 1) where it appears — then answer queries like \"which lines mention `tea`?\" in constant average time per lookup.",
+		"steps": [
+			"A naive answer rescans every line per query: O(total words) per query.",
+			"Instead, make one pass over the text and build a dict `word → list of line numbers`.",
+			"Avoid duplicate line numbers when a word repeats on one line by checking the last appended value.",
+			"A query is then one dict lookup with `.get(word, [])` — O(1) average — instead of a rescan.",
+			"Run it:\n```python\ndef build_index(lines):\n    index = {}\n    for number, line in enumerate(lines, start=1):\n        for word in line.lower().split():\n            hits = index.setdefault(word, [])\n            if not hits or hits[-1] != number:\n                hits.append(number)\n    return index\n\nlines = ['Tea and jam', 'jam on toast', 'tea tea tea']\nindex = build_index(lines)\nassert index.get('tea', []) == [1, 3]\nassert index.get('jam', []) == [1, 2]\nassert index.get('coffee', []) == []\nprint(index['tea'])\n```"
+		],
+		"answer": "`tea` → `[1, 3]`, `jam` → `[1, 2]`, `coffee` → `[]`: building costs one pass over the text, and each query is a constant-average-time lookup."
+	},
+	"pitfalls": [
+		"Using a list for membership tests inside a loop (`if x in seen_list`), quietly making the code quadratic.",
+		"Trying to use a mutable value such as a list as a dict key; convert it to a tuple first.",
+		"Assuming O(1) is guaranteed — it is an average that relies on few collisions."
+	],
+	"citations": [
+		{
+			"sourceId": "src-38d6feee57",
+			"quote": "The times listed for dict objects are average-case times, as they assume the hash function for the objects is sufficiently robust to make collisions uncommon.",
+			"locator": "dict, frozendict"
+		},
+		{
+			"sourceId": "src-38d6feee57",
+			"quote": "In the worst case, when every key hashes to the same value, each of the O(1) operations below instead takes O(n) time.",
+			"locator": "dict, frozendict"
+		},
+		{
+			"sourceId": "src-38d6feee57",
+			"quote": "Operation Complexity key in d O(1)",
+			"locator": "dict, frozendict"
+		},
+		{
+			"sourceId": "src-38d6feee57",
+			"quote": "x in l O(n)",
+			"locator": "list"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "dictionaries are indexed by keys, which can be any immutable type; strings and numbers can always be keys.",
+			"locator": "5.5 Dictionaries"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "Performing list(d) on a dictionary returns a list of all the keys used in the dictionary, in insertion order",
+			"locator": "5.5 Dictionaries"
+		}
+	],
+	"createdAt": "2026-10-31T20:10:14.000Z",
+	"updatedAt": "2026-10-31T20:10:14.000Z"
+}

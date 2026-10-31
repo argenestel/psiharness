@@ -1,0 +1,49 @@
+{
+	"skill": "physics-mechanics",
+	"subskillId": "circular",
+	"title": "Circular motion: always turning inward",
+	"explanation": "In a straight line, constant speed means zero acceleration [1]. On a circle it does not: the speed may stay the same, but the *direction* of the velocity keeps changing, and a changing velocity is an acceleration. The acceleration that does this points toward the centre of the circle [2].\n\nHow big is it? Compare two velocity snapshots a moment apart. The triangle they form is similar to the triangle formed by two radius vectors and the short chord between them [3]. Matching ratios gives the size of the **centripetal acceleration** for motion at constant speed [4]: $a_c=\\frac{v^2}{r}$.\n\nBy Newton's second law, something must supply this inward net force, $F_{net,\\,in}=m\\,\\frac{v^2}{r}$: a string's tension, a road's friction, gravity. Identify which real force does the job in each problem.",
+	"keyIdeas": [
+		"Constant speed on a circle still means acceleration, because direction changes.",
+		"Centripetal acceleration: $a_c=\\frac{v^2}{r}$, toward the centre.",
+		"Some real force must supply the inward net force $m\\frac{v^2}{r}$."
+	],
+	"workedExample": {
+		"problem": "A car drives at $20$ m/s around a curve of radius $50$ m. Find its centripetal acceleration, then the inward net force if the car's mass is $1000$ kg.",
+		"steps": [
+			"$a_c=\\frac{v^2}{r}=\\frac{20^2}{50}=\\frac{400}{50}=8$ m/s².",
+			"Direction: toward the centre of the curve.",
+			"Force: $F=m\\,a_c=1000\\cdot8=8000$ N, supplied by friction between tyres and road."
+		],
+		"answer": "$8$ m/s² toward the centre; $8000$ N inward"
+	},
+	"pitfalls": [
+		"Thinking constant speed means zero acceleration on a curve.",
+		"Forgetting to square the speed, or squaring a speed that is still in km/h.",
+		"Using $v/r$ or $v^2 r$: check that the units come out as m/s²."
+	],
+	"citations": [
+		{
+			"sourceId": "src-8d5150ed9c",
+			"quote": "In one-dimensional kinematics, objects with a constant speed have zero acceleration.",
+			"locator": "4.4: Centripetal Acceleration"
+		},
+		{
+			"sourceId": "src-8d5150ed9c",
+			"quote": "The direction of the acceleration vector is toward the center of the circle",
+			"locator": "4.4: Centripetal Acceleration, Equation 4.27"
+		},
+		{
+			"sourceId": "src-8d5150ed9c",
+			"quote": "The two triangles in the figure are similar.",
+			"locator": "4.4: Centripetal Acceleration, Figure 4.18"
+		},
+		{
+			"sourceId": "src-8d5150ed9c",
+			"quote": "a particle moving in a circle at a constant speed has an acceleration with magnitude",
+			"locator": "4.4: Centripetal Acceleration, Equation 4.27"
+		}
+	],
+	"createdAt": "2026-10-31T20:09:09Z",
+	"updatedAt": "2026-10-31T20:09:09Z"
+}

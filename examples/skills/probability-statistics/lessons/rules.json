@@ -1,0 +1,49 @@
+{
+	"skill": "probability-statistics",
+	"subskillId": "rules",
+	"title": "Probability rules: or, and, not",
+	"explanation": "**Or.** To find $P(A\\text{ or }B)$, add the two probabilities, then subtract the overlap you counted twice: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$ [1]. If $A$ and $B$ cannot happen together (mutually exclusive), the overlap is $0$ [2] and you simply add.\n\n**Not.** The complement $A'$ consists of all outcomes that are not in $A$ [3], so $P(A')=1-P(A)$. 'At least one' questions are usually easiest through their complement, 'none at all'.\n\n**And.** In general $P(A\\cap B)=P(B)\\,P(A\\mid B)$ [4]. For independent events, learning one tells you nothing about the other, so the probabilities simply multiply.",
+	"keyIdeas": [
+		"$P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$; subtract the double-counted overlap.",
+		"$P(\\text{not }A)=1-P(A)$; use it for 'at least one'.",
+		"Independent events: multiply probabilities for 'and'."
+	],
+	"workedExample": {
+		"problem": "Roll a fair die twice. What is the probability of at least one six?",
+		"steps": [
+			"Complement: 'no six on either roll'. Each roll misses with probability $\\frac56$, independently, so $P(\\text{none})=\\frac56\\cdot\\frac56=\\frac{25}{36}$.",
+			"At least one: $1-\\frac{25}{36}=\\frac{11}{36}$.",
+			"Check with the addition rule: $\\frac16+\\frac16-\\frac1{36}=\\frac{11}{36}$."
+		],
+		"answer": "$\\frac{11}{36}\\approx0.306$"
+	},
+	"pitfalls": [
+		"Adding probabilities of overlapping events without subtracting the overlap.",
+		"Multiplying probabilities of events that are not independent.",
+		"Computing 'at least one six in two rolls' as $\\frac16+\\frac16$, which double-counts the double six."
+	],
+	"citations": [
+		{
+			"sourceId": "src-d183aad23b",
+			"quote": "The Addition Rule If A and B are defined on a sample space, then: P ( A OR B ) = P ( A ) + P ( B ) - P ( A AND B ).",
+			"locator": "3.3 Two Basic Rules of Probability: The Addition Rule"
+		},
+		{
+			"sourceId": "src-d183aad23b",
+			"quote": "If A and B are mutually exclusive , then P ( A AND B ) = 0.",
+			"locator": "3.3: The Addition Rule"
+		},
+		{
+			"sourceId": "src-80154f607f",
+			"quote": "A′ consists of all outcomes that are NOT in A.",
+			"locator": "3.1 Terminology: complement"
+		},
+		{
+			"sourceId": "src-d183aad23b",
+			"quote": "The Multiplication Rule If A and B are two events defined on a sample space , then: P ( A AND B ) = P ( B ) P ( A | B ).",
+			"locator": "3.3: The Multiplication Rule"
+		}
+	],
+	"createdAt": "2026-10-31T20:12:22Z",
+	"updatedAt": "2026-10-31T20:12:22Z"
+}

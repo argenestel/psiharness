@@ -1,0 +1,130 @@
+[
+	{
+		"id": "src-5f4e427623",
+		"url": "https://openstax.org/books/university-physics-volume-1/pages/1-3-unit-conversion",
+		"title": "University Physics Volume 1, 1.3 Unit Conversion",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "A conversion factor is a ratio that expresses how many of one unit are equal to another unit.",
+		"accessedAt": "2026-10-31T20:09:09Z"
+	},
+	{
+		"id": "src-071cba9ce5",
+		"url": "https://openstax.org/books/university-physics-volume-1/pages/3-4-motion-with-constant-acceleration",
+		"title": "University Physics Volume 1, 3.4 Motion with Constant Acceleration",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "Furthermore, in many other situations we can describe motion accurately by assuming a constant acceleration equal to the average acceleration for that motion.",
+		"accessedAt": "2026-10-31T20:09:09Z"
+	},
+	{
+		"id": "src-250971f50a",
+		"url": "https://openstax.org/books/university-physics-volume-1/pages/4-3-projectile-motion",
+		"title": "University Physics Volume 1, 4.3 Projectile Motion",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "The most important fact to remember here is that motions along perpendicular axes are independent and thus can be analyzed separately.",
+		"accessedAt": "2026-10-31T20:09:09Z"
+	},
+	{
+		"id": "src-8d5150ed9c",
+		"url": "https://openstax.org/books/university-physics-volume-1/pages/4-4-uniform-circular-motion",
+		"title": "University Physics Volume 1, 4.4 Uniform and Nonuniform Circular Motion",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "In one-dimensional kinematics, objects with a constant speed have zero acceleration.",
+		"accessedAt": "2026-10-31T20:09:09Z"
+	},
+	{
+		"id": "src-e54a688549",
+		"url": "https://openstax.org/books/university-physics-volume-1/pages/5-3-newtons-second-law",
+		"title": "University Physics Volume 1, 5.3 Newton's Second Law",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "It seems reasonable that acceleration would be directly proportional to and in the same direction as the net external force acting on a system.",
+		"accessedAt": "2026-10-31T20:09:09Z"
+	},
+	{
+		"id": "src-46d8555e80",
+		"url": "https://openstax.org/books/university-physics-volume-1/pages/6-2-friction",
+		"title": "University Physics Volume 1, 6.2 Friction",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "Static friction is a responsive force that increases to be equal and opposite to whatever force is exerted, up to its maximum limit.",
+		"accessedAt": "2026-10-31T20:09:09Z"
+	},
+	{
+		"id": "src-7c5e876b4a",
+		"url": "https://openstax.org/books/university-physics-volume-1/pages/7-3-work-energy-theorem",
+		"title": "University Physics Volume 1, 7.3 Work-Energy Theorem",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "Work-Energy Theorem The net work done on a particle equals the change in the particle's kinetic energy",
+		"accessedAt": "2026-10-31T20:09:09Z"
+	},
+	{
+		"id": "src-8abb97628e",
+		"url": "https://openstax.org/books/university-physics-volume-1/pages/9-4-types-of-collisions",
+		"title": "University Physics Volume 1, 9.4 Types of Collisions",
+		"publisher": "OpenStax, Rice University",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Published by OpenStax (Rice University), a peer-reviewed open textbook publisher",
+			"Open license (CC BY-NC-SA 4.0): free to read and reuse"
+		],
+		"license": "CC BY-NC-SA 4.0",
+		"excerpt": "Any collision where the objects stick together will result in the maximum loss of kinetic energy",
+		"accessedAt": "2026-10-31T20:09:09Z"
+	}
+]

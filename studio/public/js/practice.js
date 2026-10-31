@@ -65,7 +65,8 @@ export function promptPreview(prompt = "", max = 140) {
 
 /** Plain sentences of a prompt (code fences dropped), for comparing prompts sentence by sentence. */
 export function promptSentences(prompt = "") {
-	return String(prompt ?? "").replace(/```[\s\S]*?(?:```|$)/g, " ").replace(/\s+/g, " ").trim()
+	return String(prompt ?? "").replace(/```[\s\S]*?(?:```|$)/g, " ").replace(/^[ \t]*(?:[-*+]|\d+[.)])[ \t]+/gm, "")
+		.replace(/\s+/g, " ").trim()
 		.split(/(?<=[.!?])\s+(?=\S)/).map((s) => s.trim()).filter(Boolean);
 }
 
@@ -91,7 +92,10 @@ export function distinctPrompts(prompts = []) {
 	});
 }
 
-/** Subskill status in words, given the whole plan (Next up / Practising / Solid / Locked: after X / Not started). */
+/**
+ * Subskill status in words, given the whole plan: Next up / Practising / Solid / Not started, or
+ * "After step 2" / "After steps 1 and 3" for a locked one (steps are numbered in plan order; `names` spells them out).
+ */
 export function subskillStatus(sub, plan) {
 	const subs = plan?.subskills ?? [];
 	if (sub.status === "solid") return { key: "solid", text: "Solid" };
@@ -99,11 +103,15 @@ export function subskillStatus(sub, plan) {
 	const solid = new Set(subs.filter((s) => s.status === "solid").map((s) => s.id));
 	const missing = (sub.prerequisites ?? []).filter((id) => !solid.has(id));
 	if (missing.length) {
-		// Lower-case a leading capital only when the next letter is lower-case ("Read syntax" → "read syntax", "SQL" stays).
-		const names = missing.map((id) => subs.find((s) => s.id === id)?.title ?? id)
-			.map((t) => /^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t);
-		const after = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0];
-		return { key: "locked", text: `Locked: after ${after}` };
+		const and = (items) => items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}` : items[0];
+		const numbers = missing.map((id) => subs.findIndex((s) => s.id === id) + 1);
+		const names = missing.map((id) => subs.find((s) => s.id === id)?.title ?? id);
+		if (numbers.every((n) => n > 0)) {
+			const sorted = [...numbers].sort((a, b) => a - b);
+			return { key: "locked", text: `After step${sorted.length > 1 ? "s" : ""} ${and(sorted.map(String))}`,
+				names: `Unlocks after ${and(names)}` };
+		}
+		return { key: "locked", text: `After ${and(names.map((t) => /^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t))}` };
 	}
 	let next;
 	for (const s of subs) {
@@ -234,15 +242,16 @@ export function mountPractice(host, { skill, navigate } = {}) {
 		refs.stats.replaceChildren(
 			el("div", { class: `psi-sk-stat psi-sk-level${leveledUp ? " is-levelup" : ""}` },
 				el("strong", {}, lvl.label),
-				el("div", { class: "psi-sk-meter is-level", role: "progressbar", "aria-label": `${lvl.label} progress`,
+				// Meters appear once there is progress to fill; an empty track reads as an underline.
+				lvl.percent > 0 ? el("div", { class: "psi-sk-meter is-level", role: "progressbar", "aria-label": `${lvl.label} progress`,
 					"aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(lvl.percent),
-					"aria-valuetext": lvl.toNextLabel }, el("span", { style: { width: `${lvl.percent}%` } })),
+					"aria-valuetext": lvl.toNextLabel }, el("span", { style: { width: `${lvl.percent}%` } })) : null,
 				el("span", { class: "psi-sk-quiet" }, lvl.toNextLabel)),
 			el("div", { class: "psi-sk-stat" },
 				el("strong", {}, "Practice time"),
-				el("div", { class: "psi-sk-meter is-hours", role: "progressbar", "aria-label": "Hours practised",
+				minutes > 0 ? el("div", { class: "psi-sk-meter is-hours", role: "progressbar", "aria-label": "Hours practised",
 					"aria-valuemin": "0", "aria-valuemax": String(goal), "aria-valuenow": String(Math.round(minutes / 6) / 10),
-					"aria-valuetext": hoursLabel(minutes, goal) }, el("span", { style: { width: `${hoursPct}%` } })),
+					"aria-valuetext": hoursLabel(minutes, goal) }, el("span", { style: { width: `${hoursPct}%` } })) : null,
 				el("span", { class: "psi-sk-quiet" }, hoursLabel(minutes, goal))),
 			el("div", { class: "psi-sk-stat" },
 				el("strong", {}, streak ? streak.charAt(0).toUpperCase() + streak.slice(1) : "No streak yet"),
@@ -265,7 +274,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 				el("div", { class: "psi-sk-step-body" },
 					el("span", { class: "psi-sk-step-title" }, sub.title),
 					sub.why ? el("span", { class: "psi-sk-quiet psi-sk-why" }, sub.why) : null),
-				el("span", { class: "psi-sk-status" }, status.text));
+				el("span", { class: "psi-sk-status", title: status.names }, status.text));
 		})));
 		return section;
 	}
@@ -315,7 +324,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 		const last = lastAttempt(c);
 		const mark = el("span", { class: "psi-sk-mark" });
 		if (last) mark.append(renderTrail([last], { label: "Last result" }));
-		else mark.append(el("span", { class: "psi-sk-quiet psi-sk-untried" }, "Not tried"));
+		// No mark means not tried yet; the "Not tried" filter covers that, so the row stays quiet.
 		const sheet = el("div", { class: "psi-sk-sheet", hidden: true, id: `psi-sk-sheet-${c.id}` });
 		const tryButton = el("button", { type: "button", "aria-expanded": "false", "aria-controls": sheet.id,
 			onclick: () => toggle(c, row, tryButton, sheet) }, "Try");

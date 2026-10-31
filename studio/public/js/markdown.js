@@ -115,7 +115,10 @@ function math(token) {
 function inline(parent, tokens) {
 	for (const token of tokens) {
 		if (token.type === "math") { parent.append(math(token)); continue; }
-		const el = node(({ code: "code", strong: "strong", em: "em", link: "a" })[token.type] || "span", token.text);
+		const nested = ["strong", "em", "link"].includes(token.type);
+		const el = node(({ code: "code", strong: "strong", em: "em", link: "a" })[token.type] || "span", nested ? undefined : token.text);
+		// Bold, emphasis and link text may hold `code` or math ("**if `n == 0`, stop**").
+		if (nested) inline(el, parseInline(token.text));
 		if (token.type === "link") { el.href = token.href; el.target = "_blank"; el.rel = "noopener noreferrer"; }
 		parent.append(el);
 	}

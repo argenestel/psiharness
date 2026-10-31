@@ -1,0 +1,39 @@
+{
+	"skill": "probability-statistics",
+	"subskillId": "normal",
+	"title": "Normal distribution and z-scores",
+	"explanation": "Every normal distribution has the same bell shape; only its centre $\\mu$ and spread $\\sigma$ differ. To compare values on different bells, measure them in a common unit: **standard deviations from the mean**. That is the z-score, $z=\\frac{x-\\mu}{\\sigma}$, which tells you how many standard deviations $x$ lies above or below the mean [1].\n\nPositive $z$ means above average and negative $z$ means below. For example, with mean 5 and standard deviation 2, the value 11 is three standard deviations above the mean [2].\n\nGoing backwards is just as useful: $x=\\mu+z\\,\\sigma$ turns 'two SDs above average' into an actual value.",
+	"keyIdeas": [
+		"$z=\\frac{x-\\mu}{\\sigma}$: distance from the mean in SD units.",
+		"Sign of z: above (+) or below (−) the mean.",
+		"Reverse: $x=\\mu+z\\sigma$."
+	],
+	"workedExample": {
+		"problem": "Adult heights in a group have mean $170$ cm and SD $10$ cm. Find the z-score of $155$ cm, and the height with $z=1.2$.",
+		"steps": [
+			"$z=\\frac{155-170}{10}=-1.5$: 1.5 SDs below the mean.",
+			"Reverse for $z=1.2$: $x=170+1.2\\cdot10=182$ cm.",
+			"Sense check: the negative z belongs to the shorter height."
+		],
+		"answer": "$z=-1.5$; $z=1.2$ corresponds to $182$ cm"
+	},
+	"pitfalls": [
+		"Dividing by the variance instead of the standard deviation.",
+		"Subtracting in the wrong order ($\\mu-x$), which flips the sign.",
+		"Treating z as a probability; it is a position on the scale."
+	],
+	"citations": [
+		{
+			"sourceId": "src-18a583e1b5",
+			"quote": "how many standard deviations the value x is above (to the right of) or below (to the left of) the mean",
+			"locator": "6.1: Z-Scores"
+		},
+		{
+			"sourceId": "src-18a583e1b5",
+			"quote": "For example, if the mean of a normal distribution is five and the standard deviation is two, the value 11 is three standard deviations above (or to the right of) the mean.",
+			"locator": "6.1 The Standard Normal Distribution"
+		}
+	],
+	"createdAt": "2026-10-31T20:12:22Z",
+	"updatedAt": "2026-10-31T20:12:22Z"
+}

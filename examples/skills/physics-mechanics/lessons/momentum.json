@@ -1,0 +1,51 @@
+{
+	"skill": "physics-mechanics",
+	"subskillId": "momentum",
+	"title": "Momentum, impulse, and sticking collisions",
+	"explanation": "Momentum is mass times velocity, $p=m\\,v$ [1], a vector. Newton's second law in momentum form says the instantaneous rate at which momentum changes equals the net force [2]. So a constant net force $F$ acting for a time $\\Delta t$ changes momentum by $\\Delta p=F\\,\\Delta t$, called the **impulse**.\n\nTreat both carts as one system. If no net external force acts on it, the rate of change of its total momentum is zero, so total momentum before equals total momentum after. If the carts stick together they move as one object, with the combined mass and a velocity set by conservation of momentum [3].\n\nKinetic energy is a different story. A sticking collision causes the maximum loss of kinetic energy [4]: momentum is conserved, but kinetic energy is not.",
+	"keyIdeas": [
+		"$p=mv$; impulse $F\\,\\Delta t=\\Delta p$.",
+		"No net external force: total momentum is conserved.",
+		"Sticking collision: $v_f=\\frac{m_1v_1+m_2v_2}{m_1+m_2}$.",
+		"Sticking collisions lose the most kinetic energy, while momentum is still conserved."
+	],
+	"workedExample": {
+		"problem": "A $1$ kg cart moving at $6$ m/s hits and sticks to a $2$ kg cart at rest. Find the final velocity and the kinetic energy before and after.",
+		"steps": [
+			"Momentum before: $1\\cdot6+2\\cdot0=6$ kg·m/s.",
+			"After, the carts move together: $3\\,v_f=6$, so $v_f=2$ m/s.",
+			"Kinetic energy before: $\\tfrac12\\cdot1\\cdot6^2=18$ J.",
+			"Kinetic energy after: $\\tfrac12\\cdot3\\cdot2^2=6$ J, so $12$ J of kinetic energy is lost."
+		],
+		"answer": "$v_f=2$ m/s; kinetic energy drops from $18$ J to $6$ J"
+	},
+	"pitfalls": [
+		"Conserving kinetic energy in a sticking collision; only momentum is conserved.",
+		"Ignoring direction: momenta of carts moving opposite ways have opposite signs.",
+		"Forgetting to use the combined mass after the carts stick."
+	],
+	"citations": [
+		{
+			"sourceId": "src-e54a688549",
+			"quote": "as the product of the mass of the object m and its velocity",
+			"locator": "5.3 Newton's Second Law: Newton's second law in terms of momentum"
+		},
+		{
+			"sourceId": "src-e54a688549",
+			"quote": "The instantaneous rate at which a body's momentum changes is equal to the net force acting on the body.",
+			"locator": "5.3: Newton's second law in terms of momentum"
+		},
+		{
+			"sourceId": "src-8abb97628e",
+			"quote": "The total mass of this composite object is the sum of the masses of the original objects, and the new single object moves with a velocity dictated by the conservation of momentum.",
+			"locator": "9.4 Types of Collisions: Inelastic"
+		},
+		{
+			"sourceId": "src-8abb97628e",
+			"quote": "Any collision where the objects stick together will result in the maximum loss of kinetic energy",
+			"locator": "9.4: Inelastic"
+		}
+	],
+	"createdAt": "2026-10-31T20:09:09Z",
+	"updatedAt": "2026-10-31T20:09:09Z"
+}

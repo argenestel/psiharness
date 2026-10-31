@@ -1,0 +1,56 @@
+{
+	"skill": "regex",
+	"subskillId": "anchors-boundaries",
+	"title": "Anchors and word boundaries",
+	"explanation": "Without anchors, a pattern matches **anywhere** in the string: `/cat/` finds \"cat\" inside \"bobcat\". **Anchors** pin the match to a position without consuming characters:\n\n- `^` matches the beginning of the input and `$` the end. Use both to require that the *whole* string fits the pattern: `/^\\d+$/` accepts `\"2026\"` but not `\"2026a\"`.\n- With the `m` (multiline) flag, `^` and `$` also match right after and right before line breaks, so they work line by line.\n- `\\b` is a **word boundary**: a position between a word character and a non-word character (or the string edge). `/\\bon\\b/` finds the word \"on\" but not the \"on\" in \"noon\". `\\B` is the opposite — a position that is *not* a boundary.\n\n```js\nconsole.log(/^\\d+$/.test(\"2026\"), /^\\d+$/.test(\"2026a\"));   // true false\nconsole.log(/^b$/m.test(\"a\\nb\\nc\"));                         // true: m makes ^ and $ per line\nconsole.log(\"on noon\".match(/\\bon\\b/g));                     // [ 'on' ]\n```\n\nAnchors and boundaries are **zero-width**: they test a position and match no characters, so they never appear in the matched text.",
+	"keyIdeas": [
+		"Unanchored patterns match anywhere.",
+		"`^...$` requires the whole input to match; add `m` to work per line.",
+		"`\\b` sits between a word character and a non-word character.",
+		"Anchors are zero-width: they match positions, not characters."
+	],
+	"workedExample": {
+		"problem": "In `\"redo the prereq, then reread\"`, find every word that **starts with** `re`.",
+		"steps": [
+			"`re` alone would also hit the middle of \"prereq\" — we need the match to begin at the start of a word.",
+			"Put a word boundary in front: `\\bre`. No boundary at the end, because the word continues.",
+			"Consume the rest of the word with `\\w*`, and add the `g` flag to collect all matches.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nconst text = \"redo the prereq, then reread\";\nassert.deepEqual(text.match(/\\bre\\w*/g), [\"redo\", \"reread\"]);\nassert.deepEqual(text.match(/re\\w*/g), [\"redo\", \"rereq\", \"reread\"]); // without \\b, the middle of prereq leaks in\nconsole.log(text.match(/\\bre\\w*/g));\n```"
+		],
+		"answer": "`[\"redo\", \"reread\"]` with `/\\bre\\w*/g`; without `\\b` the pattern also returns `\"rereq\"` from inside \"prereq\"."
+	},
+	"pitfalls": [
+		"Forgetting `^` and `$` in validation, so `\"abc123xyz\"` passes a digits-only check.",
+		"Expecting `^`/`$` to match at every line without the `m` flag.",
+		"Relying on `\\b` with accented letters: `\\w` is ASCII-only, so `é` counts as a non-word character."
+	],
+	"citations": [
+		{
+			"sourceId": "src-bb68cbc8a5",
+			"quote": "Input boundary beginning assertion: Matches the beginning of input. If the multiline (m) flag is enabled, also matches immediately after a line break character.",
+			"locator": "Boundary-type assertions: ^"
+		},
+		{
+			"sourceId": "src-bb68cbc8a5",
+			"quote": "Input boundary end assertion: Matches the end of input. If the multiline (m) flag is enabled, also matches immediately before a line break character.",
+			"locator": "Boundary-type assertions: $"
+		},
+		{
+			"sourceId": "src-bb68cbc8a5",
+			"quote": "This is the position where a word character is not followed or preceded by another word-character, such as between a letter and a space.",
+			"locator": "Boundary-type assertions: \\b"
+		},
+		{
+			"sourceId": "src-5915b11be6",
+			"quote": "Some of the remaining metacharacters to be discussed are zero-width assertions. They don't cause the engine to advance through the string; instead, they consume no characters at all",
+			"locator": "More metacharacters"
+		},
+		{
+			"sourceId": "src-b8bd6b96e4",
+			"quote": "Matches any alphanumeric character from the basic Latin alphabet, including the underscore.",
+			"locator": "Types: \\w"
+		}
+	],
+	"createdAt": "2026-10-31T20:15:38.000Z",
+	"updatedAt": "2026-10-31T20:15:38.000Z"
+}

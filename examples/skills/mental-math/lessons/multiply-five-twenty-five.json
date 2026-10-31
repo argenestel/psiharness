@@ -1,0 +1,34 @@
+{
+	"skill": "mental-math",
+	"subskillId": "multiply-five-twenty-five",
+	"title": "Multiply by 5 and 25: halve or quarter, then shift",
+	"explanation": "Five is half of ten, so $n\\times5=\\frac{n\\times10}{2}$. Either halve first and then multiply by 10, or append a zero and then halve, whichever is easier for the number in front of you. The Trachtenberg system turns this into a digit rule: take half of the neighbour, then add 5 if the current digit is odd [1].\n\nTwenty-five is a quarter of a hundred, so $n\\times25=\\frac{n\\times100}{4}$. Halve twice, then append two zeros. If the number doesn't divide evenly by 4, keep the remainder as a fraction: a quarter becomes 25, a half 50, three quarters 75.\n\nPredict the size before you start: $\\times5$ is half of $\\times10$ and $\\times25$ is a quarter of $\\times100$. That makes slipped decimal points easy to spot.",
+	"keyIdeas": [
+		"$n\\times5=n\\times10\\div2$.",
+		"$n\\times25=n\\times100\\div4$ (halve twice, then shift two places).",
+		"Leftover quarters become 25, 50, or 75."
+	],
+	"workedExample": {
+		"problem": "Compute $64\\times5$ and $44\\times25$.",
+		"steps": [
+			"$64\\times5$: half of 64 is 32; times 10 gives $320$.",
+			"$44\\times25$: a quarter of 44 is 11; times 100 gives $1100$.",
+			"Size check: $320$ is half of $640$, and $1100$ is a quarter of $4400$."
+		],
+		"answer": "$64\\times5=320$ and $44\\times25=1100$"
+	},
+	"pitfalls": [
+		"Halving but forgetting the shift (×10 or ×100), leaving the answer 10 or 100 times too small.",
+		"Shifting by the wrong number of places: 25 needs two zeros, 5 needs one.",
+		"Dropping a remainder when the number doesn't divide evenly by 4."
+	],
+	"citations": [
+		{
+			"sourceId": "src-afe45d7b23",
+			"quote": "Rule: Take half of the neighbor, then, if the current digit is odd, add 5.",
+			"locator": "Multiplying by 5"
+		}
+	],
+	"createdAt": "2026-10-31T20:14:58Z",
+	"updatedAt": "2026-10-31T20:14:58Z"
+}

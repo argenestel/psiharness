@@ -1,0 +1,45 @@
+{
+	"skill": "mental-math",
+	"subskillId": "fermi-models",
+	"title": "Build Fermi estimates",
+	"explanation": "A Fermi estimate answers a question nobody has handed you data for. It is named after Enrico Fermi, who was known for making good approximate calculations with little or no actual data [1]. The method: break the unknown into a chain of factors you can guess sensibly, multiply, and keep track of the assumptions.\n\nEstimation is not random guessing [2]. It means using prior experience and sound reasoning to arrive at a rough idea of a quantity's value [3]. Write each assumption down with its unit so the units multiply out to what you want.\n\nThen give a **range**. Redo the product with low and high values for the shakiest factors. If the range is narrow enough to make your decision, you are done; if not, you know which factor is worth measuring.",
+	"keyIdeas": [
+		"Break the unknown into a product of guessable factors.",
+		"State every assumption with units.",
+		"Give a low, a central, and a high estimate; the spread shows which factor matters most."
+	],
+	"workedExample": {
+		"problem": "Estimate how many litres of drinking water a household of 4 people uses in a year.",
+		"steps": [
+			"Assumptions: 4 people; each drinks about 2 L a day (range 1.5 to 3 L); 365 days.",
+			"Central estimate: $4\\times2\\times365=2920\\approx3000$ L.",
+			"Low: $4\\times1.5\\times365=2190$ L. High: $4\\times3\\times365=4380$ L.",
+			"Units check: people × (L per person per day) × days = L."
+		],
+		"answer": "About 3000 L a year (plausible range roughly 2200 to 4400 L under these assumptions)"
+	},
+	"pitfalls": [
+		"Hiding assumptions, so nobody can check or improve the estimate.",
+		"Reporting false precision (2920 L) instead of a rounded figure with a range.",
+		"Mismatched units, such as mixing per-day and per-week rates."
+	],
+	"citations": [
+		{
+			"sourceId": "src-237a3a3301",
+			"quote": "The estimation technique is named after physicist Enrico Fermi as he was known for his ability to make good approximate calculations with little or no actual data.",
+			"locator": "Historical background"
+		},
+		{
+			"sourceId": "src-7a946086ad",
+			"quote": "Note that estimating does not mean guessing a number or a formula at random.",
+			"locator": "1.5 Estimates and Fermi Calculations"
+		},
+		{
+			"sourceId": "src-7a946086ad",
+			"quote": "Rather, estimation means using prior experience and sound physical reasoning to arrive at a rough idea of a quantity's value.",
+			"locator": "1.5 Estimates and Fermi Calculations"
+		}
+	],
+	"createdAt": "2026-10-31T20:14:58Z",
+	"updatedAt": "2026-10-31T20:14:58Z"
+}

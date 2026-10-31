@@ -1,0 +1,40 @@
+{
+	"skill": "calculus-intuition",
+	"subskillId": "optimization",
+	"title": "Optimization: flat tops and endpoints",
+	"explanation": "Optimization problems have two ingredients: a quantity you want as large (or as small) as possible, and a constraint that ties the variables together. The move is to use the constraint to write the target as a function of **one** variable, then hunt for its best value.\n\nWhere can that best value hide? At the top of a smooth hill the tangent is flat: just before the peak the function rises, just after it falls. So the candidates are critical points (where $f'=0$ or $f'$ is undefined) together with the endpoints of the allowed interval. OpenStax notes this step \"typically involves looking for critical points and evaluating a function at endpoints\" [1].\n\nIts checklist: introduce and label all variables (draw a figure), decide what is maximized or minimized, write its formula, use the constraint to reduce it to one variable, identify the domain from the physical situation, then compare candidates [2].",
+	"keyIdeas": [
+		"Use the constraint to reduce the target to a function of one variable.",
+		"Candidates: critical points plus endpoints of the physical domain.",
+		"Report what was asked: often the optimal value, not just the optimal input."
+	],
+	"workedExample": {
+		"problem": "A farmer has $40$ m of fence for a rectangular pen against a long wall (no fence needed on the wall side). What is the largest possible area?",
+		"steps": [
+			"Let $x$ be each side perpendicular to the wall and $y$ the side parallel to it. Constraint: $2x+y=40$.",
+			"Target: $A=xy=x(40-2x)=40x-2x^2$ with domain $0\\le x\\le20$.",
+			"Critical point: $A'(x)=40-4x=0$ gives $x=10$, so $y=20$.",
+			"Compare: $A(10)=200$, while the endpoints give $A(0)=A(20)=0$."
+		],
+		"answer": "$200$ m², with $x=10$ m and $y=20$ m (the side along the wall is twice each other side)."
+	},
+	"pitfalls": [
+		"Differentiating before using the constraint, leaving two variables.",
+		"Ignoring endpoints or the physical domain (a length cannot be negative).",
+		"Finding the best $x$ and stopping when the question asked for the best area."
+	],
+	"citations": [
+		{
+			"sourceId": "src-da3fc9a9b3",
+			"quote": "This step typically involves looking for critical points and evaluating a function at endpoints.",
+			"locator": "4.7 Applied Optimization Problems: Problem-Solving Strategy"
+		},
+		{
+			"sourceId": "src-da3fc9a9b3",
+			"quote": "Introduce all variables. If applicable, draw a figure and label all variables.",
+			"locator": "4.7: Problem-Solving Strategy, step 1"
+		}
+	],
+	"createdAt": "2026-10-31T20:03:10Z",
+	"updatedAt": "2026-10-31T20:03:10Z"
+}

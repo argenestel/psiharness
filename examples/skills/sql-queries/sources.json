@@ -1,0 +1,124 @@
+[
+	{
+		"id": "src-3ca470cb1a",
+		"url": "https://sqlite.org/lang_select.html",
+		"title": "SQLite: The SELECT statement",
+		"publisher": "SQLite",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official SQLite documentation (sqlite.org)",
+			"Openly licensed (Public domain)"
+		],
+		"license": "Public domain",
+		"excerpt": "If a WHERE clause is specified, the WHERE expression is evaluated for each row in the input data as a boolean expression.",
+		"accessedAt": "2026-10-31T20:05:49.000Z"
+	},
+	{
+		"id": "src-f62f8ccec3",
+		"url": "https://sqlite.org/lang_expr.html",
+		"title": "SQLite: SQL Language Expressions",
+		"publisher": "SQLite",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official SQLite documentation (sqlite.org)",
+			"Openly licensed (Public domain)"
+		],
+		"license": "Public domain",
+		"excerpt": "A SELECT statement enclosed in parentheses is a subquery.",
+		"accessedAt": "2026-10-31T20:05:49.000Z"
+	},
+	{
+		"id": "src-234ab73856",
+		"url": "https://sqlite.org/lang_aggfunc.html",
+		"title": "SQLite: Built-in Aggregate Functions",
+		"publisher": "SQLite",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official SQLite documentation (sqlite.org)",
+			"Openly licensed (Public domain)"
+		],
+		"license": "Public domain",
+		"excerpt": "The count(X) function returns a count of the number of times that X is not NULL in a group. The count(*) function (with no arguments) returns the total number of rows in the group.",
+		"accessedAt": "2026-10-31T20:05:49.000Z"
+	},
+	{
+		"id": "src-5d1b9daac5",
+		"url": "https://sqlite.org/windowfunctions.html",
+		"title": "SQLite: Window Functions",
+		"publisher": "SQLite",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official SQLite documentation (sqlite.org)",
+			"Openly licensed (Public domain)"
+		],
+		"license": "Public domain",
+		"excerpt": "Window functions are distinguished from scalar functions and aggregate functions by the presence of an OVER clause.",
+		"accessedAt": "2026-10-31T20:05:49.000Z"
+	},
+	{
+		"id": "src-318c5ed79d",
+		"url": "https://sqlite.org/lang_with.html",
+		"title": "SQLite: The WITH clause (common table expressions)",
+		"publisher": "SQLite",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official SQLite documentation (sqlite.org)",
+			"Openly licensed (Public domain)"
+		],
+		"license": "Public domain",
+		"excerpt": "Common Table Expressions or CTEs act like temporary views that exist only for the duration of a single SQL statement.",
+		"accessedAt": "2026-10-31T20:05:49.000Z"
+	},
+	{
+		"id": "src-247b2e33ae",
+		"url": "https://www.postgresql.org/docs/current/tutorial-window.html",
+		"title": "PostgreSQL Tutorial: Window Functions",
+		"publisher": "PostgreSQL Global Development Group",
+		"kind": "official-docs",
+		"rank": 95,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official PostgreSQL documentation (postgresql.org)"
+		],
+		"excerpt": "window functions do not cause rows to become grouped into a single output row like non-window aggregate calls would. Instead, the rows retain their separate identities.",
+		"accessedAt": "2026-10-31T20:05:49.000Z"
+	},
+	{
+		"id": "src-fc7081e6b7",
+		"url": "https://www.postgresql.org/docs/current/tutorial-agg.html",
+		"title": "PostgreSQL Tutorial: Aggregate Functions",
+		"publisher": "PostgreSQL Global Development Group",
+		"kind": "official-docs",
+		"rank": 95,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official PostgreSQL documentation (postgresql.org)"
+		],
+		"excerpt": "WHERE selects input rows before groups and aggregates are computed (thus, it controls which rows go into the aggregate computation), whereas HAVING selects group rows after groups and aggregates are computed.",
+		"accessedAt": "2026-10-31T20:05:49.000Z"
+	},
+	{
+		"id": "src-bbdd5710e1",
+		"url": "https://www.postgresql.org/docs/current/functions-subquery.html",
+		"title": "PostgreSQL: Subquery Expressions",
+		"publisher": "PostgreSQL Global Development Group",
+		"kind": "official-docs",
+		"rank": 95,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official PostgreSQL documentation (postgresql.org)"
+		],
+		"excerpt": "if there are no equal right-hand values and at least one right-hand row yields null, the result of the NOT IN construct will be null, not true.",
+		"accessedAt": "2026-10-31T20:05:49.000Z"
+	}
+]

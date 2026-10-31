@@ -1,0 +1,36 @@
+{
+	"skill": "physics-mechanics",
+	"subskillId": "units",
+	"title": "Units and estimation: multiply by one",
+	"explanation": "A unit conversion never changes the physical quantity, only the label. The trick is to multiply by a **conversion factor**, a ratio that expresses how many of one unit equal another [1], such as $\\frac{1000\\text{ m}}{1\\text{ km}}$. Because top and bottom are the same length, the factor equals 1, so multiplying by it is always allowed.\n\nWrite the units as if they were algebra symbols. Arrange each factor so the unit you want to get rid of appears once on top and once on the bottom; it cancels, leaving only the unit you want [1]. For a speed in km/h you need two factors: one turning km into m, one turning h into s.\n\nEstimate before you compute. A metre is much smaller than a kilometre, so the number of metres must be bigger; an hour is much longer than a second, so the per-second number must be smaller. If the final number moves the wrong way, a factor is upside down.",
+	"keyIdeas": [
+		"A conversion factor is a ratio equal to 1, such as 1000 m / 1 km.",
+		"Arrange factors so unwanted units cancel top against bottom.",
+		"Rate conversions need one factor per unit (distance and time).",
+		"Predict whether the number should grow or shrink before computing."
+	],
+	"workedExample": {
+		"problem": "Convert $54$ km/h to m/s.",
+		"steps": [
+			"Predict: km to m makes the number ×1000 bigger; per hour to per second makes it ÷3600 smaller. Net effect: smaller.",
+			"Set up: $54\\,\\frac{\\text{km}}{\\text{h}}\\times\\frac{1000\\text{ m}}{1\\text{ km}}\\times\\frac{1\\text{ h}}{3600\\text{ s}}$.",
+			"Cancel km and h; compute $\\frac{54\\times1000}{3600}=15$.",
+			"Check: 15 is smaller than 54, as predicted."
+		],
+		"answer": "$15$ m/s"
+	},
+	"pitfalls": [
+		"Writing a conversion factor upside down, so the unit doubles instead of cancelling.",
+		"Converting only the distance (or only the time) in a rate.",
+		"Skipping the size check: a speed in m/s is always a smaller number than the same speed in km/h."
+	],
+	"citations": [
+		{
+			"sourceId": "src-5f4e427623",
+			"quote": "A conversion factor is a ratio that expresses how many of one unit are equal to another unit.",
+			"locator": "1.3 Unit Conversion"
+		}
+	],
+	"createdAt": "2026-10-31T20:09:09Z",
+	"updatedAt": "2026-10-31T20:09:09Z"
+}

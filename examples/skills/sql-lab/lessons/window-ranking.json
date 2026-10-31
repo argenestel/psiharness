@@ -1,0 +1,72 @@
+{
+	"skill": "sql-lab",
+	"subskillId": "window-ranking",
+	"title": "Window functions: numbering and ranking rows",
+	"explanation": "A **window function** computes a value for each row from a \"window\" of related rows — *without* collapsing them the way `GROUP BY` does. You recognise one by its `OVER (...)` clause. Inside `OVER`, `PARTITION BY` splits rows into independent groups (no `PARTITION BY` means one big partition), and `ORDER BY` sets the order within each partition.\n\nThree ranking functions differ only in how they treat **ties** (rows with equal `ORDER BY` values, called *peers*):\n\n- `ROW_NUMBER()` numbers rows 1, 2, 3, … — ties get different numbers, so add a tie breaker to make it deterministic;\n- `RANK()` gives peers the same rank and then **skips** (1, 2, 2, 4);\n- `DENSE_RANK()` gives peers the same rank **without gaps** (1, 2, 2, 3).\n\n```sql\nSELECT name, category, price,\n       ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC, product_id) AS pos\nFROM products;\n```\n\nWindow functions are computed after `WHERE` and `GROUP BY`, so you cannot filter on them in the same query's `WHERE`. To keep \"the top row per group\", compute the number in a subquery (or CTE) and filter outside it.",
+	"keyIdeas": [
+		"`OVER (...)` makes a window function; rows are not collapsed.",
+		"`PARTITION BY` = independent groups; `ORDER BY` = order inside each.",
+		"Ties: `ROW_NUMBER` distinct, `RANK` gaps, `DENSE_RANK` no gaps.",
+		"Filter on a window result from an outer query."
+	],
+	"workedExample": {
+		"problem": "Rank products by price **within each category**, highest first, so that equal prices share a rank and no numbers are skipped.",
+		"steps": [
+			"\"Within each category\" → `PARTITION BY category`.",
+			"\"Highest first\" → `ORDER BY price DESC` inside `OVER`.",
+			"\"Share a rank, no gaps\" → `DENSE_RANK()` (RANK would skip, ROW_NUMBER would never share).",
+			"Sort the final output so it is readable: category, then rank, then name.",
+			"Run it:\n```sql\nSELECT name, category, price,\n       DENSE_RANK() OVER (PARTITION BY category ORDER BY price DESC) AS price_rank\nFROM products\nORDER BY category, price_rank, name;\n```"
+		],
+		"answer": "5 rows:\n\n| name | category | price | price_rank |\n|---|---|---|---|\n| Coffee | drink | 20 | 1 |\n| Tea | drink | 10 | 2 |\n| Plate | ware | 30 | 1 |\n| Mug | ware | 20 | 2 |\n| Spoon | ware | 5 | 3 |"
+	},
+	"pitfalls": [
+		"Using `ROW_NUMBER()` without a unique tie breaker, so tied rows swap numbers between runs.",
+		"Writing `WHERE ROW_NUMBER() OVER (...) = 1` — compute it in a subquery first.",
+		"Forgetting `PARTITION BY`, which ranks across the whole table instead of within each group."
+	],
+	"citations": [
+		{
+			"sourceId": "src-5d1b9daac5",
+			"quote": "Window functions are distinguished from scalar functions and aggregate functions by the presence of an OVER clause.",
+			"locator": "1. Introduction to Window Functions"
+		},
+		{
+			"sourceId": "src-5d1b9daac5",
+			"quote": "A partition consists of all rows that have the same value for all terms of the PARTITION BY clause in the window-defn. If there is no PARTITION BY clause, then the entire result set of the query is",
+			"locator": "2.1 The PARTITION BY Clause"
+		},
+		{
+			"sourceId": "src-5d1b9daac5",
+			"quote": "Rows are numbered starting from 1 in the order defined by the ORDER BY clause in the window definition, or in arbitrary order otherwise.",
+			"locator": "3. Built-in Window Functions: row_number()"
+		},
+		{
+			"sourceId": "src-5d1b9daac5",
+			"quote": "The row_number() of the first peer in each group - the rank of the current row with gaps.",
+			"locator": "3. Built-in Window Functions: rank()"
+		},
+		{
+			"sourceId": "src-5d1b9daac5",
+			"quote": "The number of the current row's peer group within its partition - the rank of the current row without gaps.",
+			"locator": "3. Built-in Window Functions: dense_rank()"
+		},
+		{
+			"sourceId": "src-247b2e33ae",
+			"quote": "window functions do not cause rows to become grouped into a single output row like non-window aggregate calls would.",
+			"locator": "3.5 Window Functions"
+		},
+		{
+			"sourceId": "src-247b2e33ae",
+			"quote": "They are forbidden elsewhere, such as in GROUP BY, HAVING and WHERE clauses. This is because they logically execute after the processing of those clauses.",
+			"locator": "3.5 Window Functions"
+		},
+		{
+			"sourceId": "src-247b2e33ae",
+			"quote": "If there is a need to filter or group rows after the window calculations are performed, you can use a sub-select.",
+			"locator": "3.5 Window Functions"
+		}
+	],
+	"createdAt": "2026-10-31T20:05:49.000Z",
+	"updatedAt": "2026-10-31T20:05:49.000Z"
+}

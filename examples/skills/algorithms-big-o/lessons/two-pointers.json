@@ -1,0 +1,52 @@
+{
+	"skill": "algorithms-big-o",
+	"subskillId": "two-pointers",
+	"title": "Two pointers: walk inward or side by side",
+	"explanation": "Many array problems get faster when you keep **two indexes** and move them according to a rule, instead of comparing every pair. Each step moves at least one pointer, so the loop does at most about *n* steps: linear time, usually O(1) extra space.\n\nTwo common shapes:\n\n- **Opposite ends, moving inward.** Start `left = 0`, `right = len(a) - 1`. Compare `a[left]` and `a[right]`, act, and move one or both inward until they meet. The palindrome check is the classic: compare the first and last characters and continue only while they match.\n- **Same direction, one per input (or a slow and a fast pointer).** Merging two sorted lists keeps one index into each list and repeatedly takes the smaller front item, advancing only that index. When one list runs out, copy the rest of the other.\n\n```python\ndef merge_two(a, b):                  # both inputs ascending\n    i = j = 0\n    out = []\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:              # <= keeps equal items in order (stable)\n            out.append(a[i]); i += 1\n        else:\n            out.append(b[j]); j += 1\n    return out + a[i:] + b[j:]        # one side is exhausted; append the rest\n\nassert merge_two([1, 4], [2, 3, 9]) == [1, 2, 3, 4, 9]\n```\n\nThe pointers only work when the data has structure the rule can exploit — usually sorted order or symmetry. Write down what is true of everything left of `left` and right of `right` (the invariant), and check that every move keeps it true.",
+	"keyIdeas": [
+		"Two indexes + a movement rule replace nested loops.",
+		"Opposite-ends pointers move inward until they meet.",
+		"Merge-style pointers advance through two sorted inputs.",
+		"State the invariant and handle the leftover tail."
+	],
+	"workedExample": {
+		"problem": "Given an ascending list that may contain negatives, e.g. `[-4, -1, 0, 3, 10]`, return the squares in ascending order (`[0, 1, 9, 16, 100]`) in linear time, without sorting.",
+		"steps": [
+			"Observe the structure: the largest square is at one of the two ends (big negative or big positive).",
+			"Put `left` at index 0 and `right` at the last index; fill the output from the back.",
+			"At each step compare `abs(a[left])` with `abs(a[right])`; write the larger square at the current back slot and move that pointer inward.",
+			"Stop when `left` passes `right`; every element was placed exactly once, so the work is linear.",
+			"Run it:\n```python\ndef sorted_squares(a):\n    out = [0] * len(a)\n    left, right = 0, len(a) - 1\n    for slot in range(len(a) - 1, -1, -1):\n        if abs(a[left]) > abs(a[right]):\n            out[slot] = a[left] * a[left]\n            left += 1\n        else:\n            out[slot] = a[right] * a[right]\n            right -= 1\n    return out\n\nassert sorted_squares([-4, -1, 0, 3, 10]) == [0, 1, 9, 16, 100]\nassert sorted_squares([-3, -2]) == [4, 9]\nassert sorted_squares([]) == []\nprint(sorted_squares([-4, -1, 0, 3, 10]))\n```"
+		],
+		"answer": "`[0, 1, 9, 16, 100]` — each step places the largest remaining square at the back, so one pass suffices."
+	},
+	"pitfalls": [
+		"Using `while left < right` when the middle element also needs processing (`<=` is needed then).",
+		"Forgetting the leftover tail after one input of a merge runs out.",
+		"Applying a two-pointer rule to unsorted data, where moving a pointer can skip the answer."
+	],
+	"citations": [
+		{
+			"sourceId": "src-19250474cb",
+			"quote": "The front of the deque will hold the first character of the string and the rear of the deque will hold the last character",
+			"locator": "3.18 Palindrome Checker"
+		},
+		{
+			"sourceId": "src-19250474cb",
+			"quote": "Since we can remove both of the front and rear characters directly, we can compare them and continue only if they match.",
+			"locator": "3.18 Palindrome Checker"
+		},
+		{
+			"sourceId": "src-39bc578f72",
+			"quote": "Notice that the merge operation places the items back into the original list (a_list) one at a time by repeatedly taking the smallest item from the sorted lists.",
+			"locator": "5.11 The Merge Sort"
+		},
+		{
+			"sourceId": "src-39bc578f72",
+			"quote": "ensures that the algorithm is stable. A stable algorithm maintains the order of duplicate items in a list",
+			"locator": "5.11 The Merge Sort"
+		}
+	],
+	"createdAt": "2026-10-31T20:10:14.000Z",
+	"updatedAt": "2026-10-31T20:10:14.000Z"
+}

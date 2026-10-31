@@ -1,0 +1,67 @@
+{
+	"skill": "sql-queries",
+	"subskillId": "subquery-tests",
+	"title": "Subqueries: a query inside a query",
+	"explanation": "A `SELECT` in parentheses is a **subquery**, and you can use its result inside another query:\n\n- A **scalar subquery** returns one value — the first column of the first row — so it can stand wherever a value can: `WHERE unit_price > (SELECT AVG(unit_price) FROM products)`. If it returns no rows, its value is `NULL`.\n- `x IN (SELECT ...)` tests membership in the subquery's single column.\n- `EXISTS (SELECT ...)` is true when the subquery returns at least one row; the selected values don't matter, so `SELECT 1` is common.\n\nA subquery may refer to columns of the outer query. That **correlated subquery** is re-evaluated for each outer row, which makes per-row questions easy:\n\n```sql\nSELECT c.name\nFROM customers AS c\nWHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.customer_id = c.customer_id);\n```\n\nBe careful with `NOT IN`: if the subquery's column contains even one `NULL`, `x NOT IN (...)` can never be true, and the query silently returns nothing. `NOT EXISTS` does not have this problem.",
+	"keyIdeas": [
+		"Scalar subquery = one value; usable anywhere a value is.",
+		"`IN` tests membership; `EXISTS` tests \"at least one row\".",
+		"Correlated subqueries reference the outer row and run once per row.",
+		"Prefer `NOT EXISTS` over `NOT IN` when `NULL`s are possible."
+	],
+	"workedExample": {
+		"problem": "Using the products above, find the cheapest product in **each** category (name, category, unit_price).",
+		"steps": [
+			"\"Cheapest in its own category\" compares each row with a value computed for that row's category → a correlated subquery.",
+			"Inner query: `SELECT MIN(unit_price) FROM products WHERE category = p.category` — one value per outer row.",
+			"Keep outer rows whose price equals it.",
+			"tea → Green tea (8); ware → Cup (6).",
+			"Run it:\n```sql\nSELECT name, category, unit_price\nFROM products AS p\nWHERE unit_price = (SELECT MIN(unit_price) FROM products WHERE category = p.category)\nORDER BY category;\n```"
+		],
+		"answer": "2 rows:\n\n| name | category | unit_price |\n|---|---|---|\n| Green tea | tea | 8 |\n| Cup | ware | 6 |"
+	},
+	"pitfalls": [
+		"Using `=` with a subquery that can return several rows; use `IN` (or make it return one value).",
+		"`NOT IN (SELECT col ...)` where `col` has a `NULL`: the result is empty instead of the rows you expected.",
+		"Forgetting to correlate (`WHERE o.customer_id = c.customer_id`), so `EXISTS` is true for every row."
+	],
+	"citations": [
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "A SELECT statement enclosed in parentheses is a subquery.",
+			"locator": "11. Subquery Expressions"
+		},
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "The value of a subquery expression is the first row of the result from the enclosed SELECT statement. The value of a subquery expression is NULL if the enclosed SELECT statement returns no rows.",
+			"locator": "11. Subquery Expressions"
+		},
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "If executing the SELECT statement specified as the right-hand operand of the EXISTS operator would return one or more rows, then th",
+			"locator": "10. The EXISTS operator"
+		},
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "The IN and NOT IN operators take an expression on the left and a list of values or a subquery on the right.",
+			"locator": "8. The IN and NOT IN operators"
+		},
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "may contain references to columns in the outer query. Such a subquery is known as a correlated subquery. A correlated subquery is reevaluated each time its result is required.",
+			"locator": "12. Correlated Subqueries"
+		},
+		{
+			"sourceId": "src-f62f8ccec3",
+			"quote": "In particular, rows containing NULL values are not handled any differently from rows without NULL values.",
+			"locator": "10. The EXISTS operator"
+		},
+		{
+			"sourceId": "src-bbdd5710e1",
+			"quote": "if there are no equal right-hand values and at least one right-hand row yields null, the result of the NOT IN construct will be null, not true.",
+			"locator": "9.24.3 NOT IN"
+		}
+	],
+	"createdAt": "2026-10-31T20:05:49.000Z",
+	"updatedAt": "2026-10-31T20:05:49.000Z"
+}

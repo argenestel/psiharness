@@ -8,8 +8,10 @@
  *   always uses it; `?fixture=500` uses a synthetic 500-node graph (performance checks). Off by default.
  * - Pure helpers exported for tests: hashString, seededRandom, degreeMap, clusterOf, seedLayout, buildQuadtree,
  *   repulsion, createSimulation, neighbourhood, filterGraph, nearestInDirection, pathPolyline, catmullRom,
- *   searchNodes, kindWords, statusWords, progressWords, nodeRadius, practiseRoute, askRoute, localPathTo,
- *   mergeLayout, syntheticGraph.
+ *   searchNodes, shortKind, kindWords, statusWords, progressWords, nodeRadius, practiseRoute, askRoute, localPathTo,
+ *   layoutFor, mergeLayout, syntheticGraph.
+ * - Settled node positions persist in localStorage `psi-graph-layout` as `{ wide: { id: [x, y] }, tall: {…} }`
+ *   (one layout per screen shape, because centring follows the stage's aspect).
  *
  * Styling follows studio/DESIGN.md "Knowledge graph and learning paths": ink and pencil only, highlighter for
  * mastered halos and the selected learning path (the one bold stroke).
@@ -22,7 +24,7 @@ const KIND_ORDER = { skill: 0, topic: 1, subskill: 2, concept: 3, note: 4 };
 const SPRING = {
 	contains: { length: 44, strength: 1 },
 	prerequisite: { length: 56, strength: 0.7 },
-	about: { length: 38, strength: 0.6 },
+	about: { length: 30, strength: 1 },
 	link: { length: 120, strength: 0.25 },
 	related: { length: 170, strength: 0.08 },
 };
@@ -218,7 +220,7 @@ export function repulsion(tree, p, { theta = 0.9, strength = 1, minDistance = 2,
  * Force simulation over `nodes` ({ id, x, y }) and `edges` ({ from, to, kind }): Barnes-Hut repulsion, springs
  * per edge kind, mild centring and cooling. Mutates node x/y/vx/vy; `fx`/`fy` pin a node. `tick()` → alpha.
  */
-export function createSimulation(nodes, edges, { alpha = 1, charge = 160, gravity = 0.06, maxDistance = 900, aspect = 1 } = {}) {
+export function createSimulation(nodes, edges, { alpha = 1, charge = 180, gravity = 0.08, maxDistance = 360, aspect = 1 } = {}) {
 	const byId = new Map(nodes.map((n, i) => { n.index = i; n.vx ??= 0; n.vy ??= 0; return [n.id, n]; }));
 	const count = new Map();
 	const links = [];
@@ -460,6 +462,12 @@ export function localPathTo(graph, targetId) {
 	return order.filter((id) => id === targetId || !["solid", "mastered"].includes(byId.get(id)?.status ?? ""));
 }
 
+/** The saved `{ id: [x, y] }` layout for a screen shape ("wide" | "tall") from the stored `{ wide, tall }` object. */
+export function layoutFor(stored, shape) {
+	const layout = stored && typeof stored === "object" ? stored[shape] : undefined;
+	return layout && typeof layout === "object" && !Array.isArray(layout) ? layout : {};
+}
+
 /** Merge live positions into a saved layout object `{ id: [x, y] }` (rounded to 0.1). */
 export function mergeLayout(saved, nodes) {
 	const out = { ...(saved && typeof saved === "object" ? saved : {}) };
@@ -604,7 +612,9 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 			view: { x: 0, y: 0, k: 1 }, width: 0, height: 0, dpr: 1,
 			keyboard: false,
 		};
-		const saved = readStorage(LAYOUT_KEY) ?? {};
+		// Layouts are stored per screen shape: centring follows the stage's aspect, so wide and tall differ.
+		const shape = window.innerWidth >= window.innerHeight ? "wide" : "tall";
+		const saved = layoutFor(readStorage(LAYOUT_KEY), shape);
 		const savedCount = graph.nodes.filter((n) => Array.isArray(saved[n.id])).length;
 		const seeds = seedLayout(graph.nodes, graph.edges, saved);
 		const simNodes = graph.nodes.map((n) => ({ id: n.id, x: seeds.get(n.id).x, y: seeds.get(n.id).y }));
@@ -647,7 +657,7 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 					toggle("skills", "Skills"), toggle("topics", "Topics"), toggle("notes", "Notes"), toggle("related", "Related links")),
 				el("div", { class: "psi-graph-local" }, localSwitch, depthSelect),
 				el("label", { class: "psi-graph-path" }, el("span", {}, "Show path"), pathSelect),
-				fitButton, listToggle));
+				el("div", { class: "psi-graph-view-tools" }, fitButton, listToggle)));
 		const pathCaption = el("p", { class: "psi-graph-path-caption", hidden: true });
 		const canvas = el("canvas", {
 			class: "psi-graph-canvas", tabindex: "0", role: "application", "aria-roledescription": "knowledge graph",
@@ -737,12 +747,13 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 			const b = boundsOf(ids);
 			if (!b) return;
 			const pad = state.width < 560 ? 36 : 64;
-			const w = state.width - panelInset() - pad * 2, h = state.height - sheetInset() - pad * 2;
+			const legend = state.width >= 720 ? 28 : 0;
+			const w = state.width - panelInset() - pad * 2, h = state.height - sheetInset() - pad * 2 - legend;
 			const k = Math.max(0.15, Math.min(maxK, w / Math.max(40, b.x1 - b.x0), h / Math.max(40, b.y1 - b.y0)));
 			const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
-			setView({ k, x: (state.width - panelInset()) / 2 - cx * k, y: (state.height - sheetInset()) / 2 - cy * k }, animate);
+			setView({ k, x: (state.width - panelInset()) / 2 - cx * k, y: (state.height - sheetInset() - legend) / 2 - cy * k }, animate);
 		}
-		function fit(animate = true) { fitTo(visible.nodes.map((n) => n.id), { animate }); }
+		function fit(animate = true) { fitTo(visible.nodes.map((n) => n.id), { animate, maxK: state.local ? 2.2 : 1.6 }); }
 		function fitPath() {
 			const p = paths.find((x) => x.id === state.pathId);
 			if (p) fitTo(p.steps, { maxK: 1.4 });
@@ -750,7 +761,7 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 		function centreOn(id, { zoom } = {}) {
 			const s = simById.get(id); if (!s) return;
 			const k = zoom ?? Math.max(state.view.k, 1.1);
-			setView({ k, x: (state.width - panelInset()) / 2 - s.x * k, y: (state.height - sheetInset()) / 2 - s.y * k });
+			setView({ k, x: (state.width - panelInset()) * (state.width < 560 ? 0.36 : 0.5) - s.x * k, y: (state.height - sheetInset()) / 2 - s.y * k });
 		}
 		function ensureOnScreen(id) {
 			const s = simById.get(id); if (!s) return;
@@ -764,7 +775,6 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 			dirty = true;
 			if (!frame && !destroyed) frame = requestAnimationFrame(loop);
 		}
-		let lastSave = 0;
 		function loop() {
 			frame = 0;
 			if (destroyed) return;
@@ -772,14 +782,15 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 			if (running) {
 				sim.tick();
 				if (sim.settled) persist();
-				else if (performance.now() - lastSave > 4000) persist();
 			}
 			if (running || dirty) { dirty = false; draw(); }
 			if (!paused && !sim.settled) frame = requestAnimationFrame(loop);
 		}
+		// Only settled layouts are saved: a half-cooled one would be restored as final and never finish.
 		function persist() {
-			lastSave = performance.now();
-			writeStorage(LAYOUT_KEY, mergeLayout(readStorage(LAYOUT_KEY), simNodes));
+			if (!sim.settled) return;
+			const all = readStorage(LAYOUT_KEY);
+			writeStorage(LAYOUT_KEY, { ...(all && typeof all === "object" ? all : {}), [shape]: mergeLayout(layoutFor(all, shape), simNodes) });
 		}
 
 		function emphasisSet() {
@@ -811,11 +822,11 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 					ctx.save();
 					ctx.strokeStyle = colours.highlighter; ctx.fillStyle = colours.highlighter;
 					ctx.lineCap = "round"; ctx.lineJoin = "round";
-					ctx.lineWidth = Math.max(10, Math.min(26, 15 * state.view.k));
-					ctx.globalAlpha = emph ? 0.45 : 0.92;
+					ctx.lineWidth = Math.max(7, Math.min(16, 10 * state.view.k));
+					ctx.globalAlpha = emph ? 0.45 : 1;
 					ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
 					if (pts.length === 1) ctx.lineTo(pts[0].x + 0.1, pts[0].y);
-					for (const s of catmullRom(pts)) ctx.bezierCurveTo(s.c1.x, s.c1.y, s.c2.x, s.c2.y, s.to.x, s.to.y);
+					for (const s of catmullRom(pts, 0.3)) ctx.bezierCurveTo(s.c1.x, s.c1.y, s.c2.x, s.c2.y, s.to.x, s.to.y);
 					ctx.stroke();
 					ctx.restore();
 				}
@@ -875,13 +886,13 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 			drawLabels(screen, emph, pathSteps);
 		}
 
-		function edgeAlpha(kind) { return kind === "about" ? 0.55 : kind === "contains" ? 0.6 : 0.85; }
+		function edgeAlpha(kind) { return kind === "about" ? 0.7 : kind === "contains" ? 0.6 : 0.85; }
 
 		function drawEdge(e, a, b, target) {
 			ctx.save();
 			const k = state.view.k;
 			ctx.strokeStyle = e.kind === "link" ? colours.ink : colours.pencil;
-			ctx.lineWidth = { prerequisite: 1.25, contains: 0.8, related: 1.3, link: 1.6, about: 0.6 }[e.kind] ?? 1;
+			ctx.lineWidth = { prerequisite: 1.25, contains: 0.8, related: 1.3, link: 1.6, about: 0.75 }[e.kind] ?? 1;
 			if (e.kind === "related") { ctx.setLineDash([0.5, 4.5]); ctx.lineCap = "round"; ctx.lineWidth = 1.6; }
 			let ex = b.x, ey = b.y;
 			if (e.kind === "prerequisite" && target) {
@@ -931,6 +942,11 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 			const k = state.view.k;
 			const showAll = k >= 1.35;
 			const placed = [];
+			// Small labels also keep clear of node discs (but a node's own disc never blocks its label).
+			const discs = visible.nodes.map((n) => {
+				const p = screen.get(n.id), r = screenRadius(n) + 1;
+				return { id: n.id, x0: p.x - r, x1: p.x + r, y0: p.y - r, y1: p.y + r };
+			});
 			const candidates = [];
 			for (const n of visible.nodes) {
 				const focus = n.id === state.hoverId || n.id === state.selectedId || (state.keyboard && n.id === state.focusId);
@@ -954,18 +970,32 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 				if (c.step) text = `${c.step}. ${text}`;
 				ctx.font = c.big ? `600 ${c.n.kind === "skill" ? 15 : 14}px ${fonts.display}` : `${c.focus ? 700 : 400} 13px ${fonts.body}`;
 				const w = ctx.measureText(text).width, h = c.big ? 18 : 16;
-				let x, y, align;
-				if (c.big) { x = p.x; y = p.y + r + 6 + h / 2; align = "center"; }
-				else { x = p.x + r + 6; y = p.y; align = "left"; }
-				const box = align === "center" ? { x0: x - w / 2 - 2, x1: x + w / 2 + 2, y0: y - h / 2, y1: y + h / 2 }
-					: { x0: x - 2, x1: x + w + 2, y0: y - h / 2, y1: y + h / 2 };
-				if (box.x1 < 0 || box.x0 > state.width || box.y1 < 0 || box.y0 > state.height) continue;
-				if (c.priority > 0 && placed.some((b) => b.x0 < box.x1 && box.x0 < b.x1 && b.y0 < box.y1 && box.y0 < b.y1)) continue;
+				const gap = c.n.id === state.selectedId ? 14 : 6;
+				// Try the preferred spot first, then the other sides, before giving up on a label.
+				const spots = c.big
+					? [["center", p.x, p.y + r + gap + h / 2], ["center", p.x, p.y - r - gap - h / 2]]
+					: [["left", p.x + r + gap, p.y], ["right", p.x - r - gap, p.y], ["center", p.x, p.y - r - 4 - h / 2], ["center", p.x, p.y + r + 4 + h / 2]];
+				const boxFor = ([a, sx, sy]) => (a === "center" ? { x0: sx - w / 2 - 2, x1: sx + w / 2 + 2, y0: sy - h / 2, y1: sy + h / 2 }
+					: a === "left" ? { x0: sx - 2, x1: sx + w + 2, y0: sy - h / 2, y1: sy + h / 2 } : { x0: sx - w - 2, x1: sx + 2, y0: sy - h / 2, y1: sy + h / 2 });
+				const overlaps = (box) => (b) => b.x0 < box.x1 && box.x0 < b.x1 && b.y0 < box.y1 && box.y0 < b.y1;
+				const inside = (box) => box.x0 >= 2 && box.x1 <= state.width - panelInset() - 2 && box.y0 >= 0 && box.y1 <= state.height - sheetInset();
+				const fits = (box) => inside(box) && !(c.priority > 0 && placed.some(overlaps(box)))
+					&& !(c.priority >= 2 && !c.big && discs.some((d) => d.id !== c.n.id && overlaps(box)(d)));
+				const spot = spots.find((sp) => fits(boxFor(sp)));
+				if (!spot) continue;
+				const [align, x, y] = spot;
+				const box = boxFor(spot);
 				placed.push(box);
 				ctx.textAlign = align;
 				ctx.globalAlpha = c.n.status === "locked" && !c.focus ? 0.7 : 1;
-				ctx.lineJoin = "round"; ctx.lineWidth = 4; ctx.strokeStyle = colours.paper;
-				ctx.strokeText(text, x, y);
+				if (c.step) {
+					// Step labels sit on a paper tag so they never put text on the highlighter stroke.
+					ctx.fillStyle = colours.paper;
+					ctx.fillRect(box.x0 - 3, box.y0 - 1, box.x1 - box.x0 + 6, box.y1 - box.y0 + 2);
+				} else {
+					ctx.lineJoin = "round"; ctx.lineWidth = 4; ctx.strokeStyle = colours.paper;
+					ctx.strokeText(text, x, y);
+				}
 				ctx.fillStyle = c.n.kind === "note" ? colours.pencil : colours.ink;
 				ctx.fillText(text, x, y);
 			}
@@ -1139,7 +1169,7 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 		}
 
 		function renderList() {
-			const status = (n) => (n.status ? `, ${statusWords(n.status).toLowerCase()}` : "");
+			const status = (n) => (n.status ? `, ${n.status === "locked" ? "locked" : statusWords(n.status).toLowerCase()}` : "");
 			const item = (n, children) => el("li", {},
 				el("a", { href: `#/graph/${enc(n.id)}`, dataset: { node: n.id }, "aria-current": n.id === state.selectedId ? "true" : null },
 					n.title), el("span", { class: "psi-graph-list-meta" }, status(n)),
@@ -1189,7 +1219,7 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 		}
 
 		function renderPathOptions() {
-			pathSelect.replaceChildren(el("option", { value: "" }, paths.length ? "None" : "No paths yet"),
+			pathSelect.replaceChildren(el("option", { value: "" }, paths.length ? "No path shown" : "No paths yet"),
 				...paths.map((p) => el("option", { value: p.id }, p.title)));
 			pathSelect.value = state.pathId;
 		}
@@ -1385,13 +1415,13 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 		resize();
 		sim.aspect = state.width / state.height;
 		// Settle a fresh layout before the first paint so it doesn't fly in.
-		const budget = performance.now() + 120;
-		while (freshShare > 0.5 && sim.alpha > 0.05 && performance.now() < budget) sim.tick();
+		const budget = performance.now() + 160;
+		while (freshShare > 0.5 && sim.alpha > 0.02 && performance.now() < budget) sim.tick();
 		if (focus && byId.has(focus)) {
 			state.keyboard = true;
 			select(focus, { centre: false });
 			const s = simById.get(focus), k = 1.25;
-			setView({ k, x: (state.width - panelInset()) / 2 - s.x * k, y: (state.height - sheetInset()) / 2 - s.y * k }, false);
+			setView({ k, x: (state.width - panelInset()) * (state.width < 560 ? 0.36 : 0.5) - s.x * k, y: (state.height - sheetInset()) / 2 - s.y * k }, false);
 		} else {
 			if (focus) toast("That node isn't in your graph any more. Showing the whole graph.");
 			fit(false);
@@ -1399,7 +1429,7 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 		requestDraw();
 		return {
 			destroy() { cancelAnimationFrame(frame); cancelAnimationFrame(tween); persist(); },
-			debug: { state, sim, simById, select, setLocal, setList, fit, get paths() { return paths; }, pathSelect },
+			debug: { state, get sim() { return sim; }, simById, select, setLocal, setList, fit, get paths() { return paths; }, pathSelect },
 		};
 	}
 

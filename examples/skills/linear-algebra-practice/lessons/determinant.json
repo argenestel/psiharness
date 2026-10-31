@@ -1,0 +1,45 @@
+{
+	"skill": "linear-algebra-practice",
+	"subskillId": "determinant",
+	"title": "Determinant: how much area scales, and whether space flips",
+	"explanation": "Watch the unit square spanned by $\\hat\\imath$ and $\\hat\\jmath$ as a linear map acts on it. It becomes a parallelogram, and because the map treats every tiny grid square the same way, **every** region's area gets scaled by the same factor. That factor is the determinant [1].\n\nThe sign carries orientation. If the map flips the plane over (like a mirror, so $\\hat\\jmath$ ends up clockwise from $\\hat\\imath$ instead of counter-clockwise), the determinant is negative, and its absolute value still gives the area factor [2]. A determinant of $0$ means the plane gets squished onto a line or a point, so all areas become $0$ [3].\n\nFor $\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}$ the formula is $ad-bc$. For a diagonal matrix it is just the product of the two stretches.",
+	"keyIdeas": [
+		"|det| = the factor by which every area is scaled.",
+		"det < 0: orientation flips; det = 0: the plane collapses to a line or point.",
+		"$\\det\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}=ad-bc$.",
+		"New area = |det| × old area."
+	],
+	"workedExample": {
+		"problem": "For $M=\\begin{pmatrix}3&1\\\\2&4\\end{pmatrix}$, find $\\det M$, say whether $M$ flips orientation, and find the image area of a triangle of area $1.5$.",
+		"steps": [
+			"Compute $ad-bc=3\\cdot4-1\\cdot2=10$.",
+			"The determinant is positive, so orientation is preserved.",
+			"Areas scale by $|10|=10$: the triangle's new area is $10\\times1.5=15$."
+		],
+		"answer": "$\\det M=10$ (no flip); the triangle's image has area $15$"
+	},
+	"pitfalls": [
+		"Computing $ad+bc$ or $ab-cd$ instead of $ad-bc$.",
+		"Reporting a negative area: area uses |det|, the sign only says whether space flipped.",
+		"Thinking a determinant of 0 means the map does nothing; it means space collapses."
+	],
+	"citations": [
+		{
+			"sourceId": "src-740650a69c",
+			"quote": "This special scaling factor, the factor by which a linear transformation changes areas, is called the \"determinant\" of that transformation.",
+			"locator": "Scaling areas"
+		},
+		{
+			"sourceId": "src-740650a69c",
+			"quote": "The absolute value of the determinant still tells you the factor by which areas have been scaled.",
+			"locator": "Negative determinant"
+		},
+		{
+			"sourceId": "src-740650a69c",
+			"quote": "The determinant of a 2D transformation is 0 if it squishes all of space onto a line, or even onto a single point, since the area of every region would then become 0.",
+			"locator": "Scaling areas"
+		}
+	],
+	"createdAt": "2026-10-31T20:06:18Z",
+	"updatedAt": "2026-10-31T20:06:18Z"
+}

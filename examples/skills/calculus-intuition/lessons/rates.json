@@ -1,0 +1,41 @@
+{
+	"skill": "calculus-intuition",
+	"subskillId": "rates",
+	"title": "Rates of change: change per unit of input",
+	"explanation": "Before any calculus, a rate is just a ratio of two changes: how far the output moved divided by how far the input moved. If a bath loses 30 L while 10 minutes pass, it drains at 3 L *per minute*. The units tell the story (output units per input unit), so a rate in L/min can never be confused with an amount in L.\n\nOn a graph, that ratio is the slope of the **secant line** through two points $(a, f(a))$ and $(b, f(b))$: $\\frac{\\Delta f}{\\Delta x}=\\frac{f(b)-f(a)}{b-a}$. OpenStax uses exactly this slope to estimate \"the rate at which one variable changes in relation to another variable\" [1], and 3Blue1Brown reads a distance-time graph the same way: slope is rise over run for each interval [2].\n\nThe sign carries meaning. A positive average rate means the output rose over the interval; a negative one means it fell. An average also hides detail: two journeys with the same start and end values have the same average rate, however differently they moved in between.",
+	"keyIdeas": [
+		"Average rate = change in output ÷ change in input.",
+		"A rate's units are output units per input unit.",
+		"On a graph the average rate is the slope of the secant line through two points.",
+		"Positive rate: the output rose. Negative rate: it fell."
+	],
+	"workedExample": {
+		"problem": "A tank holds $60$ L at $t=1$ min and $18$ L at $t=7$ min. Find its average rate of change of volume.",
+		"steps": [
+			"Name the changes: $\\Delta V = 18-60 = -42$ L and $\\Delta t = 7-1 = 6$ min.",
+			"Predict the sign: the volume went down, so the rate must be negative.",
+			"Divide: $\\frac{\\Delta V}{\\Delta t}=\\frac{-42}{6}=-7$.",
+			"Attach units: litres per minute."
+		],
+		"answer": "$-7$ L/min (on average the tank loses 7 L each minute)"
+	},
+	"pitfalls": [
+		"Subtracting in mismatched order, e.g. $\\frac{f(b)-f(a)}{a-b}$, which flips the sign.",
+		"Dropping units: without 'per' units you cannot tell whether you divided the right way round.",
+		"Treating an average rate as the rate at every moment of the interval."
+	],
+	"citations": [
+		{
+			"sourceId": "src-4d7763323f",
+			"quote": "to estimate the rate of change, or the rate at which one variable changes in relation to another variable",
+			"locator": "3.1 Defining the Derivative: Tangent Lines"
+		},
+		{
+			"sourceId": "src-6bda8cf9bf",
+			"quote": "This figure highlights the slope of the graph for different intervals of time, where slope is calculated as the rise over run for each interval.",
+			"locator": "Car Moving"
+		}
+	],
+	"createdAt": "2026-10-31T20:03:10Z",
+	"updatedAt": "2026-10-31T20:03:10Z"
+}

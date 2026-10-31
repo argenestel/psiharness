@@ -1,0 +1,50 @@
+{
+	"skill": "linear-algebra-practice",
+	"subskillId": "eigen",
+	"title": "Eigenvectors: arrows that stay on their own line",
+	"explanation": "Most arrows get knocked off their line by a transformation. A few special ones stay on their own span, only stretched or squished like a scalar [1]. Those are **eigenvectors**, and the stretch factor is the **eigenvalue** [2]: $A\\,v=\\lambda v$ with $v\\ne0$. A negative $\\lambda$ flips the arrow but keeps it on the same line.\n\nTo find them, rewrite $A\\,v=\\lambda v$ as $(A-\\lambda I)\\,v=0$. A nonzero $v$ can be sent to zero only if $A-\\lambda I$ squishes space into a lower dimension [3], so we need $\\det(A-\\lambda I)=0$. That equation (the characteristic polynomial) gives the eigenvalues; then solve $(A-\\lambda I)v=0$ for each one's direction.\n\nWhy care? In 3D, an eigenvector of a rotation is its axis of rotation [4], and in general eigenvectors are the directions along which a complicated map acts like simple stretching.",
+	"keyIdeas": [
+		"Eigenvector: $A\\,v=\\lambda v$, $v\\ne0$; it stays on its own line.",
+		"Eigenvalue $\\lambda$ = stretch factor (negative means flipped).",
+		"Find eigenvalues from $\\det(A-\\lambda I)=0$, then directions from $(A-\\lambda I)v=0$."
+	],
+	"workedExample": {
+		"problem": "Find the eigenvalues and eigenvector directions of $A=\\begin{pmatrix}4&1\\\\2&3\\end{pmatrix}$.",
+		"steps": [
+			"$\\det(A-\\lambda I)=(4-\\lambda)(3-\\lambda)-2=\\lambda^2-7\\lambda+10$.",
+			"Factor: $(\\lambda-5)(\\lambda-2)=0$, so $\\lambda=5$ or $\\lambda=2$.",
+			"For $\\lambda=5$: $(A-5I)v=0$ gives $-v_1+v_2=0$, direction $(1,1)$. Check: $A(1,1)=(5,5)$.",
+			"For $\\lambda=2$: $2v_1+v_2=0$, direction $(1,-2)$. Check: $A(1,-2)=(2,-4)$."
+		],
+		"answer": "$\\lambda=5$ along $(1,1)$ and $\\lambda=2$ along $(1,-2)$"
+	},
+	"pitfalls": [
+		"Allowing $v=0$; the zero vector satisfies $A\\,v=\\lambda v$ for every $\\lambda$ and is excluded.",
+		"Forgetting to subtract $\\lambda$ from **every** diagonal entry when forming $A-\\lambda I$.",
+		"Thinking an eigenvector is a single arrow: any nonzero multiple of it lies on the same line and is also an eigenvector, with the same eigenvalue."
+	],
+	"citations": [
+		{
+			"sourceId": "src-c2d13dd734",
+			"quote": "But some special vectors do remain on their own span, meaning the effect the matrix has on such a vector is to just stretch or squish it, like a scalar.",
+			"locator": "Eigenvectors and eigenvalues: introduction"
+		},
+		{
+			"sourceId": "src-c2d13dd734",
+			"quote": "each eigenvector has associated with it what's called an \"eigenvalue\", which is the factor by which it's stretched or squished during the transformation",
+			"locator": "Eigenvectors and eigenvalues: introduction"
+		},
+		{
+			"sourceId": "src-c2d13dd734",
+			"quote": "the only way it's possible for the product of a matrix with a nonzero vector to become zero is if the transformation associated with that matrix squishes space into a lower dimension",
+			"locator": "Zero Determinant"
+		},
+		{
+			"sourceId": "src-c2d13dd734",
+			"quote": "If you can find an eigenvector for this rotation, a vector which remains on its own span, what you have found is the axis of rotation.",
+			"locator": "3d rotational axis"
+		}
+	],
+	"createdAt": "2026-10-31T20:06:18Z",
+	"updatedAt": "2026-10-31T20:06:18Z"
+}

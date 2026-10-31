@@ -105,6 +105,10 @@ textarea.psi-answer-input { min-height: 112px; resize: vertical; line-height: 1.
 .psi-keys kbd { font: inherit; font-weight: 700; }
 
 /* Result, in place. */
+/* How this challenge went last time (history replay); quiet, one line. */
+.psi-sheet-previous { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 0 0 12px; color: var(--pencil); }
+.psi-sheet-previous .psi-mark { width: 28px; height: 20px; flex: none; }
+.psi-sheet-previous button { min-height: 32px; }
 .psi-sheet-result { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rule); display: grid; gap: 12px; }
 .psi-sheet-result:focus { outline: none; }
 .psi-result-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0; font-weight: 700; font-size: 1.0625rem; }

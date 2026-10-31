@@ -1,0 +1,62 @@
+{
+	"skill": "regex",
+	"subskillId": "lookarounds",
+	"title": "Lookahead and lookbehind",
+	"explanation": "A **lookaround** checks what comes before or after the current position **without including it in the match**. Like `^` and `\\b`, it is a zero-width assertion:\n\n| Syntax | Matches `x` only if … |\n|---|---|\n| `x(?=y)` | followed by `y` (lookahead) |\n| `x(?!y)` | **not** followed by `y` (negative lookahead) |\n| `(?<=y)x` | preceded by `y` (lookbehind) |\n| `(?<!y)x` | **not** preceded by `y` (negative lookbehind) |\n\n```js\nconsole.log(\"Jack Sprat\".match(/Jack(?= Sprat)/)[0]);   // \"Jack\" -- \" Sprat\" is checked, not captured\nconsole.log(\"3.141\".match(/\\d+(?!\\.)/)[0]);             // \"141\"  -- \"3\" is followed by a dot\nconsole.log(\"cost: -7 or 7\".match(/(?<!-)\\b\\d+/)[0]);   // \"7\"    -- skips the negative number\n```\n\nTwo patterns come up constantly. **Context without consuming** — grab a number only when a unit follows, or only after a currency sign. And **several independent conditions on the same text** — a lookahead placed right after `^` peeks at the whole string, and several of them can be stacked: `^(?=.*a)(?=.*b)` requires both an `a` and a `b`, in any order.",
+	"keyIdeas": [
+		"Lookarounds test context but add nothing to the match.",
+		"`(?=)` / `(?!)` look ahead; `(?<=)` / `(?<!)` look behind.",
+		"Stack lookaheads after `^` to require several conditions in any order.",
+		"Lookarounds are zero-width, like `^` and `\\b`."
+	],
+	"workedExample": {
+		"problem": "Check a password policy: at least 8 characters, containing at least one digit **and** at least one uppercase letter, in any order. `\"Secret42x\"` passes; `\"secret42x\"`, `\"SecretXYZ\"`, and `\"Ab1\"` fail.",
+		"steps": [
+			"The length rule is ordinary matching: `^.{8,}$`.",
+			"\"Contains a digit somewhere\" is a lookahead at the start: `(?=.*\\d)`. It peeks at the string without moving the position.",
+			"Add a second, independent lookahead for an uppercase letter: `(?=.*[A-Z])`.",
+			"Combine: `^(?=.*\\d)(?=.*[A-Z]).{8,}$` — both lookaheads run from position 0, then `.{8,}$` checks the length.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nconst policy = /^(?=.*\\d)(?=.*[A-Z]).{8,}$/;\nassert.ok(policy.test(\"Secret42x\"));\nfor (const bad of [\"secret42x\", \"SecretXYZ\", \"Ab1\"]) assert.ok(!policy.test(bad), bad);\nassert.equal(\"Secret42x\".match(policy)[0], \"Secret42x\"); // lookaheads consumed nothing\nconsole.log(\"policy ok\");\n```"
+		],
+		"answer": "`/^(?=.*\\d)(?=.*[A-Z]).{8,}$/` — two lookaheads add the \"contains\" rules without consuming characters, and `.{8,}` enforces the length."
+	},
+	"pitfalls": [
+		"Expecting the lookahead text to appear in the match (it never does).",
+		"Writing `^(?!word)` when you mean \"not exactly word\" — it also rejects `\"wordy\"`; anchor with `$` inside the lookahead.",
+		"Putting `.*` lookaheads *after* consuming characters, so they only inspect the rest of the string."
+	],
+	"citations": [
+		{
+			"sourceId": "src-bb68cbc8a5",
+			"quote": "Lookahead assertion: Matches \"x\" only if \"x\" is followed by \"y\".",
+			"locator": "Other assertions: x(?=y)"
+		},
+		{
+			"sourceId": "src-bb68cbc8a5",
+			"quote": "Negative lookahead assertion: Matches \"x\" only if \"x\" is not followed by \"y\".",
+			"locator": "Other assertions: x(?!y)"
+		},
+		{
+			"sourceId": "src-bb68cbc8a5",
+			"quote": "Lookbehind assertion: Matches \"x\" only if \"x\" is preceded by \"y\".",
+			"locator": "Other assertions: (?<=y)x"
+		},
+		{
+			"sourceId": "src-bb68cbc8a5",
+			"quote": "Negative lookbehind assertion: Matches \"x\" only if \"x\" is not preceded by \"y\".",
+			"locator": "Other assertions: (?<!y)x"
+		},
+		{
+			"sourceId": "src-bb68cbc8a5",
+			"quote": "However, neither \"Sprat\" nor \"Frost\" is part of the match results.",
+			"locator": "Other assertions: x(?=y)"
+		},
+		{
+			"sourceId": "src-bb68cbc8a5",
+			"quote": "/\\d+(?!\\.)/.exec('3.141') matches \"141\" but not \"3\".",
+			"locator": "Other assertions: x(?!y)"
+		}
+	],
+	"createdAt": "2026-10-31T20:15:38.000Z",
+	"updatedAt": "2026-10-31T20:15:38.000Z"
+}

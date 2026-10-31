@@ -1,0 +1,40 @@
+{
+	"skill": "mental-math",
+	"subskillId": "estimate-scale",
+	"title": "Estimate and check scale",
+	"explanation": "Before trusting any calculation, know roughly what answer to expect. Estimates let you run \"sanity checks\" and rule out unrealistic numbers [1]. Round each factor to one or two significant figures, multiply the easy numbers, and count the zeros carefully.\n\nYou can also say which way an estimate leans. For positive numbers, rounding every factor **up** gives an overestimate and rounding every factor **down** gives an underestimate. Doing both gives a bracket that must contain the true answer. If you round one factor up and the other down, the errors partly cancel and the estimate usually lands closer.\n\nFor a quick check, the order of magnitude (the power of ten) is often all you need [2]. An answer that is off by a factor of ten means a slipped zero or decimal point.",
+	"keyIdeas": [
+		"Round to friendly numbers, then multiply and count zeros.",
+		"Round all factors up for an upper bound and all down for a lower bound.",
+		"An answer off by a factor of ten signals a slipped zero."
+	],
+	"workedExample": {
+		"problem": "Estimate $312\\times48$, give a bracket that must contain it, then compare with the exact value.",
+		"steps": [
+			"Friendly estimate: $300\\times50=15000$ (one factor rounded down, one up, so the errors partly cancel).",
+			"Lower bound with both factors rounded down: $300\\times40=12000$.",
+			"Upper bound with both rounded up: $400\\times50=20000$.",
+			"Exact: $312\\times48=14976$, inside the bracket and close to 15000."
+		],
+		"answer": "About $15000$ (bracket $12000$ to $20000$); exact $14976$"
+	},
+	"pitfalls": [
+		"Losing or adding a zero when multiplying round numbers.",
+		"Claiming an estimate is an upper bound when one factor was rounded down.",
+		"Skipping the estimate, so a wildly wrong exact answer goes unnoticed."
+	],
+	"citations": [
+		{
+			"sourceId": "src-7a946086ad",
+			"quote": "Estimates also allow us to perform \"sanity checks\" on calculations or policy proposals by helping us rule out certain scenarios or unrealistic numbers.",
+			"locator": "1.5 Estimates and Fermi Calculations"
+		},
+		{
+			"sourceId": "src-7a946086ad",
+			"quote": "In most cases, the order of magnitude is good enough.",
+			"locator": "1.5: Estimates and Fermi Calculations, strategies"
+		}
+	],
+	"createdAt": "2026-10-31T20:14:58Z",
+	"updatedAt": "2026-10-31T20:14:58Z"
+}

@@ -1,0 +1,51 @@
+{
+	"skill": "sql-queries",
+	"subskillId": "sort-limit",
+	"title": "ORDER BY with tie breakers, then LIMIT",
+	"explanation": "Without `ORDER BY`, a database may return rows in **any** order — and that order can change between runs. Whenever order matters, say so explicitly. Each sort key can be followed by `ASC` (smaller first, the default) or `DESC` (larger first).\n\nRows that are equal on every sort key still come back in an undefined order among themselves. So add a **tie breaker** — usually a unique column such as the id — as the last sort key:\n\n```sql\nSELECT product_id, name, unit_price\nFROM products\nORDER BY unit_price DESC, product_id ASC\nLIMIT 2;\n```\n\n`LIMIT n` caps the number of rows returned. Combined with a complete `ORDER BY`, it answers \"top n\" questions: `ORDER BY ... LIMIT 3`. Without a deterministic `ORDER BY`, the row order is undefined, so which rows survive the `LIMIT` is arbitrary too.",
+	"keyIdeas": [
+		"No `ORDER BY` → undefined row order.",
+		"`ASC` is the default; `DESC` puts larger values first.",
+		"End with a unique tie breaker so equal rows have a fixed order.",
+		"`LIMIT` keeps the first n rows of the sorted result."
+	],
+	"workedExample": {
+		"problem": "Using the same customers, return the two **most recent** sign-ups (name and signup_date), newest first, with `customer_id` as the tie breaker.",
+		"steps": [
+			"Newest first means descending dates: `ORDER BY signup_date DESC`.",
+			"Add `customer_id ASC` as a unique tie breaker.",
+			"Take two rows with `LIMIT 2` after sorting.",
+			"Run it:\n```sql\nSELECT name, signup_date\nFROM customers\nORDER BY signup_date DESC, customer_id ASC\nLIMIT 2;\n```"
+		],
+		"answer": "2 rows:\n\n| name | signup_date |\n|---|---|\n| Eli | 2026-01-08 |\n| Dia | 2026-01-05 |"
+	},
+	"pitfalls": [
+		"Relying on the order rows happen to come back in without `ORDER BY`.",
+		"Sorting only by a non-unique column (like price) and getting different \"top n\" rows on ties.",
+		"Writing `ORDER BY price, id DESC` and expecting `DESC` to apply to both keys — it applies only to `id`."
+	],
+	"citations": [
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "If a SELECT statement that returns more than one row does not have an ORDER BY clause, the order in which the rows are returned is undefined.",
+			"locator": "4. The ORDER BY clause"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "Each ORDER BY expression may be optionally followed by one of the keywords ASC (smaller values are returned first) or DESC (larger values are returned first).",
+			"locator": "4. The ORDER BY clause"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "wo rows for which all ORDER BY expressions evaluate to equal values are returned is undefined.",
+			"locator": "4. The ORDER BY clause"
+		},
+		{
+			"sourceId": "src-3ca470cb1a",
+			"quote": "The LIMIT clause is used to place an upper bound on the number of rows returned by the entire SELECT statement.",
+			"locator": "5. The LIMIT clause"
+		}
+	],
+	"createdAt": "2026-10-31T20:05:49.000Z",
+	"updatedAt": "2026-10-31T20:05:49.000Z"
+}

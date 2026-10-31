@@ -1,0 +1,45 @@
+{
+	"skill": "probability-statistics",
+	"subskillId": "binomial",
+	"title": "Binomial models: counting successes",
+	"explanation": "A binomial model counts the successes $X$ in $n$ independent yes/no trials that each succeed with the same probability $p$ [1].\n\nWhy the formula looks the way it does: any **particular** sequence with $k$ successes and $n-k$ failures has the same probability, $p^k(1-p)^{n-k}$, wherever the successes sit [2]. How many such sequences are there? The binomial coefficient $\\binom{n}{k}$ counts the ways to choose the positions of the $k$ successes [3]. Multiply:\n$P(X=k)=\\binom{n}{k}p^k(1-p)^{n-k}$.\n\nBefore computing, check the conditions. Drawing cards without replacement, or trials whose chance changes, break the model.",
+	"keyIdeas": [
+		"Binomial conditions: fixed $n$, independent trials, constant $p$, count successes.",
+		"One specific sequence: $p^k(1-p)^{n-k}$.",
+		"$P(X=k)=\\binom{n}{k}p^k(1-p)^{n-k}$."
+	],
+	"workedExample": {
+		"problem": "A quiz has $5$ multiple-choice questions with $5$ options each. Guessing randomly, what is the probability of exactly $1$ correct answer?",
+		"steps": [
+			"Check the model: $n=5$ independent guesses, each correct with $p=0.2$.",
+			"One specific sequence (say, only the first right): $0.2\\cdot0.8^4=0.08192$.",
+			"Positions for the single success: $\\binom51=5$.",
+			"Multiply: $5\\cdot0.08192=0.4096$."
+		],
+		"answer": "$P(X=1)=0.4096$"
+	},
+	"pitfalls": [
+		"Forgetting the $\\binom{n}{k}$ factor and computing only one sequence.",
+		"Using a binomial model when trials are not independent (sampling without replacement from a small group).",
+		"Swapping exponents: $p$ goes with the number of successes, $1-p$ with failures."
+	],
+	"citations": [
+		{
+			"sourceId": "src-d2513a66cd",
+			"quote": "The binomial distribution is the PMF of k successes given n independent events each with a probability p of success.",
+			"locator": "Probability mass function"
+		},
+		{
+			"sourceId": "src-d2513a66cd",
+			"quote": "any sequence of n trials with k successes (and n - k failures) has the same probability of being achieved",
+			"locator": "Probability mass function"
+		},
+		{
+			"sourceId": "src-d2513a66cd",
+			"quote": "counts the number of ways to choose the positions of the k successes among the n trials",
+			"locator": "Probability mass function"
+		}
+	],
+	"createdAt": "2026-10-31T20:12:22Z",
+	"updatedAt": "2026-10-31T20:12:22Z"
+}

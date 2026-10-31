@@ -1,0 +1,72 @@
+{
+	"skill": "algorithms-big-o",
+	"subskillId": "graph-traversal",
+	"title": "Graph traversal with BFS and DFS",
+	"explanation": "Store a graph as an **adjacency list**: a dict mapping each vertex to the list of its neighbours. Both standard traversals start at a source vertex, visit everything reachable from it, and **never visit a vertex twice** — keep a `seen` set and mark a vertex when you first *discover* it, so it can't be queued or pushed again. With that rule, both run in O(V + E) time: every vertex is processed once and every edge looked at once (O(V) extra space for `seen` and the frontier).\n\n**Breadth-first search (BFS)** explores in rings: first the source, then all vertices one edge away, then two edges away, and so on. That is why, in an *unweighted* graph, BFS finds **shortest paths** (fewest edges). Its frontier is a FIFO queue (`collections.deque`): vertices are expanded in the order they were discovered, nearest first.\n\n**Depth-first search (DFS)** follows one path as far as it can, then backs up to the most recent vertex with an unexplored edge. Its frontier is a stack (or the call stack, if you write it recursively). DFS answers *reachability* questions — \"can I get there?\", \"how many connected pieces?\" — but the path it finds is **not** necessarily the shortest.\n\nTo cover a graph that isn't connected, loop over all vertices and start a new traversal from each one that hasn't been seen yet; each start discovers one connected component.",
+	"keyIdeas": [
+		"Adjacency list + `seen` set; mark vertices when first discovered.",
+		"BFS (queue) explores by distance and finds fewest-edge paths.",
+		"DFS (stack/recursion) goes deep, then backtracks; good for reachability.",
+		"Both are O(V + E) time with adjacency lists."
+	],
+	"workedExample": {
+		"problem": "Rooms are numbered 0…n-1; `keys[r]` lists the rooms whose keys lie in room r. You start in room 0. Can you open every room? Use `keys = [[1, 3], [3, 0, 1], [2], [0]]`.",
+		"steps": [
+			"Model it as a directed graph: an edge r → k for every key k found in room r.",
+			"The question is reachability from room 0, so any traversal works — use iterative DFS with a stack.",
+			"Mark a room as seen when its key is first found, before pushing it, so no room is pushed twice.",
+			"Trace: open 0 → keys 1, 3; open 3 → key 0 (seen); open 1 → keys 3, 0, 1 (all seen). Room 2's key is only inside room 2, so it is never reached.",
+			"Run it:\n```python\ndef can_open_all(keys):\n    seen = {0}\n    stack = [0]\n    while stack:\n        room = stack.pop()\n        for k in keys[room]:\n            if k not in seen:\n                seen.add(k)\n                stack.append(k)\n    return len(seen) == len(keys)\n\nassert can_open_all([[1, 3], [3, 0, 1], [2], [0]]) is False\nassert can_open_all([[1], [2], [3], []]) is True\nprint(can_open_all([[1, 3], [3, 0, 1], [2], [0]]))\n```"
+		],
+		"answer": "`False` — rooms 0, 1, and 3 are reachable, but room 2 is not. Each room and each key is handled once, so the check is linear in rooms + keys."
+	},
+	"pitfalls": [
+		"Marking vertices as visited when they are *popped* instead of when discovered, so the same vertex is queued many times.",
+		"Using DFS when the question asks for the fewest steps — only BFS guarantees that in an unweighted graph.",
+		"Forgetting vertices with no edges (or unreachable parts) when counting components."
+	],
+	"citations": [
+		{
+			"sourceId": "src-df9f983ea1",
+			"quote": "Idea! Visit outgoing adjacencies recursively, but never revisit a vertex",
+			"locator": "Depth-First Search (DFS)"
+		},
+		{
+			"sourceId": "src-df9f983ea1",
+			"quote": "i.e., follow any path until you get stuck, backtrack until finding an unexplored path to explore",
+			"locator": "Depth-First Search (DFS)"
+		},
+		{
+			"sourceId": "src-df9f983ea1",
+			"quote": "Solves Single Source Reachability, not SSSP.",
+			"locator": "Depth-First Search (DFS)"
+		},
+		{
+			"sourceId": "src-df9f983ea1",
+			"quote": "Return (not necessarily shortest) parent tree of parent pointers back to s",
+			"locator": "Depth-First Search (DFS)"
+		},
+		{
+			"sourceId": "src-df9f983ea1",
+			"quote": "Breadth-First Search (BFS) – algorithm that solves Single Source Shortest Paths",
+			"locator": "Previously"
+		},
+		{
+			"sourceId": "src-df9f983ea1",
+			"quote": "Choose an arbitrary unvisited vertex s, use A to explore all vertices reachable from s",
+			"locator": "Full-BFS and Full-DFS"
+		},
+		{
+			"sourceId": "src-df9f983ea1",
+			"quote": "Visits every vertex once, so both Full-BFS and Full-DFS run in O(|V | + |E|) time",
+			"locator": "Full-BFS and Full-DFS"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "To implement a queue, use collections.deque which was designed to have fast appends and pops from both ends.",
+			"locator": "5.1.2 Using Lists as Queues"
+		}
+	],
+	"createdAt": "2026-10-31T20:10:14.000Z",
+	"updatedAt": "2026-10-31T20:10:14.000Z"
+}

@@ -2,7 +2,7 @@
 	"skill": "javascript-essentials",
 	"subskillId": "objects-destructuring",
 	"title": "Destructuring and spreading objects",
-	"explanation": "**Destructuring** unpacks properties from an object (or items from an array) into separate variables in one line. Each property can have a **default value**, used when the property is missing or `undefined`; you can **rename** a property as you unpack it; and patterns can be nested:\n\n```js\nconst order = { id: 7, customer: { city: \"Lima\" } };\nconst { id, status = \"new\", customer: { city: town } } = order;\nconsole.log(id, status, town); // 7 new Lima\n```\n\nThe **spread** syntax `{ ...a, ...b }` builds a *new* object containing the properties of `a` then `b`. When the same property name appears twice, the last value wins, so `{ ...defaults, ...overrides }` is the standard way to apply overrides without mutating either input. It is a **shallow** copy: nested objects are shared, not cloned.\n\nOne safety rule: destructuring `null` or `undefined` throws a `TypeError`. When a whole argument may be missing, give the parameter itself a default: `function f({ a } = {}) { ... }`.",
+	"explanation": "**Destructuring** unpacks properties from an object (or items from an array) into separate variables in one line. Each property can have a **default value**, used when the property is missing or `undefined`; you can **rename** a property as you unpack it; and object and array patterns can be nested inside each other:\n\n```js\nconst order = { id: 7, customer: { city: \"Lima\" } };\nconst { id, status = \"new\", customer: { city: town } } = order;\nconsole.log(id, status, town); // 7 new Lima\n```\n\nThe **spread** syntax `{ ...a, ...b }` builds a *new* object containing the properties of `a` then `b`. When the same property name appears twice, the last value wins, so `{ ...defaults, ...overrides }` is the standard way to apply overrides without mutating either input. It is a **shallow** copy: nested objects are shared, not cloned.\n\nOne safety rule: destructuring `null` or `undefined` throws a `TypeError`. When a whole argument may be missing, give the parameter itself a default: `function f({ a } = {}) { ... }`.",
 	"keyIdeas": [
 		"`const { a, b = 1, c: renamed } = obj` unpacks, defaults, and renames.",
 		"Defaults apply when the property is missing or `undefined`.",
@@ -43,6 +43,11 @@
 		},
 		{
 			"sourceId": "src-6f30193829",
+			"quote": "Nested object and array destructuring",
+			"locator": "Examples: Nested object and array destructuring"
+		},
+		{
+			"sourceId": "src-6f30193829",
 			"quote": "destructuring null or undefined throws a TypeError.",
 			"locator": "Object destructuring"
 		},
@@ -57,6 +62,6 @@
 			"locator": "Spread in object literals"
 		}
 	],
-	"createdAt": "2026-10-31T19:57:18.000Z",
-	"updatedAt": "2026-10-31T19:57:18.000Z"
+	"createdAt": "2026-10-31T19:58:33.000Z",
+	"updatedAt": "2026-10-31T19:58:33.000Z"
 }
