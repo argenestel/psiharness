@@ -226,6 +226,10 @@ body[data-bench="off"] .psi-bench { display: none; }
 .psi-nav-row .psi-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .psi-nav-row .psi-row-meta { font-size: var(--text-13); color: var(--pencil); white-space: nowrap; }
 .psi-nav-row .psi-meter { grid-column: 1 / -1; }
+/* Skill rows: name, then the level right-aligned; hours show as a bare highlighter fill (no track). */
+.psi-skill-row { align-items: center; }
+.psi-skill-row .psi-meter { width: 100%; margin-top: -2px; background: transparent; }
+.psi-skill-row .psi-meter::-webkit-progress-bar { background: transparent; }
 .psi-nav-note { padding: 2px var(--s2) 2px var(--s3); font-size: var(--text-13); color: var(--pencil); }
 .psi-nav-more { padding: 4px var(--s2) 0 var(--s3); font-size: var(--text-13); color: var(--pencil); }
 .psi-nav-concepts { margin-top: auto; padding-top: var(--s4); border-top: 1px solid var(--rule); }

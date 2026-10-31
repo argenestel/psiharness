@@ -26,19 +26,33 @@ export function registerInjection(pi: ExtensionAPI, deps: PracticeDeps): void {
 		const elapsed = session ? Math.max(0, (Date.now() - Date.parse(session.startedAt)) / 60000) : 0;
 		const hours = skill ? deps.practice.hours(skill) : { logged: 0, goal: 20 };
 		const progress = skill ? deps.practice.progress(skill) : undefined;
-		const state = `## Practice state
+		const challenges = skill ? deps.practice.listChallenges(skill) : [];
+		const untried = skill ? deps.practice.listChallenges(skill, { unattempted: true }).length : 0;
+		const guidance = plan
+			? `${plan.title.slice(0, 120)} has a saved plan (${plan.subskills.length} steps, next: ${
+				next?.title.slice(0, 120) ?? "complete"}) and ${challenges.length} ready challenges (${untried} not tried). `
+				+ "Do NOT create a new plan; use psi_challenge action next to serve ready challenges before writing new ones."
+			: "No plan exists yet; create one with psi_skill_plan create only if none exists.";
+		const required = `${guidance}\n`
+			+ "Skill files are optional reference: read at most one SKILL.md only when you need a technique you don't know; "
+			+ `start practising immediately.\n${contract}`;
+		const nextLabel = next ? `${next.id}: ${next.title}`
+			: plan ? "all steps solid" : "create a plan with psi_skill_plan";
+		const optional = `## Practice state
 Active skill: ${(skill ?? "not selected").slice(0, 100)}
-Next subskill: ${(next ? `${next.id}: ${next.title}` : "create a plan with psi_skill_plan").slice(0, 220)}
+Next subskill: ${nextLabel.slice(0, 220)}
 OPEN challenge: ${challenge ? JSON.stringify({ id: challenge.id, kind: challenge.kind,
-	format: challenge.format ?? "text", prompt: challenge.prompt }) : "none"}
+	format: challenge.format ?? "text", prompt: challenge.prompt.slice(0, 300) }) : "none"}
 For an answer to the OPEN challenge, call psi_attempt with its id and active skill; do not search files.
 Session: ${session ? `${elapsed.toFixed(1)}/${deps.state.plannedMinutes ?? 20} minutes` : "inactive"}
 Hours: ${hours.logged.toFixed(1)}/${hours.goal}; streak: ${progress?.streakDays ?? 0}; level: ${progress?.level ?? 1}.
-${contract}`;
+`;
 		const prefix = "## Learner memory\n";
+		const optionalBudget = Math.max(0, 2498 - required.length - prefix.length - 3);
+		const state = `${optional.slice(0, optionalBudget)}\n${required}`;
 		const budget = Math.max(0, 2498 - prefix.length - state.length - 2);
 		const memory = deps.memory.summarize({ skill, maxChars: budget }).slice(0, budget);
 		deps.refresh(ctx);
-		return { systemPrompt: `${event.systemPrompt}\n\n${prefix}${memory || "No observations yet."}\n\n${state}` };
+		return { systemPrompt: `${event.systemPrompt}\n\n${prefix}${memory}\n\n${state}` };
 	});
 }

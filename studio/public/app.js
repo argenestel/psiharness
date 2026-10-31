@@ -513,7 +513,11 @@ function link(href, title, meta) {
 	const a = document.createElement("a");
 	a.className = "psi-nav-row"; a.href = href;
 	const t = document.createElement("span"); t.className = "psi-row-title"; t.textContent = title; a.append(t);
-	if (meta) { const m = document.createElement("span"); m.className = "psi-row-meta"; m.textContent = meta; a.append(m); }
+	if (meta) {
+		// A hidden comma keeps "Mental math, Level 2" apart in text and the accessible name (the grid hides the gap).
+		const gap = document.createElement("span"); gap.className = "psi-sr-only"; gap.textContent = ", ";
+		const m = document.createElement("span"); m.className = "psi-row-meta"; m.textContent = meta; a.append(gap, m);
+	}
 	return a;
 }
 function note(text) {
@@ -545,8 +549,12 @@ async function refreshChrome() {
 			const title = detail.plan?.title || detail.title || capital(titleOf(slug));
 			const p = detail.progress || {};
 			const a = link(`#/skills/${enc(slug)}`, title, formatLevel(p.xp).label);
-			const hours = barPercent(Number(p.minutesLogged) / 60, 20);
-			a.insertAdjacentHTML("beforeend", meter(hours, `${title}: ${hoursLabel(p.minutesLogged)}`));
+			a.classList.add("psi-skill-row");
+			// The hours fill appears only once there are hours to show; an empty track reads as an underline.
+			if (Number(p.minutesLogged) > 0) {
+				const hours = Math.max(1, barPercent(Number(p.minutesLogged) / 60, 20));
+				a.insertAdjacentHTML("beforeend", meter(hours, `${title}: ${hoursLabel(p.minutesLogged)}`));
+			}
 			return a;
 		}, "No skills yet. Add one from Home."),
 		fill("#sidebar-topics", () => client.get("/api/topics"), (t) => link(topicPath(t.topic, "map"), t.title), "")

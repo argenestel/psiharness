@@ -125,6 +125,7 @@ export function mountBench(root, { skill, onChange, onClose } = {}) {
 			const forOther = Boolean(skill && from && from !== skill);
 			if (!forOther) void load({ animate: true, leveledUp: Boolean(detail?.leveledUp) });
 		}),
+		on("psi:lesson", () => { void load(); }),
 		on("psi:status", () => { void load(); }),
 		on("psi:skills-changed", () => { void load(); }),
 	];

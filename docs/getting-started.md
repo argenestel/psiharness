@@ -76,14 +76,28 @@ With omp, psi first checks that `omp --help` runs and prints an install hint if 
 
 ### Docker
 
+Docker is the recommended way to run psi web: the server, the pi agent behind every chat, and all of its tools run
+inside a hardened container (non-root, read-only root filesystem, no capabilities), published on loopback only.
+
 ```sh
-docker compose -f docker/compose.yml run --rm psi      # tutor in a container
-docker compose -f docker/compose.yml up studio         # studio on http://localhost:4173
+docker compose -f docker/compose.yml up -d     # psi web on http://localhost:4173
 ```
 
-Both services share the `psi-data` volume (`PSI_HOME=/data`). Images: `psi` (Node + pi + psi, optional omp via
-`--build-arg INSTALL_OMP=1`), `psi-manim` (Python, Manim, TeX, FFmpeg), `psi-full` (base + Manim). See
-[docker/README.md](../docker/README.md) for auth mounts and build arguments.
+On first start a one-shot `pi-auth` service copies your host pi login (`~/.pi/agent`, mounted read-only) into the
+container's own writable pi volume; the host copy is never modified. Alternatively put `XAI_API_KEY`,
+`ANTHROPIC_API_KEY` or `OPENAI_API_KEY` in `docker/.env` (start from `docker/.env.example`). The web agent's model is
+`PSI_WEB_MODEL` (default `xai/grok-4.6`); the host port is `PSI_WEB_PORT` (default 4173).
+
+```sh
+docker compose -f docker/compose.yml run --rm psi                    # terminal tutor in a container
+docker compose -f docker/compose.yml --profile full up -d web-full   # web with Manim video rendering (:4175)
+PSI_SYNC_AUTH=1 docker compose -f docker/compose.yml up -d           # re-copy credentials after a host re-login
+```
+
+Learning data lives in the `psi-data` volume (`PSI_HOME=/data`), pi credentials in `psi-pi-home`. Images: `psi`
+(Node + pi + psi, optional omp via `--build-arg INSTALL_OMP=1`), `psi-manim` (Python, Manim, TeX, FFmpeg),
+`psi-full` (base + Manim). See [docker/README.md](../docker/README.md) for profiles, auth, backup/reset and security
+notes.
 
 ## Where data lives
 

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
@@ -14,6 +14,7 @@ function fake() {
 	const handlers = new Map<string, Handler[]>();
 	const flags = new Map<string, string | boolean>();
 	const registeredFlags: string[] = [];
+	const flagTypes = new Map<string, string>();
 	const entries: any[] = [];
 	const messages: string[] = [];
 	const notifications: string[] = [];
@@ -22,7 +23,9 @@ function fake() {
 	const api = {
 		registerTool: (tool: Tool) => tools.set(tool.name, tool),
 		registerCommand: (name: string, command: { handler: Handler }) => commands.set(name, command),
-		registerFlag: (name: string) => registeredFlags.push(name),
+		registerFlag: (name: string, options: { type: string }) => {
+			registeredFlags.push(name); flagTypes.set(name, options.type);
+		},
 		getFlag: (name: string) => flags.get(name),
 		on: (name: string, handler: Handler) => handlers.set(name, [...handlers.get(name) ?? [], handler]),
 		appendEntry: (customType: string, data: unknown) => entries.push({ type: "custom", customType, data }),
@@ -45,7 +48,7 @@ function fake() {
 	const execute = (name: string, params: unknown) => tools.get(name)!.execute("test", params, undefined, undefined, ctx);
 	const command = (name: string, args = "") => commands.get(name)!.handler(args, ctx);
 	return { api, ctx, tools, commands, handlers, flags, registeredFlags, entries, messages,
-		notifications, statuses, widgets, fire, execute, command };
+		notifications, statuses, widgets, fire, execute, command, flagTypes };
 }
 
 const missingCore = ["memory", "practice", "gamify"].find((module) =>
@@ -137,6 +140,7 @@ test("injection appends bounded memory, state, and tutor guidance", async (t) =>
 	await f.command("skill", "SQL");
 	await f.command("remember", "Short concrete examples help me learn.");
 	await f.command("practice", "joins 15");
+	await f.execute("psi_practice_session", { action: "start", minutes: 15 });
 	const injected = (await f.fire("before_agent_start", { systemPrompt: "Original system" }))[0].systemPrompt;
 	assert.ok(injected.startsWith("Original system\n\n"));
 	assert.match(injected, /## Learner memory/);
@@ -338,4 +342,112 @@ test("before-agent fallback reads state written after registration", async (t) =
 		const recalled = await waiting.execute("psi_memory_recall", {});
 		assert.equal(recalled.details.items[0].skill, "physics");
 	} finally { await waiting.fire("session_shutdown"); }
+}));
+
+test("plans refuse accidental replacement and merge updates without losing progress", async (t) => fixture(t, async (f, home) => {
+	const created = await f.execute("psi_skill_plan", { action: "create", plan: plan() });
+	assert.equal(created.details.plan.title, "SQL");
+	const file = join(home, "skills/sql/plan.json");
+	const before = readFileSync(file, "utf8");
+	const refused = await f.execute("psi_skill_plan", { action: "create", plan: plan({ title: "Replacement" }) });
+	assert.match(refused.content[0].text, /already exists.*get.*update.*do not create/);
+	assert.equal(readFileSync(file, "utf8"), before);
+	const added = { ...plan().subskills[0], id: "joins", title: "Joins", status: "locked" };
+	await f.execute("psi_skill_plan", { action: "update", plan: { skill: "sql", subskills: [added] } });
+	const merged = await f.execute("psi_skill_plan", { action: "update", overwrite: true,
+		plan: { skill: "sql", title: "Updated", subskills: [{ id: "select", status: "solid" }] } });
+	assert.deepEqual(merged.details.plan.subskills.map((s: any) => [s.id, s.status]),
+		[["select", "active"], ["joins", "locked"]]);
+	const removed = await f.execute("psi_skill_plan", { action: "update", plan: { skill: "sql" },
+		removeSubskillIds: ["joins"] });
+	assert.equal(removed.details.plan.subskills.length, 1);
+	const overwritten = await f.execute("psi_skill_plan", { action: "create", overwrite: true,
+		plan: plan({ title: "Start over" }) });
+	assert.equal(overwritten.details.overwritten, true);
+	assert.match(overwritten.content[0].text, /overwritten.*explicit start-over/);
+	assert.equal(JSON.parse(readFileSync(file, "utf8")).title, "Start over");
+}));
+
+test("next selects the next subskill, then other priorities, then latest still-missed challenges", async (t) => fixture(t, async (f, home) => {
+	await f.execute("psi_skill_plan", { action: "create", plan: plan({ subskills: [
+		{ ...plan().subskills[0], priority: 2 }, { ...plan().subskills[0], id: "later", priority: 3 },
+		{ ...plan().subskills[0], id: "middle", priority: 1, prerequisites: ["select"] },
+	] }) });
+	const later = await f.execute("psi_challenge", draft({ subskillId: "later" }));
+	const middle = await f.execute("psi_challenge", draft({ subskillId: "middle" }));
+	const first = await f.execute("psi_challenge", draft({ subskillId: "select" }));
+	const next = () => f.execute("psi_challenge", { action: "next" });
+	const grade = (id: string, answer: string) => f.execute("psi_attempt", { challengeId: id, answer });
+	assert.equal((await next()).details.challengeId, first.details.challengeId);
+	const { StateStore } = await import("../../core/src/state.ts");
+	assert.equal(new StateStore(home).read().openChallenge?.id, first.details.challengeId);
+	await grade(first.details.challengeId, "wrong");
+	assert.equal((await next()).details.challengeId, middle.details.challengeId);
+	await grade(middle.details.challengeId, "wrong");
+	assert.equal((await next()).details.challengeId, later.details.challengeId);
+	await grade(later.details.challengeId, "4");
+	const { PracticeStore } = await import("../../core/src/practice.ts");
+	const store = new PracticeStore(home);
+	store.recordAttempt({ challengeId: middle.details.challengeId, answer: "wrong", outcome: "fail",
+		hintsUsed: 0, at: "2099-01-01T00:00:00Z" });
+	assert.equal((await next()).details.challengeId, middle.details.challengeId);
+	store.recordAttempt({ challengeId: middle.details.challengeId, answer: "4", outcome: "success",
+		hintsUsed: 0, at: "2099-01-02T00:00:00Z" });
+	assert.equal((await next()).details.challengeId, first.details.challengeId);
+	await grade(first.details.challengeId, "4");
+	assert.match((await next()).content[0].text, /No challenges remain.*action.*create/);
+}));
+
+test("next widgets match create and never leak expected answers into model text", async (t) => fixture(t, async (f) => {
+	for (const language of [undefined, "sql", "python", "javascript"]) {
+		const created = await f.execute("psi_challenge", draft({ expected: "SECRET_ROWS",
+			...(language ? { format: "code", language, tests: "PRIVATE_TESTS", setup: "PRIVATE_SETUP" } : {}) }));
+		const next = await f.execute("psi_challenge", { action: "next", skill: "sql" });
+		assert.deepEqual(next.details.widget, created.details.widget);
+		assert.doesNotMatch(JSON.stringify(next.content), /SECRET_ROWS|expected|PRIVATE_/);
+		assert.equal(next.details.widget.expected, language === "sql" ? "SECRET_ROWS" : undefined);
+		await f.execute("psi_attempt", { challengeId: next.details.challengeId, answer: "SECRET_ROWS", outcome: "success" });
+	}
+}));
+
+test("saved-plan injection counts ready challenges and preserves instructions within budget", async (t) => fixture(t, async (f, home) => {
+	await f.execute("psi_skill_plan", { action: "create", plan: plan() });
+	const first = await f.execute("psi_challenge", draft());
+	await f.execute("psi_attempt", { challengeId: first.details.challengeId, answer: "4" });
+	await f.execute("psi_challenge", draft({ prompt: "Long prompt ".repeat(1000) }));
+	const { MemoryStore } = await import("../../core/src/memory.ts");
+	new MemoryStore(home).setName("Long learner name ".repeat(300));
+	const text = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+	assert.ok(text.includes("SQL has a saved plan (1 steps, next: Select) and 2 ready challenges (1 not tried). "
+		+ "Do NOT create a new plan; use psi_challenge action next to serve ready challenges before writing new ones."));
+	assert.ok(text.includes("Skill files are optional reference: read at most one SKILL.md only when you need a "
+		+ "technique you don't know; start practising immediately."));
+	assert.ok(text.length - "Base\n\n".length <= 2500);
+}));
+
+test("practice prompts start sessions and serve ready challenges without replanning", async (t) => fixture(t, async (f) => {
+	await f.command("skill", "SQL");
+	await f.command("practice");
+	assert.match(f.messages.at(-1)!, /First call psi_practice_session with action start/);
+	assert.match(f.messages.at(-1)!, /No plan exists.*psi_skill_plan create/);
+	await f.execute("psi_skill_plan", { action: "create", plan: plan() });
+	await f.command("practice");
+	assert.match(f.messages.at(-1)!, /saved plan exists.*no planning step/);
+	assert.match(f.messages.at(-1)!, /psi_challenge with action "next"/);
+	assert.doesNotMatch(f.messages.at(-1)!, /psi_skill_plan create/);
+	await f.execute("psi_practice_session", { action: "start" });
+	await f.command("practice");
+	assert.doesNotMatch(f.messages.at(-1)!, /First call.*start/);
+}));
+
+test("string psi-skill flag selects the exact imported slug", async (t) => fixture(t, async (f, home) => {
+	assert.equal(f.flagTypes.get("psi-skill"), "string");
+	f.flags.set("psi-skill", "python-foundations");
+	await f.fire("session_start");
+	const { StateStore } = await import("../../core/src/state.ts");
+	assert.equal(new StateStore(home).read().activeSkill, "python-foundations");
+	const text = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+	assert.match(text, /Active skill: python-foundations/);
+	assert.match(text, /No plan exists yet/);
+	assert.doesNotMatch(text, /Do NOT create a new plan/);
 }));

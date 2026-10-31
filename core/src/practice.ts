@@ -322,6 +322,35 @@ export class PracticeStore {
 		return { attempt, progress, leveledUp: progress.level > previousLevel, badges };
 	}
 
+	/**
+	 * Attach the learner's lesson ("what I'll try differently") to a recorded attempt. The first lesson on a
+	 * missed attempt earns gamify's lesson bonus once; later edits only change the text.
+	 */
+	addLesson(skill: string, attemptId: string, lesson: string): {
+		attempt: Attempt; progress: Progress; bonus: number; leveledUp: boolean;
+	} {
+		const text = typeof lesson === "string" ? lesson.trim() : "";
+		if (!text) throw new Error("Lesson must be a nonempty string");
+		const history = this.lines<Attempt>(skill, "attempts.jsonl");
+		const attempt = history.find((candidate) => candidate.id === attemptId);
+		if (!attempt) throw new Error(`Attempt not found: ${attemptId}`);
+		const first = !attempt.lesson?.trim();
+		let bonus = 0;
+		if (first) {
+			const kind = this.getChallenge(skill, attempt.challengeId)?.kind ?? "quickfire";
+			const base = { outcome: attempt.outcome, kind, level: 1, hintsUsed: Number(attempt.hintsUsed) || 0 };
+			bonus = Math.max(0, xpFor({ ...base, lesson: text }) - xpFor(base));
+		}
+		attempt.lesson = text;
+		attempt.xp = (Number(attempt.xp) || 0) + bonus;
+		const before = this.progress(skill);
+		const progress: Progress = { ...before, xp: before.xp + bonus };
+		progress.level = levelFor(progress.xp).level;
+		this.writeLines(skill, "attempts.jsonl", history);
+		if (bonus) this.write(skill, "progress.json", progress);
+		return { attempt, progress, bonus, leveledUp: progress.level > levelFor(before.xp).level };
+	}
+
 	/** Close any prior session for this skill, then start a fresh session. */
 	startSession(skill: string, focus?: string, now: Date = new Date()): PracticeSession {
 		const startedAt = now.toISOString();

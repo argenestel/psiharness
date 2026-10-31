@@ -33,12 +33,18 @@ Start the first short interactive practice: one challenge, my attempt first, hin
 				ctx.ui.notify("Choose a practice block between 0 and 180 minutes.", "warning"); return;
 			}
 			const focus = parts.join(" ") || undefined;
-			if (!practice.activeSession(skill)) practice.startSession(skill, focus);
+			const hasSession = !!practice.activeSession(skill);
+			const hasPlan = !!practice.readPlan(skill);
 			state.plannedMinutes = minutes;
 			deps.refresh(ctx);
-			pi.sendUserMessage(`Practice session started for ${skill}; focus: ${JSON.stringify(focus ?? "next subskill")};
-planned block: ${minutes} minutes. Use psi_practice_session status to track elapsed time.
-Give one challenge at a time with psi_challenge. Wait for my prediction/attempt before explaining.
+			pi.sendUserMessage(`Practice ${skill}; focus: ${JSON.stringify(focus ?? "next subskill")};
+planned block: ${minutes} minutes.
+${hasSession ? "Use psi_practice_session status to track elapsed time."
+	: "First call psi_practice_session with action start; there is no active session."}
+${hasPlan ? "A saved plan exists; begin practising immediately with no planning step."
+	: "No plan exists; only then use psi_skill_plan create to make a short plan."}
+Then call psi_challenge with action "next" to serve ready challenges when they exist.
+Only if none remain, use action "create". Give one challenge at a time. Wait for my prediction/attempt before explaining.
 Offer hints only on request, grade via psi_attempt, celebrate failed experiments and extract a lesson.
 When the block ends, stop the session, save psi_recap, and remember durable learning observations.`);
 		},

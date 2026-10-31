@@ -20,18 +20,75 @@ export function formatWords(c = {}) {
 	return "Short answer";
 }
 
+const TEX_WORDS = { times: "×", cdot: "·", Delta: "Δ", delta: "δ", pi: "π", theta: "θ", alpha: "α", beta: "β",
+	lambda: "λ", mu: "μ", sigma: "σ", infty: "∞", int: "∫", sum: "Σ", prime: "′", left: "", right: "" };
+const TEX_RELATIONS = { to: "→", le: "≤", leq: "≤", ge: "≥", geq: "≥", ne: "≠", neq: "≠", approx: "≈" };
+const SUPER = { 0: "⁰", 1: "¹", 2: "²", 3: "³", 4: "⁴", 5: "⁵", 6: "⁶", 7: "⁷", 8: "⁸", 9: "⁹", "-": "⁻", "+": "⁺", n: "ⁿ" };
+const SUB = { 0: "₀", 1: "₁", 2: "₂", 3: "₃", 4: "₄", 5: "₅", 6: "₆", 7: "₇", 8: "₈", 9: "₉", "-": "₋", "+": "₊" };
+function script(body, table, mark) {
+	if ([...body].every((ch) => table[ch])) return [...body].map((ch) => table[ch]).join("");
+	return body.length === 1 ? `${mark}${body}` : `${mark}(${scripts(body)})`;
+}
+function scripts(text) {
+	return text.replace(/\^\{([^{}]*)\}|\^(\S)/g, (_, a, b) => script(a ?? b, SUPER, "^"))
+		.replace(/_\{([^{}]*)\}|_(\S)/g, (_, a, b) => script(a ?? b, SUB, "_"));
+}
+
+/** Inline TeX as readable plain text for one-line previews: \frac{a}{b} → a/b, x^2 → x², \le → ≤. */
+export function texText(tex = "") {
+	const words = (text) => text.replace(/\\[,;:! ]/g, " ")
+		.replace(/\\([a-zA-Z]+)\s*/g, (match, name) => name in TEX_RELATIONS ? ` ${TEX_RELATIONS[name]} `
+			: TEX_WORDS[name] ?? name);
+	const group = (text) => {
+		const plain = words(text).trim();
+		return /[+\-*/ ]/.test(plain) ? `(${plain})` : plain;
+	};
+	let text = String(tex).replace(/\\[dt]?frac(\d)(\d)/g, "$1/$2");
+	for (let i = 0; i < 3; i++) {
+		text = text.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, a, b) => `${group(a)}/${group(b)}`)
+			.replace(/\\sqrt\{([^{}]*)\}/g, (_, a) => `√${group(a)}`);
+	}
+	return scripts(words(text)).replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
+}
+
 /** First line of a markdown prompt as plain text (no emphasis, code ticks, links or shouted prefixes). */
 export function promptPreview(prompt = "", max = 140) {
 	const line = String(prompt).split(/\r?\n/).map((s) => s.trim()).find((s) => s && !/^```/.test(s)) ?? "";
 	let text = line.replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
 		.replace(/`([^`]*)`/g, "$1").replace(/\*\*(.+?)\*\*/g, "$1").replace(/(^|\s)__(\S.*?)__(?=\s|$)/g, "$1$2")
 		.replace(/\*(\S.*?)\*/g, "$1").replace(/(^|\s)_(\S.*?)_(?=[\s.,;:!?]|$)/g, "$1$2")
-		.replace(/^#{1,6}\s+|^>\s*|^[-*+]\s+|^\d+[.)]\s+/, "").replace(/\$\$?([^$]+)\$\$?/g, "$1")
-		.replace(/\\times\b/g, "×").replace(/\\cdot\b/g, "·").replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, "$1/$2")
-		.replace(/\\([a-zA-Z]+)\b\s*/g, "$1 ").replace(/[{}]/g, "")
+		.replace(/^#{1,6}\s+|^>\s*|^[-*+]\s+|^\d+[.)]\s+/, "").replace(/\$\$?([^$]+)\$\$?/g, (_, tex) => texText(tex))
 		.replace(/^(BOSS|BUILD|DEBUG|PREDICT|APPLY|EXPLAIN|QUICKFIRE)\b:?\s*/, "").replace(/\s+/g, " ").trim();
 	if (text) text = text[0].toUpperCase() + text.slice(1);
 	return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
+}
+
+/** Plain sentences of a prompt (code fences dropped), for comparing prompts sentence by sentence. */
+export function promptSentences(prompt = "") {
+	return String(prompt ?? "").replace(/```[\s\S]*?(?:```|$)/g, " ").replace(/\s+/g, " ").trim()
+		.split(/(?<=[.!?])\s+(?=\S)/).map((s) => s.trim()).filter(Boolean);
+}
+
+/**
+ * The part of each prompt that tells it apart from its neighbours: leading sentences that two or more
+ * prompts share (a pack's setup boilerplate) are dropped. At least the last sentence always remains.
+ */
+export function distinctPrompts(prompts = []) {
+	const split = prompts.map(promptSentences);
+	const counts = new Map();
+	for (const sentences of split) {
+		for (let k = 1; k < sentences.length; k++) {
+			const key = sentences.slice(0, k).join("\n");
+			counts.set(key, (counts.get(key) ?? 0) + 1);
+		}
+	}
+	return split.map((sentences, i) => {
+		let k = 0;
+		for (let j = sentences.length - 1; j >= 1; j--) {
+			if ((counts.get(sentences.slice(0, j).join("\n")) ?? 0) >= 2) { k = j; break; }
+		}
+		return sentences.slice(k).join(" ") || String(prompts[i] ?? "");
+	});
 }
 
 /** Subskill status in words, given the whole plan (Next up / Practising / Solid / Locked: after X / Not started). */
@@ -247,10 +304,14 @@ export function mountPractice(host, { skill, navigate } = {}) {
 				? "You've tried every challenge here. Ask the tutor for a new one."
 				: "Nothing missed right now. Misses show up here so you can go back to them.");
 		}
-		return el("ul", { class: "psi-sk-rows", "aria-label": "Challenges" }, shown.map(challengeRow));
+		// Previews come from what differs between prompts, so rows sharing a setup sentence stay distinguishable.
+		const distinct = distinctPrompts(all.map((c) => c.prompt));
+		const preview = new Map(all.map((c, i) => [c.id, promptPreview(distinct[i]) || promptPreview(c.prompt)]));
+		return el("ul", { class: "psi-sk-rows", "aria-label": "Challenges" },
+			shown.map((c) => challengeRow(c, preview.get(c.id))));
 	}
 
-	function challengeRow(c) {
+	function challengeRow(c, preview) {
 		const last = lastAttempt(c);
 		const mark = el("span", { class: "psi-sk-mark" });
 		if (last) mark.append(renderTrail([last], { label: "Last result" }));
@@ -260,7 +321,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 			onclick: () => toggle(c, row, tryButton, sheet) }, "Try");
 		const row = el("li", { class: "psi-sk-row psi-sk-challenge", dataset: { id: c.id } },
 			el("div", { class: "psi-sk-row-main" },
-				el("span", { class: "psi-sk-prompt" }, promptPreview(c.prompt) || "Untitled challenge"),
+				el("span", { class: "psi-sk-prompt" }, preview || "Untitled challenge"),
 				el("span", { class: "psi-sk-quiet psi-sk-format" }, formatWords(c))),
 			mark, tryButton, sheet);
 		return row;
@@ -284,7 +345,8 @@ export function mountPractice(host, { skill, navigate } = {}) {
 				continueAfterAttempt: false,
 				send: async (message) => {
 					const text = String(message ?? "").trim();
-					if (!text || /^Answered challenge\b/.test(text)) return;
+					// Attempts and lessons are already saved and drawn here; only real questions go to the tutor.
+				if (!text || /^(Answered challenge|Lesson for challenge)\b/.test(text)) return;
 					if (text === "Next challenge") { openNext(c); return; }
 					openTutor(text);
 				},
@@ -340,6 +402,16 @@ export function mountPractice(host, { skill, navigate } = {}) {
 		if (row) row.replaceChildren(renderTrail([attempt], { animateLast: true, label: "Last result" }));
 	}
 	cleanups.push(on("attempt", recordAttempt));
+	// A lesson saved after a miss is written under that mark on the trail.
+	cleanups.push(on("lesson", (detail) => {
+		const saved = detail?.attempt;
+		const mine = saved && state.attempts.find((a) => a.id === saved.id);
+		if (disposed || !mine || !refs.trail) return;
+		mine.lesson = saved.lesson; mine.xp = saved.xp;
+		if (detail.progress) state.progress = detail.progress;
+		drawTrail(false);
+		drawStats(Boolean(detail.leveledUp));
+	}));
 
 	void load();
 	return {

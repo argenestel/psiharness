@@ -427,3 +427,31 @@ test("addChallenge rejects invalid drafts before writing and joins validation er
 	assert.throws(() => store.addChallenge({ ...draft, prompt: "" }), /prompt/);
 	assert.deepEqual(store.listChallenges(skill), [good]);
 });
+
+test("addLesson stores the lesson on the attempt, awards the fail bonus once and keeps history order", (t) => {
+	const store = fixture(t);
+	const challenge = store.addChallenge(draft);
+	const first = store.recordAttempt({ challengeId: challenge.id, answer: "no", outcome: "fail", hintsUsed: 0, at: now.toISOString() });
+	const second = store.recordAttempt({ challengeId: challenge.id, answer: "yes", outcome: "success", hintsUsed: 0,
+		at: now.toISOString() });
+	const xpBefore = store.progress(skill).xp;
+	const result = store.addLesson(skill, first.attempt.id, "  Read the question twice.  ");
+	assert.equal(result.bonus, 5);
+	assert.equal(result.attempt.lesson, "Read the question twice.");
+	assert.equal(result.attempt.xp, first.attempt.xp + 5);
+	assert.equal(store.progress(skill).xp, xpBefore + 5);
+	// Editing the lesson changes the text but never pays the bonus twice.
+	const again = store.addLesson(skill, first.attempt.id, "Check the edge case first.");
+	assert.equal(again.bonus, 0);
+	assert.equal(store.progress(skill).xp, xpBefore + 5);
+	const lines = fs.readFileSync(path.join(store.root, "skills", skill, "attempts.jsonl"), "utf8").trim().split("\n")
+		.map((line) => JSON.parse(line));
+	assert.deepEqual(lines.map((a) => a.id), [first.attempt.id, second.attempt.id]);
+	assert.equal(lines[0].lesson, "Check the edge case first.");
+	assert.equal(lines[0].xp, first.attempt.xp + 5);
+	// A lesson on a solved attempt is kept but earns nothing (the bonus is for misses).
+	assert.equal(store.addLesson(skill, second.attempt.id, "Worked because I traced it.").bonus, 0);
+	assert.throws(() => store.addLesson(skill, "missing", "x"), /Attempt not found/);
+	assert.throws(() => store.addLesson(skill, first.attempt.id, "   "), /nonempty/);
+	assert.throws(() => store.addLesson("../x", first.attempt.id, "x"), /Invalid skill slug/);
+});

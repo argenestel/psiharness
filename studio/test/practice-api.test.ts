@@ -177,6 +177,27 @@ test("attempts route returns newest-first summaries with truncated answers and a
 	await assert.rejects(call("GET", "/api/skills/missing/attempts"), { status: 404 });
 });
 
+test("lesson route stores a lesson after a miss, shows it on the trail and pays the bonus once", async (t) => {
+	const { call } = fixture(t);
+	await call("POST", "/api/packs/mental-math/import");
+	const source = packChallenges("mental-math").find((c) => c.expected)!;
+	const miss = await call("POST", `/api/skills/mental-math/challenges/${source.id}/attempt`, { answer: "nope" });
+	assert.equal(miss.attempt.outcome, "fail");
+	const path = `/api/skills/mental-math/attempts/${miss.attempt.id}/lesson`;
+	const saved = await call("POST", path, { lesson: "Split into tens and ones" });
+	assert.equal(saved.bonus, 5);
+	assert.equal(saved.progress.xp, miss.progress.xp + 5);
+	const [trail] = await call("GET", "/api/skills/mental-math/attempts");
+	assert.deepEqual([trail.lesson, trail.xp], ["Split into tens and ones", miss.attempt.xp + 5]);
+	assert.equal((await call("POST", path, { lesson: "Tens first" })).bonus, 0);
+	for (const body of [{}, { lesson: "" }, { lesson: 3 }, { lesson: "x".repeat(2001) }]) {
+		await assert.rejects(call("POST", path, body), { status: 400 });
+	}
+	await assert.rejects(call("POST", "/api/skills/mental-math/attempts/missing/lesson", { lesson: "x" }), { status: 404 });
+	await assert.rejects(call("POST", `/api/skills/missing/attempts/${miss.attempt.id}/lesson`, { lesson: "x" }),
+		{ status: 404 });
+});
+
 test("Memory API edits an item's text and kind in place with validation", async (t) => {
 	const { call } = fixture(t);
 	const item = await call("POST", "/api/memory", { kind: "preference", text: "Short sessions work for me" });
@@ -227,4 +248,10 @@ test("server wires PATCH /api/memory/:id behind X-Psi and the attempts route", a
 	assert.equal((await call("/api/packs/mental-math/import", "POST", {}, psi)).status, 200);
 	const attempts = await call("/api/skills/mental-math/attempts?limit=5");
 	assert.deepEqual([attempts.status, attempts.body], [200, []]);
+	const source = packChallenges("mental-math").find((c) => c.expected)!;
+	const miss = (await call(`/api/skills/mental-math/challenges/${source.id}/attempt`, "POST", { answer: "nope" }, psi)).body;
+	const lessonPath = `/api/skills/mental-math/attempts/${miss.attempt.id}/lesson`;
+	assert.equal((await call(lessonPath, "POST", { lesson: "Round first" })).status, 403);
+	const saved = await call(lessonPath, "POST", { lesson: "Round first" }, psi);
+	assert.deepEqual([saved.status, saved.body.bonus, saved.body.attempt.lesson], [200, 5, "Round first"]);
 });

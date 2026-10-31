@@ -1,44 +1,159 @@
+# psi in Docker. Run from the repository root:
+#   docker compose -f docker/compose.yml up -d        # psi web on http://localhost:4173
+# Optional: docker/.env (copy docker/.env.example) for API keys, model, port. See docker/README.md.
+name: psi
+
+x-build-base: &build-base
+  context: ..
+  dockerfile: docker/base.Dockerfile
+
+# Hardening shared by every long-running service: non-root (image USER psi, UID 1000), read-only root
+# filesystem with tmpfs scratch dirs, no capabilities, no privilege escalation, bounded pids/memory.
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  init: true
+  tmpfs:
+    - /tmp:size=256m,mode=1777
+    - /home/psi/.cache:size=128m,uid=1000,gid=1000,mode=0700
+
 services:
-  psi:
-    build:
-      context: ..
-      dockerfile: docker/base.Dockerfile
+  # One-shot: copy the host's pi credentials/settings (read-only mount) into the writable pi-home volume.
+  # Copies only missing files, or everything when PSI_SYNC_AUTH=1. No network, exits immediately.
+  pi-auth:
+    build: *build-base
     image: psi:latest
-    stdin_open: true
-    tty: true
-    volumes:
-      - psi-data:/data
-      - "${HOME}/.pi:/home/psi/.pi:ro"
+    command: ["sync-auth"]
+    <<: *hardening
+    network_mode: none
+    restart: "no"
     environment:
+      PSI_SYNC_AUTH: ${PSI_SYNC_AUTH:-0}
+    volumes:
+      - pi-home:/home/psi/.pi
+      - "${PSI_PI_HOST_DIR:-${HOME}/.pi/agent}:/run/pi-host:ro"
+
+  # psi web — the default service. The pi agent and all its tools run inside this container.
+  web:
+    build: *build-base
+    image: psi:latest
+    command: ["psi", "web"]
+    <<: *hardening
+    depends_on:
+      pi-auth:
+        condition: service_completed_successfully
+    ports:
+      # Loopback only: never reachable from other machines. Container port is fixed at 4173.
+      - "127.0.0.1:${PSI_WEB_PORT:-4173}:4173"
+    env_file:
+      - path: .env
+        required: false
+    # Provider keys pass through from the shell or docker/.env only when set (bare names; unset = not passed).
+    environment:
+      - XAI_API_KEY
       - ANTHROPIC_API_KEY
       - OPENAI_API_KEY
-
-  studio:
-    build:
-      context: ..
-      dockerfile: docker/base.Dockerfile
-    image: psi:latest
-    command: ["node", "/opt/psi/studio/src/server.ts"]
-    ports:
-      - "4173:4173"
+      - PSI_HOME=/data
+      - PSI_STUDIO_HOST=0.0.0.0
+      - PSI_STUDIO_PORT=4173
+      - PSI_STUDIO_ALLOWED_HOSTS=localhost,127.0.0.1
+      - PSI_WEB_MODEL=${PSI_WEB_MODEL:-xai/grok-4.6}
     volumes:
       - psi-data:/data
-      - "${HOME}/.pi:/home/psi/.pi:ro"
-    environment:
-      PSI_STUDIO_HOST: 0.0.0.0
-      PSI_STUDIO_PORT: "4173"
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      - pi-home:/home/psi/.pi
+    mem_limit: ${PSI_WEB_MEMORY:-2g}
+    pids_limit: 512
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4173/api/state').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
 
+  # Optional: psi web on the full image (Manim, TeX, FFmpeg) for in-container video rendering.
+  #   docker compose -f docker/compose.yml --profile full up -d web-full   # http://localhost:4175
+  web-full:
+    profiles: ["full"]
+    build:
+      context: ..
+      dockerfile: docker/full.Dockerfile
+      additional_contexts:
+        psi-base: service:web
+      args:
+        BASE: psi-base
+    image: psi-full:latest
+    command: ["psi", "web"]
+    <<: *hardening
+    depends_on:
+      pi-auth:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${PSI_WEB_FULL_PORT:-4175}:4173"
+    env_file:
+      - path: .env
+        required: false
+    # Provider keys pass through from the shell or docker/.env only when set (bare names; unset = not passed).
+    environment:
+      - XAI_API_KEY
+      - ANTHROPIC_API_KEY
+      - OPENAI_API_KEY
+      - PSI_HOME=/data
+      - PSI_STUDIO_HOST=0.0.0.0
+      - PSI_STUDIO_PORT=4173
+      - PSI_STUDIO_ALLOWED_HOSTS=localhost,127.0.0.1
+      - PSI_WEB_MODEL=${PSI_WEB_MODEL:-xai/grok-4.6}
+      - PSI_MANIM_RUNNER=local
+    volumes:
+      - psi-data:/data
+      - pi-home:/home/psi/.pi
+    mem_limit: ${PSI_WEB_FULL_MEMORY:-4g}
+    pids_limit: 1024
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4173/api/state').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  # Optional: the interactive terminal tutor. `docker compose -f docker/compose.yml run --rm psi`
+  psi:
+    profiles: ["cli"]
+    build: *build-base
+    image: psi:latest
+    <<: *hardening
+    depends_on:
+      pi-auth:
+        condition: service_completed_successfully
+    stdin_open: true
+    tty: true
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - XAI_API_KEY
+      - ANTHROPIC_API_KEY
+      - OPENAI_API_KEY
+      - PSI_HOME=/data
+    volumes:
+      - psi-data:/data
+      - pi-home:/home/psi/.pi
+    mem_limit: ${PSI_CLI_MEMORY:-2g}
+    pids_limit: 512
+
+  # Build-only: the standalone Manim renderer image used by the host-side Docker runner.
   manim:
+    profiles: ["build"]
     build:
       context: ..
       dockerfile: docker/manim.Dockerfile
     image: psi-manim:latest
-    profiles: ["build"]
     command: ["manim", "--version"]
 
 volumes:
   psi-data:
     name: psi-data
+  pi-home:
+    name: psi-pi-home

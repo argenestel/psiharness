@@ -15,18 +15,30 @@ interface Chat {
 	child?: ChildProcessWithoutNullStreams; running: boolean; lastOutput: number;
 	/** Sequence numbers start above a time-based base so a reconnecting tab from a previous server is detectable. */
 	base: number; seq: number; historyEnd: number; loaded: boolean;
-	records: Event[]; subscribers: Set<ServerResponse>; timer?: ReturnType<typeof setTimeout>;
+	records: Event[]; subscribers: Map<ServerResponse, Sink>; timer?: ReturnType<typeof setTimeout>;
 	waiters: Map<string, (record: RecordData | undefined) => void>;
 }
 
+/** One SSE client's write queue: chunks wait here while the socket buffer is full. */
+interface Sink { res: ServerResponse; queue: string[]; queued: number; blocked: boolean; stall?: ReturnType<typeof setTimeout> }
+
 /** Host settings; milliseconds allow deterministic idle lifecycle tests. */
-export interface AgentOptions { bin?: string; idleMs?: number; host?: "pi" | "omp" }
+export interface AgentOptions {
+	bin?: string; idleMs?: number; host?: "pi" | "omp";
+	/** Bytes an SSE client may fall behind before it is disconnected (default 64 MiB). */
+	maxQueuedBytes?: number;
+	/** How long a blocked SSE client may go without draining before it is disconnected (default 60 s). */
+	stallMs?: number;
+}
 /** Per-chat launch options from POST /api/chat. */
 export interface ChatOptions { model?: string; skill?: string; topic?: string }
 
 /** Non-durable records kept for reconnect replay; conversation records are never evicted. */
 const LIVE_LIMIT = 2000;
 const MAX_LINE = 64 * 1024 * 1024;
+/** A browser may lag this far behind (bytes) before it is disconnected; reconnecting replays from its cursor. */
+const MAX_QUEUED = 64 * 1024 * 1024;
+const STALL_MS = 60_000;
 const MODEL = /^[A-Za-z0-9][A-Za-z0-9._:/@+-]{0,199}$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 /** Answer-key fields of psi_challenge arguments; the learner sees the card, never the key. */
@@ -34,6 +46,9 @@ const SECRET_ARGS = ["expected", "acceptable", "rubric"];
 
 function failure(status: number, message: string): Error & { status: number } {
 	return Object.assign(new Error(message), { status });
+}
+function frame(event: Event): string {
+	return `id: ${event.seq}\ndata: ${JSON.stringify(event)}\n\n`;
 }
 function isObject(value: unknown): value is RecordData {
 	return !!value && typeof value === "object" && !Array.isArray(value);
@@ -181,7 +196,7 @@ export class AgentHub {
 	private register(id: string, file: string, options: ChatOptions = {}, loaded = false): Chat {
 		const base = Date.now() * 1000;
 		const chat: Chat = { id, file, ...options, running: false, lastOutput: 0, base, seq: base, historyEnd: base,
-			loaded, records: [], subscribers: new Set(), waiters: new Map() };
+			loaded, records: [], subscribers: new Map(), waiters: new Map() };
 		this.chats.set(id, chat);
 		return chat;
 	}
@@ -268,7 +283,7 @@ export class AgentHub {
 			chat.waiters.delete(record.id);
 			waiter?.(record);
 		}
-		for (const subscriber of chat.subscribers) this.write(subscriber, event);
+		for (const sink of chat.subscribers.values()) this.write(sink, frame(event));
 	}
 
 	/** Drop buffered records superseded by `event`, so replay stays small and equivalent. */
@@ -301,9 +316,46 @@ export class AgentHub {
 		}
 	}
 
-	private write(res: ServerResponse, event: Event): void {
-		// Disconnect slow browsers rather than retaining an unbounded HTTP write queue.
-		if (!res.write(`id: ${event.seq}\ndata: ${JSON.stringify(event)}\n\n`)) res.destroy();
+	/**
+	 * Write with backpressure: while the socket buffer is full, chunks queue here and flush on 'drain'.
+	 * Only a client that falls far behind (maxQueuedBytes) or stops draining entirely (stallMs) is cut off;
+	 * a large history replay to a healthy browser always arrives in full.
+	 */
+	private write(sink: Sink, chunk: string): void {
+		const { res } = sink;
+		if (res.destroyed || res.writableEnded) return;
+		if (sink.blocked) {
+			sink.queue.push(chunk);
+			sink.queued += Buffer.byteLength(chunk);
+			if (sink.queued > (this.options.maxQueuedBytes ?? MAX_QUEUED)) this.drop(sink);
+			return;
+		}
+		if (!res.write(chunk)) this.block(sink);
+	}
+
+	private block(sink: Sink): void {
+		sink.blocked = true;
+		clearTimeout(sink.stall);
+		sink.stall = setTimeout(() => this.drop(sink), this.options.stallMs ?? STALL_MS);
+		sink.stall.unref?.();
+		sink.res.once("drain", () => this.flush(sink));
+	}
+
+	private flush(sink: Sink): void {
+		clearTimeout(sink.stall);
+		sink.blocked = false;
+		while (sink.queue.length) {
+			const chunk = sink.queue.shift()!;
+			sink.queued -= Buffer.byteLength(chunk);
+			if (sink.res.destroyed) return;
+			if (!sink.res.write(chunk)) { this.block(sink); return; }
+		}
+	}
+
+	private drop(sink: Sink): void {
+		clearTimeout(sink.stall);
+		sink.queue = []; sink.queued = 0;
+		sink.res.destroy();
 	}
 
 	private idleMs(): number {
@@ -429,12 +481,17 @@ export class AgentHub {
 		const from = since > chat.seq || (since > 0 && since <= chat.base) ? chat.historyEnd : since;
 		res.writeHead(200, { "Content-Type": "text/event-stream", "Connection": "keep-alive",
 			"X-Accel-Buffering": "no" });
-		res.write(": connected\n\n");
-		for (const event of chat.records) if (event.seq > from) this.write(res, event);
-		chat.subscribers.add(res);
-		const heartbeat = setInterval(() => res.write(": heartbeat\n\n"), 25000);
+		const sink: Sink = { res, queue: [], queued: 0, blocked: false };
+		this.write(sink, ": connected\n\n");
+		for (const event of chat.records) if (event.seq > from) this.write(sink, frame(event));
+		chat.subscribers.set(res, sink);
+		const heartbeat = setInterval(() => { if (!sink.blocked) this.write(sink, ": heartbeat\n\n"); }, 25000);
 		heartbeat.unref();
-		res.once("close", () => { clearInterval(heartbeat); chat.subscribers.delete(res); });
+		res.once("close", () => {
+			clearInterval(heartbeat); clearTimeout(sink.stall);
+			sink.queue = []; sink.queued = 0;
+			if (chat.subscribers.get(res) === sink) chat.subscribers.delete(res);
+		});
 	}
 
 	/** Delete a saved session and stop its active child and subscribers. */
@@ -443,7 +500,7 @@ export class AgentHub {
 		const stopped = chat.child
 			? new Promise<void>((done) => chat.child!.once("close", () => done())) : Promise.resolve();
 		this.stop(chat);
-		for (const res of chat.subscribers) res.end();
+		for (const res of chat.subscribers.keys()) res.end();
 		this.chats.delete(id);
 		await stopped;
 		rmSync(chat.file, { force: true });
@@ -456,7 +513,7 @@ export class AgentHub {
 		const waits = [...this.children].map((child) => new Promise<void>((done) => child.once("close", () => done())));
 		for (const chat of this.chats.values()) {
 			this.stop(chat);
-			for (const res of chat.subscribers) res.end();
+			for (const res of chat.subscribers.keys()) res.end();
 		}
 		return this.closing = Promise.all(waits).then(() => {});
 	}

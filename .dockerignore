@@ -26,3 +26,14 @@ __pycache__
 .vscode
 .idea
 .omx
+# Local agent/tool state and credentials never belong in the image.
+.aws
+.codex
+.agents
+.claude
+.github
+.gitignore
+.dockerignore
+docker/.env
+**/*.pem
+**/*.key

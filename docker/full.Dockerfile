@@ -34,6 +34,6 @@ ENV PSI_MANIM_RUNNER=local
 EXPOSE 4173
 WORKDIR /data
 USER psi
-# Studio: docker run --rm -p 4173:4173 psi-full:latest node /opt/psi/studio/src/server.ts
-# The server reads PSI_STUDIO_HOST=0.0.0.0 inherited from the base image.
+# Web: docker compose -f docker/compose.yml --profile full up -d web-full  (http://localhost:4175)
+# Inherits the base ENTRYPOINT (pi credential sync) and PSI_STUDIO_HOST=0.0.0.0.
 CMD ["psi"]

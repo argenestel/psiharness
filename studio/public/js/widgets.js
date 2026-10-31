@@ -387,9 +387,28 @@ function challengeSheet(d, ctx) {
 				const text = lesson.value.trim();
 				if (!text) { notify(ctx, "Write a lesson first, even a short one."); lesson.focus(); return; }
 				save.disabled = true; lesson.disabled = true;
-				await send(ctx, `My answer to challenge ${d.id}: ${value} — result: ${a.outcome}. Lesson: ${text}`);
-				box.replaceChildren(node("p", "psi-saved-lesson", `Lesson saved: ${text}`));
+				// Store the lesson with the attempt first (it shows on the trail and earns the lesson bonus).
+				let saved;
+				try {
+					const api = await apiFor(ctx);
+					saved = a.id ? await api.post(`/api/skills/${encodeURIComponent(d.skill)}/attempts/${encodeURIComponent(a.id)}/lesson`,
+						{ lesson: text }) : undefined;
+				} catch {
+					save.disabled = false; lesson.disabled = false;
+					notify(ctx, "Couldn't save your lesson. It's still in the box; save it again.", "error");
+					return;
+				}
+				const bonus = Number(saved?.bonus) || 0;
+				const done = node("p", "psi-saved-lesson", `Lesson saved: ${text}`);
+				if (bonus > 0) done.append(" ", node("span", "psi-xp", `+${bonus} XP`));
+				box.replaceChildren(done, row);
 				next.classList.add("is-primary");
+				next.focus();
+				if (saved?.attempt) {
+					try { ui.emit?.("psi:lesson", saved); } catch { /* Listeners must not break the sheet. */ }
+				}
+				save.remove();
+				void send(ctx, `Lesson for challenge ${d.id} (I missed it with "${value}"): ${text}`);
 			}, "is-primary");
 			lesson.addEventListener("keydown", (event) => {
 				if (event.key === "Enter" && !event.shiftKey && !event.isComposing) { event.preventDefault(); save.click(); }

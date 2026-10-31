@@ -169,6 +169,12 @@ export class PracticeApi {
 		const skill = p[2];
 		if (!skill || !this.practice.listSkills().includes(skill)) throw apiError(404, "Skill not found");
 		if (p.length === 4 && p[3] === "attempts" && method === "GET") return this.recentAttempts(skill, url);
+		if (p.length === 6 && p[3] === "attempts" && p[5] === "lesson" && method === "POST") {
+			if (typeof body.lesson !== "string" || !body.lesson.trim()) throw apiError(400, "Expected a non-empty lesson");
+			if (body.lesson.length > 2000) throw apiError(400, "Lesson is too long");
+			if (!this.attempts(skill).some((a) => a.id === p[4])) throw apiError(404, "Attempt not found");
+			return this.practice.addLesson(skill, p[4], body.lesson);
+		}
 		if (p.length === 3 && method === "GET") {
 			const history = this.attempts(skill);
 			const unattempted = ["1", "true"].includes(url.searchParams.get("unattempted") ?? "");

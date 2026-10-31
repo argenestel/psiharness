@@ -1,7 +1,10 @@
+import { lstatSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { Type } from "@earendil-works/pi-ai";
-import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { defineTool } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { validateChallenge } from "../../../core/src/practice.ts";
-import type { ChallengeKind, MemoryKind, Outcome, SkillPlan } from "../../../core/src/types.ts";
+import type { Attempt, Challenge, ChallengeKind, MemoryKind, Outcome, SkillPlan } from "../../../core/src/types.ts";
 import { progressReport } from "./hud.ts";
 import type { PracticeDeps } from "./index.ts";
 
@@ -91,6 +94,60 @@ function parsePlan(input: unknown): { plan?: SkillPlan; errors: string[] } {
 	return { errors, plan: { ...input, hoursGoal, createdAt: now, updatedAt: now } as SkillPlan };
 }
 
+/** Read missed challenges without requiring a new core storage API. */
+function nextChallenge(deps: PracticeDeps, skill: string): Challenge | undefined {
+	const { practice } = deps;
+	const plan = practice.readPlan(skill);
+	const next = plan && practice.nextSubskill(plan);
+	if (next) {
+		const first = practice.listChallenges(skill, { subskillId: next.id, unattempted: true })[0];
+		if (first) return first;
+	}
+	const priorities = new Map(plan?.subskills.map((s) => [s.id, s.priority]));
+	const untried = practice.listChallenges(skill, { unattempted: true }).sort((a, b) =>
+		(priorities.get(a.subskillId ?? "") ?? Infinity) - (priorities.get(b.subskillId ?? "") ?? Infinity));
+	if (untried.length) return untried[0];
+	const file = join(practice.root, "skills", skill, "attempts.jsonl");
+	let raw: string;
+	try {
+		for (const path of [join(practice.root, "skills"), join(practice.root, "skills", skill), file]) {
+			if (lstatSync(path).isSymbolicLink()) throw new Error("Refusing symlink: " + path);
+		}
+		raw = readFileSync(file, "utf8");
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+		throw error;
+	}
+	const latest = new Map<string, Attempt>();
+	for (const line of raw.split(/\r?\n/).filter((line) => line.trim())) {
+		const attempt = JSON.parse(line) as Attempt;
+		const previous = latest.get(attempt.challengeId);
+		if (!previous || Date.parse(attempt.at) >= Date.parse(previous.at)) latest.set(attempt.challengeId, attempt);
+	}
+	for (const attempt of [...latest.values()].filter((a) => a.outcome === "fail")
+		.sort((a, b) => Date.parse(b.at) - Date.parse(a.at))) {
+		const challenge = practice.getChallenge(skill, attempt.challengeId);
+		if (challenge) return challenge;
+	}
+	return undefined;
+}
+
+/** Present saved and newly created challenges through the same private widget. */
+function presentChallenge(c: Challenge, deps: PracticeDeps, ctx: ExtensionContext) {
+	deps.activate(c.skill);
+	deps.state.challengeId = c.id;
+	deps.state.hintIndex = 0;
+	deps.persist();
+	deps.refresh(ctx);
+	const widget = { type: "challenge", skill: c.skill, id: c.id, kind: c.kind, level: c.level,
+		format: c.format ?? "text", prompt: c.prompt, choices: c.choices, unit: c.unit,
+		language: c.language, starterCode: c.starterCode, hintsCount: c.hints.length,
+		...(c.format === "code" ? { setup: c.setup, tests: c.tests,
+			...(c.language === "sql" ? { expected: c.expected } : {}) } : {}) };
+	return result({ challengeId: c.id, skill: c.skill, widget },
+		"The challenge card is shown to the learner; wait for their answer");
+}
+
 /** Register memory, planning, challenge, grading, and session tools. */
 export function registerTools(pi: ExtensionAPI, deps: PracticeDeps): void {
 	const { memory, practice, state } = deps;
@@ -132,25 +189,52 @@ export function registerTools(pi: ExtensionAPI, deps: PracticeDeps): void {
 		name: "psi_skill_plan", label: "Skill plan",
 		description: `Create/update a complete SkillPlan or get/next for the active skill.
 plan fields: skill (kebab-case), title, targetPerformance, whyItMatters, subskills, resources, barriers,
-hoursGoal (default 20).
+hoursGoal (default 20). Updates merge subskills by id, preserving saved statuses and omitted subskills.
+Use removeSubskillIds only for explicitly requested removals.
 Each subskill: id, title, why, priority (1–3), prerequisites (ids), selfCorrection, drills,
 status (locked/active/practicing/solid).
 Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optional plan.skill selects a skill.`,
 		parameters: Type.Object({
 			action: choice(["create", "update", "get", "next"] as const), plan: Type.Optional(Type.Unknown()),
+			overwrite: Type.Optional(Type.Boolean({
+				description: "Only for when the learner explicitly asks to start over; create only.",
+			})),
+			removeSubskillIds: Type.Optional(strings()),
 		}),
 		async execute(_id, p, _signal, _update, ctx) {
 			if (p.action === "create" || p.action === "update") {
-				const parsed = parsePlan(p.plan);
-				if (!parsed.plan) return result({ errors: parsed.errors });
-				const old = practice.readPlan(parsed.plan.skill);
-				if (p.action === "create" && old) return result({ errors: ["Plan exists; use update."] });
+				const skill = object(p.plan) && typeof p.plan.skill === "string" ? p.plan.skill : state.skill;
+				if (!skill || !slug.test(skill)) return result({ errors: ["Supply a valid plan.skill."] });
+				const old = practice.readPlan(skill);
+				if (p.action === "create" && old && p.overwrite !== true) {
+					return result({ errors: ["A plan already exists for this skill; use action \"get\" to read it "
+						+ "or \"update\" to change it; do not create a new one."] });
+				}
 				if (p.action === "update" && !old) return result({ errors: ["No plan exists; use create."] });
-				parsed.plan.createdAt = old?.createdAt ?? parsed.plan.createdAt;
+				let input = p.plan;
+				if (p.action === "update" && old && object(input)) {
+					if (input.subskills !== undefined && (!Array.isArray(input.subskills)
+						|| input.subskills.some((s) => !object(s) || typeof s.id !== "string"))) {
+						return result({ errors: ["subskills must be an array of objects with ids."] });
+					}
+					const subs = new Map(old.subskills.map((s) => [s.id, s]));
+					for (const sub of (input.subskills ?? []) as Record<string, unknown>[]) {
+						const saved = subs.get(sub.id as string);
+						subs.set(sub.id as string, { ...saved, ...sub,
+							...(saved ? { status: saved.status } : {}) } as SkillPlan["subskills"][number]);
+					}
+					for (const id of p.removeSubskillIds ?? []) subs.delete(id);
+					input = { ...old, ...input, subskills: [...subs.values()] };
+				}
+				const parsed = parsePlan(input);
+				if (!parsed.plan) return result({ errors: parsed.errors });
+				if (p.action === "update") parsed.plan.createdAt = old!.createdAt;
 				practice.writePlan(parsed.plan);
 				deps.activate(parsed.plan.skill);
 				deps.refresh(ctx);
-				return result({ plan: parsed.plan });
+				return result({ plan: parsed.plan, overwritten: p.action === "create" && !!old },
+					p.action === "create" && old ? "Existing plan overwritten at the learner’s explicit start-over request."
+						: JSON.stringify({ plan: parsed.plan }, null, 2));
 			}
 			const skill = object(p.plan) && typeof p.plan.skill === "string" ? p.plan.skill : state.skill;
 			if (!skill || !slug.test(skill)) return result({ errors: ["Select a skill with /skill or supply plan.skill."] });
@@ -162,13 +246,15 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 	}));
 	pi.registerTool(defineTool({
 		name: "psi_challenge", label: "Practice challenge",
-		description: "Save and present one challenge. Keep expected answers private.",
+		description: "Use action next to present a ready challenge first; create saves a new one. Keep answers private.",
 		parameters: Type.Object({
+			action: Type.Optional(choice(["create", "next"] as const)),
 			skill: optionalString(), subskillId: optionalString(),
-			kind: choice<ChallengeKind>(["quickfire", "predict", "debug", "apply", "explain", "build", "boss"]),
-			level: Type.Unsafe<1 | 2 | 3 | 4 | 5>(Type.Integer({ minimum: 1, maximum: 5 })),
-			prompt: Type.String(), expected: optionalString(), acceptable: Type.Optional(strings()),
-			tolerance: Type.Optional(Type.Number({ minimum: 0 })), rubric: Type.Optional(strings()), hints: strings(),
+			kind: Type.Optional(choice<ChallengeKind>(["quickfire", "predict", "debug", "apply", "explain", "build", "boss"])),
+			level: Type.Optional(Type.Unsafe<1 | 2 | 3 | 4 | 5>(Type.Integer({ minimum: 1, maximum: 5 }))),
+			prompt: optionalString(), expected: optionalString(), acceptable: Type.Optional(strings()),
+			tolerance: Type.Optional(Type.Number({ minimum: 0 })), rubric: Type.Optional(strings()),
+			hints: Type.Optional(strings()),
 			format: Type.Optional(choice(["text", "number", "math", "choice", "code"] as const)),
 			choices: Type.Optional(strings()), unit: optionalString(),
 			language: Type.Optional(choice(["python", "javascript", "sql"] as const)),
@@ -178,8 +264,14 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 		renderCall() { return { render: () => ["ψ Practice challenge"], invalidate() {} }; },
 		async execute(_id, p, _signal, _update, ctx) {
 			const skill = p.skill ?? state.skill;
-			if (!skill) return result({ errors: ["Select a skill with /skill first."] });
-			const draft = { ...p, skill };
+			if (!skill || !slug.test(skill)) return result({ errors: ["Select a skill with /skill first."] });
+			if (p.action === "next") {
+				const c = nextChallenge(deps, skill);
+				return c ? presentChallenge(c, deps, ctx) : result({ message:
+					"No challenges remain; create one with action \"create\"." });
+			}
+			const { action: _action, ...fields } = p;
+			const draft = { ...fields, skill } as Omit<Challenge, "id" | "createdAt">;
 			const errors = validateChallenge({ ...draft, id: "pending", createdAt: new Date().toISOString() });
 			if (p.format === "choice" && Array.isArray(p.choices)
 				&& (p.choices.length < 2 || p.choices.some((v) => typeof v !== "string" || !v.trim())
@@ -188,18 +280,7 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 			}
 			if (errors.length) return result({ errors });
 			const c = practice.addChallenge(draft);
-			deps.activate(c.skill);
-			state.challengeId = c.id;
-			state.hintIndex = 0;
-			deps.persist();
-			deps.refresh(ctx);
-			const widget = { type: "challenge", skill: c.skill, id: c.id, kind: c.kind, level: c.level,
-				format: c.format ?? "text", prompt: c.prompt, choices: c.choices, unit: c.unit,
-				language: c.language, starterCode: c.starterCode, hintsCount: c.hints.length,
-				...(c.format === "code" ? { setup: c.setup, tests: c.tests,
-					...(c.language === "sql" ? { expected: c.expected } : {}) } : {}) };
-			return result({ challengeId: c.id, skill: c.skill, widget },
-				"The challenge card is shown to the learner; wait for their answer");
+			return presentChallenge(c, deps, ctx);
 		},
 	}));
 	pi.registerTool(defineTool({

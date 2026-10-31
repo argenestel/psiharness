@@ -6,17 +6,6 @@ const reason = (error) => String(error?.message ?? error).replace(/[.\s]+$/, "")
 const failure = (error) => error instanceof TypeError || /failed to fetch|network/i.test(error?.message ?? "")
 	? "psi web didn't answer. Check that it's running, then try again." : `${reason(error)}.`;
 
-/** PATCH through api.js when it has a helper, otherwise with the same X-Psi + JSON conventions. */
-async function patch(path, body) {
-	if (typeof api.patch === "function") return api.patch(path, body);
-	const response = await fetch(path, { method: "PATCH", body: JSON.stringify(body ?? {}),
-		headers: { "X-Psi": "1", "Content-Type": "application/json", Accept: "application/json" } });
-	let data;
-	try { data = await response.json(); } catch { data = {}; }
-	if (!response.ok) throw new Error(data.message || data.error || `Request failed (${response.status})`);
-	return data;
-}
-
 /** Plain-language groups, in display order; the first kind is what a new item in that group is saved as. */
 export const MEMORY_GROUPS = [
 	{ name: "Goals", kinds: ["goal"] },
@@ -134,7 +123,7 @@ export function mountMemory(host) {
 				if (!Object.keys(changes).length) { view(); return; }
 				save.disabled = true;
 				try {
-					await patch(`/api/memory/${encodeURIComponent(item.id)}`, changes);
+					await api.patch(`/api/memory/${encodeURIComponent(item.id)}`, changes);
 					if (disposed) return;
 					say("Updated.");
 					await load();

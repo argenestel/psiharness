@@ -21,18 +21,26 @@ RUN if [ "$INSTALL_OMP" = "1" ]; then \
 		&& npm cache clean --force; \
 	fi
 
-COPY . /opt/psi/
-RUN chmod -R a+rX /opt/psi \
-	&& chmod +x /opt/psi/cli/src/psi.ts \
-	&& ln -s /opt/psi/cli/src/psi.ts /usr/local/bin/psi \
-	&& groupmod -n psi node \
+# User setup before COPY so source edits only invalidate the final layers.
+RUN groupmod -n psi node \
 	&& usermod -l psi -d /home/psi -m node \
-	&& mkdir -p /data /home/psi/.pi \
+	&& mkdir -p /data /home/psi/.pi/agent /home/psi/.cache \
+	&& chmod 0700 /home/psi/.pi /home/psi/.pi/agent \
 	&& chown -R psi:psi /data /home/psi
 
-# Mount -v ~/.pi:/home/psi/.pi:ro, or pass ANTHROPIC_API_KEY / OPENAI_API_KEY.
-ENV PSI_HOME=/data PSI_STUDIO_HOST=0.0.0.0 NODE_ENV=production
+COPY . /opt/psi/
+RUN chmod -R a+rX,go-w /opt/psi \
+	&& chmod 0755 /opt/psi/cli/src/psi.ts /opt/psi/docker/entrypoint.sh \
+	&& ln -s /opt/psi/cli/src/psi.ts /usr/local/bin/psi
+
+# Credentials: mount the host's ~/.pi/agent read-only at /run/pi-host (the entrypoint copies auth/settings into the
+# writable ~/.pi/agent), or pass XAI_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY. See docker/README.md.
+# PSI_STUDIO_HOST=0.0.0.0 only binds inside the container; compose publishes the port on host loopback only.
+ENV PSI_HOME=/data PSI_STUDIO_HOST=0.0.0.0 PSI_STUDIO_PORT=4173 NODE_ENV=production
 VOLUME ["/data"]
+EXPOSE 4173
 WORKDIR /data
 USER psi
+ENTRYPOINT ["/opt/psi/docker/entrypoint.sh"]
+# Web UI: `psi web`. Interactive terminal tutor: the default `psi`.
 CMD ["psi"]

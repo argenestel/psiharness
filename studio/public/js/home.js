@@ -37,7 +37,8 @@ function sampleApi() {
 			const n = Number(new URL(path, "https://psi.invalid").searchParams.get("n")) || 0;
 			return { hint: SAMPLE_KEY.hints[n] ?? null, n, total: SAMPLE_KEY.hints.length };
 		},
-		post: async (_path, body) => {
+		post: async (path, body) => {
+			if (/\/lesson$/.test(path)) return { bonus: 5 };
 			const ok = String(body?.answer ?? "").trim() === SAMPLE_KEY.expected;
 			return {
 				attempt: { id: `sample-${Date.now()}`, challengeId: SAMPLE_CHALLENGE.id, outcome: ok ? "success" : "fail", xp: ok ? 10 : 4 },
