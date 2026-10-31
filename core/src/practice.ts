@@ -3,6 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 import { levelFor, newBadges, updateStreak, xpFor } from "./gamify.ts";
+import { advanceAfterAttempt, reconcileStatuses } from "./progression.ts";
 import { mathEquivalent } from "./mathexpr.ts";
 import type { Attempt, Challenge, Outcome, PracticeSession, Progress, SkillPlan, Subskill } from "./types.ts";
 
@@ -218,6 +219,18 @@ export class PracticeStore {
 	/** Persist a skill plan as tab-indented JSON. */
 	writePlan(plan: SkillPlan): void { this.write(plan.skill, "plan.json", plan); }
 
+	/** Recompute and atomically persist historical statuses, marking the plan as migrated. */
+	reconcile(skill: string): SkillPlan | undefined {
+		const plan = this.readPlan(skill);
+		if (!plan) return undefined;
+		const updated = reconcileStatuses(plan, this.listChallenges(skill), this.lines<Attempt>(skill, "attempts.jsonl"));
+		const marked = updated as SkillPlan & { reconciledAt?: string };
+		marked.reconciledAt = (plan as SkillPlan & { reconciledAt?: string }).reconciledAt ?? new Date().toISOString();
+		updated.updatedAt = new Date().toISOString();
+		this.writePlan(updated);
+		return updated;
+	}
+
 	/** Select the next available subskill without mutating the plan. */
 	nextSubskill(plan: SkillPlan): Subskill | undefined { return nextSubskill(plan); }
 
@@ -293,6 +306,7 @@ export class PracticeStore {
 	/** Record an attempt, progress and badges, linking it to an open session when present. */
 	recordAttempt(draft: Omit<Attempt, "id" | "at" | "xp" | "skill" | "subskillId"> & { at?: string }): {
 		attempt: Attempt; progress: Progress; leveledUp: boolean; badges: string[];
+		unlocked: string[]; mastered: string[];
 	} {
 		// The stable draft has no skill: resolve its globally generated challenge id across skills.
 		const challenge = this.listSkills().flatMap((skill) => this.listChallenges(skill))
@@ -301,6 +315,8 @@ export class PracticeStore {
 		const skill = challenge.skill;
 		const now = draft.at === undefined ? new Date() : new Date(draft.at);
 		const at = now.toISOString();
+		let plan = this.readPlan(skill);
+		if (plan && !(plan as SkillPlan & { reconciledAt?: string }).reconciledAt) plan = this.reconcile(skill);
 		const before = this.progress(skill);
 		const previousLevel = levelFor(before.xp).level;
 		const history = this.lines<Attempt>(skill, "attempts.jsonl");
@@ -317,9 +333,17 @@ export class PracticeStore {
 		if (active) active.attemptIds.push(attempt.id);
 		// Atomic replacement preserves one JSON line per attempt and existing history order.
 		this.writeLines(skill, "attempts.jsonl", [...history, attempt]);
+		const advanced = plan
+			? advanceAfterAttempt(plan, this.listChallenges(skill), [...history, attempt], attempt)
+			: { unlocked: [], mastered: [] };
+		if ("plan" in advanced) {
+			advanced.plan.updatedAt = new Date().toISOString();
+			this.writePlan(advanced.plan);
+		}
 		if (active) this.writeLines(skill, "sessions.jsonl", sessions);
 		this.write(skill, "progress.json", progress);
-		return { attempt, progress, leveledUp: progress.level > previousLevel, badges };
+		return { attempt, progress, leveledUp: progress.level > previousLevel, badges,
+			unlocked: advanced.unlocked, mastered: advanced.mastered };
 	}
 
 	/**

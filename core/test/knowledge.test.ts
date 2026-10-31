@@ -55,7 +55,7 @@ test("example packs derive nodes, statuses, progress, routes and note edges", (t
 	assert.equal(graph.nodes.find((n) => n.id === skillId)?.href, "#/skills/python-foundations");
 	assert.equal(graph.nodes.find((n) => n.id === `topic:${topic}`)?.href, "#/fourier-transform/map");
 	const next = practice.nextSubskill(practice.readPlan(skill)!);
-	assert.equal(graph.nodes.find((n) => n.id === `subskill:${skill}/${next!.id}`)?.status, "next");
+	assert.equal(graph.nodes.find((n) => n.id === `subskill:${skill}/${next!.id}`)?.status, "practising");
 	assert.equal(graph.nodes.find((n) => n.id === root)?.progress,
 		1 / practice.listChallenges(skill, { subskillId: "syntax-types" }).length);
 	assert.ok(graph.edges.some((e) => e.kind === "about" && e.from === `note:${note.id}`));
