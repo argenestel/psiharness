@@ -96,10 +96,14 @@ test("every bundled pack imports and its challenges never expose answer keys", a
 		const detail = await call("GET", `/api/skills/${slug}`);
 		assert.equal(detail.challenges.length, packChallenges(slug).length);
 		const text = JSON.stringify(detail);
-		for (const key of ['"expected"', '"acceptable"', '"rubric"', '"hints"']) assert.ok(!text.includes(key), `${slug} ${key}`);
+		for (const key of ['"acceptable"', '"rubric"', '"hints"']) assert.ok(!text.includes(key), `${slug} ${key}`);
 		for (const c of detail.challenges) {
 			const one = JSON.stringify(await call("GET", `/api/skills/${slug}/challenges/${c.id}`));
-			assert.ok(!one.includes('"expected"') && !one.includes('"acceptable"'));
+			// Only SQL code challenges carry expected result rows, which the browser sandbox compares against.
+			const sqlCode = c.format === "code" && c.language === "sql";
+			assert.equal("expected" in c, sqlCode, `${slug}/${c.id} expected exposure`);
+			assert.ok(sqlCode || !one.includes('"expected"'));
+			assert.ok(!one.includes('"acceptable"'));
 			if (c.format === "code") assert.ok(c.tests && c.language, `${slug}/${c.id} keeps tests`);
 		}
 		const source = packChallenges(slug).find((c) => c.format === "code" && c.setup);
@@ -130,7 +134,8 @@ test("Memory API persists, summarizes and deletes observations with validation",
 });
 
 test("publicChallenge keeps expected rows only for code challenges graded in the browser", () => {
-	const base = { id: "c", skill: "s", kind: "apply", level: 1, prompt: "p", hints: ["h"], createdAt: "2026-01-01" } as const;
+	const base = { id: "c", skill: "s", kind: "apply" as const, level: 1 as const, prompt: "p", hints: ["h"],
+		createdAt: "2026-01-01" };
 	const sql = publicChallenge({ ...base, format: "code", language: "sql", tests: "-- t", expected: "[[1]]" });
 	assert.equal((sql as { expected?: string }).expected, "[[1]]");
 	const text = publicChallenge({ ...base, format: "text", expected: "secret", acceptable: ["s2"] });

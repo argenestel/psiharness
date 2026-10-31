@@ -31,7 +31,7 @@ export function publicChallenge(c: Challenge, history: Attempt[] = []): PublicCh
 	const { expected, acceptable: _a, rubric: _r, hints, ...safe } = c;
 	const mine = history.filter((a) => a.challengeId === c.id);
 	// SQL code challenges are graded in the browser by comparing result rows to `expected`.
-	const sandbox = c.format === "code" && expected !== undefined ? { expected } : {};
+	const sandbox = c.format === "code" && c.language === "sql" && expected !== undefined ? { expected } : {};
 	return { ...safe, ...sandbox, hintsCount: Array.isArray(hints) ? hints.length : 0, attempts: mine.length,
 		attempted: mine.length > 0, lastOutcome: mine.at(-1)?.outcome ?? null };
 }
