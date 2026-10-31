@@ -1,0 +1,57 @@
+{
+	"skill": "javascript-essentials",
+	"subskillId": "classes",
+	"title": "Classes, fields, and inheritance",
+	"explanation": "A **class** is a template for creating objects that bundle data with the code that works on it. `new ClassName(args)` creates an instance and runs the special `constructor` method to initialise it; each instance gets its own fields, while methods are shared.\n\n```js\nclass Stack {\n  #items = [];                 // private field: only code in the class body can touch it\n  push(value) { this.#items.push(value); return this; }\n  pop() { return this.#items.pop(); }\n  get size() { return this.#items.length; }\n}\nconst s = new Stack().push(1).push(2);\nconsole.log(s.pop(), s.size); // 2 1\n```\n\nFields whose names start with `#` are **private**: it is an error to reference them from outside the class, so callers cannot depend on internals. Declare them up front in the class body.\n\n`class Child extends Parent` creates a subclass. If the subclass has its own constructor, it must call `super(...)` before using `this`; `super.method()` calls the parent's version of a method. Unlike function declarations, classes are not hoisted — define a class before you use it.",
+	"keyIdeas": [
+		"`constructor` initialises each new instance; methods are shared.",
+		"`#private` fields are only reachable inside the class body.",
+		"`extends` + `super(...)` build on a parent class; call `super` before `this`.",
+		"Classes are not hoisted: declare before use."
+	],
+	"workedExample": {
+		"problem": "Build a `Stack` and a subclass `BoundedStack(capacity)` whose `push` throws a `RangeError` once `capacity` items are stored. Keep the item storage private.",
+		"steps": [
+			"Store items in a private field `#items` in the base class and expose `push`, `pop`, and a `size` getter.",
+			"In `BoundedStack`, the constructor must call `super()` before setting `this.capacity`.",
+			"Override `push`: check `this.size` against the capacity, then delegate to `super.push(value)`.",
+			"Confirm the private field cannot be read from outside the class.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nclass Stack {\n  #items = [];\n  push(value) { this.#items.push(value); return this; }\n  pop() { return this.#items.pop(); }\n  get size() { return this.#items.length; }\n}\nclass BoundedStack extends Stack {\n  constructor(capacity) {\n    super();\n    this.capacity = capacity;\n  }\n  push(value) {\n    if (this.size >= this.capacity) throw new RangeError(\"stack is full\");\n    return super.push(value);\n  }\n}\nconst plates = new BoundedStack(2);\nplates.push(\"a\").push(\"b\");\nassert.throws(() => plates.push(\"c\"), RangeError);\nassert.equal(plates.pop(), \"b\");\nassert.equal(plates.size, 1);\nassert.equal(plates.items, undefined);   // #items is not a public property\nconsole.log(\"size\", plates.size);\n```"
+		],
+		"answer": "Pushing a third item into `new BoundedStack(2)` throws `RangeError`; after one `pop()` (which returns `\"b\"`) the size is `1`, and `#items` stays hidden."
+	},
+	"pitfalls": [
+		"Using `this` in a subclass constructor before calling `super()`, which throws a `ReferenceError`.",
+		"Calling a class without `new` (`Stack()`), which throws a `TypeError`.",
+		"Defining state in the module scope instead of on the instance, so every instance shares it."
+	],
+	"citations": [
+		{
+			"sourceId": "src-f84fc5e7a8",
+			"quote": "Classes are a template for creating objects. They encapsulate data with code to work on that data.",
+			"locator": "Introduction"
+		},
+		{
+			"sourceId": "src-f84fc5e7a8",
+			"quote": "The constructor method is a special method for creating and initializing an object created with a class.",
+			"locator": "Constructor"
+		},
+		{
+			"sourceId": "src-f84fc5e7a8",
+			"quote": "It's an error to reference private fields from outside of the class; they can only be read or written within the class body.",
+			"locator": "Private elements"
+		},
+		{
+			"sourceId": "src-f84fc5e7a8",
+			"quote": "If there is a constructor present in the subclass, it needs to first call super() before using this.",
+			"locator": "Inheritance"
+		},
+		{
+			"sourceId": "src-f84fc5e7a8",
+			"quote": "unlike function declarations, class declarations have the same temporal dead zone restrictions as let or const and behave as if they are not hoisted.",
+			"locator": "Defining classes"
+		}
+	],
+	"createdAt": "2026-10-31T19:57:18.000Z",
+	"updatedAt": "2026-10-31T19:57:18.000Z"
+}

@@ -189,6 +189,10 @@ function goalForm(navigate) {
 		el("div", { class: "psi-goal-actions" },
 			el("button", { type: "submit", class: "primary", dataset: { mode: "skill" } }, "Start a skill"),
 			el("button", { type: "submit", dataset: { mode: "concept" } }, "Explain a concept")));
+	// The model the new chat will use; the choice is remembered in this browser (app.js reads it for #/new).
+	import("./models.js").then(({ modelPicker }) => {
+		form.querySelector(".psi-goal-actions")?.append(modelPicker({ placement: "down" }));
+	}).catch(() => { /* Home works without the model control. */ });
 	form.addEventListener("submit", (event) => {
 		event.preventDefault();
 		const text = input.value.trim();

@@ -1,0 +1,52 @@
+{
+	"skill": "javascript-essentials",
+	"subskillId": "let-const-types",
+	"title": "let, const, and value types",
+	"explanation": "Declare variables with `let` (can be re-assigned) or `const` (cannot be re-assigned). Both are **block-scoped**: a variable declared inside `{ ... }` — an `if` body, a loop body, or a bare block — does not exist outside it. Prefer `const` by default and switch to `let` only when the value must change.\n\n`const` protects the *binding*, not the value. A `const` array can still be pushed to, and a `const` object's properties can still change; only `x = somethingElse` is forbidden:\n\n```js\nconst tags = [\"html\"];\ntags.push(\"css\");            // fine: mutation, not re-assignment\nconsole.log(tags);           // [ 'html', 'css' ]\ntry {\n  tags = [];                 // re-assignment\n} catch (err) {\n  console.log(err.name);     // TypeError\n}\n```\n\nJavaScript has seven primitive types — Boolean, null, undefined, Number, BigInt, String, Symbol — plus Object (arrays and functions are objects). `typeof` reports the type as a string. One historic quirk: `typeof null` is `\"object\"`, so check for `null` explicitly with `value === null`.",
+	"keyIdeas": [
+		"`let` can be re-assigned, `const` cannot; both are block-scoped.",
+		"`const` stops re-assignment, not mutation of an object's contents.",
+		"Seven primitives + Object; `typeof` names them as strings.",
+		"`typeof null === \"object\"` — test for null with `=== null`."
+	],
+	"workedExample": {
+		"problem": "Predict what this logs, then explain each line:\n```js\nconst limits = { max: 3 };\nlet count = 1;\nif (count < limits.max) {\n  let count = 10;\n  limits.max = 5;\n}\nconsole.log(count, limits.max, typeof limits, typeof count);\n```",
+		"steps": [
+			"`limits` is a `const` binding to an object; changing `limits.max` mutates the object and is allowed.",
+			"Inside the `if` block, `let count = 10` declares a *new* block-scoped `count` that shadows the outer one.",
+			"When the block ends, the inner `count` disappears; the outer `count` is still `1`.",
+			"`typeof` an object literal is `\"object\"`; `typeof 1` is `\"number\"`.",
+			"Run it with assertions:\n```js\nimport assert from \"node:assert/strict\";\nconst limits = { max: 3 };\nlet count = 1;\nif (count < limits.max) {\n  let count = 10;\n  limits.max = 5;\n}\nassert.deepEqual([count, limits.max, typeof limits, typeof count], [1, 5, \"object\", \"number\"]);\nconsole.log(count, limits.max, typeof limits, typeof count);\n```"
+		],
+		"answer": "It logs `1 5 object number`: the inner `let` shadowed `count` only inside the block, while the `const` object was mutated."
+	},
+	"pitfalls": [
+		"Assuming `const` makes an object immutable; its properties can still change (use `Object.freeze` if you need that).",
+		"Using `var`, which is function-scoped rather than block-scoped, and being surprised when it leaks out of a block.",
+		"Writing `typeof x === \"object\"` as an object check and letting `null` through."
+	],
+	"citations": [
+		{
+			"sourceId": "src-8813e1ff9c",
+			"quote": "let Declares a block-scoped variable, optionally initializing it to a value. const Declares a block-scoped variable that cannot be re-assigned",
+			"locator": "Declarations"
+		},
+		{
+			"sourceId": "src-8813e1ff9c",
+			"quote": "let and const declarations can also be scoped to the block statement that they are declared in.",
+			"locator": "Variable scope"
+		},
+		{
+			"sourceId": "src-8813e1ff9c",
+			"quote": "However, const only prevents re-assignments, but doesn't prevent mutations. The properties of objects assigned to constants are not protected",
+			"locator": "Constants"
+		},
+		{
+			"sourceId": "src-8813e1ff9c",
+			"quote": "The latest ECMAScript standard defines eight data types: Seven data types that are primitives: Boolean. true and false. null.",
+			"locator": "Data types"
+		}
+	],
+	"createdAt": "2026-10-31T19:57:18.000Z",
+	"updatedAt": "2026-10-31T19:57:18.000Z"
+}

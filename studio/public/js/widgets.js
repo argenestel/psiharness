@@ -34,6 +34,15 @@ export function keyHelp(format, { hints = false, mac = false, short = false } = 
 	return parts.join(", ");
 }
 
+/**
+ * "line" for a short text answer (one input, Enter checks) or "area" for a written one. Only explanations,
+ * builds, boss fights and prompts that ask why or to explain get the multi-line box.
+ */
+export function answerShape(d = {}) {
+	if (["explain", "build", "boss"].includes(d.kind)) return "area";
+	return /\b(explain|describe|why|justify|in your own words)\b/i.test(String(d.prompt ?? "")) ? "area" : "line";
+}
+
 function dataFor(result) { return result?.details?.widget ?? result?.details ?? {}; }
 function textFor(result) {
 	return [typeof result === "string" ? result : result?.text ?? "", ...(result?.content ?? [])
@@ -61,7 +70,7 @@ export function widgetKindFor(toolName, result) {
 		case "psi_explorable": case "psi_storyboard": return artifactPath(result) ? "artifact" : null;
 		case "psi_progress_report": return d.hours || Array.isArray(d.skills) ? "progress" : null;
 		case "psi_skill_plan": return Array.isArray((d.plan ?? d).subskills) ? "plan" : null;
-		case "psi_memory_remember": return typeof d.text === "string" ? "memory" : null;
+		// psi_memory_remember has no widget: the turn's activity line already says "Saved a note about you".
 		case "psi_concept_graph": return typeof d.mermaid === "string" ? "graph" : null;
 		default: return null;
 	}
@@ -235,8 +244,8 @@ function challengeSheet(d, ctx) {
 			}, 120);
 		});
 		fields.append(input, label, preview);
-	} else if (d.kind === "quickfire") {
-		// Quick questions want a short answer: one line, Enter checks.
+	} else if (answerShape(d) === "line") {
+		// Short answers get one line, and Enter checks.
 		input = node("input", "psi-answer-input psi-short-input");
 		input.type = "text";
 		input.autocomplete = "off";
@@ -340,7 +349,9 @@ function challengeSheet(d, ctx) {
 				try { ui.emit?.("psi:attempt", response); } catch { /* Listeners must not break the sheet. */ }
 			}
 			// One short continuation for every saved attempt, so the tutor carries on.
-			void send(ctx, `Answered challenge ${d.id}: ${value} (${a.outcome}, +${a.xp ?? 0} XP)`);
+			// The card already graded and saved this attempt; say so, so the tutor reacts instead of recording it again.
+			void send(ctx, `Answered challenge ${d.id}: ${value} (${a.outcome}, +${a.xp ?? 0} XP). ${a.outcome === "pending"
+				? "Please grade it with psi_attempt." : "Already graded and saved; don't record it again."}`);
 		} catch { notify(ctx, "Couldn't save your attempt. Your answer is still here; check it again.", "error"); }
 		finally {
 			busy = false;
@@ -584,7 +595,6 @@ export function renderToolWidget(toolName, args, result, ctx = {}) {
 	const d = dataFor(result);
 	if (kind === "challenge") return challengeSheet(d, ctx);
 	if (kind === "attempt") return attemptNote(d);
-	if (kind === "memory") return node("p", "psi-widget psi-memory-line", `Saved: ${d.text}`);
 	if (kind === "graph") {
 		const details = node("details", "psi-widget psi-graph");
 		details.append(node("summary", "", "Concept graph source"), node("pre", "", d.mermaid));

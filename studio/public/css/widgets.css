@@ -37,18 +37,7 @@
 	position: relative; isolation: isolate; margin: 0; padding: 2px 6px; margin-left: -6px;
 	font-family: var(--psi-display); font-weight: 800; font-size: 1.25rem; line-height: 1.2; letter-spacing: 0;
 }
-/* The solved swipe: drawn behind the kind, left to right. */
-.psi-sheet-kind::before {
-	content: ""; position: absolute; z-index: -1; inset: 1px -4px 0 -2px; background: var(--highlighter);
-	transform: skewX(-8deg) scaleX(0); transform-origin: left center; border-radius: 1px;
-}
-.psi-sheet.is-success .psi-sheet-kind { color: #1B2A4A; }
-.psi-sheet.is-success .psi-sheet-kind::before { transform: skewX(-8deg) scaleX(1); transition: transform .4s cubic-bezier(.3, .7, .3, 1); }
-/* Partly right: half a swipe under the kind. */
-.psi-sheet.is-partial .psi-sheet-kind::before {
-	inset: auto auto -3px -2px; width: 55%; height: 7px; transform: skewX(-8deg) scaleX(1);
-	transition: transform .4s cubic-bezier(.3, .7, .3, 1);
-}
+/* The result line below carries the solved swipe; the heading stays plain (one mark per attempt). */
 .psi-level { display: inline-flex; align-items: center; gap: 8px; color: var(--pencil); font-size: .8125rem; }
 .psi-level-meter { display: inline-flex; gap: 3px; }
 .psi-level-meter span { width: 10px; height: 10px; border: 1px solid var(--pencil); border-radius: 1px; }
@@ -249,7 +238,6 @@ textarea.psi-answer-input { min-height: 112px; resize: vertical; line-height: 1.
 .psi-skill-checklist .psi-status { color: var(--pencil); font-size: .875rem; }
 .psi-skill-checklist .psi-step-title { justify-self: start; }
 .psi-skill-checklist li.is-solid .psi-step-title { background: linear-gradient(transparent 55%, var(--highlighter) 55%); color: inherit; }
-.psi-memory-line { margin: 8px 0; color: var(--pencil); }
 .psi-graph summary { cursor: pointer; color: var(--pencil); }
 .psi-artifact { display: grid; gap: 8px; }
 .psi-artifact-bar { display: flex; justify-content: flex-end; }

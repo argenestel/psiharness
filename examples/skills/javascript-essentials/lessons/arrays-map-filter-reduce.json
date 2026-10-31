@@ -1,0 +1,51 @@
+{
+	"skill": "javascript-essentials",
+	"subskillId": "arrays-map-filter-reduce",
+	"title": "map, filter, and reduce",
+	"explanation": "Three array methods cover most data transformations, and none of them changes the original array:\n\n- `map(fn)` returns a **new array** of the same length containing `fn(item)` for every item.\n- `filter(fn)` returns a **new array** with only the items for which `fn(item)` returned true.\n- `reduce(fn, initial)` folds the whole array into **one value**: `fn(accumulator, item)` runs for each item, and whatever it returns becomes the next accumulator.\n\n```js\nconst prices = [4, 10, 7];\nconst withTax = prices.map((p) => p * 1.5);       // [6, 15, 10.5]\nconst cheap = prices.filter((p) => p < 8);        // [4, 7]\nconst total = prices.reduce((sum, p) => sum + p, 0); // 21\nconsole.log(withTax, cheap, total, prices);       // prices is unchanged\n```\n\nChain them to describe a pipeline step by step: first *filter* to the rows you care about, then *map* each to the number you need, then *reduce* to a single answer. Always pass reduce's initial value (`0` for sums, `[]` or `{}` when building collections): it is used for the first call, and it makes empty arrays safe.",
+	"keyIdeas": [
+		"`map` transforms every item; the output has the same length.",
+		"`filter` keeps items whose callback returns true.",
+		"`reduce(fn, initial)` folds an array into one value — always give `initial`.",
+		"All three return new values and leave the input array unchanged."
+	],
+	"workedExample": {
+		"problem": "Given a cart `[{ name: \"tea\", price: 4, qty: 2, inStock: true }, { name: \"mug\", price: 9, qty: 1, inStock: false }, { name: \"jam\", price: 6, qty: 3, inStock: true }]`, compute the total cost of in-stock items.",
+		"steps": [
+			"Filter first: keep items where `item.inStock` is true → tea and jam.",
+			"Map each remaining item to its line cost `price * qty` → `[8, 18]`.",
+			"Reduce with an initial value of `0`: `0 + 8 + 18 = 26`.",
+			"Run it and confirm the cart itself is untouched:\n```js\nimport assert from \"node:assert/strict\";\nconst cart = [\n  { name: \"tea\", price: 4, qty: 2, inStock: true },\n  { name: \"mug\", price: 9, qty: 1, inStock: false },\n  { name: \"jam\", price: 6, qty: 3, inStock: true },\n];\nconst lineCosts = cart.filter((item) => item.inStock).map((item) => item.price * item.qty);\nassert.deepEqual(lineCosts, [8, 18]);\nconst total = lineCosts.reduce((sum, cost) => sum + cost, 0);\nassert.equal(total, 26);\nassert.equal(cart.length, 3);\nassert.equal([].reduce((sum, cost) => sum + cost, 0), 0); // initial value makes empty input safe\nconsole.log(total);\n```"
+		],
+		"answer": "`26` (tea 4×2 = 8, jam 6×3 = 18; the out-of-stock mug is filtered out)."
+	},
+	"pitfalls": [
+		"Calling `reduce` with no initial value: on an empty array it throws a `TypeError`.",
+		"Using `map` when you meant `filter` — `map` never drops items; it would give booleans or `undefined`s.",
+		"Forgetting to `return` inside a multi-line arrow callback `(x) => { x * 2 }`, which yields `undefined`."
+	],
+	"citations": [
+		{
+			"sourceId": "src-ddfd2ea0f9",
+			"quote": "The map() method returns a new array of the return value from executing callback on every array item.",
+			"locator": "Array methods: map()"
+		},
+		{
+			"sourceId": "src-ddfd2ea0f9",
+			"quote": "The filter() method returns a new array containing the items for which callback returned true.",
+			"locator": "Array methods: filter()"
+		},
+		{
+			"sourceId": "src-ddfd2ea0f9",
+			"quote": "The reduce() method applies callback(accumulator, currentValue, currentIndex, array) for each value in the array for the purpose of reducing the list of items down to a single value.",
+			"locator": "Array methods: reduce()"
+		},
+		{
+			"sourceId": "src-ddfd2ea0f9",
+			"quote": "If initialValue is specified, then callback is called with initialValue",
+			"locator": "Array methods: reduce()"
+		}
+	],
+	"createdAt": "2026-10-31T19:57:18.000Z",
+	"updatedAt": "2026-10-31T19:57:18.000Z"
+}

@@ -1,0 +1,57 @@
+{
+	"skill": "python-foundations",
+	"subskillId": "loops-comprehensions",
+	"title": "for loops and comprehensions",
+	"explanation": "A Python `for` loop walks over the **items** of any iterable — a list, a string, a dict, a file — in order. You do not manage an index yourself. When you need numbers, `range()` generates them; when you need both the position and the value, use `enumerate()`.\n\n```python\nfor i, letter in enumerate(\"abc\"):\n    print(i, letter)   # 0 a / 1 b / 2 c\nfor n in range(2, 5):\n    print(n)           # 2 3 4 -- the stop value is not included\n```\n\nA **list comprehension** builds a new list in one expression: brackets containing an expression, then a `for` clause, then optional `for`/`if` clauses. `[x * x for x in range(5) if x % 2 == 0]` keeps the even numbers and squares them. Read it left to right as \"make `x * x` for each `x` ... if ...\". The same shape with `{}` builds a set or a dict.\n\nUse a plain loop when you need several statements, early exit (`break`), or running state; use a comprehension when you are simply mapping and filtering into a new collection.",
+	"keyIdeas": [
+		"`for` iterates over items, not indexes.",
+		"`range(start, stop)` stops *before* `stop`.",
+		"`enumerate()` gives `(index, value)` pairs.",
+		"A comprehension = expression + `for` clause + optional `if` filters."
+	],
+	"workedExample": {
+		"problem": "From `temps = [12, -3, 25, 7, 31]`, build a list of the warm readings (above 20) converted to Fahrenheit, and separately find the index of the first freezing reading (below 0).",
+		"steps": [
+			"Filtering + transforming into a new list is a comprehension: `[t * 9 / 5 + 32 for t in temps if t > 20]`.",
+			"The filter keeps 25 and 31; converting gives 77.0 and 87.8.",
+			"Finding the first match needs early exit, so use a loop with `enumerate()` and `break`.",
+			"The first value below 0 is -3 at index 1.",
+			"Run it:\n```python\ntemps = [12, -3, 25, 7, 31]\nwarm_f = [t * 9 / 5 + 32 for t in temps if t > 20]\nassert warm_f == [77.0, 87.8]\nfirst_freeze = None\nfor i, t in enumerate(temps):\n    if t < 0:\n        first_freeze = i\n        break\nassert first_freeze == 1\nprint(warm_f, first_freeze)\n```"
+		],
+		"answer": "`[77.0, 87.8]` and index `1`."
+	},
+	"pitfalls": [
+		"Writing `for i in range(len(items))` and then `items[i]` everywhere; iterate the items directly or use `enumerate()`.",
+		"Forgetting that `range(1, 10)` ends at 9.",
+		"Putting side effects (like `print` or `append`) inside a comprehension; use a loop for actions, a comprehension for building values."
+	],
+	"citations": [
+		{
+			"sourceId": "src-a88d2525b5",
+			"quote": "Rather than always iterating over an arithmetic progression of numbers (like in Pascal), or giving the user the ability to define both the iteration",
+			"locator": "4.2 for Statements"
+		},
+		{
+			"sourceId": "src-a88d2525b5",
+			"quote": "The given end point is never part of the generated sequence",
+			"locator": "4.3 The range() Function"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "When looping through a sequence, the position index and corresponding value can be retrieved at the same time using the enumerate() function.",
+			"locator": "5.6 Looping Techniques"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "A list comprehension consists of brackets containing an expression followed by a for clause, then zero or more for or if clauses.",
+			"locator": "5.1.3 List Comprehensions"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "dict comprehensions can be used to create dictionaries from arbitrary key and value expressions",
+			"locator": "5.5 Dictionaries"
+		}
+	],
+	"createdAt": "2026-10-31T19:50:27.000Z",
+	"updatedAt": "2026-10-31T19:50:27.000Z"
+}

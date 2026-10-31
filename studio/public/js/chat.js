@@ -122,6 +122,10 @@ export function summarizeTools(tools = []) {
 }
 
 const COMMAND_ECHOES = [
+	// The challenge card's own notes to the tutor: show the learner's words, not the challenge id.
+	[/^Answered challenge \S+: ([\s\S]*?) \((?:success|partial|fail|skipped|pending), \+\d+ XP\)(?:\. [^\n]*)?$/,
+		(m) => `My answer: ${m[1]}`],
+	[/^Lesson for challenge \S+ \(I missed it with "[\s\S]*"\): ([\s\S]+)$/, (m) => `What I'll try differently: ${m[1]}`],
 	[/^Help me learn ("(?:\\.|[^"\\])*")\. Active skill slug:/, (m) => `/skill ${unquote(m[1])}`],
 	[/^Help me learn ("(?:\\.|[^"\\])*") \(topic:/, (m) => `/learn ${unquote(m[1])}`],
 	[/^Practice session started for [^;]+; focus: ("(?:\\.|[^"\\])*")/, (m) => {
@@ -259,7 +263,41 @@ export function reduceRecord(state = {}, record) {
 		const key = `${event.method}:${event.statusKey ?? event.widgetKey}`;
 		next.hud = { ...next.hud, [key]: event.statusText ?? event.widgetLines?.join("\n") ?? "" };
 	}
+	// The chat's model: pi's get_state answer at start, then any psi_model_switched record.
+	if (event.type === "psi_model_switched" && event.model) next.model = String(event.model);
+	if (event.type === "response" && event.command === "get_state" && event.data?.model?.provider && event.data.model.id) {
+		next.model = `${event.data.model.provider}/${event.data.model.id}`;
+	}
 	return next;
+}
+
+/**
+ * Consecutive assistant turns that failed with the same error (a model timing out on every retry) show as one
+ * notice with a count. Returns index → count for the message that shows it, and 0 for the ones folded into it.
+ */
+export function errorRuns(messages = []) {
+	const counts = new Map();
+	let run;
+	messages.forEach((message, index) => {
+		const text = String(message?.text ?? "").trim();
+		const key = message?.role === "assistant" && message.error && message.stopReason !== "aborted" && !text
+			? String(message.error) : undefined;
+		if (key && run?.key === key) {
+			counts.set(run.last, 0);
+			run.last = index; run.n++;
+			counts.set(index, run.n);
+		} else if (key) {
+			run = { key, last: index, n: 1 };
+			counts.set(index, 1);
+		} else if (message?.role === "user" || text) run = undefined;
+	});
+	return counts;
+}
+
+/** The text to resend on Retry: the learner's last message as pi received it. */
+export function lastUserMessage(messages = [], fallback = "") {
+	const text = [...messages].reverse().find((message) => message?.role === "user")?.text;
+	return typeof text === "string" && text.trim() ? text : fallback;
 }
 
 /** Copy for a failed request: network failures get the fixed "couldn't reach" sentence. */
@@ -326,7 +364,11 @@ export function mountChat(el, options = {}) {
 	stop.hidden = true;
 	box.append(input, submit, stop);
 	const status = make("p", "psi-chat-status", "Connecting…"); status.setAttribute("role", "status");
-	form.append(suggestions, box, status);
+	// Composer footer: the quiet model control (added once the chat id is known) and the connection status.
+	const foot = make("div", "psi-composer-foot");
+	let picker;
+	foot.append(status);
+	form.append(suggestions, box, foot);
 	dock.append(jump, form);
 	root.append(scroller, dock, live); el.replaceChildren(root);
 
@@ -443,23 +485,29 @@ export function mountChat(el, options = {}) {
 		view.bubble.textContent = shown;
 		view.bubble.classList.toggle("is-command", !!label);
 	}
-	function renderAssistant(view, message, streaming) {
+	function renderAssistant(view, message, streaming, repeats = 1) {
 		updateMarkdown(view, message.text);
 		view.part.classList.toggle("psi-streaming", streaming);
-		view.part.hidden = !message.text && !streaming && !message.error && !view.widgets.childElementCount;
-		const errorKey = message.error && message.stopReason !== "aborted" ? message.error
-			: message.stopReason === "aborted" ? "aborted" : null;
+		const error = message.error && message.stopReason !== "aborted" && repeats > 0 ? message.error : null;
+		view.part.hidden = !message.text && !streaming && !error && message.stopReason !== "aborted"
+			&& !view.widgets.childElementCount;
+		const errorKey = error ? `${repeats}:${error}` : message.stopReason === "aborted" ? "aborted" : null;
 		if (view.errorKey === errorKey) return;
 		view.errorKey = errorKey; view.error.replaceChildren(); view.error.hidden = !errorKey;
 		if (errorKey === "aborted") { view.error.className = "psi-part-stopped"; view.error.textContent = "Stopped."; }
 		else if (errorKey) {
 			view.error.className = "psi-part-error psi-notice";
-			view.error.append(make("p", "", `The tutor ran into a problem: ${String(errorKey).replace(/\.$/, "")}.`));
-			view.error.append(button("Retry", () => { const text = lastUserText(); if (text) send(text).catch(() => {}); }, "psi-secondary"));
+			const times = repeats > 1 ? ` (${repeats} times in a row)` : "";
+			view.error.append(make("p", "", `The tutor ran into a problem: ${String(error).replace(/\.$/, "")}${times}. `
+				+ "Retry to send your last message again."));
+			view.error.append(button("Retry", () => retry(), "psi-secondary"));
 		}
 	}
-	function lastUserText() {
-		return lastSent || (state.messages ?? []).findLast((message) => message.role === "user")?.text || "";
+	function lastUserText() { return lastUserMessage(state.messages ?? [], lastSent); }
+	function retry() {
+		const text = lastUserText();
+		if (!text || state.busy || submitting) return;
+		send(text).catch(() => {});
 	}
 	function renderActivity(view, tools) {
 		const line = summarizeTools(tools);
@@ -488,12 +536,13 @@ export function mountChat(el, options = {}) {
 		const messages = state.messages ?? [];
 		const groups = groupTurns(messages, state.tools ?? []);
 		const streamingIndex = state.busy ? messages.findLastIndex((message) => message.role === "assistant" && !message.done) : -1;
+		const repeats = errorRuns(messages);
 		for (const group of groups) {
 			const gv = groupView(group);
 			for (const index of group.messages) {
 				const message = messages[index], view = messageView(index, message, group);
 				if (message.role === "user") renderUser(view, message);
-				else renderAssistant(view, message, index === streamingIndex);
+				else renderAssistant(view, message, index === streamingIndex, repeats.get(index) ?? 1);
 			}
 			if (group.role !== "assistant") continue;
 			// Reasoning behind a new challenge usually contains its answer, so those turns offer none.
@@ -624,7 +673,7 @@ export function mountChat(el, options = {}) {
 			}
 			dialog.append(field);
 			actions.append(button("Cancel", () => answer({ cancelled: true }), "psi-secondary"),
-				button("Submit", () => answer({ value: field.value }), "psi-primary"));
+				button("Send", () => answer({ value: field.value }), "psi-primary"));
 		}
 		dialog.append(actions);
 		dialog.addEventListener("keydown", (event) => {
@@ -651,6 +700,12 @@ export function mountChat(el, options = {}) {
 			dialogs.length = 0; activeDialog?.dismiss();
 		}
 		if (event.type === "agent_settled") emit("psi:chats-changed", { chatId });
+		if (event.type === "psi_model_switched" && event.model) {
+			// One pencil line in the conversation, in order with the turns around it.
+			const line = make("p", "psi-model-line", `Switched to ${String(event.model).split("/").pop()}`);
+			column.insertBefore(line, pending.isConnected ? pending : null);
+		}
+		if (state.model && state.model !== previous.model) picker?.setModel?.(state.model);
 		if (event.type === "tool_execution_start") liveTools.add(event.toolCallId);
 		// Only attempts recorded while this chat is open update the bench; replayed history does not re-animate.
 		if (event.type === "tool_execution_end" && event.toolName === "psi_attempt" && !record.history
@@ -674,9 +729,7 @@ export function mountChat(el, options = {}) {
 			live.textContent = textOf(contentOf(event.message), "text");
 		}
 		if (["agent_error", "rpc_error"].includes(event.type) || (event.type === "agent_exit" && event.code)) {
-			showNotice("The tutor stopped unexpectedly. Retry to start it again.", () => {
-				const text = lastUserText(); if (text) send(text).catch(() => {});
-			});
+			showNotice("The tutor stopped unexpectedly. Retry to start it again and resend your last message.", () => retry());
 		} else if (event.type === "response" && event.success === false && event.error) {
 			showNotice(`The tutor couldn't run that: ${String(event.error).replace(/\.$/, "")}.`);
 		}
@@ -740,6 +793,11 @@ export function mountChat(el, options = {}) {
 				options.onChatCreated?.(chatId);
 			}
 			if (destroyed) return;
+			import("./models.js").then(({ modelPicker }) => {
+				if (destroyed || picker) return;
+				picker = modelPicker({ value: state.model ?? options.model, chatId });
+				foot.prepend(picker); cleanups.push(() => picker.close?.());
+			}).catch(() => { /* The chat works without the model control. */ });
 			render();
 			closeEvents = openEvents(chatId, { since: 0, onRecord,
 				onOpen: () => {

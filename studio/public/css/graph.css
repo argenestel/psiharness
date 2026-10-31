@@ -1,0 +1,187 @@
+/*
+ * psi web — knowledge graph view (#/graph). Plain paper, ink and pencil; highlighter only for mastered halos and
+ * the selected path (drawn on the canvas). Tokens come from styles.css.
+ */
+#app[data-route="graph"] { overflow: hidden; display: flex; flex-direction: column; }
+#app[data-route="graph"] > .psi-view-host { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+.psi-graph { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--paper); }
+
+/* ---------- Toolbar ---------- */
+.psi-graph-bar {
+	display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3);
+	padding: var(--s4) var(--s6) var(--s3);
+	border-bottom: 1px solid var(--rule);
+}
+.psi-graph-title { font-size: var(--text-20); font-weight: 800; margin-right: var(--s2); }
+.psi-graph-search { position: relative; flex: 1 1 220px; max-width: 320px; min-width: 0; }
+.psi-graph-search-input { width: 100%; min-height: 36px; padding: 6px 32px 6px var(--s3); }
+.psi-graph-search-input::-webkit-search-cancel-button { display: none; }
+.psi-graph-kbd {
+	position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+	min-width: 18px; padding: 0 4px; text-align: center;
+	font-family: var(--font-body); font-size: var(--text-13); line-height: 18px; color: var(--pencil);
+	border: 1px solid var(--rule); border-radius: 4px; pointer-events: none;
+}
+.psi-graph-search-input:focus + .psi-graph-kbd { display: none; }
+.psi-graph-results {
+	position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; right: 0;
+	margin: 0; padding: var(--s1) 0; list-style: none;
+	background: var(--sheet); border: 1px solid var(--ink); border-radius: var(--radius);
+	max-height: 320px; overflow-y: auto;
+}
+.psi-graph-option {
+	display: flex; justify-content: space-between; gap: var(--s3); align-items: baseline;
+	padding: 6px var(--s3); cursor: pointer;
+}
+.psi-graph-option[aria-selected="true"], .psi-graph-option:hover:not(.is-empty) { background: var(--paper); box-shadow: inset 2px 0 0 var(--ink); }
+.psi-graph-option.is-empty { color: var(--pencil); cursor: default; }
+.psi-graph-option > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.psi-graph-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); }
+.psi-graph-toggles { display: flex; flex-wrap: wrap; gap: var(--s1); }
+.psi-graph-bar button, .psi-graph-bar select { min-height: 36px; font-size: var(--text-13); }
+.psi-graph-bar select { padding: 4px 28px 4px var(--s2); }
+.psi-graph-bar button { padding: 0 var(--s3); }
+
+/* Plain toggles: a small box that fills with ink when on. */
+.psi-graph-toggle { color: var(--pencil); font-weight: 700; gap: 6px; }
+.psi-graph-toggle::before {
+	content: ""; width: 10px; height: 10px; border: 1.5px solid currentColor; border-radius: 2px; flex: none;
+}
+.psi-graph-toggle[aria-pressed="true"] { color: var(--ink); }
+.psi-graph-toggle[aria-pressed="true"]::before { background: var(--ink); border-color: var(--ink); }
+
+.psi-graph-local { display: flex; align-items: center; gap: var(--s1); }
+.psi-graph-switch { gap: var(--s2); }
+.psi-graph-switch-track {
+	position: relative; width: 26px; height: 14px; border: 1.5px solid var(--pencil); border-radius: 7px; flex: none;
+	transition: background-color 120ms var(--ease), border-color 120ms var(--ease);
+}
+.psi-graph-switch-track::after {
+	content: ""; position: absolute; top: 1.5px; left: 1.5px; width: 8px; height: 8px; border-radius: 50%;
+	background: var(--pencil); transition: transform 120ms var(--ease);
+}
+.psi-graph-switch[aria-checked="true"] .psi-graph-switch-track { background: var(--ink); border-color: var(--ink); }
+.psi-graph-switch[aria-checked="true"] .psi-graph-switch-track::after { background: var(--paper); transform: translateX(12px); }
+
+.psi-graph-path { display: flex; align-items: center; gap: var(--s2); font-weight: 400; font-size: var(--text-13); color: var(--pencil); }
+.psi-graph-path select { width: auto; max-width: 240px; }
+.psi-graph-tool[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+
+.psi-graph-path-caption {
+	display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3);
+	padding: var(--s2) var(--s6); border-bottom: 1px solid var(--rule); font-size: var(--text-13);
+}
+.psi-graph-path-swatch { width: 28px; height: 8px; border-radius: 4px; background: var(--highlighter); flex: none; }
+
+/* ---------- Stage and canvas ---------- */
+.psi-graph-body { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.psi-graph-stage { position: absolute; inset: 0; }
+.psi-graph-canvas {
+	display: block; width: 100%; height: 100%; touch-action: none; cursor: grab;
+	-webkit-user-select: none; user-select: none;
+}
+.psi-graph-canvas:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; }
+
+.psi-graph-legend {
+	position: absolute; left: var(--s6); bottom: var(--s4); pointer-events: none;
+	font-size: var(--text-13); color: var(--pencil);
+}
+.psi-graph-legend ul { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); margin: 0; padding: 0; list-style: none; }
+.psi-graph-legend li { display: flex; align-items: center; gap: 6px; }
+.psi-graph-legend svg { width: 16px; height: 16px; flex: none; }
+.psi-graph-legend .ink-fill { fill: var(--ink); }
+.psi-graph-legend .ink-ring { fill: none; stroke: var(--ink); stroke-width: 2; }
+.psi-graph-legend .ink-ring.thin { stroke-width: 1.5; }
+.psi-graph-legend .pencil-fill { fill: var(--pencil); }
+.psi-graph-legend .halo { fill: var(--highlighter); }
+
+/* ---------- Side panel ---------- */
+.psi-graph-panel {
+	position: absolute; z-index: 10; top: 0; right: 0; bottom: 0; width: min(380px, 40%);
+	overflow-y: auto; overscroll-behavior: contain;
+	padding: var(--s4) var(--s6) var(--s8);
+	background: var(--paper); border-left: 1px solid var(--rule);
+}
+.psi-graph-panel-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
+.psi-graph-panel-kind { color: var(--pencil); font-size: var(--text-13); }
+.psi-graph-close { min-height: 32px; font-size: var(--text-13); }
+.psi-graph-panel-title { font-size: var(--text-25); font-weight: 800; margin-top: var(--s1); letter-spacing: -0.005em; }
+.psi-graph-panel-title:focus-visible { outline-offset: 4px; }
+.psi-graph-status { margin-top: var(--s2); font-weight: 700; display: flex; align-items: center; gap: var(--s2); }
+.psi-graph-status.is-locked, .psi-graph-status.is-new { color: var(--pencil); font-weight: 400; }
+.psi-graph-status.is-next::before {
+	content: ""; width: 10px; height: 10px; border: 2px solid var(--ink); border-radius: 50%; flex: none;
+}
+.psi-graph-status.is-solid::before, .psi-graph-status.is-mastered::before {
+	content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--highlighter); flex: none;
+}
+.psi-graph-progress { display: grid; gap: var(--s1); margin-top: var(--s2); font-size: var(--text-13); color: var(--pencil); }
+.psi-graph-summary { margin-top: var(--s3); }
+.psi-graph-actions { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
+.psi-graph-actions button { min-height: 36px; padding: 0 var(--s3); }
+.psi-graph-open { margin-top: var(--s3); font-size: var(--text-13); }
+.psi-graph-linker { display: grid; gap: var(--s2); margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--rule); }
+.psi-graph-linker > button { justify-self: start; }
+
+.psi-graph-groups { margin-top: var(--s6); display: grid; gap: var(--s4); }
+.psi-graph-group h3 { font-size: var(--text-13); font-family: var(--font-body); font-weight: 700; color: var(--pencil); margin-bottom: var(--s1); }
+.psi-graph-links { margin: 0; padding: 0; list-style: none; }
+.psi-graph-link-row { display: flex; align-items: center; gap: var(--s1); border-top: 1px solid var(--rule); }
+.psi-graph-link-row:last-child { border-bottom: 1px solid var(--rule); }
+.psi-graph-link {
+	flex: 1; min-width: 0; justify-content: space-between; gap: var(--s3);
+	min-height: 40px; padding: 6px var(--s1); border: 0; border-radius: 0; background: transparent;
+	font-weight: 400; text-align: left; white-space: normal;
+}
+.psi-graph-link:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; }
+.psi-graph-link-title { min-width: 0; }
+.psi-graph-link-kind { flex: none; font-size: var(--text-13); color: var(--pencil); }
+.psi-graph-unlink { min-height: 32px; font-size: var(--text-13); }
+
+/* ---------- List view (always in the accessibility tree; shown with "List view") ---------- */
+.psi-graph-list.is-shown {
+	position: absolute; inset: 0; overflow-y: auto; padding: var(--s6) var(--s6) var(--s12);
+	background: var(--paper);
+}
+.psi-graph-panel:not([hidden]) ~ .psi-graph-list.is-shown { right: min(380px, 40%); }
+.psi-graph-list h2 { font-size: var(--text-20); margin: var(--s6) 0 var(--s2); }
+.psi-graph-list .psi-graph-list-title { font-size: var(--text-25); margin-top: 0; }
+.psi-graph-list ul { margin: 0; padding-left: var(--s6); max-width: var(--measure); }
+.psi-graph-list > section > ul { padding-left: 0; list-style: none; }
+.psi-graph-list li { padding: 2px 0; }
+.psi-graph-list > section > ul > li { padding: var(--s2) 0; border-top: 1px solid var(--rule); }
+.psi-graph-list > section > ul > li > a { font-weight: 700; }
+.psi-graph-list a[aria-current="true"] { text-decoration-thickness: 2px; }
+.psi-graph-list-meta { color: var(--pencil); }
+
+/* ---------- Empty state ---------- */
+.psi-graph-empty h1 { margin-bottom: var(--s3); }
+.psi-graph-empty .button { margin-top: var(--s4); }
+
+/* ---------- Narrow screens ---------- */
+@media (max-width: 1179px) {
+	.psi-graph-title { display: none; }
+}
+@media (max-width: 719px) {
+	.psi-graph-bar { padding: var(--s3) var(--s4) var(--s2); gap: var(--s2); }
+	.psi-graph-search { flex: 1 1 100%; max-width: none; }
+	.psi-graph-controls { gap: var(--s2); }
+	.psi-graph-path span { display: none; }
+	.psi-graph-path select { max-width: 150px; }
+	.psi-graph-path-caption { padding: var(--s2) var(--s4); }
+	.psi-graph-legend { display: none; }
+	.psi-graph-panel {
+		top: auto; left: 0; width: auto; max-height: 55%;
+		padding: var(--s3) var(--s4) calc(var(--s6) + env(safe-area-inset-bottom));
+		border-left: 0; border-top: 1px solid var(--rule);
+	}
+	.psi-graph-panel-title { font-size: var(--text-20); }
+	.psi-graph-list.is-shown { padding: var(--s4) var(--s4) var(--s12); }
+	.psi-graph-panel:not([hidden]) ~ .psi-graph-list.is-shown { right: 0; bottom: 55%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.psi-graph-switch-track, .psi-graph-switch-track::after { transition: none; }
+}

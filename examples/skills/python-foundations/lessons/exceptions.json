@@ -1,0 +1,67 @@
+{
+	"skill": "python-foundations",
+	"subskillId": "exceptions",
+	"title": "Handling expected failures with try/except",
+	"explanation": "An **exception** is Python's way of saying \"this operation could not be done\": `int('abc')` raises `ValueError` (right type, wrong value), `d['missing']` raises `KeyError`, `1 / 0` raises `ZeroDivisionError`.\n\n`try`/`except` lets you handle the failures you *expect*. Python runs the `try` block; if an exception occurs, it skips the rest of the block and looks for a matching `except` clause. An exception that matches no clause keeps propagating outward — which is what you want for bugs you did not plan for. So catch the **specific** exception, never everything.\n\n```python\ndef to_int(text, default=0):\n    try:\n        return int(text)\n    except ValueError:      # only the failure we expect\n        return default\n\nprint(to_int(\"42\"), to_int(\"forty-two\"))  # 42 0\n```\n\nTwo more clauses help: `else` runs only when the `try` block raised nothing (keeping extra code out of the `try`), and `finally` always runs last, error or not — use it for clean-up. To signal a failure yourself, use `raise ValueError(\"why it failed\")`.",
+	"keyIdeas": [
+		"Catch the specific exception you expect (`ValueError`, `KeyError`, …).",
+		"Unmatched exceptions propagate outward — that keeps real bugs visible.",
+		"`else` runs when nothing was raised; `finally` always runs.",
+		"`raise SomeError('message')` signals a failure to the caller."
+	],
+	"workedExample": {
+		"problem": "Write `read_port(config)` that returns `int(config['port'])`, returns 8080 when the key is missing, and raises `ValueError` with a clear message when the value is not a number.",
+		"steps": [
+			"List the expected failures: a missing key raises `KeyError`; a non-numeric value makes `int()` raise `ValueError`.",
+			"Handle the missing key with `except KeyError: return 8080`.",
+			"For a bad value, re-raise a clearer `ValueError` so the caller still learns about the problem — do not hide it.",
+			"Do not use a bare `except:`; anything unexpected (like a `TypeError` from passing a list) should still surface.",
+			"Run it:\n```python\ndef read_port(config):\n    try:\n        raw = config['port']\n    except KeyError:\n        return 8080\n    try:\n        return int(raw)\n    except ValueError:\n        raise ValueError(f'port must be a whole number, got {raw!r}')\n\nassert read_port({'port': '5432'}) == 5432\nassert read_port({}) == 8080\ntry:\n    read_port({'port': 'http'})\n    raise AssertionError('expected ValueError')\nexcept ValueError as err:\n    assert 'http' in str(err)\nprint('ok')\n```"
+		],
+		"answer": "`read_port({'port': '5432'})` → `5432`; `read_port({})` → `8080`; `read_port({'port': 'http'})` raises `ValueError: port must be a whole number, got 'http'`."
+	},
+	"pitfalls": [
+		"A bare `except:` (or `except Exception:` around everything) that silently hides real bugs.",
+		"Putting too much code inside `try`, so an unrelated line's error is caught by accident; use `else` for the follow-up code.",
+		"Returning a sentinel such as `None` where the caller needed to know the input was invalid."
+	],
+	"citations": [
+		{
+			"sourceId": "src-eb537f09fb",
+			"quote": "If an exception occurs during execution of the try clause, the rest of the clause is skipped. Then, if its type matches the exception named after the except keyword, the except clause is executed",
+			"locator": "8.3 Handling Exceptions"
+		},
+		{
+			"sourceId": "src-eb537f09fb",
+			"quote": "If an exception occurs which does not match the exception named in the except clause, it is passed on to outer try statements",
+			"locator": "8.3 Handling Exceptions"
+		},
+		{
+			"sourceId": "src-eb537f09fb",
+			"quote": "The use of the else clause is better than adding additional code to the try clause because it avoids accidentally catching an exception",
+			"locator": "8.3 Handling Exceptions"
+		},
+		{
+			"sourceId": "src-eb537f09fb",
+			"quote": "It is useful for code that must be executed if the try clause does not raise an exception.",
+			"locator": "8.3 Handling Exceptions"
+		},
+		{
+			"sourceId": "src-eb537f09fb",
+			"quote": "The finally clause runs whether or not the try statement produces an exception.",
+			"locator": "8.7 Defining Clean-up Actions"
+		},
+		{
+			"sourceId": "src-eb537f09fb",
+			"quote": "The raise statement allows the programmer to force a specified exception to occur.",
+			"locator": "8.4 Raising Exceptions"
+		},
+		{
+			"sourceId": "src-9e0d529815",
+			"quote": "Raised when an operation or function receives an argument that has the right type but an inappropriate value",
+			"locator": "ValueError"
+		}
+	],
+	"createdAt": "2026-10-31T19:50:27.000Z",
+	"updatedAt": "2026-10-31T19:50:27.000Z"
+}

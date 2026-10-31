@@ -1,0 +1,130 @@
+[
+	{
+		"id": "src-87070e868e",
+		"url": "https://docs.python.org/3/tutorial/introduction.html",
+		"title": "The Python Tutorial: An Informal Introduction to Python",
+		"publisher": "Python Software Foundation",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official Python documentation (docs.python.org)",
+			"Openly licensed (PSF License Version 2)"
+		],
+		"license": "PSF License Version 2",
+		"excerpt": "Division (/) always returns a float. To do floor division and get an integer result you can use the // operator; to calculate the remainder you can use %",
+		"accessedAt": "2026-10-31T19:50:27.000Z"
+	},
+	{
+		"id": "src-a876ee603b",
+		"url": "https://docs.python.org/3/tutorial/datastructures.html",
+		"title": "The Python Tutorial: Data Structures",
+		"publisher": "Python Software Foundation",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official Python documentation (docs.python.org)",
+			"Openly licensed (PSF License Version 2)"
+		],
+		"license": "PSF License Version 2",
+		"excerpt": "A set is an unordered collection with no duplicate elements. Basic uses include membership testing and eliminating duplicate entries.",
+		"accessedAt": "2026-10-31T19:50:27.000Z"
+	},
+	{
+		"id": "src-a88d2525b5",
+		"url": "https://docs.python.org/3/tutorial/controlflow.html",
+		"title": "The Python Tutorial: More Control Flow Tools",
+		"publisher": "Python Software Foundation",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official Python documentation (docs.python.org)",
+			"Openly licensed (PSF License Version 2)"
+		],
+		"license": "PSF License Version 2",
+		"excerpt": "The keyword def introduces a function definition. It must be followed by the function name and the parenthesized list of formal parameters.",
+		"accessedAt": "2026-10-31T19:50:27.000Z"
+	},
+	{
+		"id": "src-eb537f09fb",
+		"url": "https://docs.python.org/3/tutorial/errors.html",
+		"title": "The Python Tutorial: Errors and Exceptions",
+		"publisher": "Python Software Foundation",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official Python documentation (docs.python.org)",
+			"Openly licensed (PSF License Version 2)"
+		],
+		"license": "PSF License Version 2",
+		"excerpt": "A try statement may have more than one except clause, to specify handlers for different exceptions. At most one handler will be executed.",
+		"accessedAt": "2026-10-31T19:50:27.000Z"
+	},
+	{
+		"id": "src-717b760dc5",
+		"url": "https://docs.python.org/3/tutorial/classes.html",
+		"title": "The Python Tutorial: Classes",
+		"publisher": "Python Software Foundation",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official Python documentation (docs.python.org)",
+			"Openly licensed (PSF License Version 2)"
+		],
+		"license": "PSF License Version 2",
+		"excerpt": "Generally speaking, instance variables are for data unique to each instance and class variables are for attributes and methods shared by all instances of the class",
+		"accessedAt": "2026-10-31T19:50:27.000Z"
+	},
+	{
+		"id": "src-76bc3fbfd6",
+		"url": "https://docs.python.org/3/library/stdtypes.html",
+		"title": "The Python Standard Library: Built-in Types",
+		"publisher": "Python Software Foundation",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official Python documentation (docs.python.org)",
+			"Openly licensed (PSF License Version 2)"
+		],
+		"license": "PSF License Version 2",
+		"excerpt": "There are three distinct numeric types: integers, floating-point numbers, and complex numbers. In addition, Booleans are a subtype of integers.",
+		"accessedAt": "2026-10-31T19:50:27.000Z"
+	},
+	{
+		"id": "src-9e0d529815",
+		"url": "https://docs.python.org/3/library/exceptions.html",
+		"title": "The Python Standard Library: Built-in Exceptions",
+		"publisher": "Python Software Foundation",
+		"kind": "official-docs",
+		"rank": 98,
+		"rankReasons": [
+			"Official documentation",
+			"Trusted domain: Official Python documentation (docs.python.org)",
+			"Openly licensed (PSF License Version 2)"
+		],
+		"license": "PSF License Version 2",
+		"excerpt": "Raised when an operation or function receives an argument that has the right type but an inappropriate value",
+		"accessedAt": "2026-10-31T19:50:27.000Z"
+	},
+	{
+		"id": "src-1bbad55d70",
+		"url": "https://greenteapress.com/thinkpython2/html/thinkpython2006.html",
+		"title": "Think Python, 2nd Edition — Chapter 5: Conditionals and recursion",
+		"publisher": "Green Tea Press (Allen B. Downey)",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Open textbook",
+			"Trusted domain: Green Tea Press, publisher of free textbooks (greenteapress.com)",
+			"Openly licensed (CC BY-NC 3.0)"
+		],
+		"license": "CC BY-NC 3.0",
+		"excerpt": "A function that calls itself is recursive; the process of executing it is called recursion.",
+		"accessedAt": "2026-10-31T19:50:27.000Z"
+	}
+]

@@ -1,0 +1,52 @@
+{
+	"skill": "python-foundations",
+	"subskillId": "classes",
+	"title": "Classes bundle data with behaviour",
+	"explanation": "A **class** is a blueprint; calling it (`Point(1, 2)`) creates an **instance**. If the class defines `__init__`, Python calls it automatically on the new instance so you can set its starting attributes. Methods are functions defined in the class body; when you call `p.move(1)`, Python passes the instance itself as the first argument, which by convention is named `self`.\n\n```python\nclass Point:\n    def __init__(self, x, y):\n        self.x = x          # instance variables: unique to each Point\n        self.y = y\n\n    def move(self, dx):\n        self.x += dx\n\np = Point(1, 2)\np.move(3)                   # same as Point.move(p, 3)\nprint(p.x, p.y)             # 4 2\n```\n\nPut per-object data on `self` inside `__init__`. Variables written directly in the class body are **class variables**, shared by every instance — fine for constants, but a shared mutable list or dict is a classic bug. Validate inputs in `__init__` (raise `ValueError` for impossible values) so an object can never start in a broken state.",
+	"keyIdeas": [
+		"Calling a class creates an instance; `__init__` sets it up.",
+		"`obj.method(arg)` is `Class.method(obj, arg)` — `self` is the instance.",
+		"Instance variables (on `self`) are per object; class variables are shared.",
+		"Validate in `__init__` so objects start valid."
+	],
+	"workedExample": {
+		"problem": "Model a `Temperature` with a `celsius` attribute, a `fahrenheit()` method, and a rule that values below absolute zero (-273.15 °C) raise `ValueError`.",
+		"steps": [
+			"Store the reading on the instance in `__init__`: `self.celsius = celsius`.",
+			"Check the rule before storing: `if celsius < -273.15: raise ValueError(...)`.",
+			"Add a method that uses `self`: `return self.celsius * 9 / 5 + 32`.",
+			"Create two instances to confirm they do not share state.",
+			"Run it:\n```python\nclass Temperature:\n    def __init__(self, celsius):\n        if celsius < -273.15:\n            raise ValueError('below absolute zero')\n        self.celsius = celsius\n\n    def fahrenheit(self):\n        return self.celsius * 9 / 5 + 32\n\nboiling = Temperature(100)\nfreezing = Temperature(0)\nassert boiling.fahrenheit() == 212.0\nassert freezing.fahrenheit() == 32.0\ntry:\n    Temperature(-300)\n    raise AssertionError('expected ValueError')\nexcept ValueError:\n    pass\nprint(boiling.fahrenheit(), freezing.fahrenheit())\n```"
+		],
+		"answer": "`Temperature(100).fahrenheit()` → `212.0`, `Temperature(0).fahrenheit()` → `32.0`, and `Temperature(-300)` raises `ValueError`."
+	},
+	"pitfalls": [
+		"Forgetting `self` in a method definition (`def area():`), which raises `TypeError` when called on an instance.",
+		"Defining `items = []` in the class body: every instance shares that one list.",
+		"Writing `x = value` instead of `self.x = value` in `__init__`, which creates a local variable that disappears."
+	],
+	"citations": [
+		{
+			"sourceId": "src-717b760dc5",
+			"quote": "When a class defines an __init__() method, class instantiation automatically invokes __init__() for the newly created class instance.",
+			"locator": "9.3.2 Class Objects"
+		},
+		{
+			"sourceId": "src-717b760dc5",
+			"quote": "the special thing about methods is that the instance object is passed as the first argument of the function. In our example, the call x.f() is exactly equivalent to MyClass.f(x).",
+			"locator": "9.3.4 Method Objects"
+		},
+		{
+			"sourceId": "src-717b760dc5",
+			"quote": "Generally speaking, instance variables are for data unique to each instance and class variables are for attributes and methods shared by all instances of the class",
+			"locator": "9.3.5 Class and Instance Variables"
+		},
+		{
+			"sourceId": "src-717b760dc5",
+			"quote": "shared data can have possibly surprising effects involving mutable objects such as lists and dictionaries.",
+			"locator": "9.3.5 Class and Instance Variables"
+		}
+	],
+	"createdAt": "2026-10-31T19:50:27.000Z",
+	"updatedAt": "2026-10-31T19:50:27.000Z"
+}

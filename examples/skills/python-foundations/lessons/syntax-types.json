@@ -1,0 +1,53 @@
+{
+	"skill": "python-foundations",
+	"subskillId": "syntax-types",
+	"title": "Values, types, and names",
+	"explanation": "Every value in Python has a type. Whole numbers like `2` and `20` are `int`; numbers with a fractional part like `5.0` are `float`. `True` and `False` are booleans, and booleans are actually a subtype of integers, so `True + 1` is `2`. Use `type(x)` to check a value's type while you learn.\n\nDivision is the classic trap. `/` **always** returns a float, even when the result is whole (`8 / 4` is `2.0`). Use `//` for floor division and `%` for the remainder:\n\n```python\nprint(17 / 3)   # 5.666666666666667\nprint(17 // 3)  # 5\nprint(17 % 3)   # 2\nprint(type(8 / 4).__name__)  # float\n```\n\nA variable name is a label bound to an object, not a box that holds a copy. Two names can be bound to the same object (aliasing). `==` asks \"equal value?\"; `is` asks \"the very same object?\". Finally, every object has a truth value: `None`, `False`, zero of any numeric type, and empty collections like `''` and `[]` are false; most other values are true.",
+	"keyIdeas": [
+		"`int`, `float`, `bool`, and `str` are the core literal types; `type()` tells you which one you have.",
+		"`/` always gives a float; `//` floors and `%` gives the remainder.",
+		"Names are bound to objects; `is` tests identity, `==` tests equality.",
+		"Zero, `None`, `False`, and empty collections are falsy."
+	],
+	"workedExample": {
+		"problem": "Without running it, predict the value and type of `7 // 2`, `7 % 2`, `7 / 2`, `True + True`, and `bool('0')`.",
+		"steps": [
+			"`7 // 2` floors 3.5 down to the whole number 3, and both operands are ints, so the result is the int `3`.",
+			"`7 % 2` is the remainder after taking out three 2s: `1`, an int.",
+			"`7 / 2` is true division, which always returns a float: `3.5`.",
+			"Booleans are a subtype of integers with `True == 1`, so `True + True` is the int `2`.",
+			"`'0'` is a non-empty string; only empty strings are falsy, so `bool('0')` is `True`.",
+			"Check every prediction with assertions:\n```python\nassert (7 // 2, 7 % 2, 7 / 2) == (3, 1, 3.5)\nassert type(7 / 2) is float and type(7 // 2) is int\nassert True + True == 2\nassert bool('0') is True and bool('') is False\nprint('all predictions hold')\n```"
+		],
+		"answer": "`3` (int), `1` (int), `3.5` (float), `2` (int), `True` (bool)."
+	},
+	"pitfalls": [
+		"Expecting `6 / 3` to be the int `2`; it is the float `2.0`. Use `//` when you need an int.",
+		"Treating `b = a` as a copy of a list. Both names point at one list, so a change through `b` is visible through `a`.",
+		"Using `is` to compare numbers or strings. Use `==` for value equality; keep `is` for `None` checks."
+	],
+	"citations": [
+		{
+			"sourceId": "src-87070e868e",
+			"quote": "Division (/) always returns a float. To do floor division and get an integer result you can use the // operator; to calculate the remainder you can use %",
+			"locator": "3.1.1 Numbers"
+		},
+		{
+			"sourceId": "src-76bc3fbfd6",
+			"quote": "In addition, Booleans are a subtype of integers.",
+			"locator": "Numeric Types — int, float, complex"
+		},
+		{
+			"sourceId": "src-717b760dc5",
+			"quote": "Objects have individuality, and multiple names (in multiple scopes) can be bound to the same object. This is known as aliasing in other languages.",
+			"locator": "9.1 A Word About Names and Objects"
+		},
+		{
+			"sourceId": "src-76bc3fbfd6",
+			"quote": "zero of any numeric type: 0, 0.0, 0j, Decimal(0), Fraction(0, 1) empty sequences and collections: '', (), [], {}, set(), range(0)",
+			"locator": "Truth Value Testing"
+		}
+	],
+	"createdAt": "2026-10-31T19:50:27.000Z",
+	"updatedAt": "2026-10-31T19:50:27.000Z"
+}

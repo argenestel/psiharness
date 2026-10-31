@@ -1,0 +1,62 @@
+{
+	"skill": "javascript-essentials",
+	"subskillId": "objects-destructuring",
+	"title": "Destructuring and spreading objects",
+	"explanation": "**Destructuring** unpacks properties from an object (or items from an array) into separate variables in one line. Each property can have a **default value**, used when the property is missing or `undefined`; you can **rename** a property as you unpack it; and patterns can be nested:\n\n```js\nconst order = { id: 7, customer: { city: \"Lima\" } };\nconst { id, status = \"new\", customer: { city: town } } = order;\nconsole.log(id, status, town); // 7 new Lima\n```\n\nThe **spread** syntax `{ ...a, ...b }` builds a *new* object containing the properties of `a` then `b`. When the same property name appears twice, the last value wins, so `{ ...defaults, ...overrides }` is the standard way to apply overrides without mutating either input. It is a **shallow** copy: nested objects are shared, not cloned.\n\nOne safety rule: destructuring `null` or `undefined` throws a `TypeError`. When a whole argument may be missing, give the parameter itself a default: `function f({ a } = {}) { ... }`.",
+	"keyIdeas": [
+		"`const { a, b = 1, c: renamed } = obj` unpacks, defaults, and renames.",
+		"Defaults apply when the property is missing or `undefined`.",
+		"`{ ...base, ...changes }` makes a new object; later properties win.",
+		"Spread copies one level deep; destructuring `undefined` throws."
+	],
+	"workedExample": {
+		"problem": "Write `describeTrip(trip)` that returns `\"Ana → Quito (2 bags)\"` for `{ traveler: { name: \"Ana\" }, to: \"Quito\", bags: 2 }`, defaults `bags` to 0, and works when called with no argument at all (returns `\"Guest → Unknown (0 bags)\"`). Also build an updated copy of a trip with `to` changed, without mutating it.",
+		"steps": [
+			"Use nested destructuring with a default for the nested object: `traveler: { name = \"Guest\" } = {}`.",
+			"Default the other fields: `to = \"Unknown\"`, `bags = 0`.",
+			"Default the whole parameter to `{}` so calling `describeTrip()` does not destructure `undefined`.",
+			"For the update, spread the original first and the change last: `{ ...trip, to: \"Cusco\" }`.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nfunction describeTrip({ traveler: { name = \"Guest\" } = {}, to = \"Unknown\", bags = 0 } = {}) {\n  return `${name} → ${to} (${bags} bags)`;\n}\nconst trip = { traveler: { name: \"Ana\" }, to: \"Quito\", bags: 2 };\nassert.equal(describeTrip(trip), \"Ana → Quito (2 bags)\");\nassert.equal(describeTrip(), \"Guest → Unknown (0 bags)\");\nconst moved = { ...trip, to: \"Cusco\" };\nassert.equal(moved.to, \"Cusco\");\nassert.equal(trip.to, \"Quito\");               // original untouched\nassert.equal(moved.traveler, trip.traveler);  // shallow: nested object is shared\nconsole.log(describeTrip(moved));\n```"
+		],
+		"answer": "`describeTrip(trip)` → `\"Ana → Quito (2 bags)\"`, `describeTrip()` → `\"Guest → Unknown (0 bags)\"`, and `{ ...trip, to: \"Cusco\" }` is a new object while `trip.to` stays `\"Quito\"`."
+	},
+	"pitfalls": [
+		"Writing `{ ...changes, ...base }` — the order is reversed, so the base values overwrite your changes.",
+		"Expecting spread to deep-copy: editing `copy.nested.x` also changes the original's nested object.",
+		"Destructuring a parameter that might be `undefined` without a `= {}` default, causing a `TypeError`."
+	],
+	"citations": [
+		{
+			"sourceId": "src-6f30193829",
+			"quote": "The destructuring syntax is a JavaScript syntax that makes it possible to unpack values from arrays, or properties from objects, into distinct variables.",
+			"locator": "Description"
+		},
+		{
+			"sourceId": "src-6f30193829",
+			"quote": "Each destructured property can have a default value. The default value is used when the property is not present, or has",
+			"locator": "Default value"
+		},
+		{
+			"sourceId": "src-6f30193829",
+			"quote": "A property can be unpacked from an object and assigned to a variable with a different name than the object property.",
+			"locator": "Assigning to new variable names"
+		},
+		{
+			"sourceId": "src-6f30193829",
+			"quote": "destructuring null or undefined throws a TypeError.",
+			"locator": "Object destructuring"
+		},
+		{
+			"sourceId": "src-a638557db8",
+			"quote": "properties with identical names are encountered, the property takes the last value assigned while remaining in the position it was originally set.",
+			"locator": "Overriding properties"
+		},
+		{
+			"sourceId": "src-a638557db8",
+			"quote": "A single spread creates a shallow copy of the original object",
+			"locator": "Spread in object literals"
+		}
+	],
+	"createdAt": "2026-10-31T19:57:18.000Z",
+	"updatedAt": "2026-10-31T19:57:18.000Z"
+}

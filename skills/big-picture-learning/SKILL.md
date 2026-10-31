@@ -5,9 +5,24 @@ description: Orchestrate a text-first psi session from learner memory through du
 
 # Start with useful practice
 
+## Teach before checking
+Use teach-first for Learn -> Try -> Check and source-grounding for research and citations.
+For a new subskill or after two misses on the same subskill, call psi_lesson action show; if absent,
+research with psi_search and psi_fetch, record sources with psi_sources action add, write the lesson
+with psi_lesson action write, then show it before the first or next challenge.
+Explain a full worked example step by step; fade exactly ONE step in a similar example and wait.
+Then present ONE fresh psi_challenge and grade the real answer with psi_attempt once, unless already recorded.
+Ask at most ONE question per message, only on material taught sufficiently to answer; explain before asking why.
+After a miss, re-teach using a different representation instead of asking more questions.
+Cite every factual explanation as [n], mapped to the ranked skill sources list shown to the learner.
+Fetch each cited page first; never invent evidence, ranks, or successful tool calls.
+In teach mode, checks are light and optional; in practice mode, use a short lesson then challenges.
+In test mode, give challenges only and defer teaching, hints, feedback, and triggered repair lessons until it ends.
+If required tools are unavailable, disclose the gap and label any chat-only explanation or attempt unsaved.
+
 ## Session contract
 Default to a short text exchange that gets the learner doing something.
-The normal flow is welcome back from memory, due reviews, a practice block, then recap.
+The normal flow is welcome back from memory, due reviews, Learn -> Try -> Check, then recap.
 Keep the learner's concrete target visible while teaching one subskill at a time.
 Use demonstrations to prepare practice, not as evidence that the learner can perform.
 Honor requests for plain feedback, explanations, shorter blocks, or stopping.
@@ -21,9 +36,14 @@ Open with one relevant goal, one observed previous win, and a proposed restart t
 Treat an old goal or inferred preference as revisable.
 Ask about changed priorities only when they affect the next useful action.
 Avoid reciting unrelated memories or displaying sensitive details.
-If there is no history, ask for a concrete task and offer one tiny diagnostic.
+If there is no history, ask for a concrete task, then teach a small example before checking understanding.
 For a new skill, use first-20-hours and /skill to define a useful target and vital subskills.
 Read or save the plan through psi_skill_plan rather than inventing an informal mastery state.
+When creating a skill, gather 3–6 relevant sources using source-grounding. Fetch the pages, add them
+with psi_sources, list them in returned rank order, and explain their actual rankReasons.
+Write the first ready subskill's sourced lesson with psi_lesson action write and show it before
+its first challenge; a resource list alone is not instruction. If ranking or saving is unavailable,
+disclose that limitation rather than claiming a fully grounded saved skill.
 
 ## 2. Due reviews before new material
 Use /review for existing scheduled reviews when available and relevant.
@@ -45,7 +65,7 @@ Choose kind and level from actual task evidence, not enthusiasm or XP alone.
 Use psi_challenge to present a bounded challenge and retain its returned id.
 Keep expected answers and later hints hidden until an attempt or an explicit reveal request.
 Wait for the learner; never generate their answer to move the workflow along.
-Use socratic-tutor for a diagnostic question or one targeted hint.
+Use socratic-tutor only as an optional check after the relevant idea has been taught.
 Use psi_attempt to grade and record the actual answer once.
 Use psi_hint for the current hint rung and track assistance honestly.
 Offer precise feedback, then a fresh variation that tests the same operation.
@@ -94,8 +114,9 @@ Tutor — Last time you caught duplicated join rows. We can test an unmatched-ke
 Learner — I have fifteen minutes.
 Tutor — Let's do one due review, then two small join predictions.
 Learner — I still mix up LEFT JOIN and INNER JOIN.
-Tutor — Here are two customers and one order. Predict the rows from the LEFT JOIN first.
-Action — Present the actual challenge through psi_challenge and wait for the answer.
+Action — Show the lesson and fully work a LEFT JOIN, citing fetched sources from the skill list.
+Tutor — Now we will fill one missing row in a similar example before an independent prediction.
+Action — Ask for that row only and wait; after feedback, present a fresh psi_challenge and wait for its answer.
 
 ## Mini-dialogue: closing without inflated claims
 Learner — The unmatched customer stays, with missing order values.

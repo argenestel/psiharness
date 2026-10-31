@@ -1,0 +1,52 @@
+{
+	"skill": "python-foundations",
+	"subskillId": "recursion",
+	"title": "Recursion needs a base case",
+	"explanation": "A function that calls itself is **recursive**. Every recursive function has two parts:\n\n1. a **base case** — a branch that answers directly without calling itself;\n2. a **recursive case** — a branch that calls the function on a *smaller* problem and builds on its answer.\n\n```python\ndef countdown(n):\n    if n <= 0:          # base case: no recursive call\n        return [\"liftoff\"]\n    return [n] + countdown(n - 1)   # smaller problem: n - 1\n\nprint(countdown(3))  # [3, 2, 1, 'liftoff']\n```\n\nEach call gets its own frame with its own local variables, so several frames of the same function can be on the stack at once. If the recursion never reaches the base case, it keeps calling forever until Python stops it with a `RecursionError` (\"maximum recursion depth exceeded\"). When that happens, check that a base case exists *and* that every recursive call moves toward it.",
+	"keyIdeas": [
+		"Base case first: the input you can answer without recursion.",
+		"Each recursive call must shrink the problem toward the base case.",
+		"Every call has its own frame and local variables.",
+		"Missing or unreachable base case → `RecursionError`."
+	],
+	"workedExample": {
+		"problem": "Write `power(base, exp)` recursively for whole-number `exp >= 0`, without `**` or `pow`, and trace `power(2, 5)`.",
+		"steps": [
+			"Base case: anything to the power 0 is 1, so `if exp == 0: return 1`.",
+			"Recursive case: `base ** exp == base * base ** (exp - 1)`, so return `base * power(base, exp - 1)`; `exp - 1` moves toward 0.",
+			"Trace: power(2,5) = 2·power(2,4) = 2·2·power(2,3) = … = 2·2·2·2·2·power(2,0) = 32·1.",
+			"Test the base case on its own as well as a deeper call.",
+			"Run it:\n```python\ndef power(base, exp):\n    if exp == 0:\n        return 1\n    return base * power(base, exp - 1)\n\nassert power(2, 5) == 32\nassert power(7, 0) == 1\nassert power(3, 4) == 81\nprint(power(2, 5))\n```"
+		],
+		"answer": "`power(2, 5)` returns `32` after six calls (exponents 5, 4, 3, 2, 1, 0)."
+	},
+	"pitfalls": [
+		"Forgetting the base case, or writing one the input can skip over (e.g. `if n == 0` when `n` goes 3, 1, -1, …).",
+		"Recursing on the same-sized input (e.g. `f(n)` calling `f(n)`), so no progress is made.",
+		"Computing the recursive result and then not returning it (`power(base, exp - 1)` without `return`)."
+	],
+	"citations": [
+		{
+			"sourceId": "src-1bbad55d70",
+			"quote": "A function that calls itself is recursive; the process of executing it is called recursion.",
+			"locator": "5.8 Recursion"
+		},
+		{
+			"sourceId": "src-1bbad55d70",
+			"quote": "base case: A conditional branch in a recursive function that does not make a recursive call.",
+			"locator": "5.13 Glossary"
+		},
+		{
+			"sourceId": "src-1bbad55d70",
+			"quote": "For a recursive function, there might be more than one frame on the stack at the same time.",
+			"locator": "5.9 Stack diagrams for recursive functions"
+		},
+		{
+			"sourceId": "src-9e0d529815",
+			"quote": "This exception is derived from RuntimeError. It is raised when the interpreter detects that the maximum recursion depth",
+			"locator": "RecursionError"
+		}
+	],
+	"createdAt": "2026-10-31T19:50:27.000Z",
+	"updatedAt": "2026-10-31T19:50:27.000Z"
+}

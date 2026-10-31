@@ -14,6 +14,9 @@ export function parseRoute(hash = "#/") {
 		if (first === "chat" && second) return { route: "chat", params: { chatId: second } };
 		if (first === "skills" && second) return { route: "skill", params: { skill: second } };
 		if (first === "memory" || first === "topics") return { route: first, params: {} };
+		if (first === "paths") return { route: "paths", params: second ? { id: second } : {} };
+		// Node ids may contain "/" (subskill:sql-lab/joins); rejoin in case the id arrived unencoded.
+		if (first === "graph") return { route: "graph", params: { nodeId: parts.slice(1).join("/") } };
 		return { route: "topic", params: { topic: first, view: second || "map" } };
 	} catch { return { route: "home", params: {} }; }
 }
@@ -58,6 +61,12 @@ export function conceptStatus(concept, mastery = {}, available = new Set()) {
 	if ((mastery[concept.id]?.pKnown || 0) >= 0.95) return "mastered";
 	if (mastery[concept.id]?.attempts > 0) return "learning";
 	return available.has(concept.id) ? "frontier" : "locked";
+}
+
+/** True when a view's script couldn't be loaded (psi web restarted or went offline), not when the view failed. */
+export function isModuleLoadError(error) {
+	return /dynamically imported module|importing a module script failed|error loading dynamically imported|module script/i
+		.test(String(error?.message ?? error ?? ""));
 }
 
 const CHAT_LIMIT = 12;
@@ -457,6 +466,7 @@ let bench;
 let benchWanted = false;
 let shellGeneration = 0;
 let sharedApi;
+let offlineRetried = false;
 const navigate = (hash) => {
 	if (location.hash === hash) void renderRoute();
 	else location.hash = hash;
@@ -557,7 +567,8 @@ async function refreshChrome() {
 			}
 			return a;
 		}, "No skills yet. Add one from Home."),
-		fill("#sidebar-topics", () => client.get("/api/topics"), (t) => link(topicPath(t.topic, "map"), t.title), "")
+		fill("#sidebar-topics", () => client.get("/api/topics"), (t) => link(topicPath(t.topic, "map"),
+			t.title && t.title !== t.topic ? t.title : capital(titleOf(t.topic))), "")
 			.then(() => {
 				const nav = document.querySelector("#sidebar-topics");
 				nav.querySelector(".psi-nav-note")?.remove();
@@ -570,7 +581,9 @@ function markCurrent() {
 	const hash = location.hash || "#/";
 	document.querySelectorAll("#sidebar a").forEach((a) => {
 		const topic = parseRoute(hash).route === "topic" && a.hash === `#/${hash.slice(2).split("/")[0]}/map`;
-		if (a.hash === hash || topic) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+		const paths = a.hash === "#/paths" && /^#\/paths(?:[/?]|$)/.test(hash);
+		const graph = a.hash === "#/graph" && /^#\/graph(?:[/?]|$)/.test(hash);
+		if (a.hash === hash || topic || paths || graph) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
 	});
 }
 async function renderRoute() {
@@ -590,7 +603,9 @@ async function renderRoute() {
 	const host = document.createElement("div"); host.className = "psi-view-host"; app.append(host);
 	host.innerHTML = `<p class="empty psi-view">Opening…</p>`;
 	document.title = "psi";
-	setTopbar(parsed.route === "memory" ? "Memory" : parsed.route === "skill" ? capital(titleOf(parsed.params.skill)) : "psi");
+	setTopbar(parsed.route === "memory" ? "Memory" : parsed.route === "paths" ? "Learning paths"
+		: parsed.route === "graph" ? "Graph"
+		: parsed.route === "skill" ? capital(titleOf(parsed.params.skill)) : "psi");
 	if (benchWanted) void topbarForSkill();
 	app.setAttribute("aria-busy", "true");
 	try {
@@ -608,6 +623,16 @@ async function renderRoute() {
 			const { mountPractice } = await import("./js/practice.js");
 			if (token !== generation) return;
 			view = mountPractice(host, { skill: parsed.params.skill, navigate });
+		} else if (parsed.route === "graph") {
+			const { mountGraph } = await import("./js/graph.js");
+			if (token !== generation) return;
+			document.title = "Graph · psi";
+			view = mountGraph(host, { navigate, focus: parsed.params.nodeId || undefined });
+		} else if (parsed.route === "paths") {
+			const { mountPaths } = await import("./js/paths.js");
+			if (token !== generation) return;
+			document.title = "Learning paths · psi";
+			view = mountPaths(host, { navigate, id: parsed.params.id });
 		} else if (parsed.route === "chat" || parsed.route === "new") {
 			host.className = "psi-view-host psi-view";
 			const { api: client } = await import("./js/api.js");
@@ -617,7 +642,9 @@ async function renderRoute() {
 			if (parsed.route === "new") {
 				host.innerHTML = `<p class="empty">Starting a chat…</p>`;
 				const { skill, topic, prompt } = parsed.params;
-				const created = await client.post("/api/chat", { ...(skill && { skill }), ...(topic && { topic }) });
+				const model = await import("./js/models.js").then((m) => m.getPreferredModel()).catch(() => undefined);
+				const created = await client.post("/api/chat", { ...(skill && { skill }), ...(topic && { topic }),
+					...(model && { model }) });
 				chatId = created.id;
 				// Seed before mounting SSE; the chat endpoint replays its saved records on connection.
 				if (prompt) await client.post(`/api/chat/${enc(chatId)}/prompt`, { message: prompt });
@@ -633,12 +660,29 @@ async function renderRoute() {
 		else view?.destroy?.();
 	} catch (error) {
 		if (token === generation) {
+			if (isModuleLoadError(error)) { showOffline(host, token); return; }
 			host.innerHTML = `<div class="psi-view empty"><h2>Couldn't open this page</h2>
-				<p>${escapeHtml(error.message)}. Check that psi web is running, then try again.</p>
+				<p>${escapeHtml(String(error.message).replace(/\.$/, ""))}. Check that psi web is running, then try again.</p>
 				<button id="shell-retry" type="button">Try again</button></div>`;
 			host.querySelector("#shell-retry").onclick = renderRoute;
 		}
 	} finally { if (token === generation) app.removeAttribute("aria-busy"); }
+}
+/** One clear message when the page's own scripts can't load; reloads by itself once psi web answers again. */
+function showOffline(host, token) {
+	host.innerHTML = `<div class="psi-view empty" role="alert"><h2>psi web restarted or is offline</h2>
+		<p>Reload the page to carry on. Your chats and progress are saved.</p>
+		<button id="shell-reload" type="button" class="primary">Reload</button></div>`;
+	host.querySelector("#shell-reload").onclick = () => location.reload();
+	if (offlineRetried) return;
+	offlineRetried = true;
+	setTimeout(async () => {
+		if (token !== generation) return;
+		try {
+			const response = await fetch("/api/state", { cache: "no-store" });
+			if (response.ok && token === generation) location.reload();
+		} catch { /* Still offline: the message and its Reload button stay. */ }
+	}, 2000);
 }
 document.querySelector("#close-lightbox").onclick = closeArtifact;
 dialog.addEventListener("cancel", (event) => { event.preventDefault(); closeArtifact(); });

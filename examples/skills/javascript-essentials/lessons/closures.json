@@ -1,0 +1,51 @@
+{
+	"skill": "javascript-essentials",
+	"subskillId": "closures",
+	"title": "Closures remember their surroundings",
+	"explanation": "In JavaScript a function can use variables from the scope where it was **defined**, not just its own parameters. A **closure** is a function bundled together with references to that surrounding state. Closures are created every time a function is created — so when an outer function returns an inner function, the inner one keeps access to the outer function's variables even though the outer call has finished.\n\nThat gives you **private state** without classes. Variables inside the outer function cannot be reached from outside; only the functions you return can read or change them:\n\n```js\nfunction makeTally() {\n  let count = 0;                       // private: nothing outside can touch it\n  return {\n    add(n = 1) { count += n; return count; },\n    total() { return count; },\n  };\n}\nconst a = makeTally();\nconst b = makeTally();\na.add(); a.add(5);\nconsole.log(a.total(), b.total());     // 6 0 -- each call made its own `count`\n```\n\nEach call of the outer function creates a **new** environment, so separate instances never share state. Loops are the classic trap: a closure created inside a `var` loop captures the single shared variable, while `let`/`const` give each iteration its own block-scoped binding.",
+	"keyIdeas": [
+		"A closure = a function + references to the variables around where it was defined.",
+		"Returned inner functions keep access to the outer function's variables.",
+		"Each outer call creates fresh, independent private state.",
+		"`var` in loops shares one variable; `let`/`const` bind per iteration."
+	],
+	"workedExample": {
+		"problem": "Build `makeRateLimiter(limit)` returning a function `tryRequest()` that returns `true` for the first `limit` calls and `false` afterwards. Two limiters must not affect each other.",
+		"steps": [
+			"Keep the changing state — calls used so far — in a `let` inside `makeRateLimiter`; it is private to the closure.",
+			"Return an inner function that compares the count with `limit` (also captured) and increments only when allowed.",
+			"Calling `makeRateLimiter` again creates a new environment with its own counter.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nfunction makeRateLimiter(limit) {\n  let used = 0;\n  return function tryRequest() {\n    if (used >= limit) return false;\n    used += 1;\n    return true;\n  };\n}\nconst api = makeRateLimiter(2);\nconst other = makeRateLimiter(1);\nassert.deepEqual([api(), api(), api()], [true, true, false]);\nassert.equal(other(), true);   // unaffected by api's calls\nassert.equal(other(), false);\nconsole.log(\"limiters are independent\");\n```"
+		],
+		"answer": "`api()` returns `true, true, false`; `other` independently allows exactly one call — each closure has its own `used`."
+	},
+	"pitfalls": [
+		"Declaring the state *outside* the factory (e.g. a module-level `let used`), so every limiter shares it.",
+		"Creating callbacks in a `for (var i ...)` loop and expecting each to see a different `i`.",
+		"Returning the result of calling the inner function instead of the function itself."
+	],
+	"citations": [
+		{
+			"sourceId": "src-656c21a51c",
+			"quote": "A closure is the combination of a function bundled together (enclosed) with references to its surrounding state (the lexical environment).",
+			"locator": "Closure"
+		},
+		{
+			"sourceId": "src-656c21a51c",
+			"quote": "In JavaScript, closures are created every time a function is created, at function creation time.",
+			"locator": "Closure"
+		},
+		{
+			"sourceId": "src-656c21a51c",
+			"quote": "Notice how the two counters maintain their independence from one another. Each closure references a different version of the privateCounter variable",
+			"locator": "Emulating private methods with closures"
+		},
+		{
+			"sourceId": "src-656c21a51c",
+			"quote": "This example uses const instead of var, so every closure binds the block-scoped variable, meaning that no additional closures are required.",
+			"locator": "Creating closures in loops: A common mistake"
+		}
+	],
+	"createdAt": "2026-10-31T19:57:18.000Z",
+	"updatedAt": "2026-10-31T19:57:18.000Z"
+}

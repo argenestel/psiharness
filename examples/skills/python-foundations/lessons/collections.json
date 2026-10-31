@@ -1,0 +1,72 @@
+{
+	"skill": "python-foundations",
+	"subskillId": "collections",
+	"title": "Lists, sets, and dictionaries",
+	"explanation": "Python's three everyday collections answer different questions:\n\n- A **list** is an ordered, mutable sequence. Use it when order matters or duplicates are allowed. `append()` and index assignment change it in place.\n- A **set** is an unordered collection with no duplicate elements. Use it for \"have I seen this?\" membership tests and for removing duplicates. Sets support union `|`, intersection `&`, and difference `-`.\n- A **dictionary** maps unique keys to values. Keys must be immutable (strings, numbers, tuples of those). `d[key]` raises `KeyError` for a missing key; `d.get(key, default)` returns the default instead.\n\n```python\nseen = {3, 1, 3, 2}\nprint(len(seen))          # 3 -- duplicates collapse\nages = {\"ana\": 31}\nprint(ages.get(\"bo\", 0))  # 0 -- no KeyError\nprint(\"ana\" in ages)      # True -- membership checks keys\n```\n\nOne trap: `{}` is an empty **dictionary**. Write `set()` for an empty set.",
+	"keyIdeas": [
+		"List = ordered and mutable; set = unique members; dict = unique keys mapped to values.",
+		"Use `in` for membership; on a dict it checks the keys.",
+		"`d.get(k, default)` avoids `KeyError` when a key may be missing.",
+		"`{}` is an empty dict; use `set()` for an empty set."
+	],
+	"workedExample": {
+		"problem": "Two clubs: chess = `['ana', 'bo', 'cy']`, drama = `['cy', 'ana', 'dee']`. Grades are `{'ana': 90, 'cy': 75}`. List the members of both clubs (alphabetically) with their grade, using 0 when no grade is recorded.",
+		"steps": [
+			"Convert each list to a set so membership is about names, not positions.",
+			"Intersect the sets with `&`: `{'ana', 'cy'}`.",
+			"Sort the result for a stable order: `['ana', 'cy']`.",
+			"Look up each grade with `grades.get(name, 0)` so a missing name cannot raise `KeyError`.",
+			"Run it:\n```python\nchess = ['ana', 'bo', 'cy']\ndrama = ['cy', 'ana', 'dee']\ngrades = {'ana': 90, 'cy': 75}\nboth = sorted(set(chess) & set(drama))\nreport = [(name, grades.get(name, 0)) for name in both]\nassert report == [('ana', 90), ('cy', 75)]\nassert grades.get('dee', 0) == 0\nprint(report)\n```"
+		],
+		"answer": "`[('ana', 90), ('cy', 75)]`"
+	},
+	"pitfalls": [
+		"Writing `{}` and expecting an empty set; it is an empty dict.",
+		"Indexing a dict with `d[key]` when the key might be absent; use `in` or `get()` first.",
+		"Relying on set order. Sets are unordered; sort them when output order matters."
+	],
+	"citations": [
+		{
+			"sourceId": "src-87070e868e",
+			"quote": "Unlike strings, which are immutable, lists are a mutable type, i.e. it is possible to change their content",
+			"locator": "3.1.3 Lists"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "A set is an unordered collection with no duplicate elements. Basic uses include membership testing and eliminating duplicate entries.",
+			"locator": "5.4 Sets"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "Set objects also support mathematical operations like union, intersection, difference, and symmetric difference.",
+			"locator": "5.4 Sets"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "Note: to create an empty set you have to use set(), not {}; the latter creates an empty dictionary",
+			"locator": "5.4 Sets"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "dictionaries are indexed by keys, which can be any immutable type; strings and numbers can always be keys.",
+			"locator": "5.5 Dictionaries"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "Extracting a value for a non-existent key by subscripting (d[key]) raises a KeyError.",
+			"locator": "5.5 Dictionaries"
+		},
+		{
+			"sourceId": "src-a876ee603b",
+			"quote": "To check whether a single key is in the dictionary, use the in keyword.",
+			"locator": "5.5 Dictionaries"
+		},
+		{
+			"sourceId": "src-76bc3fbfd6",
+			"quote": "Return the value for key if key is in the dictionary, else default.",
+			"locator": "dict.get"
+		}
+	],
+	"createdAt": "2026-10-31T19:50:27.000Z",
+	"updatedAt": "2026-10-31T19:50:27.000Z"
+}

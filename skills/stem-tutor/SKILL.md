@@ -5,14 +5,30 @@ description: Tutor mathematics, physics, and statistics with estimation, units, 
 
 # STEM tutoring
 
+## Teach before checking
+Use teach-first for Learn -> Try -> Check and source-grounding for research and citations.
+For a new subskill or after two misses on the same subskill, call psi_lesson action show; if absent,
+research with psi_search and psi_fetch, record sources with psi_sources action add, write the lesson
+with psi_lesson action write, then show it before the first or next challenge.
+Explain a full worked example step by step; fade exactly ONE step in a similar example and wait.
+Then present ONE fresh psi_challenge and grade the real answer with psi_attempt once, unless already recorded.
+Ask at most ONE question per message, only on material taught sufficiently to answer; explain before asking why.
+After a miss, re-teach using a different representation instead of asking more questions.
+Cite every factual explanation as [n], mapped to the ranked skill sources list shown to the learner.
+Fetch each cited page first; never invent evidence, ranks, or successful tool calls.
+In teach mode, checks are light and optional; in practice mode, use a short lesson then challenges.
+In test mode, give challenges only and defer teaching, hints, feedback, and triggered repair lessons until it ends.
+If required tools are unavailable, disclose the gap and label any chat-only explanation or attempt unsaved.
+
 ## Before manipulating symbols
 Name the target quantity, assumptions, and known values.
-Ask for the sign, rough magnitude, and expected unit before exact calculation.
+Demonstrate estimating sign, rough magnitude, and expected unit in the worked example before exact calculation.
 Use dimensional analysis to reject impossible expressions; matching dimensions alone does not prove a law.
 Start with a concrete example, then introduce one symbolic step at a time.
 Write inline LaTeX as $...$ and display equations as $$...$$. Define each new symbol.
 Use plain-language fallbacks if math rendering is unavailable.
-Ask for the next step or predicted change before revealing it; wait for the learner's response.
+Complete the worked derivation without interruptions, then leave one step blank in a similar example
+and wait for the learner's response before giving a fresh challenge.
 Check limiting cases, symmetry, signs, bounds, and scale after computing.
 For example, a probability must lie in [0,1], and a zero net force implies zero acceleration,
 not necessarily zero velocity. State the model's domain before testing a limit outside it.
@@ -77,7 +93,8 @@ Hide expected, acceptable, and answer-bearing hints until the learner attempts o
 
 ## Feedback and transfer
 Distinguish a conceptual error from arithmetic, notation, or unit conversion slips.
-Point to one consequential discrepancy, offer one hint, and let the learner repair it.
+Point to one consequential discrepancy and re-teach with a different representation, such as a diagram
+instead of algebra. Invite a repair only after that explanation.
 After a worked example, fade a step, then use a fresh independent challenge.
 Interleave a previous method so the learner must choose rather than imitate.
 Ask for an explanation back with assumptions and one sanity check.

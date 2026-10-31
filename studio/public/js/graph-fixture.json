@@ -1,0 +1,1277 @@
+{
+	"graph": {
+		"nodes": [
+			{
+				"id": "concept:fourier-transform/complex-numbers",
+				"kind": "concept",
+				"title": "Complex numbers are points with a built-in turn",
+				"summary": "A complex number a+bi names a point in the plane, while multiplying by a unit complex number changes its angle and rotates it without changing its length.",
+				"tags": [
+					"complex-numbers",
+					"rotation",
+					"algebra"
+				],
+				"progress": 0.97,
+				"status": "mastered"
+			},
+			{
+				"id": "concept:fourier-transform/continuous-fourier-transform",
+				"kind": "concept",
+				"title": "The Fourier transform scans a continuum of frequencies",
+				"summary": "For a nonperiodic signal, the Fourier transform records its correlation with every continuous frequency, turning a time description into a frequency description.",
+				"tags": [
+					"fourier-transform",
+					"spectrum",
+					"continuous"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:fourier-transform/convolution-filtering",
+				"kind": "concept",
+				"title": "Convolution filters by multiplying spectra",
+				"summary": "Convolution combines a signal with a response kernel in time; the convolution theorem says this becomes pointwise multiplication in frequency, making filtering transparent.",
+				"tags": [
+					"convolution",
+					"filtering",
+					"convolution-theorem"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:fourier-transform/fourier-series",
+				"kind": "concept",
+				"title": "Fourier series rebuild periodic signals",
+				"summary": "A periodic function can be represented as a constant plus weighted sine and cosine harmonics; orthogonality supplies each weight by projection.",
+				"tags": [
+					"fourier-series",
+					"harmonics",
+					"basis"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:fourier-transform/frequency-intuition",
+				"kind": "concept",
+				"title": "Frequency is the pace of repetition",
+				"summary": "Frequency counts cycles per unit time, while angular frequency is 2π times that rate; high frequency means faster oscillation, not necessarily larger amplitude.",
+				"tags": [
+					"frequency",
+					"period",
+					"rate"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:fourier-transform/inner-product-with-sinusoid",
+				"kind": "concept",
+				"title": "Correlating with a sinusoid measures its ingredient",
+				"summary": "Multiplying a signal by a reference sinusoid and averaging over a whole number of cycles measures how strongly that frequency is present.",
+				"tags": [
+					"inner-product",
+					"correlation",
+					"coefficient"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:fourier-transform/orthogonality",
+				"kind": "concept",
+				"title": "Different frequencies can be perpendicular",
+				"summary": "Over a complete shared period, distinct integer-frequency sines and cosines have zero inner product, so their coefficients can be measured independently.",
+				"tags": [
+					"orthogonality",
+					"basis",
+					"projection"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:fourier-transform/rotating-vectors",
+				"kind": "concept",
+				"title": "A rotating vector is a complex exponential",
+				"summary": "The expression e^{iωt} is a unit vector rotating at angular speed ω; multiplying it by a complex coefficient sets a component's size and starting phase.",
+				"tags": [
+					"complex-exponential",
+					"phase",
+					"frequency"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:fourier-transform/rotating-vectors-draw-anything",
+				"kind": "concept",
+				"title": "Rotating vectors can draw shapes",
+				"summary": "The tip of one rotating arrow traces a circle; a chain of rotating arrows added end to end can trace surprisingly rich closed paths.",
+				"tags": [
+					"hook",
+					"visual-intuition",
+					"epicycles"
+				],
+				"progress": 0.97,
+				"status": "mastered"
+			},
+			{
+				"id": "concept:fourier-transform/sinusoids",
+				"kind": "concept",
+				"title": "Sinusoids are shadows of rotation",
+				"summary": "Projecting uniform circular motion onto one axis produces a sine or cosine wave; amplitude controls the excursion and frequency controls how quickly cycles repeat.",
+				"tags": [
+					"sinusoid",
+					"projection",
+					"amplitude"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:linear-transformations/basis",
+				"kind": "concept",
+				"title": "A basis is a pair of coordinate directions",
+				"summary": "Two independent vectors form a basis for the plane when every vector can be made from exactly one combination of them. The coefficients are coordinates in that chosen basis.",
+				"tags": [
+					"basis",
+					"coordinates",
+					"span",
+					"independence"
+				],
+				"progress": 0.97,
+				"status": "mastered"
+			},
+			{
+				"id": "concept:linear-transformations/change-of-basis",
+				"kind": "concept",
+				"title": "Changing basis changes the coordinates, not the vector",
+				"summary": "A geometric vector is independent of coordinates, but its coordinate column changes with the chosen basis. Basis-change matrices translate between coordinate descriptions, and a map's matrix changes by conjugation when the same basis is used on input and output.",
+				"tags": [
+					"change-of-basis",
+					"coordinates",
+					"similarity",
+					"representation"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:linear-transformations/composition",
+				"kind": "concept",
+				"title": "Composition chains transformations",
+				"summary": "Applying one linear map after another gives a new linear map. For matrices, AB means B acts first and A acts second, which is why matrix multiplication is ordered and usually noncommutative.",
+				"tags": [
+					"composition",
+					"matrix-multiplication",
+					"order",
+					"transformations"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:linear-transformations/determinant",
+				"kind": "concept",
+				"title": "The determinant measures signed area scaling",
+				"summary": "For a 2×2 matrix, the determinant is ad−bc. It is the signed area of the image of the unit square: its magnitude is the area scale and its sign records orientation reversal.",
+				"tags": [
+					"determinant",
+					"area",
+					"orientation",
+					"invertibility"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:linear-transformations/eigenvectors",
+				"kind": "concept",
+				"title": "Eigenvectors keep their direction",
+				"summary": "An eigenvector is a nonzero vector whose direction is unchanged by a map: Av=λv. The eigenvalue λ tells whether that direction stretches, shrinks, or flips, and some real matrices have no real eigenvectors.",
+				"tags": [
+					"eigenvectors",
+					"eigenvalues",
+					"invariant-directions",
+					"characteristic-polynomial"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:linear-transformations/inverse",
+				"kind": "concept",
+				"title": "An inverse map rewinds the motion",
+				"summary": "A linear map has an inverse exactly when its determinant is nonzero. The inverse sends every output back to its unique input, and composing a map with its inverse gives the identity transformation.",
+				"tags": [
+					"inverse",
+					"identity",
+					"undo",
+					"determinant"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:linear-transformations/linear-map-grid-squish",
+				"kind": "concept",
+				"title": "A grid can move as one coherent object",
+				"summary": "A linear transformation moves every point by a rule that preserves the origin and straight-line combinations. On a grid it can stretch, rotate, shear, or flatten the plane while keeping parallel lines parallel.",
+				"tags": [
+					"intuition",
+					"transformations",
+					"grid",
+					"linear-algebra"
+				],
+				"progress": 0,
+				"status": "next"
+			},
+			{
+				"id": "concept:linear-transformations/linear-maps",
+				"kind": "concept",
+				"title": "Linearity preserves combinations",
+				"summary": "A map T is linear when T(u+v)=T(u)+T(v) and T(cu)=cT(u). Together these rules mean T sends every linear combination to the same combination of the transformed ingredients.",
+				"tags": [
+					"linear-map",
+					"additivity",
+					"homogeneity",
+					"combinations"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:linear-transformations/matrix-columns",
+				"kind": "concept",
+				"title": "Matrix columns are transformed basis vectors",
+				"summary": "Once input and output bases are chosen, a linear map is encoded by a matrix. In the standard basis, the first column is T(i) and the second column is T(j), so matrix multiplication computes transformed coordinates.",
+				"tags": [
+					"matrix",
+					"columns",
+					"coordinates",
+					"standard-basis"
+				],
+				"progress": 0,
+				"status": "new"
+			},
+			{
+				"id": "concept:linear-transformations/vectors",
+				"kind": "concept",
+				"title": "Vectors are reusable moves",
+				"summary": "A vector records a displacement with direction and magnitude, independent of where its arrow is drawn. Vectors add by head-to-tail motion and scale by changing how far the move goes.",
+				"tags": [
+					"vectors",
+					"displacement",
+					"addition",
+					"scaling"
+				],
+				"progress": 0.97,
+				"status": "mastered"
+			},
+			{
+				"id": "skill:algorithms-big-o",
+				"kind": "skill",
+				"title": "Algorithms and Big-O",
+				"summary": "Within 20 focused hours, solve at least 18 of these 22 Python prompts in 30-minute timed rounds, with at least 80% first-try success; implement the core patterns from memory, state time and space complexity, and name edge cases before coding.",
+				"status": "practising",
+				"progress": 0.06,
+				"href": "#/skills/algorithms-big-o"
+			},
+			{
+				"id": "skill:calculus-intuition",
+				"kind": "skill",
+				"title": "Calculus intuition",
+				"summary": "By hour 20, solve at least 16 of 20 fresh rate, derivative, optimization, and accumulation questions in 45 minutes; justify units and signs, and implement a derivative estimator and an area accumulator that pass their assertions.",
+				"status": "new",
+				"progress": 0,
+				"href": "#/skills/calculus-intuition"
+			},
+			{
+				"id": "skill:python-foundations",
+				"kind": "skill",
+				"title": "Python foundations",
+				"summary": "After 20 hours, implement and explain four of five unseen small Python functions in 30 minutes, passing edge-case tests for syntax, strings, collections, loops, functions, recursion, exceptions, and simple classes; complete the reading-list build and text-analysis boss.",
+				"status": "practising",
+				"progress": 0.31,
+				"href": "#/skills/python-foundations"
+			},
+			{
+				"id": "subskill:algorithms-big-o/binary-search",
+				"kind": "subskill",
+				"title": "Maintain a binary-search window",
+				"summary": "Cut ordered search space in half instead of scanning every candidate.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:algorithms-big-o/complexity-analysis",
+				"kind": "subskill",
+				"title": "Read complexity from loops",
+				"summary": "Estimate growth before coding so a correct-looking solution does not collapse on large input.",
+				"status": "practising",
+				"progress": 0.4
+			},
+			{
+				"id": "subskill:algorithms-big-o/graph-traversal",
+				"kind": "subskill",
+				"title": "Traverse graphs with BFS and DFS",
+				"summary": "Turn networks and dependencies into systematic visits while handling cycles, disconnected nodes, and start/target boundaries.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:algorithms-big-o/hash-maps",
+				"kind": "subskill",
+				"title": "Use hash maps for constant-time lookups",
+				"summary": "Trade predictable extra memory for fast complements, counts, and grouping.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:algorithms-big-o/sorting",
+				"kind": "subskill",
+				"title": "Order data with a deliberate cost",
+				"summary": "Use ordering to simplify later decisions and understand the time and stability trade-offs.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:algorithms-big-o/stacks-queues",
+				"kind": "subskill",
+				"title": "Choose LIFO or FIFO state",
+				"summary": "Model nested delimiters, waiting work, and monotonic next-event queries with the right frontier structure.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:algorithms-big-o/two-pointers",
+				"kind": "subskill",
+				"title": "Shrink and advance two pointers",
+				"summary": "Turn many pair and boundary scans into linear passes with a visible invariant.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:calculus-intuition/area",
+				"kind": "subskill",
+				"title": "Accumulated area",
+				"summary": "Add small contributions with units.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:calculus-intuition/derivative",
+				"kind": "subskill",
+				"title": "Slope under a microscope",
+				"summary": "See a curve as locally straight.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:calculus-intuition/ftc",
+				"kind": "subskill",
+				"title": "Fundamental theorem",
+				"summary": "Connect accumulation back to instantaneous rate.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:calculus-intuition/limits",
+				"kind": "subskill",
+				"title": "Limits by numbers",
+				"summary": "Separate a nearby trend from the value at a hole.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:calculus-intuition/optimization",
+				"kind": "subskill",
+				"title": "Optimization",
+				"summary": "Turn a maximum into a sign change.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:calculus-intuition/power",
+				"kind": "subskill",
+				"title": "Power rule",
+				"summary": "Translate scaling into local growth.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:calculus-intuition/product-chain",
+				"kind": "subskill",
+				"title": "Product and chain rules",
+				"summary": "Track two changing factors and nested changes.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:calculus-intuition/rates",
+				"kind": "subskill",
+				"title": "Rates of change",
+				"summary": "Read slope as change per unit input.",
+				"status": "next",
+				"progress": 0
+			},
+			{
+				"id": "subskill:python-foundations/classes",
+				"kind": "subskill",
+				"title": "Model small objects",
+				"summary": "A compact class can keep state and enforce an invariant when a handful of functions is no longer enough.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:python-foundations/collections",
+				"kind": "subskill",
+				"title": "Use lists, sets, and dictionaries",
+				"summary": "Choosing the right collection makes membership, counting, and ordered data straightforward.",
+				"status": "practising",
+				"progress": 0.55
+			},
+			{
+				"id": "subskill:python-foundations/exceptions",
+				"kind": "subskill",
+				"title": "Handle expected failures",
+				"summary": "Clear exception boundaries turn invalid input into a useful contract instead of a mysterious crash.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:python-foundations/functions",
+				"kind": "subskill",
+				"title": "Compose functions and closures",
+				"summary": "Small functions give a program named pieces that can be tested independently and reused.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:python-foundations/loops-comprehensions",
+				"kind": "subskill",
+				"title": "Loop and build collections",
+				"summary": "Explicit loops and comprehensions turn a sequence of examples into a reusable rule.",
+				"status": "next",
+				"progress": 0.2
+			},
+			{
+				"id": "subskill:python-foundations/recursion",
+				"kind": "subskill",
+				"title": "Use a recursive base case",
+				"summary": "Recursion makes nested data and self-similar problems easier to express when the base case is explicit.",
+				"status": "locked",
+				"progress": 0
+			},
+			{
+				"id": "subskill:python-foundations/strings",
+				"kind": "subskill",
+				"title": "Transform strings",
+				"summary": "Text cleanup is a frequent boundary between messy input and reliable code.",
+				"status": "solid",
+				"progress": 0.9
+			},
+			{
+				"id": "subskill:python-foundations/syntax-types",
+				"kind": "subskill",
+				"title": "Read syntax and types",
+				"summary": "Names, literals, operators, and booleans are the vocabulary every later function uses.",
+				"status": "solid",
+				"progress": 1
+			},
+			{
+				"id": "topic:fourier-transform",
+				"kind": "topic",
+				"title": "Fourier Transform: seeing the rotating ingredients inside a signal",
+				"summary": "Any repeating-looking signal can be understood as a mixture of simple rotating motions, and the Fourier transform reveals how much of each frequency is present so that filtering and convolution become visible operations.",
+				"href": "#/fourier-transform/map"
+			},
+			{
+				"id": "topic:linear-transformations",
+				"kind": "topic",
+				"title": "Linear Transformations",
+				"summary": "A linear transformation is a rule for moving vectors that is completely determined by where it sends a basis: matrix columns record those moves, composition chains them, the determinant measures signed area scaling, and eigenvectors reveal directions that keep their heading.",
+				"href": "#/linear-transformations/map"
+			},
+			{
+				"id": "note:learns-by-tracing",
+				"kind": "note",
+				"title": "Learns best by tracing code line by line before running it.",
+				"summary": "Learns best by tracing code line by line before running it."
+			},
+			{
+				"id": "note:off-by-one",
+				"kind": "note",
+				"title": "Keeps making off-by-one errors in range() end points.",
+				"summary": "Keeps making off-by-one errors in range() end points."
+			},
+			{
+				"id": "note:strip-split",
+				"kind": "note",
+				"title": "Clicked: strip() then split() is the safe way to clean us…",
+				"summary": "Clicked: strip() then split() is the safe way to clean user input."
+			},
+			{
+				"id": "note:dict-get",
+				"kind": "note",
+				"title": "Prefers dict.get with a default over try/except for missi…",
+				"summary": "Prefers dict.get with a default over try/except for missing keys."
+			},
+			{
+				"id": "note:goal-interview",
+				"kind": "note",
+				"title": "Goal: pass a junior developer coding interview by spring.",
+				"summary": "Goal: pass a junior developer coding interview by spring."
+			},
+			{
+				"id": "note:big-o-nested",
+				"kind": "note",
+				"title": "Confused nested loops over different lists with O(n squar…",
+				"summary": "Confused nested loops over different lists with O(n squared)."
+			},
+			{
+				"id": "note:visual-first",
+				"kind": "note",
+				"title": "Wants a picture first, then the formula.",
+				"summary": "Wants a picture first, then the formula."
+			},
+			{
+				"id": "note:matrix-columns",
+				"kind": "note",
+				"title": "Clicked: a matrix's columns are where the basis vectors l…",
+				"summary": "Clicked: a matrix's columns are where the basis vectors land."
+			},
+			{
+				"id": "note:det-area",
+				"kind": "note",
+				"title": "Struggled with why a negative determinant means orientati…",
+				"summary": "Struggled with why a negative determinant means orientation flips."
+			},
+			{
+				"id": "note:euler-turn",
+				"kind": "note",
+				"title": "Thinks of e to the i theta as a turn, not a number.",
+				"summary": "Thinks of e to the i theta as a turn, not a number."
+			},
+			{
+				"id": "note:short-sessions",
+				"kind": "note",
+				"title": "Prefers 25-minute sessions in the morning.",
+				"summary": "Prefers 25-minute sessions in the morning."
+			},
+			{
+				"id": "note:slope-limit",
+				"kind": "note",
+				"title": "Mixed up average and instant rate of change once.",
+				"summary": "Mixed up average and instant rate of change once."
+			},
+			{
+				"id": "note:chain-rule",
+				"kind": "note",
+				"title": "Wants to see the chain rule as gears turning.",
+				"summary": "Wants to see the chain rule as gears turning."
+			},
+			{
+				"id": "note:recursion-fear",
+				"kind": "note",
+				"title": "Says recursion feels like magic; wants to trace the call …",
+				"summary": "Says recursion feels like magic; wants to trace the call stack."
+			},
+			{
+				"id": "note:binary-search-bug",
+				"kind": "note",
+				"title": "Binary search loop never ended when lo and hi met.",
+				"summary": "Binary search loop never ended when lo and hi met."
+			},
+			{
+				"id": "note:spectrum-audio",
+				"kind": "note",
+				"title": "Got excited about seeing a chord's spectrum in audio.",
+				"summary": "Got excited about seeing a chord's spectrum in audio."
+			}
+		],
+		"edges": [
+			{
+				"from": "concept:fourier-transform/complex-numbers",
+				"to": "concept:fourier-transform/rotating-vectors",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/continuous-fourier-transform",
+				"to": "concept:fourier-transform/convolution-filtering",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/fourier-series",
+				"to": "concept:fourier-transform/continuous-fourier-transform",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/frequency-intuition",
+				"to": "concept:fourier-transform/continuous-fourier-transform",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/frequency-intuition",
+				"to": "concept:fourier-transform/inner-product-with-sinusoid",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/inner-product-with-sinusoid",
+				"to": "concept:fourier-transform/orthogonality",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/orthogonality",
+				"to": "concept:fourier-transform/fourier-series",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/rotating-vectors",
+				"to": "concept:fourier-transform/sinusoids",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/rotating-vectors-draw-anything",
+				"to": "concept:fourier-transform/complex-numbers",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/sinusoids",
+				"to": "concept:fourier-transform/frequency-intuition",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:fourier-transform/sinusoids",
+				"to": "concept:fourier-transform/inner-product-with-sinusoid",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/basis",
+				"to": "concept:linear-transformations/change-of-basis",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/basis",
+				"to": "concept:linear-transformations/linear-maps",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/basis",
+				"to": "concept:linear-transformations/matrix-columns",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/composition",
+				"to": "concept:linear-transformations/change-of-basis",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/composition",
+				"to": "concept:linear-transformations/determinant",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/composition",
+				"to": "concept:linear-transformations/inverse",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/determinant",
+				"to": "concept:linear-transformations/eigenvectors",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/determinant",
+				"to": "concept:linear-transformations/inverse",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/inverse",
+				"to": "concept:linear-transformations/change-of-basis",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/linear-map-grid-squish",
+				"to": "concept:linear-transformations/vectors",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/linear-maps",
+				"to": "concept:linear-transformations/composition",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/linear-maps",
+				"to": "concept:linear-transformations/eigenvectors",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/linear-maps",
+				"to": "concept:linear-transformations/matrix-columns",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/matrix-columns",
+				"to": "concept:linear-transformations/change-of-basis",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/matrix-columns",
+				"to": "concept:linear-transformations/composition",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/matrix-columns",
+				"to": "concept:linear-transformations/determinant",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/matrix-columns",
+				"to": "concept:linear-transformations/eigenvectors",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/vectors",
+				"to": "concept:linear-transformations/basis",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "concept:linear-transformations/vectors",
+				"to": "concept:linear-transformations/linear-maps",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "skill:algorithms-big-o",
+				"to": "subskill:algorithms-big-o/binary-search",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:algorithms-big-o",
+				"to": "subskill:algorithms-big-o/complexity-analysis",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:algorithms-big-o",
+				"to": "subskill:algorithms-big-o/graph-traversal",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:algorithms-big-o",
+				"to": "subskill:algorithms-big-o/hash-maps",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:algorithms-big-o",
+				"to": "subskill:algorithms-big-o/sorting",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:algorithms-big-o",
+				"to": "subskill:algorithms-big-o/stacks-queues",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:algorithms-big-o",
+				"to": "subskill:algorithms-big-o/two-pointers",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:calculus-intuition",
+				"to": "subskill:calculus-intuition/area",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:calculus-intuition",
+				"to": "subskill:calculus-intuition/derivative",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:calculus-intuition",
+				"to": "subskill:calculus-intuition/ftc",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:calculus-intuition",
+				"to": "subskill:calculus-intuition/limits",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:calculus-intuition",
+				"to": "subskill:calculus-intuition/optimization",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:calculus-intuition",
+				"to": "subskill:calculus-intuition/power",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:calculus-intuition",
+				"to": "subskill:calculus-intuition/product-chain",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:calculus-intuition",
+				"to": "subskill:calculus-intuition/rates",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:python-foundations",
+				"to": "subskill:python-foundations/classes",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:python-foundations",
+				"to": "subskill:python-foundations/collections",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:python-foundations",
+				"to": "subskill:python-foundations/exceptions",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:python-foundations",
+				"to": "subskill:python-foundations/functions",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:python-foundations",
+				"to": "subskill:python-foundations/loops-comprehensions",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:python-foundations",
+				"to": "subskill:python-foundations/recursion",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:python-foundations",
+				"to": "subskill:python-foundations/strings",
+				"kind": "contains"
+			},
+			{
+				"from": "skill:python-foundations",
+				"to": "subskill:python-foundations/syntax-types",
+				"kind": "contains"
+			},
+			{
+				"from": "subskill:algorithms-big-o/complexity-analysis",
+				"to": "subskill:algorithms-big-o/binary-search",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:algorithms-big-o/complexity-analysis",
+				"to": "subskill:algorithms-big-o/hash-maps",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:algorithms-big-o/complexity-analysis",
+				"to": "subskill:algorithms-big-o/sorting",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:algorithms-big-o/complexity-analysis",
+				"to": "subskill:algorithms-big-o/stacks-queues",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:algorithms-big-o/complexity-analysis",
+				"to": "subskill:algorithms-big-o/two-pointers",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:algorithms-big-o/hash-maps",
+				"to": "subskill:algorithms-big-o/graph-traversal",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:algorithms-big-o/hash-maps",
+				"to": "subskill:algorithms-big-o/sorting",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:algorithms-big-o/stacks-queues",
+				"to": "subskill:algorithms-big-o/graph-traversal",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:calculus-intuition/area",
+				"to": "subskill:calculus-intuition/ftc",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:calculus-intuition/derivative",
+				"to": "subskill:calculus-intuition/power",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:calculus-intuition/limits",
+				"to": "subskill:calculus-intuition/derivative",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:calculus-intuition/power",
+				"to": "subskill:calculus-intuition/ftc",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:calculus-intuition/power",
+				"to": "subskill:calculus-intuition/product-chain",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:calculus-intuition/product-chain",
+				"to": "subskill:calculus-intuition/optimization",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:calculus-intuition/rates",
+				"to": "subskill:calculus-intuition/area",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:calculus-intuition/rates",
+				"to": "subskill:calculus-intuition/limits",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:python-foundations/collections",
+				"to": "subskill:python-foundations/classes",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:python-foundations/collections",
+				"to": "subskill:python-foundations/loops-comprehensions",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:python-foundations/exceptions",
+				"to": "subskill:python-foundations/classes",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:python-foundations/functions",
+				"to": "subskill:python-foundations/exceptions",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:python-foundations/functions",
+				"to": "subskill:python-foundations/recursion",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:python-foundations/loops-comprehensions",
+				"to": "subskill:python-foundations/functions",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:python-foundations/syntax-types",
+				"to": "subskill:python-foundations/collections",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "subskill:python-foundations/syntax-types",
+				"to": "subskill:python-foundations/strings",
+				"kind": "prerequisite"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/complex-numbers",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/continuous-fourier-transform",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/convolution-filtering",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/fourier-series",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/frequency-intuition",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/inner-product-with-sinusoid",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/orthogonality",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/rotating-vectors",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/rotating-vectors-draw-anything",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:fourier-transform",
+				"to": "concept:fourier-transform/sinusoids",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/basis",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/change-of-basis",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/composition",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/determinant",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/eigenvectors",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/inverse",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/linear-map-grid-squish",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/linear-maps",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/matrix-columns",
+				"kind": "contains"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "concept:linear-transformations/vectors",
+				"kind": "contains"
+			},
+			{
+				"from": "note:learns-by-tracing",
+				"to": "skill:python-foundations",
+				"kind": "about"
+			},
+			{
+				"from": "note:off-by-one",
+				"to": "subskill:python-foundations/loops-comprehensions",
+				"kind": "about"
+			},
+			{
+				"from": "note:strip-split",
+				"to": "subskill:python-foundations/strings",
+				"kind": "about"
+			},
+			{
+				"from": "note:dict-get",
+				"to": "subskill:python-foundations/collections",
+				"kind": "about"
+			},
+			{
+				"from": "note:goal-interview",
+				"to": "skill:algorithms-big-o",
+				"kind": "about"
+			},
+			{
+				"from": "note:goal-interview",
+				"to": "skill:python-foundations",
+				"kind": "about"
+			},
+			{
+				"from": "note:big-o-nested",
+				"to": "subskill:algorithms-big-o/complexity-analysis",
+				"kind": "about"
+			},
+			{
+				"from": "note:visual-first",
+				"to": "topic:linear-transformations",
+				"kind": "about"
+			},
+			{
+				"from": "note:visual-first",
+				"to": "topic:fourier-transform",
+				"kind": "about"
+			},
+			{
+				"from": "note:matrix-columns",
+				"to": "concept:linear-transformations/matrix-columns",
+				"kind": "about"
+			},
+			{
+				"from": "note:det-area",
+				"to": "concept:linear-transformations/determinant",
+				"kind": "about"
+			},
+			{
+				"from": "note:euler-turn",
+				"to": "concept:fourier-transform/complex-numbers",
+				"kind": "about"
+			},
+			{
+				"from": "note:slope-limit",
+				"to": "subskill:calculus-intuition/rates",
+				"kind": "about"
+			},
+			{
+				"from": "note:chain-rule",
+				"to": "subskill:calculus-intuition/product-chain",
+				"kind": "about"
+			},
+			{
+				"from": "note:recursion-fear",
+				"to": "subskill:python-foundations/recursion",
+				"kind": "about"
+			},
+			{
+				"from": "note:binary-search-bug",
+				"to": "subskill:algorithms-big-o/binary-search",
+				"kind": "about"
+			},
+			{
+				"from": "note:spectrum-audio",
+				"to": "topic:fourier-transform",
+				"kind": "about"
+			},
+			{
+				"from": "subskill:calculus-intuition/derivative",
+				"to": "concept:linear-transformations/linear-maps",
+				"kind": "related",
+				"weight": 0.28
+			},
+			{
+				"from": "subskill:algorithms-big-o/sorting",
+				"to": "subskill:python-foundations/collections",
+				"kind": "related",
+				"weight": 0.31
+			},
+			{
+				"from": "subskill:algorithms-big-o/hash-maps",
+				"to": "subskill:python-foundations/collections",
+				"kind": "related",
+				"weight": 0.42
+			},
+			{
+				"from": "subskill:algorithms-big-o/graph-traversal",
+				"to": "subskill:python-foundations/recursion",
+				"kind": "related",
+				"weight": 0.3
+			},
+			{
+				"from": "subskill:calculus-intuition/area",
+				"to": "concept:fourier-transform/continuous-fourier-transform",
+				"kind": "related",
+				"weight": 0.26
+			},
+			{
+				"from": "concept:fourier-transform/complex-numbers",
+				"to": "concept:linear-transformations/vectors",
+				"kind": "related",
+				"weight": 0.33
+			},
+			{
+				"from": "concept:fourier-transform/inner-product-with-sinusoid",
+				"to": "concept:linear-transformations/basis",
+				"kind": "related",
+				"weight": 0.27
+			},
+			{
+				"from": "subskill:algorithms-big-o/complexity-analysis",
+				"to": "subskill:python-foundations/loops-comprehensions",
+				"kind": "related",
+				"weight": 0.36
+			},
+			{
+				"from": "subskill:calculus-intuition/limits",
+				"to": "concept:fourier-transform/fourier-series",
+				"kind": "related",
+				"weight": 0.25
+			},
+			{
+				"from": "subskill:python-foundations/functions",
+				"to": "subskill:algorithms-big-o/two-pointers",
+				"kind": "link"
+			},
+			{
+				"from": "topic:linear-transformations",
+				"to": "skill:calculus-intuition",
+				"kind": "link"
+			}
+		],
+		"builtAt": "2026-10-31T09:00:00.000Z"
+	},
+	"paths": [
+		{
+			"id": "path-interview",
+			"title": "Interview-ready Python",
+			"goal": "Solve two unseen array problems in Python in 30 minutes and explain their running time.",
+			"steps": [
+				"subskill:python-foundations/syntax-types",
+				"subskill:python-foundations/strings",
+				"subskill:python-foundations/collections",
+				"subskill:python-foundations/loops-comprehensions",
+				"subskill:python-foundations/functions",
+				"subskill:algorithms-big-o/complexity-analysis",
+				"subskill:algorithms-big-o/two-pointers",
+				"subskill:algorithms-big-o/hash-maps",
+				"subskill:algorithms-big-o/binary-search"
+			],
+			"targetId": "subskill:algorithms-big-o/binary-search",
+			"source": "tutor",
+			"createdAt": "2026-10-31T09:00:00.000Z",
+			"updatedAt": "2026-10-31T09:00:00.000Z"
+		},
+		{
+			"id": "path-spectrum",
+			"title": "Path to the Fourier transform",
+			"goal": "Read a signal's spectrum and explain what each peak means.",
+			"steps": [
+				"concept:linear-transformations/vectors",
+				"concept:fourier-transform/rotating-vectors-draw-anything",
+				"concept:fourier-transform/complex-numbers",
+				"concept:fourier-transform/rotating-vectors",
+				"concept:fourier-transform/sinusoids",
+				"concept:fourier-transform/frequency-intuition",
+				"concept:fourier-transform/inner-product-with-sinusoid",
+				"concept:fourier-transform/orthogonality",
+				"concept:fourier-transform/fourier-series",
+				"concept:fourier-transform/continuous-fourier-transform"
+			],
+			"targetId": "concept:fourier-transform/continuous-fourier-transform",
+			"source": "generated",
+			"createdAt": "2026-10-31T09:00:00.000Z",
+			"updatedAt": "2026-10-31T09:00:00.000Z"
+		}
+	]
+}

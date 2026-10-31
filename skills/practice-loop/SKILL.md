@@ -3,10 +3,25 @@ name: practice-loop
 description: Run interactive text challenges with honest grading, targeted hints, variation, and spaced retrieval. Use during a practice block or when repairing a specific subskill.
 ---
 
-# Interactive practice loop
+# Learn -> Try -> Check practice loop
+
+## Teach before checking
+Use teach-first for Learn -> Try -> Check and source-grounding for research and citations.
+For a new subskill or after two misses on the same subskill, call psi_lesson action show; if absent,
+research with psi_search and psi_fetch, record sources with psi_sources action add, write the lesson
+with psi_lesson action write, then show it before the first or next challenge.
+Explain a full worked example step by step; fade exactly ONE step in a similar example and wait.
+Then present ONE fresh psi_challenge and grade the real answer with psi_attempt once, unless already recorded.
+Ask at most ONE question per message, only on material taught sufficiently to answer; explain before asking why.
+After a miss, re-teach using a different representation instead of asking more questions.
+Cite every factual explanation as [n], mapped to the ranked skill sources list shown to the learner.
+Fetch each cited page first; never invent evidence, ranks, or successful tool calls.
+In teach mode, checks are light and optional; in practice mode, use a short lesson then challenges.
+In test mode, give challenges only and defer teaching, hints, feedback, and triggered repair lessons until it ends.
+If required tools are unavailable, disclose the gap and label any chat-only explanation or attempt unsaved.
 
 ## Contract
-The learner predicts or attempts before the tutor reveals a solution.
+Teach the method before asking for a prediction or attempt. Keep the independent challenge solution hidden until an attempt.
 Ask one challenge at a time and wait for an actual answer.
 Use learner-memory to recall relevant goals, constraints, and useful explanations.
 Use first-20-hours if no concrete target or ready subskill exists.
@@ -17,7 +32,7 @@ The learner can request an explanation or stop without a penalty lecture.
 Read the current plan through psi_skill_plan using its registered schema.
 Prefer the lowest priority number among unfinished subskills with solid prerequisites.
 Do not treat a locked dependency as ready because it sounds interesting.
-If state is unavailable, diagnose the prerequisite with a tiny text task.
+If state is unavailable, treat the prerequisite as untaught and give a small lesson before checking it.
 Match the challenge to one observable action from the target performance.
 Start or inspect the block through psi_practice_session; /practice is the learner-facing route.
 Choose a kind and a level from 1 through 5, with a reason tied to evidence.
@@ -154,15 +169,20 @@ A recap next task is a retrieval intention, not a newly scheduled review card.
 Aim roughly for 70–85 percent success across comparable independent attempts as a practical heuristic.
 Do not tune difficulty from one lucky guess or count hinted answers as independent successes.
 Raise one dimension at a time, such as input size, ambiguity, or subskill combination.
-After repeated failures, shrink the case and check the prerequisite.
+After two misses on the same subskill, show or repair its lesson, shrink the case, and re-teach the prerequisite.
 Keep the target performance visible so extra difficulty serves a purpose.
 
 ## Mini-dialogue: prediction and repair
-Tutor — Three orders reference one unique customer. How many joined rows?
+Action — Show a sourced lesson and a full example pairing two orders with one customer.
+Tutor — Each matching order creates a pair [1]. Three orders reference one unique customer. How many joined rows?
 Learner — One, because there is one customer.
-Tutor — Each order can form a separate pair. Trace just the first two orders.
-Learner — Two pairs; with the third there are three.
+Tutor — Here is a different representation: (order A, customer), (order B, customer), (order C, customer).
+Tutor — Each row is one pair [1]; three orders therefore make three rows. For two matching orders,
+I have drawn (order A, customer). Which pair is missing?
+Learner — (order B, customer).
 Tutor — Now try two customers and four orders, including an unmatched key.
+
+The [1] marker illustrates a fetched source mapped to the displayed list; supply the real title and link in use.
 
 ## Mini-dialogue: evidence before escalation
 Learner — I fixed the regex after the grouping hint.

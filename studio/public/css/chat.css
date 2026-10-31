@@ -78,9 +78,10 @@
 .psi-markdown strong { font-weight: 700; }
 .psi-markdown blockquote { margin-left: 0; padding-left: 12px; border-left: 2px solid var(--c-rule); color: var(--c-pencil); }
 .psi-markdown blockquote p { color: inherit; }
+/* Inline code is a quiet tint, not a bordered chip: prose full of identifiers must still read as prose. */
 .psi-markdown :not(pre) > code {
-	font-family: var(--c-mono); font-size: .875em; padding: 1px 4px; background: var(--c-sheet);
-	border: 1px solid var(--c-rule); overflow-wrap: anywhere; -webkit-box-decoration-break: clone; box-decoration-break: clone;
+	font-family: var(--c-mono); font-size: .875em; padding: 1px 4px; border-radius: 0;
+	background: color-mix(in srgb, var(--c-rule) 70%, transparent); border: 0; overflow-wrap: anywhere; -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
 
 /* Code blocks */
@@ -94,6 +95,8 @@
 	border: 1px solid var(--c-rule); border-radius: 6px;
 }
 .psi-code-copy:hover { border-color: var(--c-ink); }
+/* In a challenge prompt the code is there to read: no caption bar or copy button competing with the sheet. */
+.psi-prompt .psi-code figcaption { display: none; }
 figure.psi-code > pre { margin: 0; padding: 12px; overflow-x: auto; background: transparent; border: 0; border-radius: 0; }
 .psi-code pre code, .psi-math { font-family: var(--c-mono); font-size: 14px; line-height: 1.5; }
 .psi-code pre code { white-space: pre; }
@@ -128,7 +131,8 @@ code.psi-math { font-size: .875em; }
 
 /* System notices (network, crashes) */
 .psi-notice { margin: 0 0 24px; padding: 8px 0 8px 12px; border-left: 2px solid var(--c-alert); }
-.psi-notice p { margin: 0 0 8px; color: var(--c-alert); }
+/* The rule carries the alert colour; the sentence stays in ink so it reads as instructions, not shouting. */
+.psi-notice p { margin: 0 0 8px; color: var(--c-ink); }
 .psi-part-error.psi-notice { margin: 8px 0 0; }
 
 /* Buttons */
@@ -181,7 +185,7 @@ code.psi-math { font-size: .875em; }
 }
 .psi-modal {
 	width: min(480px, 100%); max-height: 85dvh; overflow: auto; padding: 24px; color: var(--c-ink);
-	background: var(--c-sheet); border: 1px solid var(--c-rule); border-radius: 6px;
+	background: var(--c-sheet); border: 1px solid var(--c-rule); border-radius: 0;
 }
 .psi-modal:focus { outline: none; }
 .psi-modal h2 { font-family: var(--c-display); font-weight: 600; font-size: 20px; line-height: 1.2; margin: 0 0 8px; }

@@ -5,6 +5,21 @@ description: Deconstruct a practical skill into a focused 20-hour plan with self
 
 # First 20 hours
 
+## Teach before checking
+Use teach-first for Learn -> Try -> Check and source-grounding for research and citations.
+For a new subskill or after two misses on the same subskill, call psi_lesson action show; if absent,
+research with psi_search and psi_fetch, record sources with psi_sources action add, write the lesson
+with psi_lesson action write, then show it before the first or next challenge.
+Explain a full worked example step by step; fade exactly ONE step in a similar example and wait.
+Then present ONE fresh psi_challenge and grade the real answer with psi_attempt once, unless already recorded.
+Ask at most ONE question per message, only on material taught sufficiently to answer; explain before asking why.
+After a miss, re-teach using a different representation instead of asking more questions.
+Cite every factual explanation as [n], mapped to the ranked skill sources list shown to the learner.
+Fetch each cited page first; never invent evidence, ranks, or successful tool calls.
+In teach mode, checks are light and optional; in practice mode, use a short lesson then challenges.
+In test mode, give challenges only and defer teaching, hints, feedback, and triggered repair lessons until it ends.
+If required tools are unavailable, disclose the gap and label any chat-only explanation or attempt unsaved.
+
 ## Purpose and limits
 Use Josh Kaufman's method from The First 20 Hours (2013) and his TEDx talk.
 Aim for a concrete useful performance, not expertise in twenty hours.
@@ -13,10 +28,10 @@ Read learner context with the learner-memory skill before proposing a schedule.
 Use the practice-loop skill once a first drill is ready.
 
 ## Define the target performance
-Ask what the learner wants to do, under which conditions, and how well.
+Use context to define the task, conditions, and success criterion; ask only one missing detail at a time.
 Replace “learn SQL” with an observable output and a check.
 Agree what is out of scope so the target fits the available time.
-Take a tiny baseline attempt before deciding where practice should start.
+Use prior evidence for a baseline; for unfamiliar material, teach first before taking a tiny baseline attempt.
 Keep a learner's existing target unless evidence shows it needs narrowing.
 Use /skill for the learner-facing deconstruction entry.
 Use psi_skill_plan with the registered schema to read or save the plan.
@@ -36,9 +51,13 @@ Save the decomposition through psi_skill_plan; /skill is the conversational rout
 Start the first ready core subskill in psi_practice_session.
 
 ## Learn enough to self-correct
-Choose three to five resources, each with a specific correction job.
+During skill creation gather and rank 3–6 relevant sources with source-grounding, each with a specific
+correction job. Fetch the actual pages, record them through psi_sources action add, and show the
+returned ranked list with its real rankReasons. Cite explanations as [n] against that list.
+Write the first ready subskill's sourced lesson with psi_lesson action write, then show it before
+the first challenge. A plan's resources field does not replace stored sources or lesson citations.
 Prefer one reference, one example collection, and one feedback checklist.
-A resource may be a local worksheet; a URL is optional.
+A local worksheet may supplement those sources for self-correction; it does not replace fetched evidence.
 Stop collecting resources once the learner can identify a likely error.
 Read only the section that answers the current practice question.
 For SQL, compare expected rows, grouping, and duplicate counts.
@@ -71,9 +90,9 @@ Review the target after several blocks, not only after hour twenty.
 ## Cross the frustration barrier
 Warn that early clumsiness is expected when a skill is unfamiliar.
 Separate discomfort from evidence that the task is too large.
-After two blocked attempts, shrink the task or repair a prerequisite.
-Use one cue, one new attempt, then feedback on the precise gap.
-Offer a short demonstration when the learner lacks a starting model.
+After two misses on the same subskill, show or repair its sourced lesson before another challenge.
+Shrink the task and re-teach with a different representation, not another question chain.
+Give a complete demonstration when the learner lacks a starting model.
 Follow the demonstration with a fresh case rather than copying it.
 Stop for fatigue or a learner request; persistence must remain voluntary.
 Record a useful adjustment through psi_recap at the end of the block.
@@ -142,13 +161,14 @@ Tutor — Which task would make Monday easier?
 Learner — A sales total for each customer.
 Tutor — Let's target a checked two-table report; database administration can wait.
 Learner — I can do twenty minutes after lunch.
-Tutor — We'll start with predicting which five rows pass a filter.
+Tutor — We'll first work a filter example, fill one missing step, then predict a fresh result.
 
 ## Mini-dialogue: frustration and correction
 Learner — My join doubled the total. I am bad at this.
 Tutor — The doubled total gives us a testable clue about matching rows.
-Tutor — For one order, how many customer rows share its key?
-Learner — Two. I joined on the name instead of the id.
+Tutor — Here is a pair diagram: one order matches two customer rows on the name, so it appears twice.
+Action — Ground that mechanism in a fetched SQL source, then offer a faded key-matching example.
+Learner — I joined on the name instead of the id.
 Tutor — Try the id on a fresh pair of tables, then check the row count.
 
 ## Close and return

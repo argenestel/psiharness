@@ -5,9 +5,25 @@ description: Teach programming through output predictions, traces, tests-first m
 
 # Programming through observable behavior
 
-## Predict, trace, then run
+## Teach before checking
+Use teach-first for Learn -> Try -> Check and source-grounding for research and citations.
+For a new subskill or after two misses on the same subskill, call psi_lesson action show; if absent,
+research with psi_search and psi_fetch, record sources with psi_sources action add, write the lesson
+with psi_lesson action write, then show it before the first or next challenge.
+Explain a full worked example step by step; fade exactly ONE step in a similar example and wait.
+Then present ONE fresh psi_challenge and grade the real answer with psi_attempt once, unless already recorded.
+Ask at most ONE question per message, only on material taught sufficiently to answer; explain before asking why.
+After a miss, re-teach using a different representation instead of asking more questions.
+Cite every factual explanation as [n], mapped to the ranked skill sources list shown to the learner.
+Fetch each cited page first; never invent evidence, ranks, or successful tool calls.
+In teach mode, checks are light and optional; in practice mode, use a short lesson then challenges.
+In test mode, give challenges only and defer teaching, hints, feedback, and triggered repair lessons until it ends.
+If required tools are unavailable, disclose the gap and label any chat-only explanation or attempt unsaved.
+
+## Teach a trace, then predict and run
 Start with one concrete input and a short snippet the learner can mentally execute.
-Ask for output or final state before executing or revealing the result.
+First execute or work through a complete example, explaining every state change with citations to
+fetched language documentation. Then fade one state update before asking for a fresh output prediction.
 Use a trace table with columns such as step, current input, local variables, output, and return value.
 For recursion distinguish entering a call from returning from it; for SQL trace rows, not statement lines.
 After checking, change one feature: empty input, duplicate value, boundary index, NULL, or aliasing.
@@ -60,10 +76,11 @@ A failure supplies evidence and a next experiment; it is not a judgment of abili
 
 ## Debug together
 1. Establish the learner's goal and reproduce one small failing case, or mark it unverified if it cannot run.
-2. Ask the learner to predict the state at the first point behavior could diverge.
+2. Explain the relevant invariant with a separate worked trace; then optionally ask for one state prediction.
 3. Trace that point with the actual input; compare expected and observed values.
-4. Ask for one hypothesis and the smallest test that could refute it.
-5. Give one hint at a time: location → invariant → partial step. Let the learner propose and make the repair.
+4. Explain one hypothesis and a minimal refuting test; invite a learner hypothesis only after that model is clear.
+5. After a miss, re-teach with a different representation (for example, a state table instead of code).
+   Then let the learner propose and make the repair; avoid a chain of increasingly pointed questions.
 6. Recheck the failing case, a normal case, and a nearby boundary. Ask what the fix changed and why.
 Do not replace the learner's program with yours. If they need an explanation, use a separate tiny
 example and return authorship to them for the original repair.

@@ -104,7 +104,9 @@ p + p { margin-top: var(--s3); }
 a { color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a:hover { text-decoration-thickness: 2px; }
 code, kbd, pre, samp { font-family: var(--font-code); font-size: 0.9em; }
-:not(pre) > code { background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; padding: 0 4px; }
+/* No programming ligatures: a learner must see == and != as the characters they type. */
+code, kbd, pre, samp, textarea, [class*="psi-code"], [class*="psi-test"], [class*="psi-run"] { font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; }
+:not(pre) > code { background: color-mix(in srgb, var(--rule) 70%, transparent); border-radius: 0; padding: 0 4px; }
 img, svg, video, iframe { max-width: 100%; }
 hr { border: 0; border-top: 1px solid var(--rule); margin: var(--s6) 0; }
 [hidden] { display: none !important; }

@@ -1,0 +1,62 @@
+{
+	"skill": "javascript-essentials",
+	"subskillId": "async-promises",
+	"title": "Promises and async/await",
+	"explanation": "A **Promise** is an object representing the eventual success or failure of an asynchronous operation. Instead of passing callbacks into a function, you attach them to the promise it returns. `.then()` itself returns a *new* promise, which is why calls chain.\n\nAn `async` function always returns a Promise: it resolves with whatever the function returns, or rejects with whatever it throws. Inside it, `await promise` suspends the function until that promise settles, letting asynchronous code read like ordinary top-to-bottom code:\n\n```js\nconst wait = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\nasync function main() {\n  const a = await wait(20, \"first\");   // pauses here until resolved\n  const b = await wait(10, \"second\");  // starts only after `a` is done\n  return `${a} then ${b}`;\n}\nmain().then((text) => console.log(text)); // first then second\n```\n\nAwaiting one call after another runs them **in sequence**. When the operations are independent, start them all and wait together with `Promise.all([...])`, which runs them concurrently and resolves to an array of results in the same order. If any of them rejects, `Promise.all` rejects immediately; `Promise.allSettled` instead waits for every result.",
+	"keyIdeas": [
+		"A Promise stands for a value that will arrive (or fail) later.",
+		"`async` functions always return a Promise; `await` pauses until it settles.",
+		"Sequential `await`s run one after another; `Promise.all` runs independent work concurrently.",
+		"`Promise.all` rejects as soon as one input rejects."
+	],
+	"workedExample": {
+		"problem": "Two independent lookups each take about 50 ms: `getUser(id)` and `getScore(id)`. Write `loadCard(id)` that returns `\"Ana: 42\"`, loading both concurrently rather than one after the other.",
+		"steps": [
+			"The lookups don't depend on each other, so start both before awaiting either.",
+			"Wrap them in `Promise.all([getUser(id), getScore(id)])` and await it once.",
+			"Destructure the result array — order matches the input array, not completion time.",
+			"Check the timing: concurrent ≈ 50 ms, not ≈ 100 ms.",
+			"Run it:\n```js\nimport assert from \"node:assert/strict\";\nconst wait = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));\nconst getUser = (id) => wait(50, { id, name: \"Ana\" });\nconst getScore = (id) => wait(50, 42);\nasync function loadCard(id) {\n  const [user, score] = await Promise.all([getUser(id), getScore(id)]);\n  return `${user.name}: ${score}`;\n}\nconst started = Date.now();\nconst card = await loadCard(1);\nconst elapsed = Date.now() - started;\nassert.equal(card, \"Ana: 42\");\nassert.ok(elapsed < 90, `expected concurrent loading, took ${elapsed} ms`);\nassert.ok(loadCard(1) instanceof Promise);\nconsole.log(card, `${elapsed} ms`);\n```"
+		],
+		"answer": "`await loadCard(1)` → `\"Ana: 42\"` in roughly 50 ms because both lookups run at the same time."
+	},
+	"pitfalls": [
+		"Forgetting `await` (or `return`) and getting a pending `Promise` object instead of the value.",
+		"Awaiting independent operations one by one, making the total time the sum instead of the maximum.",
+		"Using `Promise.all` when you need every outcome even if some fail — that is `Promise.allSettled`."
+	],
+	"citations": [
+		{
+			"sourceId": "src-c1910e1157",
+			"quote": "A Promise is an object representing the eventual completion or failure of an asynchronous operation.",
+			"locator": "Introduction"
+		},
+		{
+			"sourceId": "src-c1910e1157",
+			"quote": "the then() function returns a new promise, different from the original",
+			"locator": "Chaining"
+		},
+		{
+			"sourceId": "src-e16806a7c5",
+			"quote": "Each time when an async function is called, it returns a new Promise which will be resolved with the value returned by the async function, or rejected with an exception uncaught within the async function.",
+			"locator": "Description"
+		},
+		{
+			"sourceId": "src-e16806a7c5",
+			"quote": "Await expressions make promise-returning functions behave as though they're synchronous by suspending execution until the returned promise is fulfilled or re",
+			"locator": "Description"
+		},
+		{
+			"sourceId": "src-c1910e1157",
+			"quote": "If one of the promises in the array rejects, Promise.all() immediately rejects the returned promise.",
+			"locator": "Composition"
+		},
+		{
+			"sourceId": "src-c1910e1157",
+			"quote": "These methods all run promises concurrently — a sequence of promises are started simultaneously and do not wait for each other.",
+			"locator": "Composition"
+		}
+	],
+	"createdAt": "2026-10-31T19:57:18.000Z",
+	"updatedAt": "2026-10-31T19:57:18.000Z"
+}

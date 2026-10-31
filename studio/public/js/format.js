@@ -48,9 +48,9 @@ export function badgeLabel(id) {
 
 /** Recognize the challenge card's chat notification ("Answered challenge <id>: <answer> (<outcome>, +N XP)"). */
 export function parseAttemptMessage(text) {
-	const match = String(text ?? "").match(/^Answered challenge (\S+): ([\s\S]*) \((success|partial|fail|skipped), \+(\d+) XP\)$/);
+	const match = String(text ?? "").match(/^Answered challenge (\S+): ([\s\S]*?) \((success|partial|fail|skipped|pending), \+(\d+) XP\)(?:\. [^\n]*)?$/);
 	if (match) return { kind: "attempt", id: match[1], answer: match[2], outcome: match[3], xp: Number(match[4]) };
-	const lesson = String(text ?? "").match(/^My answer to challenge (\S+): ([\s\S]*) — result: (\w+)\. Lesson: ([\s\S]+)$/);
-	if (lesson) return { kind: "lesson", id: lesson[1], answer: lesson[2], outcome: lesson[3], lesson: lesson[4] };
+	const lesson = String(text ?? "").match(/^Lesson for challenge (\S+) \(I missed it with "([\s\S]*)"\): ([\s\S]+)$/);
+	if (lesson) return { kind: "lesson", id: lesson[1], answer: lesson[2], outcome: "fail", lesson: lesson[3] };
 	return null;
 }

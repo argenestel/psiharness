@@ -1,0 +1,62 @@
+{
+	"skill": "python-foundations",
+	"subskillId": "strings",
+	"title": "Strings are immutable sequences",
+	"explanation": "A string is a sequence of characters. You can index it (`word[0]` is the first character) and slice it (`word[1:4]`). In a slice the start is included and the end is excluded, so `s[:i] + s[i:]` always rebuilds `s`. There is no separate character type: one character is just a string of length 1.\n\nStrings **cannot be changed** in place. `word[0] = 'J'` raises an error. Every string method therefore returns a *new* string, and you must keep the result:\n\n```python\nraw = \"  Hello World  \"\nraw.strip()                 # returns a new string; raw is unchanged\nclean = raw.strip()         # keep the result\nprint(repr(clean))          # 'Hello World'\nprint(clean.lower())        # hello world\nprint(clean.split())        # ['Hello', 'World']\nprint(\"-\".join([\"a\", \"b\"])) # a-b\n```\n\nA few methods do most real work: `strip()` removes leading and trailing whitespace; `split()` with no argument splits on runs of whitespace and never returns empty strings; `\"sep\".join(parts)` glues strings together; `lower()`/`upper()` change case, and `casefold()` is a stronger lowercase meant for caseless matching.",
+	"keyIdeas": [
+		"Index from 0; slices include the start and exclude the end.",
+		"Strings are immutable: methods return new strings, so assign the result.",
+		"`split()` with no argument treats any run of whitespace as one separator.",
+		"`sep.join(parts)` is the inverse of splitting."
+	],
+	"workedExample": {
+		"problem": "Turn the full name `'  grace   brewster  hopper '` into its initials with dots: `'G.B.H.'`.",
+		"steps": [
+			"Split with no argument so any run of spaces counts as one separator: `['grace', 'brewster', 'hopper']`.",
+			"Take the first character of each word with indexing: `word[0]`.",
+			"Uppercase each initial and add a dot: `word[0].upper() + '.'`.",
+			"Join the pieces with the empty string `''`.",
+			"Run it:\n```python\nname = '  grace   brewster  hopper '\nparts = name.split()\nassert parts == ['grace', 'brewster', 'hopper']\ninitials = ''.join(w[0].upper() + '.' for w in parts)\nassert initials == 'G.B.H.'\nassert name == '  grace   brewster  hopper '  # the original string is unchanged\nprint(initials)\n```"
+		],
+		"answer": "`'G.B.H.'` — and the original string is unchanged because strings are immutable."
+	},
+	"pitfalls": [
+		"Calling `text.strip()` and ignoring the return value, then wondering why `text` still has spaces.",
+		"Using `split(' ')` on messy input: it produces empty strings for repeated spaces, while `split()` does not.",
+		"Off-by-one slices: `s[0:3]` has three characters (indexes 0, 1, 2), not four."
+	],
+	"citations": [
+		{
+			"sourceId": "src-87070e868e",
+			"quote": "Python strings cannot be changed — they are immutable. Therefore, assigning to an indexed position in the string results in an error",
+			"locator": "3.1.2 Text"
+		},
+		{
+			"sourceId": "src-87070e868e",
+			"quote": "There is no separate character type; a character is simply a string of size one",
+			"locator": "3.1.2 Text"
+		},
+		{
+			"sourceId": "src-87070e868e",
+			"quote": "Note how the start is always included, and the end always excluded. This makes sure that s[:i] + s[i:] is always equal to s",
+			"locator": "3.1.2 Text"
+		},
+		{
+			"sourceId": "src-76bc3fbfd6",
+			"quote": "If sep is not specified or is None, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty",
+			"locator": "str.split"
+		},
+		{
+			"sourceId": "src-76bc3fbfd6",
+			"quote": "Return a string which is the concatenation of the strings in iterable.",
+			"locator": "str.join"
+		},
+		{
+			"sourceId": "src-76bc3fbfd6",
+			"quote": "Casefolded strings may be used for caseless matching.",
+			"locator": "str.casefold"
+		}
+	],
+	"createdAt": "2026-10-31T19:50:27.000Z",
+	"updatedAt": "2026-10-31T19:50:27.000Z"
+}

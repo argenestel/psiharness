@@ -62,6 +62,12 @@ export function mountBench(root, { skill, onChange, onClose } = {}) {
 				if (mine === token && !disposed) { current = undefined; root.replaceChildren(); onChange?.(false); }
 				return;
 			}
+			// A skill named by /skill exists only once its plan is saved; until then show nothing (and request nothing).
+			const known = await api.get("/api/skills").catch(() => []);
+			if (Array.isArray(known) && !known.some((s) => (typeof s === "string" ? s : s?.skill) === active)) {
+				if (mine === token && !disposed) { current = undefined; root.replaceChildren(); onChange?.(false); }
+				return;
+			}
 			const [data, attempts] = await Promise.all([
 				api.get(`/api/skills/${enc(active)}`),
 				api.get(`/api/skills/${enc(active)}/attempts?limit=40`).catch(() => []),

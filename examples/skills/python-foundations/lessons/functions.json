@@ -1,0 +1,62 @@
+{
+	"skill": "python-foundations",
+	"subskillId": "functions",
+	"title": "Functions, defaults, and closures",
+	"explanation": "`def` introduces a function: a name, a parenthesized parameter list, and an indented body. `return value` hands a value back to the caller; a function that ends without `return` (or with a bare `return`) returns `None`. Keep functions small and *pure* where you can: same inputs, same output, no hidden changes.\n\nParameters can have default values, but the default is evaluated **only once**, when the `def` runs. That matters for mutable defaults:\n\n```python\ndef add_tag(tag, tags=None):   # use None, not [], as the default\n    if tags is None:\n        tags = []\n    tags.append(tag)\n    return tags\n\nprint(add_tag(\"a\"), add_tag(\"b\"))  # ['a'] ['b'] -- no shared list\n```\n\nFunctions are values: you can pass them as arguments and return them. A function defined inside another function can read the enclosing function's variables even after the outer call has finished; that is a **closure**. To *rebind* (not just read) such a variable from the inner function, declare it `nonlocal`.",
+	"keyIdeas": [
+		"`return` sends a value back; no `return` means `None`.",
+		"Default values are evaluated once — use `None` for mutable defaults.",
+		"Functions are values: pass them in, return them out.",
+		"Inner functions can read enclosing variables (closures); use `nonlocal` to rebind them."
+	],
+	"workedExample": {
+		"problem": "Write `make_greeter(greeting)` that returns a function; calling the result with a name returns e.g. `'Hi, Ada!'`. Show that two greeters keep separate greetings.",
+		"steps": [
+			"The outer function takes the setting that should be remembered: `greeting`.",
+			"Inside it, define `greet(name)` that reads `greeting` from the enclosing scope and returns the formatted text.",
+			"Return the inner function object itself — `return greet`, not `return greet()`.",
+			"Each call to `make_greeter` creates a new enclosing scope, so each greeter remembers its own greeting.",
+			"Run it:\n```python\ndef make_greeter(greeting):\n    def greet(name):\n        return f'{greeting}, {name}!'\n    return greet\n\nhi = make_greeter('Hi')\nhello = make_greeter('Hello')\nassert hi('Ada') == 'Hi, Ada!'\nassert hello('Ada') == 'Hello, Ada!'\nassert hi('Lin') == 'Hi, Lin!'\nprint(hi('Ada'), hello('Ada'))\n```"
+		],
+		"answer": "`hi('Ada')` returns `'Hi, Ada!'` and `hello('Ada')` returns `'Hello, Ada!'` — two closures, two remembered greetings."
+	},
+	"pitfalls": [
+		"Using `def f(items=[])`: the same list is reused across calls because the default is evaluated once.",
+		"Returning `inner()` (a call) instead of `inner` (the function) when building a closure.",
+		"Assigning to an enclosing variable without `nonlocal`, which creates a new local variable instead."
+	],
+	"citations": [
+		{
+			"sourceId": "src-a88d2525b5",
+			"quote": "The keyword def introduces a function definition. It must be followed by the function name and the parenthesized list of formal parameters.",
+			"locator": "4.8 Defining Functions"
+		},
+		{
+			"sourceId": "src-a88d2525b5",
+			"quote": "return without an expression argument returns None. Falling off the end of a function also returns None.",
+			"locator": "4.8 Defining Functions"
+		},
+		{
+			"sourceId": "src-a88d2525b5",
+			"quote": "Important warning: The default value is evaluated only once.",
+			"locator": "4.9.1 Default Argument Values"
+		},
+		{
+			"sourceId": "src-a88d2525b5",
+			"quote": "Like nested function definitions, lambda functions can reference variables from the containing scope",
+			"locator": "4.9.7 Lambda Expressions"
+		},
+		{
+			"sourceId": "src-a88d2525b5",
+			"quote": "The above example uses a lambda expression to return a function. Another use is to pass a small function as an argument.",
+			"locator": "4.9.7 Lambda Expressions"
+		},
+		{
+			"sourceId": "src-717b760dc5",
+			"quote": "To rebind variables found outside of the innermost scope, the nonlocal statement can be used",
+			"locator": "9.2 Python Scopes and Namespaces"
+		}
+	],
+	"createdAt": "2026-10-31T19:50:27.000Z",
+	"updatedAt": "2026-10-31T19:50:27.000Z"
+}
