@@ -269,3 +269,167 @@ textarea.psi-answer-input { min-height: 112px; resize: vertical; line-height: 1.
 .psi-test-pass { fill: var(--highlighter); stroke: #1B2A4A; stroke-width: 1; }
 .psi-test-skip { fill: none; stroke: var(--pencil); stroke-width: 1.2; }
 .psi-run-output.is-system { border-color: var(--alert); }
+
+/* ───────────────────────────────────────────── teach first ── */
+/* Prose inside widgets (lesson, prompts): body text, code tint, code blocks as in chat. */
+.psi-prose > :first-child { margin-top: 0; }
+.psi-prose > :last-child { margin-bottom: 0; }
+.psi-prose p { margin: 0 0 12px; }
+.psi-prose :not(pre) > code {
+	font-family: var(--psi-code); font-size: .875em; padding: 1px 4px;
+	background: color-mix(in srgb, var(--rule) 70%, transparent);
+}
+.psi-prose .psi-code { margin: 0 0 12px; background: var(--paper); border: 1px solid var(--rule); }
+.psi-prose .psi-code figcaption { display: none; }
+.psi-prose figure.psi-code > pre { margin: 0; padding: 10px 12px; overflow-x: auto; }
+.psi-prose .psi-code pre code { font-family: var(--psi-code); font-size: 14px; line-height: 1.5; white-space: pre; }
+
+/* Lesson card: a page of a good textbook, not a quiz. Plain sheet, no graph paper. */
+.psi-lesson-card {
+	background: var(--sheet); border: 1px solid var(--rule); padding: 24px 28px 20px; max-width: 68ch;
+	font-size: 1rem; line-height: 1.6;
+}
+.psi-lesson-title {
+	margin: 0 0 12px; font-family: var(--psi-display); font-weight: 600; font-size: 1.5625rem; line-height: 1.15;
+	letter-spacing: -0.005em;
+}
+.psi-lesson-body { margin-bottom: 4px; }
+.psi-lesson-part { margin-top: 20px; }
+.psi-lesson-part h4, .psi-lesson-sources h4 {
+	margin: 0 0 8px; font-family: var(--psi-display); font-weight: 600; font-size: 1.0625rem; line-height: 1.2;
+}
+.psi-lesson-part ul { margin: 0; padding-left: 22px; }
+.psi-lesson-part li + li { margin-top: 6px; }
+.psi-lesson-problem { margin-bottom: 10px; }
+.psi-lesson-steps { margin: 0; padding-left: 26px; }
+.psi-lesson-steps > li { padding-left: 4px; }
+.psi-lesson-steps > li + li { margin-top: 8px; }
+.psi-lesson-steps > li::marker { color: var(--pencil); font-variant-numeric: tabular-nums; }
+.psi-lesson-steps .psi-code { margin: 8px 0 0; }
+.psi-lesson-answer { margin-top: 12px; border-top: 1px solid var(--rule); padding-top: 10px; }
+.psi-lesson-answer > summary {
+	display: inline-flex; align-items: center; min-height: 32px; cursor: pointer; font-weight: 700; list-style: none;
+	text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--pencil);
+}
+.psi-lesson-answer > summary::-webkit-details-marker { display: none; }
+.psi-lesson-answer > summary:hover { text-decoration-color: currentColor; }
+.psi-lesson-answer > div { margin-top: 6px; padding-left: 12px; border-left: 2px solid var(--ink); }
+.psi-lesson-pitfalls li::marker { color: var(--pencil); }
+.psi-lesson-sources { margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: .9375rem; }
+.psi-lesson-card > .psi-replies { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--rule); }
+
+/* Source lists: [n] title — publisher; kind and a 5-step trust meter; the quote */
+.psi-source-list { list-style: none; margin: 0; padding: 0; }
+.psi-source-list > li + li { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.psi-source { min-width: 0; }
+.psi-source-head { margin: 0; line-height: 1.4; }
+.psi-source-n { margin-right: 6px; color: var(--pencil); font-weight: 700; font-variant-numeric: tabular-nums; }
+.psi-source-title { font-weight: 700; color: var(--ink); }
+a.psi-source-title { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--pencil); }
+a.psi-source-title:hover { text-decoration-color: currentColor; }
+.psi-source-publisher { color: var(--pencil); }
+.psi-source-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin: 4px 0 0; color: var(--pencil); font-size: .8125rem; }
+.psi-source-quote { margin: 8px 0 0; padding: 0 0 0 12px; border-left: 2px solid var(--rule); color: var(--ink); font-size: .9375rem; }
+.psi-source-quote p { margin: 0; }
+.psi-source-quote p::before { content: "“"; }
+.psi-source-quote p::after { content: "”"; }
+.psi-rank { position: relative; display: inline-flex; align-items: center; gap: 6px; border-radius: 2px; cursor: help; }
+.psi-rank:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.psi-rank-meter { display: inline-flex; gap: 2px; }
+.psi-rank-meter span { width: 8px; height: 8px; border: 1px solid var(--pencil); border-radius: 1px; }
+.psi-rank-meter span.is-on { background: var(--ink); border-color: var(--ink); }
+.psi-rank-tip {
+	position: absolute; z-index: 30; left: 0; bottom: calc(100% + 6px); width: max-content; max-width: min(300px, 80vw);
+	padding: 8px 10px; background: var(--sheet); color: var(--ink); border: 1px solid var(--pencil); border-radius: 6px;
+	font-size: .8125rem; line-height: 1.4; display: none; pointer-events: none;
+}
+.psi-rank-tip ul { margin: 0; padding-left: 16px; }
+.psi-rank:hover .psi-rank-tip, .psi-rank:focus-visible .psi-rank-tip, .psi-rank:focus .psi-rank-tip { display: block; }
+
+/* Source popover (attached to the page body) */
+.psi-source-popover {
+	position: fixed; z-index: 1100; display: grid; gap: 10px; padding: 14px 16px 12px; max-height: min(60vh, 420px); overflow: auto;
+	background: var(--sheet); color: var(--ink); border: 1px solid var(--pencil); border-radius: 6px;
+	font-family: var(--font-body, "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif); font-size: .9375rem; line-height: 1.5;
+}
+.psi-source-popover:focus { outline: none; }
+.psi-source-popover:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.psi-source-popover .psi-rank-tip { bottom: auto; top: calc(100% + 6px); }
+.psi-source-missing { margin: 0; color: var(--pencil); }
+.psi-source-close {
+	justify-self: end; min-height: 30px; padding: 2px 10px; font: inherit; font-size: .8125rem; color: var(--ink);
+	background: transparent; border: 1px solid var(--rule); border-radius: 6px; cursor: pointer;
+}
+.psi-source-close:hover { border-color: var(--ink); }
+.psi-source-close:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* "Sources for this skill (n)" */
+.psi-sources-widget > summary { cursor: pointer; color: var(--pencil); font-size: .875rem; }
+.psi-sources-widget > summary:hover { color: var(--ink); }
+.psi-sources-widget[open] > .psi-source-list { margin-top: 10px; padding-left: 12px; border-left: 1px solid var(--rule); }
+
+/* Verification: verdict in words with an ink or pencil mark, never red/green */
+.psi-verify { display: grid; gap: 8px; padding: 14px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.psi-verify-head { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1.0625rem; }
+.psi-verdict-mark { width: 24px; height: 24px; flex: none; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.psi-verdict-mark.is-check { stroke: var(--ink); stroke-width: 2.4; }
+.psi-verdict-mark.is-cross { stroke: var(--pencil); stroke-width: 2; }
+.psi-verdict-mark.is-query { stroke: var(--pencil); stroke-width: 1.8; }
+.psi-verify[data-verdict="query"] .psi-verify-head strong, .psi-verify[data-verdict="cross"] .psi-verify-head strong { font-weight: 700; }
+.psi-verify-label { margin: 6px 0 0; color: var(--pencil); font-size: .8125rem; font-weight: 700; }
+.psi-verify-claim { margin: 0; padding-left: 12px; border-left: 2px solid var(--ink); }
+.psi-verify-claim p { margin: 0; }
+.psi-verify-note { margin: 4px 0 0; color: var(--pencil); font-size: .8125rem; }
+
+/* "psi ran this": real execution, code then output */
+.psi-ran { border: 1px solid var(--rule); background: var(--sheet); }
+.psi-ran-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 8px 12px; border-bottom: 1px solid var(--rule); }
+.psi-ran-head strong { font-weight: 700; font-size: .9375rem; }
+.psi-ran-meta { color: var(--pencil); font-size: .8125rem; }
+.psi-ran-code .psi-code { margin: 0; border: 0; background: transparent; }
+.psi-ran-code .psi-code figcaption { display: none; }
+.psi-ran-code figure.psi-code > pre { margin: 0; padding: 10px 12px; overflow-x: auto; }
+.psi-ran-code .psi-code pre code { font-family: var(--psi-code); font-size: 14px; line-height: 1.5; white-space: pre; }
+.psi-ran-output { display: grid; gap: 6px; padding: 10px 12px; border-top: 1px dashed var(--rule); background: var(--paper); }
+.psi-ran-output pre {
+	margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 280px; overflow: auto;
+	font-family: var(--psi-code); font-size: .8125rem; line-height: 1.5; color: var(--ink);
+}
+.psi-ran-output pre.psi-ran-stderr { color: var(--pencil); }
+.psi-ran-empty, .psi-ran-exit { margin: 0; color: var(--pencil); font-size: .8125rem; }
+
+/* Socratic prompt: light and optional. No graph paper, no XP. */
+.psi-socratic { padding: 4px 0 4px 14px; border-left: 2px solid var(--pencil); max-width: 68ch; }
+.psi-socratic-question { font-size: 1.0625rem; font-weight: 700; }
+.psi-socratic-frame { margin: 4px 0 10px; color: var(--pencil); font-size: .875rem; }
+.psi-socratic-form { display: grid; gap: 6px; }
+.psi-socratic-form[hidden] { display: none; }
+.psi-socratic-label { color: var(--pencil); font-size: .8125rem; font-weight: 700; }
+.psi-socratic-input {
+	font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px;
+	padding: 8px 10px; width: 100%; max-width: 420px; min-width: 0;
+}
+.psi-socratic-input:focus { outline: 2px solid var(--ink); outline-offset: 2px; border-color: var(--pencil); }
+.psi-socratic-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.psi-socratic .psi-socratic-actions button { min-height: 36px; padding: 6px 14px; font-size: .9375rem; }
+.psi-socratic-hint { margin-top: 8px; font-size: .875rem; }
+.psi-socratic-hint > summary { cursor: pointer; color: var(--pencil); }
+.psi-socratic-hint p { margin: 4px 0 0; }
+.psi-socratic-done { margin: 2px 0 0; color: var(--pencil); font-size: .875rem; }
+.psi-socratic-done[hidden] { display: none; }
+
+/* Combo: "3 in a row" with a highlighter tick per step (progress, so highlighter) */
+.psi-combo { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 0; font-size: .9375rem; }
+.psi-combo-ticks { display: inline-flex; gap: 3px; }
+.psi-combo-ticks span { width: 6px; height: 14px; background: var(--highlighter); transform: skewX(-12deg); }
+.psi-combo-text { font-weight: 700; }
+.psi-combo-bonus { color: var(--pencil); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 540px) {
+	.psi-lesson-card { padding: 18px 16px 16px; }
+	.psi-lesson-title { font-size: 1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) { .psi-part-actions { transition: none; } }
+.psi-rank.is-plain { cursor: default; }
+.psi-source-reasons { margin: 6px 0 0; padding-left: 16px; color: var(--pencil); font-size: .8125rem; }
+.psi-source-reasons li + li { margin-top: 2px; }

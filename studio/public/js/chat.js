@@ -2,6 +2,7 @@
 // and {seq, event} envelopes. Replay begins at since=0; endpoints follow AGENTS.md.
 import { api, openEvents } from "./api.js";
 import { parseMarkdown, renderMarkdown } from "./markdown.js";
+import { citedNumbers, loadSources, numbered, renderSourceList, resolveCitation, wireCitations } from "./sources.js";
 
 /** Slash commands offered in the composer, with what each one does in plain words. */
 export const COMMANDS = [
@@ -460,6 +461,34 @@ function make(tag, className, text) {
 	if (text !== undefined) el.textContent = text;
 	return el;
 }
+function pencilIcon() {
+	const ns = "http://www.w3.org/2000/svg";
+	const svg = document.createElementNS(ns, "svg");
+	svg.setAttribute("viewBox", "0 0 16 16"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("class", "psi-pencil");
+	const path = document.createElementNS(ns, "path");
+	path.setAttribute("d", "M2.5 13.5l.8-3.2 7.4-7.4a1.2 1.2 0 0 1 1.7 0l.7.7a1.2 1.2 0 0 1 0 1.7l-7.4 7.4-3.2.8zM9.6 4l2.4 2.4");
+	svg.append(path);
+	return svg;
+}
+/** Text the learner selected inside `container`, or "". */
+function selectionIn(container) {
+	const selection = globalThis.getSelection?.();
+	if (!selection || selection.isCollapsed || !selection.rangeCount) return "";
+	if (!container.contains(selection.anchorNode) || !container.contains(selection.focusNode)) return "";
+	return selection.toString().replace(/\s+/g, " ").trim();
+}
+/** PUT JSON with the X-Psi header (api.js has no put helper). */
+async function putJson(path, body) {
+	if (typeof api.put === "function") return api.put(path, body);
+	const response = await fetch(path, { method: "PUT", body: JSON.stringify(body ?? {}),
+		headers: { "X-Psi": "1", "Content-Type": "application/json", Accept: "application/json" } });
+	let data;
+	try { data = await response.json(); } catch { data = {}; }
+	if (!response.ok) throw new Error(data.message || data.error || `Request failed (${response.status})`);
+	return data;
+}
+function readLocal(key) { try { return globalThis.localStorage?.getItem(key) ?? undefined; } catch { return undefined; } }
+function writeLocal(key, value) { try { globalThis.localStorage?.setItem(key, value); } catch { /* Per-browser only. */ } }
 function button(text, action, className = "") {
 	const el = make("button", className, text); el.type = "button"; el.addEventListener("click", action); return el;
 }
@@ -512,7 +541,8 @@ export function mountChat(el, options = {}) {
 	// Composer footer: the quiet model control (added once the chat id is known) and the connection status.
 	const foot = make("div", "psi-composer-foot");
 	let picker;
-	foot.append(status);
+	const mode = tutorModeControl();
+	foot.append(mode.el, status);
 	form.append(suggestions, box, foot);
 	dock.append(jump, form);
 	root.append(scroller, dock, live); el.replaceChildren(root);
@@ -553,6 +583,64 @@ export function mountChat(el, options = {}) {
 		column.append(notice); toBottom();
 	}
 	function clearNotice() { notice?.remove(); notice = undefined; }
+	/** One pencil line in the conversation, in order with the turns around it. */
+	function pencilLine(text) {
+		const line = make("p", "psi-model-line", text);
+		column.insertBefore(line, pending.isConnected ? pending : null);
+		if (following) toBottom();
+	}
+
+	// Tutor mode: Teach / Practice / Test, saved in the learner's profile. Changing it sends nothing.
+	function tutorModeControl() {
+		const group = make("div", "psi-mode");
+		group.setAttribute("role", "radiogroup"); group.setAttribute("aria-label", "Tutor mode");
+		let current = readLocal("psi-tutor-mode") ?? "practice", saving = false;
+		const items = TUTOR_MODES.map(([value, label, what]) => {
+			const item = make("button", "psi-mode-option", label);
+			item.type = "button"; item.dataset.mode = value;
+			item.setAttribute("role", "radio"); item.title = `${label}: ${what}`;
+			item.addEventListener("click", () => choose(value));
+			item.addEventListener("keydown", (event) => {
+				const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+				if (!step) return;
+				event.preventDefault();
+				const index = (TUTOR_MODES.findIndex(([v]) => v === value) + step + TUTOR_MODES.length) % TUTOR_MODES.length;
+				items[index].focus(); choose(TUTOR_MODES[index][0]);
+			});
+			return item;
+		});
+		group.append(...items);
+		function show(value) {
+			current = value;
+			for (const item of items) {
+				const on = item.dataset.mode === value;
+				item.setAttribute("aria-checked", String(on)); item.tabIndex = on ? 0 : -1;
+				item.classList.toggle("is-on", on);
+			}
+		}
+		async function choose(value) {
+			if (value === current || saving) return;
+			const previous = current;
+			show(value); saving = true;
+			try {
+				const response = await putJson("/api/me/profile", { tutorMode: value });
+				const saved = response?.profile?.tutorMode ?? value;
+				show(saved); writeLocal("psi-tutor-mode", saved);
+				pencilLine(modeLine(saved));
+				emit("psi:profile", response?.profile);
+			} catch (error) {
+				show(previous);
+				toast(`Couldn't change the tutor mode. ${sendErrorText(error).replace(/^Couldn't reach the tutor\. /, "")}`, { kind: "error" });
+			} finally { saving = false; }
+		}
+		show(current);
+		// GET /api/me may not carry the mode; the profile write with no changes returns it.
+		api.get("/api/me").then((me) => me?.tutorMode ?? me?.profile?.tutorMode
+			?? putJson("/api/me/profile", {}).then((r) => r?.profile?.tutorMode))
+			.then((value) => { if (TUTOR_MODES.some(([v]) => v === value) && !saving) { show(value); writeLocal("psi-tutor-mode", value); } })
+			.catch(() => { /* The control keeps the last known mode. */ });
+		return { el: group, show };
+	}
 
 	async function send(text) {
 		if (!chatId || destroyed || submitting || !String(text).trim()) return;
@@ -568,18 +656,50 @@ export function mountChat(el, options = {}) {
 			throw error;
 		} finally { submitting = false; }
 	}
-	const ctx = { get chatId() { return chatId; }, send, api, toast };
+	const ctx = { get chatId() { return chatId; }, get skill() { return chatSkill(); }, send, api, toast };
+
+	// The skill this chat is about: its option, else the latest widget that names one, else the active skill.
+	let stateSkill;
+	function chatSkill() {
+		if (options.skill) return options.skill;
+		for (const tool of [...(state.tools ?? [])].reverse()) {
+			const d = tool.result?.details?.widget ?? tool.result?.details;
+			if (typeof d?.skill === "string" && d.skill !== "sample") return d.skill;
+			if (typeof tool.args?.skill === "string") return tool.args.skill;
+		}
+		return stateSkill;
+	}
+	api.get("/api/state").then((value) => { stateSkill = value?.activeSkill ?? value?.skill; }).catch(() => {});
+	/** Numbered lists the chat has shown (lesson citations, source lists), oldest first, by message index. */
+	function citationLists() {
+		const lists = [];
+		for (const tool of state.tools ?? []) {
+			if (!tool.done) continue;
+			const d = tool.result?.details?.widget ?? tool.result?.details;
+			if (d?.type === "lesson" && Array.isArray(d.citations)) lists.push({ turn: tool.turn, items: numbered(d.citations) });
+			if (d?.type === "sources" && Array.isArray(d.items)) lists.push({ turn: tool.turn, items: numbered(d.items) });
+		}
+		return lists;
+	}
+	/** Source n as message `index` meant it: the latest list shown up to that message, else the skill's ranked list. */
+	function lookupSource(n, index) {
+		const lists = citationLists().filter((list) => list.turn <= index).reverse();
+		for (const list of lists) { const hit = resolveCitation(list.items, n); if (hit) return hit; }
+		return loadSources(chatSkill(), api).then((list) => resolveCitation(list, n));
+	}
 
 	function updateMarkdown(view, text) {
 		if (view.text === text) return;
-		const blocks = parseMarkdown(text);
+		const blocks = parseMarkdown(text, { cites: true });
 		let keep = 0;
 		while (keep < blocks.length && keep < view.raw.length && blocks[keep].raw === view.raw[keep]) keep++;
 		while (view.body.children.length > keep) view.body.lastElementChild.remove();
 		for (const block of blocks.slice(keep)) {
-			const wrapper = make("div", "psi-markdown-block"); wrapper.append(renderMarkdown(block.raw)); view.body.append(wrapper);
+			const wrapper = make("div", "psi-markdown-block"); wrapper.append(renderMarkdown(block.raw, { cites: true }));
+			view.body.append(wrapper);
 		}
 		view.raw = blocks.map((block) => block.raw); view.text = text;
+		if (view.index !== undefined) wireCitations(view.body, (n) => lookupSource(n, view.index));
 	}
 	function groupView(group) {
 		let view = groupViews.get(group.key);
@@ -616,8 +736,33 @@ export function mountChat(el, options = {}) {
 		} else {
 			const part = make("div", "psi-part"), body = make("div", "psi-markdown"), widgets = make("div", "psi-widgets");
 			const error = make("div", "psi-part-error"); error.hidden = true;
-			part.append(body, error, widgets); gv.parts.append(part);
-			view = { part, body, widgets, error, raw: [], text: null, errorKey: null };
+			const cited = make("details", "psi-cited"); cited.hidden = true;
+			const citedLine = make("summary", "", "Sources");
+			cited.append(citedLine);
+			const actions = make("div", "psi-part-actions"); actions.hidden = true;
+			const check = make("button", "psi-check");
+			check.type = "button";
+			check.setAttribute("aria-label", "Check this against the sources");
+			check.title = "Select a sentence first to check just that";
+			check.append(pencilIcon(), make("span", "", "Check this"));
+			actions.append(check);
+			part.append(body, error, cited, actions, widgets); gv.parts.append(part);
+			view = { part, body, widgets, error, cited, citedLine, actions, index, raw: [], text: null, errorKey: null };
+			// Capture a selection inside this message before the click can collapse it.
+			let selected = "";
+			const capture = () => { selected = selectionIn(body); };
+			check.addEventListener("pointerdown", capture);
+			check.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") capture(); });
+			check.addEventListener("click", () => {
+				const claim = selected || selectionIn(body) || mainClaim(state.messages?.[index]?.text);
+				selected = "";
+				const message = verifyMessage(claim);
+				if (!message) { toast("Select a sentence to check, then choose Check this."); return; }
+				if (state.busy || submitting) { toast("Wait for the tutor to finish, then check it."); return; }
+				following = true;
+				send(message).catch(() => {});
+			});
+			cited.addEventListener("toggle", () => { if (cited.open) fillCited(view); });
 		}
 		messageViews.set(index, view);
 		return view;
@@ -630,8 +775,30 @@ export function mountChat(el, options = {}) {
 		view.bubble.textContent = shown;
 		view.bubble.classList.toggle("is-command", !!label && label.startsWith("/"));
 	}
+	function fillCited(view) {
+		const numbers = view.citedNumbers ?? [];
+		const key = numbers.join(",");
+		if (view.citedKey === key) return;
+		view.citedKey = key;
+		const holder = make("div", "psi-cited-list", "Looking up the sources…");
+		view.cited.replaceChildren(view.citedLine, holder);
+		Promise.all(numbers.map((n) => Promise.resolve(lookupSource(n, view.index)).catch(() => undefined)
+			.then((hit) => hit ? { ...hit, n } : { n, title: `Source ${n}`, sourceMissing: true }))).then((items) => {
+			if (destroyed || view.citedKey !== key) return;
+			holder.replaceChildren(renderSourceList(items));
+		});
+	}
 	function renderAssistant(view, message, streaming, repeats = 1) {
 		updateMarkdown(view, message.text);
+		const settled = message.done && !streaming;
+		const numbers = settled ? citedNumbers(message.text) : [];
+		if (numbers.join(",") !== (view.citedNumbers ?? []).join(",")) {
+			view.citedNumbers = numbers;
+			view.cited.hidden = !numbers.length;
+			view.citedLine.textContent = numbers.length === 1 ? "Source (1)" : `Sources (${numbers.length})`;
+			if (view.cited.open) fillCited(view);
+		}
+		view.actions.hidden = !settled || String(message.text ?? "").trim().length < 40;
 		view.part.classList.toggle("psi-streaming", streaming);
 		const error = message.error && message.stopReason !== "aborted" && repeats > 0 ? message.error : null;
 		view.part.hidden = !message.text && !streaming && !error && message.stopReason !== "aborted"
@@ -715,7 +882,48 @@ export function mountChat(el, options = {}) {
 		stop.hidden = !state.busy; submit.hidden = !!state.busy;
 		submit.disabled = !chatId || !connected;
 		root.classList.toggle("is-busy", !!state.busy);
+		syncReplies(groups);
 		if (following) toBottom(); else updateJump();
+	}
+	/** Only the latest turn's replies are live; older rows collapse to what was picked (or disappear). */
+	function syncReplies(groups = groupTurns(state.messages ?? [], state.tools ?? [])) {
+		const messages = state.messages ?? [];
+		groups.forEach((group, at) => {
+			if (group.role !== "assistant") return;
+			const gv = groupViews.get(group.key);
+			if (!gv) return;
+			const nextUser = groups.slice(at + 1).find((item) => item.role === "user");
+			const nextUserText = nextUser ? String(messages[nextUser.messages[0]]?.text ?? "") : undefined;
+			const latest = at === groups.length - 1;
+			const done = group.messages.every((index) => messages[index]?.done) && group.tools.every((tool) => tool.done);
+			const busy = latest && (!!state.busy || submitting);
+			const rows = [...gv.article.querySelectorAll(".psi-replies")].filter((row) => row !== gv.defaultReplies);
+			let primary = rows.findLast((row) => row.dataset.source === "next_steps")
+				?? rows.findLast((row) => row.dataset.source === "lesson");
+			const prompts = gv.article.querySelectorAll(".psi-socratic");
+			if (!primary && !prompts.length && done && !(latest && state.busy)) {
+				const text = group.messages.map((index) => messages[index]?.text ?? "").join("\n");
+				const error = group.messages.some((index) => messages[index]?.error && messages[index]?.stopReason !== "aborted"
+					&& !String(messages[index]?.text ?? "").trim());
+				if (isTeachingTurn({ text, tools: group.tools, error })) {
+					gv.defaultReplies ??= replyRow(DEFAULT_REPLIES, ctx, { source: "default" });
+					if (gv.defaultReplies.parentNode !== gv.article || gv.defaultReplies.nextSibling) gv.article.append(gv.defaultReplies);
+					primary = gv.defaultReplies;
+				}
+			}
+			for (const row of [...rows, gv.defaultReplies].filter(Boolean)) {
+				if (row !== primary) { setReplyState(row, { mode: "hidden" }); continue; }
+				// A Socratic prompt answered in place already says what happened; the row would repeat it.
+				const viaPrompt = prompts.length > 0 && /^(just show me\.?|my guess: [\s\S]*)$/i.test(String(nextUserText ?? "").trim());
+				const next = viaPrompt ? { mode: "hidden" }
+					: replyRowState({ options: row.psiOptions ?? [], nextUserText, busy, chosen: row.dataset.chosen });
+				if (row.dataset.state !== next.mode || (next.chosen ?? "") !== (row.dataset.shown ?? "")) {
+					row.dataset.shown = next.chosen ?? "";
+					setReplyState(row, next);
+				}
+			}
+			if (nextUserText !== undefined) for (const prompt of prompts) prompt.psiSettle?.(nextUserText);
+		});
 	}
 	function renderTool(tool, gv, group) {
 		let view = toolViews.get(tool.id);
@@ -728,7 +936,10 @@ export function mountChat(el, options = {}) {
 			if (destroyed || typeof module.renderToolWidget !== "function") return;
 			const widget = await module.renderToolWidget(tool.name, tool.args, tool.result, ctx);
 			if (destroyed || !widget) return;
-			host.append(widget);
+			// Offered replies sit at the end of the turn, under everything it said.
+			if (widget.classList?.contains("psi-replies")) gv.article.append(widget);
+			else host.append(widget);
+			syncReplies();
 			const part = host.closest?.(".psi-part"); if (part) part.hidden = false;
 			if (following) toBottom(); else updateJump();
 		}).catch(() => {});
@@ -847,8 +1058,7 @@ export function mountChat(el, options = {}) {
 		if (event.type === "agent_settled") emit("psi:chats-changed", { chatId });
 		if (event.type === "psi_model_switched" && event.model) {
 			// One pencil line in the conversation, in order with the turns around it.
-			const line = make("p", "psi-model-line", `Switched to ${String(event.model).split("/").pop()}`);
-			column.insertBefore(line, pending.isConnected ? pending : null);
+			pencilLine(`Switched to ${String(event.model).split("/").pop()}`);
 		}
 		if (state.model && state.model !== previous.model) picker?.setModel?.(state.model);
 		if (event.type === "tool_execution_start") liveTools.add(event.toolCallId);
@@ -860,6 +1070,8 @@ export function mountChat(el, options = {}) {
 		}
 		if (event.type === "extension_ui_request") {
 			if (["setStatus", "setWidget"].includes(event.method)) emit("psi:status", event);
+			const switched = event.method === "notify" && /^Tutor mode: (teach|practice|test)$/.exec(String(event.message ?? ""));
+			if (switched) { mode.show(switched[1]); writeLocal("psi-tutor-mode", switched[1]); }
 			// The first replay burst can repeat old notifications; only a fresh chat shows them.
 			const settledBefore = (previous.messages ?? []).some((message) => message.role === "assistant" && message.done);
 			if (event.method === "notify" && !record.history && (emptyReady || !settledBefore)) {
@@ -906,6 +1118,19 @@ export function mountChat(el, options = {}) {
 		input.value = `/${name} `; suggestionIndex = 0; showSuggestions(); autosize(); input.focus();
 	}
 	input.addEventListener("input", () => { suggestionIndex = 0; autosize(); showSuggestions(); });
+	// Alt+1…4 picks one of the latest turn's offered replies, wherever focus is.
+	const onReplyKey = (event) => {
+		if (!event.altKey || event.ctrlKey || event.metaKey || activeDialog || !root.isConnected) return;
+		const digit = /^Digit([1-4])$/.exec(event.code ?? "")?.[1] ?? (/^[1-4]$/.test(event.key) ? event.key : undefined);
+		if (!digit) return;
+		const row = [...column.querySelectorAll('.psi-replies[data-state="active"]')].at(-1);
+		const choice = row?.querySelectorAll(".psi-reply")[Number(digit) - 1];
+		if (!choice) return;
+		event.preventDefault();
+		choice.click();
+	};
+	document.addEventListener("keydown", onReplyKey);
+	cleanups.push(() => document.removeEventListener("keydown", onReplyKey));
 	input.addEventListener("keydown", (event) => {
 		const matches = suggestions.hidden ? [] : matchCommands(input.value);
 		if (matches.length) {

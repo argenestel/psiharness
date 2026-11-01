@@ -7,7 +7,7 @@ const markdownPath = "../public/js/markdown.js";
 const chatPath = "../public/js/chat.js";
 const apiPath = "../public/js/api.js";
 let parseMarkdown: (text: string) => any;
-let parseInline: (text: string) => any;
+let parseInline: (text: string, opts?: { cites?: boolean }) => any;
 let safeLink: (text: string) => any;
 let languageLabel: (language?: string) => string;
 let reduceRecord: (state: any, record: any) => any;
@@ -248,4 +248,56 @@ test("errors are specific, and tool details never show answer keys", () => {
 	assert.equal(read, "path: practice-loop/SKILL.md");
 	assert.equal(languageLabel("py"), "Python");
 	assert.equal(languageLabel(""), "Code");
+});
+
+test("citation markers parse only in cite mode, hug the cited word, and skip code, links and indexing", () => {
+	const tokens = parseInline("Division returns a float [1]. See [2, 3], [4][5] and [6–8].", { cites: true });
+	const cites = tokens.filter((t: any) => t.type === "cite").map((t: any) => t.numbers);
+	assert.deepEqual(cites, [[1], [2, 3], [4, 5], [6, 7, 8]]);
+	assert.equal(tokens[0].text, "Division returns a float");
+	assert.equal(parseInline("xs[1] and `a[2]` and [3](https://x.dev/)", { cites: true })
+		.some((t: any) => t.type === "cite"), false);
+	assert.deepEqual(parseInline("plain [1] text"), [{ type: "text", text: "plain [1] text" }]);
+});
+
+test("cited numbers are collected from prose, lists and emphasis but not code", async () => {
+	const { citedNumbers } = await import("../public/js/sources.js" as string);
+	assert.deepEqual(citedNumbers("A float [2].\n\n- **bold [1]**\n- item [3]\n\n```py\nx = [9]\n```"), [1, 2, 3]);
+	assert.deepEqual(citedNumbers("No sources here."), []);
+});
+
+test("Check this picks the selection's fallback claim: a cited sentence, else a real statement", () => {
+	assert.equal(chat.mainClaim("Great question!\n\nDivision with `/` always returns a float [1]. Want to try?"),
+		"Division with / always returns a float.");
+	assert.equal(chat.mainClaim("Let's look.\n\n```py\nx = 1\n```\n\nA list keeps items in the order you add them."),
+		"A list keeps items in the order you add them.");
+	assert.equal(chat.verifyMessage("  two\nlines  "), "/verify two lines");
+	assert.equal(chat.verifyMessage(""), "");
+	assert.equal(chat.commandEcho('Run psi_verify for this claim (data): "x is 2", then explain the result.'), "/verify x is 2");
+});
+
+test("reply rows: latest is active, sent while waiting, older rows collapse to the pick or vanish", () => {
+	const options = [{ label: "Continue", message: "Continue" }, { label: "Try one myself", message: "Give me one to try" }];
+	assert.deepEqual(chat.replyRowState({ options }), { mode: "active" });
+	assert.deepEqual(chat.replyRowState({ options, busy: true }), { mode: "waiting" });
+	assert.deepEqual(chat.replyRowState({ options, busy: true, chosen: "Continue" }), { mode: "sent", chosen: "Continue" });
+	assert.deepEqual(chat.replyRowState({ options, nextUserText: "continue." }), { mode: "chosen", chosen: "Continue" });
+	assert.deepEqual(chat.replyRowState({ options, nextUserText: "Give me one to try" }), { mode: "chosen", chosen: "Try one myself" });
+	assert.deepEqual(chat.replyRowState({ options, nextUserText: "Why is that?" }), { mode: "hidden" });
+});
+
+test("teaching turns earn a default Continue; challenges, prompts and offered steps do not", () => {
+	assert.equal(chat.isTeachingTurn({ text: "x".repeat(200) }), true);
+	assert.equal(chat.isTeachingTurn({ text: "Short." }), false);
+	assert.equal(chat.isTeachingTurn({ text: "", tools: [{ name: "psi_lesson" }] }), true);
+	assert.equal(chat.isTeachingTurn({ text: "x".repeat(200), tools: [{ name: "psi_challenge" }] }), false);
+	assert.equal(chat.isTeachingTurn({ text: "x".repeat(200), tools: [{ name: "psi_next_steps" }] }), false);
+	assert.equal(chat.isTeachingTurn({ text: "x".repeat(200), error: true }), false);
+	assert.equal(chat.modeLine("teach"), "Mode: Teach — more explanation, fewer questions.");
+	assert.equal(chat.modeLine("nope"), "");
+});
+
+test("thematic breaks become rules, list items stay lists", () => {
+	assert.deepEqual(parseMarkdown("Intro\n\n---\n\n- x\n- y\n\n* * *").map((b: any) => b.type), ["paragraph", "rule", "list", "rule"]);
+	assert.deepEqual(parseMarkdown("Text\n---").map((b: any) => b.type), ["paragraph", "rule"]);
 });

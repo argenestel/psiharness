@@ -86,7 +86,7 @@ function node(tag, className = "", text) {
 let tipId = 0;
 
 /** The small 5-step rank meter; the plain rank reasons show on hover and keyboard focus. */
-export function rankMeter(item) {
+export function rankMeter(item, { tip = true } = {}) {
 	const steps = rankSteps(item?.rank);
 	const wrap = node("span", "psi-rank");
 	wrap.tabIndex = 0;
@@ -97,15 +97,15 @@ export function rankMeter(item) {
 	meter.setAttribute("aria-hidden", "true");
 	for (let i = 1; i <= 5; i++) meter.append(node("span", i <= steps ? "is-on" : ""));
 	wrap.append(meter, node("span", "psi-rank-label", label));
-	if (reasons.length) {
-		const tip = node("span", "psi-rank-tip");
-		tip.id = `psi-rank-tip-${++tipId}`;
-		tip.setAttribute("role", "tooltip");
-		tip.setAttribute("aria-hidden", "true");
+	if (reasons.length && tip) {
+		const tipEl = node("span", "psi-rank-tip");
+		tipEl.id = `psi-rank-tip-${++tipId}`;
+		tipEl.setAttribute("role", "tooltip");
+		tipEl.setAttribute("aria-hidden", "true");
 		const list = node("ul");
 		for (const reason of reasons) list.append(node("li", "", reason));
-		tip.append(list);
-		wrap.append(tip);
+		tipEl.append(list);
+		wrap.append(tipEl);
 	}
 	return wrap;
 }
@@ -116,7 +116,7 @@ function safeHref(url) {
 }
 
 /** One source as a block: [n] title — publisher, kind in words, rank meter, link, quote. */
-export function sourceEntry(item, { number = true } = {}) {
+export function sourceEntry(item, { number = true, reasonsInline = false } = {}) {
 	const entry = node("div", "psi-source");
 	const head = node("p", "psi-source-head");
 	if (number && item?.n != null) head.append(node("span", "psi-source-n", `[${item.n}]`));
@@ -133,10 +133,21 @@ export function sourceEntry(item, { number = true } = {}) {
 	const meta = node("p", "psi-source-meta");
 	if (item?.sourceMissing) meta.append(node("span", "", "This source is no longer in the skill's list."));
 	else {
-		meta.append(node("span", "psi-source-kind", kindWords(item?.kind)), rankMeter(item));
+		if (item?.kind !== undefined || item?.rank !== undefined) {
+			const meter = rankMeter(item, { tip: !reasonsInline });
+			if (reasonsInline) { meter.removeAttribute("tabindex"); meter.classList.add("is-plain"); }
+			meta.append(node("span", "psi-source-kind", kindWords(item?.kind)), meter);
+		}
 		if (item?.locator) meta.append(node("span", "psi-source-locator", item.locator));
 	}
-	entry.append(meta);
+	if (meta.childElementCount) entry.append(meta);
+	const reasons = (item?.rankReasons ?? []).filter(Boolean);
+	if (reasonsInline && reasons.length && !item?.sourceMissing) {
+		const list = node("ul", "psi-source-reasons");
+		list.setAttribute("aria-label", "Why it is trusted");
+		for (const reason of reasons) list.append(node("li", "", reason));
+		entry.append(list);
+	}
 	const quote = item?.quote ?? item?.excerpt;
 	if (quote) {
 		const block = node("blockquote", "psi-source-quote");
@@ -188,7 +199,7 @@ export function sourcePopover(anchor, item, { n } = {}) {
 	pop.append(body, close);
 	const fill = (value) => {
 		if (!pop.isConnected && openPopover?.el !== pop) return;
-		body.replaceChildren(value ? sourceEntry({ ...value, n: value.n ?? n })
+		body.replaceChildren(value ? sourceEntry({ ...value, n: value.n ?? n }, { reasonsInline: true })
 			: node("p", "psi-source-missing", `Source ${n ?? ""} isn't in this skill's list, so it can't be checked here.`.replace("  ", " ")));
 		place();
 	};

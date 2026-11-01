@@ -158,3 +158,50 @@ test("run summaries list each check without repeating assertion messages", () =>
 	assert.equal(looksLikeCode("total == 10"), true);
 	assert.equal(looksLikeCode("zero is divisible by two"), false);
 });
+
+const sourcesPath = "../public/js/sources.js";
+const { verdictWords, kindWords, rankSteps, resolveCitation } = await import(sourcesPath);
+const { normalizeOptions, comboWords, ranIn } = await import(widgetsPath);
+
+test("verdicts read as plain words with ink/pencil marks", () => {
+	const two = [{ sourceId: "a" }, { sourceId: "b" }, { sourceId: "a" }];
+	assert.deepEqual(verdictWords("supported", two), { words: "Supported by 2 sources", mark: "check", count: 2 });
+	assert.equal(verdictWords("supported", [{ sourceId: "a" }]).words, "Supported by 1 source");
+	assert.equal(verdictWords("supported", []).words, "Couldn't confirm from the sources");
+	assert.equal(verdictWords("contradicted", two).words, "Sources disagree");
+	assert.equal(verdictWords("unclear", two).mark, "query");
+});
+
+test("sources: kinds in words, 5-step trust, and numbered lookup", () => {
+	assert.equal(kindWords("official-docs"), "Official documentation");
+	assert.equal(kindWords("weird"), "Reference");
+	assert.deepEqual([0, 1, 20, 21, 98, 100, Number.NaN].map(rankSteps), [0, 1, 1, 2, 5, 5, 0]);
+	assert.equal(resolveCitation([{ n: 2, title: "b" }, { n: 1, title: "a" }], 1).title, "a");
+	assert.equal(resolveCitation([{ title: "a" }, { title: "b" }], 2).title, "b");
+	assert.equal(resolveCitation([{ n: 1 }], 3), undefined);
+});
+
+test("next steps normalize to 1–4 distinct options; combo and run timing read plainly", () => {
+	assert.deepEqual(normalizeOptions(["Continue", { label: "I'm stuck" }, { label: "continue" }, { label: "" }]),
+		[{ label: "Continue", message: "Continue" }, { label: "I'm stuck", message: "I'm stuck" }]);
+	assert.equal(normalizeOptions(["a", "b", "c", "d", "e"]).length, 4);
+	assert.equal(comboWords(1), null);
+	assert.deepEqual(comboWords(2), { text: "2 in a row", ticks: 2, bonus: "" });
+	assert.deepEqual(comboWords(3, 1.2), { text: "3 in a row", ticks: 3, bonus: "×1.2 XP" });
+	assert.equal(comboWords(6).bonus, "×1.5 XP");
+	assert.equal(ranIn(120), "ran in 120 ms");
+	assert.equal(ranIn(1450), "ran in 1.4 s");
+	assert.equal(ranIn(undefined), "");
+});
+
+test("teach-first widgets dispatch on details.widget.type", () => {
+	const w = (widget: object) => ({ details: { widget } });
+	assert.equal(widgetKindFor("psi_lesson", w({ type: "lesson", title: "T", explanation: "E" })), "lesson");
+	assert.equal(widgetKindFor("psi_verify", w({ type: "verification", claim: "c" })), "verification");
+	assert.equal(widgetKindFor("psi_run", w({ type: "run", code: "print(1)" })), "run");
+	assert.equal(widgetKindFor("psi_next_steps", w({ type: "next_steps", options: [] })), null);
+	assert.equal(widgetKindFor("psi_next_steps", w({ type: "next_steps", options: [{ label: "Go" }] })), "next_steps");
+	assert.equal(widgetKindFor("psi_ask", w({ type: "socratic", question: " " })), null);
+	assert.equal(widgetKindFor("psi_ask", w({ type: "socratic", question: "Why?" })), "socratic");
+	assert.equal(widgetKindFor("psi_sources", w({ type: "sources", items: [] })), "sources");
+});

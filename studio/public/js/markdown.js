@@ -34,6 +34,9 @@ export function parseInline(text, opts = {}) {
 		if (match[1]) tokens.push({ type: "code", text: match[2] });
 		else if (match[13]) {
 			const numbers = citeNumbers(match[13]);
+			// A marker hugs the word it cites: "float [1]" renders as "float¹".
+			const before = tokens.at(-1);
+			if (numbers.length && before?.type === "text") before.text = before.text.replace(/[ \t]+$/, "");
 			tokens.push(numbers.length ? { type: "cite", numbers, raw: match[13] } : { type: "text", text: match[0] });
 		} else if (match[3] !== undefined || match[4] !== undefined || match[5] !== undefined || match[6] !== undefined) {
 			tokens.push({ type: "math", text: match[3] ?? match[4] ?? match[5] ?? match[6],
@@ -49,7 +52,8 @@ export function parseInline(text, opts = {}) {
 }
 const parseInlineWith = (text, opts) => parseInline(text, opts);
 const cells = (line) => line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
-const special = (line) => /^(\s*$|\s*```|\s*~~~|#{1,6}\s|>\s?|\s*[-*+]\s|\s*\d+\.\s|\$\$|\\\[)/.test(line);
+const RULE = /^ {0,3}(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$/;
+const special = (line) => RULE.test(line) || /^(\s*$|\s*```|\s*~~~|#{1,6}\s|>\s?|\s*[-*+]\s|\s*\d+\.\s|\$\$|\\\[)/.test(line);
 
 /** Pure block AST. Raw HTML remains ordinary text, including during partial streams. */
 export function parseMarkdown(value, opts = {}) {
@@ -77,6 +81,9 @@ export function parseMarkdown(value, opts = {}) {
 			block = end >= 0 && text.slice(end + close.length).trim()
 				? { type: "paragraph", inline: parseInline(open + text) }
 				: { type: "math", text: end < 0 ? text : text.slice(0, end), display: true };
+		} else if (RULE.test(lines[i])) {
+			i++;
+			block = { type: "rule" };
 		} else if (/^#{1,6}\s/.test(lines[i])) {
 			const match = lines[i++].match(/^(#{1,6})\s+(.*)$/);
 			block = { type: "heading", level: match[1].length, inline: parseInline(match[2]) };
@@ -204,6 +211,7 @@ function highlight(parent, text, language) {
 }
 function build(block, opts = {}) {
 	if (block.type === "math") return math(block);
+	if (block.type === "rule") return node("hr");
 	const el = node(({ heading: `h${block.level}`, paragraph: "p", quote: "blockquote", code: "figure",
 		list: block.ordered ? "ol" : "ul", table: "table" })[block.type] || "div");
 	if (block.inline) inline(el, block.inline, opts);
