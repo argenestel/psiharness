@@ -97,7 +97,8 @@ export async function practice(argv: string[], ctx: PracticeContext): Promise<nu
 					if (hintsUsed < c.hints.length) hintsUsed++;
 					continue;
 				}
-				const outcome = answer.toLowerCase() === "s" ? "skipped" : store.checkAnswer(c, answer);
+				const skipped = answer.toLowerCase() === "s";
+				const outcome = skipped ? "skipped" : store.checkAnswer(c, answer);
 				if (outcome === undefined) {
 					out.write("→ open-ended; run `psi learn` and use /practice for these\n");
 					break;
@@ -109,7 +110,8 @@ export async function practice(argv: string[], ctx: PracticeContext): Promise<nu
 					if (reflection === undefined || reflection.toLowerCase() === "q") quit = true;
 					else lesson = reflection || undefined;
 				}
-				const result = store.recordAttempt({ challengeId: c.id, answer, outcome, hintsUsed, lesson });
+				const result = store.recordAttempt({ challengeId: c.id, skill, answer, outcome, hintsUsed, lesson,
+					source: skipped ? "tutor" : "checked", verified: !skipped });
 				count++;
 				gained += result.attempt.xp;
 				if (outcome === "success") successes++;

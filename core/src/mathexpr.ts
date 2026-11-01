@@ -332,17 +332,24 @@ export function evaluateMath(node: MathNode, vars: ReadonlyMap<string, number> =
 	}
 }
 
-// Equations: compare right-hand sides when both have "=", else drop a leading "y =", "f(x) =", "f'(x) =", "dy/dx =".
-const LHS = /^\s*(?:\\?[A-Za-z]{1,8}(?:_\{?[A-Za-z0-9]+\}?)?'*(?:\([^()=]*\))?|d[A-Za-z]*\/d[A-Za-z]+|\\frac\{d[A-Za-z]*\}\{d[A-Za-z]+\})\s*$/;
+// A single identifier on the left labels an answer (y, f'(x), dy/dx, ...), rather than contributing a
+// variable to the equation.  General left-hand sides are retained so equations can be compared by their residuals.
+const IDENTIFIER_LHS = /^\s*(?:\\?[A-Za-z]{1,8}(?:_\{?[A-Za-z0-9]+\}?)?'*(?:\([^()=]*\))?|d[A-Za-z]*\/d[A-Za-z]+|\\frac\{d[A-Za-z]*\}\{d[A-Za-z]+\})\s*$/;
 
-function rightSides(answer: string, expected: string): [string, string] | undefined {
-	const a = prep(answer).split("="), b = prep(expected).split("=");
-	if (a.length > 2 || b.length > 2) return undefined;
-	if (a.length === 2 && b.length === 2) return [a[1], b[1]];
-	const strip = (parts: string[]): string | undefined => parts.length === 1 ? parts[0]
-		: LHS.test(parts[0]) ? parts[1] : undefined;
-	const left = strip(a), right = strip(b);
-	return left === undefined || right === undefined ? undefined : [left, right];
+type MathAnswer =
+	| { kind: "expression"; text: string }
+	| { kind: "equation"; left: string; right: string };
+
+function splitAnswer(text: string): MathAnswer | undefined {
+	const parts = prep(text).split("=");
+	if (parts.length > 2) return undefined;
+	return parts.length === 1
+		? { kind: "expression", text: parts[0] }
+		: { kind: "equation", left: parts[0], right: parts[1] };
+}
+
+function identifierLhs(text: string): string | undefined {
+	return IDENTIFIER_LHS.test(text) ? text.replace(/\s+/g, "") : undefined;
 }
 
 function mulberry32(seed: number): () => number {
@@ -361,35 +368,126 @@ function agree(x: number, y: number, tolerance?: number): boolean {
 	return diff <= Math.max(1e-9, 1e-6 * Math.max(Math.abs(x), Math.abs(y))) || (tolerance !== undefined && diff <= tolerance);
 }
 
+function compareExpressions(a: MathNode, b: MathNode, tolerance?: number): boolean {
+	const names = [...mathVariables(b, mathVariables(a))].sort();
+	if (names.length === 0) {
+		const x = evaluateMath(a), y = evaluateMath(b);
+		return Number.isFinite(x) && Number.isFinite(y)
+			&& Math.abs(x - y) <= (tolerance ?? 1e-9 * Math.max(1, Math.abs(y)));
+	}
+	const random = mulberry32(SEED);
+	let valid = 0;
+	for (let attempt = 0; attempt < 72 && valid < 12; attempt++) {
+		const [low, high] = RANGES[attempt % RANGES.length];
+		const vars = new Map(names.map((name) => [name, low + random() * (high - low)]));
+		const x = evaluateMath(a, vars), y = evaluateMath(b, vars);
+		if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+		if (!agree(x, y, tolerance)) return false;
+		valid++;
+	}
+	return valid >= 6;
+}
+
+function parseEquationSide(text: string): MathNode | undefined {
+	return parseMath(text);
+}
+
+function equationTruth(left: MathNode, right: MathNode, tolerance?: number): boolean | undefined {
+	const x = evaluateMath(left), y = evaluateMath(right);
+	if (!Number.isFinite(x) || !Number.isFinite(y)) return undefined;
+	return Math.abs(x - y) <= (tolerance ?? 1e-9 * Math.max(1, Math.abs(y)));
+}
+
+function compareResiduals(
+	leftA: MathNode,
+	rightA: MathNode,
+	leftB: MathNode,
+	rightB: MathNode,
+	tolerance?: number,
+): boolean {
+	const variablesA = mathVariables(rightA, mathVariables(leftA));
+	const variablesB = mathVariables(rightB, mathVariables(leftB));
+	if ((variablesA.size === 0) !== (variablesB.size === 0)) return false;
+	const namesSet = new Set(variablesA);
+	mathVariables(leftB, namesSet);
+	mathVariables(rightB, namesSet);
+	const names = [...namesSet];
+	// A constant equation has a truth value, not a residual that can be compared to a variable equation.
+	if (names.length === 0) {
+		const truthA = equationTruth(leftA, rightA, tolerance);
+		const truthB = equationTruth(leftB, rightB, tolerance);
+		return truthA !== undefined && truthB !== undefined && truthA === truthB;
+	}
+
+	const variables = names.sort();
+	const random = mulberry32(SEED);
+	let factor: number | undefined;
+	let valid = 0;
+	for (let attempt = 0; attempt < 72 && valid < 12; attempt++) {
+		const [low, high] = RANGES[attempt % RANGES.length];
+		const vars = new Map(variables.map((name) => [name, low + random() * (high - low)]));
+		const residualA = evaluateMath(leftA, vars) - evaluateMath(rightA, vars);
+		const residualB = evaluateMath(leftB, vars) - evaluateMath(rightB, vars);
+		if (!Number.isFinite(residualA) || !Number.isFinite(residualB)) continue;
+		const zeroA = Math.abs(residualA) <= 1e-9;
+		const zeroB = Math.abs(residualB) <= 1e-9;
+		if (zeroA || zeroB) {
+			if (zeroA !== zeroB) return false;
+			continue;
+		}
+		const candidate = residualA / residualB;
+		if (!Number.isFinite(candidate) || candidate === 0) continue;
+		if (factor === undefined) factor = candidate;
+		else if (!agree(candidate, factor, tolerance)) return false;
+		valid++;
+	}
+	return valid >= 6;
+}
+
+function compareEquations(
+	a: Extract<MathAnswer, { kind: "equation" }>,
+	b: Extract<MathAnswer, { kind: "equation" }>,
+	tolerance?: number,
+): boolean | undefined {
+	const labeledA = identifierLhs(a.left);
+	const labeledB = identifierLhs(b.left);
+	if (labeledA !== undefined && labeledA === labeledB) {
+		// y=..., f'(x)=..., and dy/dx=... compare their values when the label is identical.
+		const rightA = parseEquationSide(a.right), rightB = parseEquationSide(b.right);
+		return rightA && rightB ? compareExpressions(rightA, rightB, tolerance) : undefined;
+	}
+	const leftA = parseEquationSide(a.left), rightA = parseEquationSide(a.right);
+	const leftB = parseEquationSide(b.left), rightB = parseEquationSide(b.right);
+	if (!leftA || !rightA || !leftB || !rightB) return undefined;
+	return compareResiduals(leftA, rightA, leftB, rightB, tolerance);
+}
+
 /**
  * Decide whether two math answers are equivalent. Constant expressions compare numerically (`tolerance`, default
- * relative 1e-9); expressions with variables are evaluated at seeded random points (12 valid samples wanted, at
- * least 6 required, non-finite points resampled) and must agree within relative 1e-6 / absolute 1e-9.
+ * relative 1e-9); expressions with variables are evaluated at seeded random points. Equations with general
+ * left-hand sides compare proportional nonzero residuals, while constant equations compare truth values.
  * Returns undefined when either side cannot be parsed. Never throws.
  */
 export function mathEquivalent(answer: string, expected: string, tolerance?: number): boolean | undefined {
 	try {
-		const sides = rightSides(answer, expected);
-		if (!sides) return undefined;
-		const a = parseMath(sides[0]), b = parseMath(sides[1]);
+		const a = splitAnswer(answer), b = splitAnswer(expected);
 		if (!a || !b) return undefined;
-		const names = [...mathVariables(b, mathVariables(a))].sort();
-		if (names.length === 0) {
-			const x = evaluateMath(a), y = evaluateMath(b);
-			return Number.isFinite(x) && Number.isFinite(y)
-				&& Math.abs(x - y) <= (tolerance ?? 1e-9 * Math.max(1, Math.abs(y)));
+		if (a.kind === "equation" && b.kind === "equation") return compareEquations(a, b, tolerance);
+		if (a.kind === "equation") {
+			if (b.kind !== "expression" || identifierLhs(a.left) === undefined) return undefined;
+			// Only labeled equations may be compared with a bare expression. A general equation must retain both sides.
+			const equationRhs = parseEquationSide(a.right);
+			const expression = parseMath(b.text);
+			return equationRhs && expression ? compareExpressions(equationRhs, expression, tolerance) : undefined;
 		}
-		const random = mulberry32(SEED);
-		let valid = 0;
-		for (let attempt = 0; attempt < 72 && valid < 12; attempt++) {
-			const [low, high] = RANGES[attempt % RANGES.length];
-			const vars = new Map(names.map((name) => [name, low + random() * (high - low)]));
-			const x = evaluateMath(a, vars), y = evaluateMath(b, vars);
-			if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
-			if (!agree(x, y, tolerance)) return false;
-			valid++;
+		if (b.kind === "equation") {
+			if (identifierLhs(b.left) === undefined) return undefined;
+			const equationRhs = parseEquationSide(b.right);
+			const expression = parseMath(a.text);
+			return equationRhs && expression ? compareExpressions(equationRhs, expression, tolerance) : undefined;
 		}
-		return valid >= 6;
+		const expressionA = parseMath(a.text), expressionB = parseMath(b.text);
+		return expressionA && expressionB ? compareExpressions(expressionA, expressionB, tolerance) : undefined;
 	} catch {
 		return undefined;
 	}

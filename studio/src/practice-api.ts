@@ -246,7 +246,8 @@ export class PracticeApi {
 					progress: this.practice.progress(skill), leveledUp: false, badges: [], needsGrading: true };
 			}
 			const result = this.practice.recordAttempt({ challengeId: challenge.id, answer: body.answer,
-				outcome, hintsUsed: Number(body.hintsUsed ?? 0), lesson: body.lesson as string | undefined });
+				outcome, hintsUsed: Number(body.hintsUsed ?? 0), lesson: body.lesson as string | undefined,
+				skill, source: graded === undefined ? "self-reported" : "checked", verified: graded !== undefined });
 			const state = this.state.read();
 			if (state.openChallenge?.skill === skill && state.openChallenge.id === challenge.id) {
 				await this.updateState({ openChallenge: undefined });

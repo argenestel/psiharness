@@ -55,13 +55,30 @@ test("mathEquivalent accepts reordered and rewritten equivalent expressions", ()
 		["v^2/r", "\\frac{v^2}{r}"], ["v^2/r", "v*v/r"], ["s/\\sqrt{n}", "s*n^(-1/2)"], ["s/sqrt(n)", "\\frac{s}{\\sqrt{n}}"],
 		["\\sqrt[3]{x}", "x^{1/3}"], ["|x|", "\\sqrt{x^2}"], ["e^{2x}", "\\exp(2x)"], ["\\sin 2x", "2 \\sin x \\cos x"],
 		["2\\pi r", "2 pi r"], ["\\theta^2", "θ²"], ["v_0 t + \\frac12 a t^2", "v_{0}t+0.5at^2"],
-		["y = 2x+1", "1+2x"], ["f'(x) = 6x", "6x"], ["y=6x", "f'(x)=x*6"], ["$y = x^2$", "x^2"],
+		["y = 2x+1", "1+2x"], ["f'(x) = 6x", "6x"], ["$y = x^2$", "x^2"],
 		["\\frac{dy}{dx} = 2x", "2x"], ["x^2-5x+6", "(x-2)(x-3)"], ["x^2-5x+6", "(2-x)(3-x)"],
 		["\\ln x^2", "2\\ln|x|"], ["x^2/2 + C", "C + \\frac{x^2}{2}"],
 	]) {
 		assert.equal(mathEquivalent(a, b), true, `${a} ≡ ${b}`);
 		assert.equal(mathEquivalent(b, a), true, `${b} ≡ ${a}`);
 	}
+});
+
+test("mathEquivalent preserves equation meaning", () => {
+	assert.equal(mathEquivalent("1=2", "x=2"), false);
+	assert.equal(mathEquivalent("y=2x", "2x=y"), true);
+	assert.equal(mathEquivalent("y-2x=0", "y=2x"), true);
+	assert.equal(mathEquivalent("y=x+1", "y=1+x"), true);
+	assert.equal(mathEquivalent("y=2x", "y=3x"), false);
+	assert.equal(mathEquivalent("x=2", "y=2"), false);
+	// Differently labeled equations retain both sides; unsupported derivative labels are not stripped.
+	assert.equal(mathEquivalent("y=6x", "f'(x)=x*6"), undefined);
+	assert.equal(mathEquivalent("1=1", "2=2"), true);
+	assert.equal(mathEquivalent("1=2", "2=3"), true);
+	assert.equal(mathEquivalent("1=1", "2=3"), false);
+	assert.equal(mathEquivalent("1=1", "x=x"), false);
+	assert.equal(mathEquivalent("2x", "y=2x"), true);
+	assert.equal(mathEquivalent("f'(x)=2x", "f'(x)=x*2"), true);
 });
 
 test("mathEquivalent rejects near misses and reports unparseable input as undefined", () => {
@@ -83,4 +100,8 @@ test("mathEquivalent rejects near misses and reports unparseable input as undefi
 test("mathEquivalent is deterministic", () => {
 	const runs = Array.from({ length: 5 }, () => mathEquivalent("tan(x)", "sin(x)/cos(x)"));
 	assert.deepEqual(runs, [true, true, true, true, true]);
+});
+
+test("constant equations never match equations containing variables even after cancellation", () => {
+	assert.equal(mathEquivalent("1=2", "x-x=1"), false);
 });

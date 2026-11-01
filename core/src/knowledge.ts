@@ -4,6 +4,7 @@ import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 import { isMastered } from "./bkt.ts";
 import { frontier } from "./graph.ts";
+import { withFileLock } from "./lock.ts";
 import { MemoryStore } from "./memory.ts";
 import { PracticeStore } from "./practice.ts";
 import { PsiStore } from "./store.ts";
@@ -260,26 +261,30 @@ export class KnowledgeStore {
 
 	/** Validate and persist one undirected learner link. */
 	addLink(from: string, to: string): Link {
-		const ids = new Set(this.build().nodes.map((node) => node.id));
-		if (from === to) throw new Error("Cannot link a node to itself");
-		for (const id of [from, to]) if (!ids.has(id)) throw new Error(`Unknown node: ${id}`);
-		const [first, second] = [from, to].sort(compare);
-		const links = this.listLinks();
-		const existing = links.find((link) => link.from === first && link.to === second);
-		if (existing) return existing;
-		const link = { from: first, to: second };
-		this.write("links.json", [...links, link].sort(edgeOrder));
-		return link;
+		return withFileLock(this.file("links.json"), () => {
+			const ids = new Set(this.build().nodes.map((node) => node.id));
+			if (from === to) throw new Error("Cannot link a node to itself");
+			for (const id of [from, to]) if (!ids.has(id)) throw new Error(`Unknown node: ${id}`);
+			const [first, second] = [from, to].sort(compare);
+			const links = this.listLinks();
+			const existing = links.find((link) => link.from === first && link.to === second);
+			if (existing) return existing;
+			const link = { from: first, to: second };
+			this.write("links.json", [...links, link].sort(edgeOrder));
+			return link;
+		});
 	}
 
 	/** Remove a learner link in either direction. */
 	removeLink(from: string, to: string): boolean {
-		const links = this.listLinks();
-		const remaining = links.filter((link) => !(link.from === from && link.to === to ||
-			link.from === to && link.to === from));
-		if (remaining.length === links.length) return false;
-		this.write("links.json", remaining);
-		return true;
+		return withFileLock(this.file("links.json"), () => {
+			const links = this.listLinks();
+			const remaining = links.filter((link) => !(link.from === from && link.to === to ||
+				link.from === to && link.to === from));
+			if (remaining.length === links.length) return false;
+			this.write("links.json", remaining);
+			return true;
+		});
 	}
 
 	private pathFile(id: string): string {
@@ -317,30 +322,34 @@ export class KnowledgeStore {
 	/** Save an explicit or generated path with validated graph references. */
 	savePath(draft: PathDraft): LearningPath {
 		const id = draft.id ?? newId("path");
-		this.pathFile(id);
-		const graph = this.build();
-		const steps = draft.steps ?? (draft.targetId ? knowledgePathTo(graph, draft.targetId) : []);
-		if (!strings(steps)) throw new Error("Path steps must be strings");
-		const ids = new Set(graph.nodes.map((node) => node.id));
-		for (const step of [...steps, ...(draft.targetId ? [draft.targetId] : [])]) {
-			if (!ids.has(step)) throw new Error(`Unknown path step: ${step}`);
-		}
-		const now = nowIso();
-		const value: LearningPath = { id, title: draft.title, goal: draft.goal, steps: [...steps],
-			...(draft.targetId !== undefined ? { targetId: draft.targetId } : {}),
-			source: draft.source ?? (draft.steps === undefined && draft.targetId ? "generated" : "learner"),
-			createdAt: this.readPath(id)?.createdAt ?? now, updatedAt: now };
-		this.write(path.join("paths", `${id}.json`), value);
-		return value;
+		const file = this.pathFile(id);
+		return withFileLock(file, () => {
+			const graph = this.build();
+			const steps = draft.steps ?? (draft.targetId ? knowledgePathTo(graph, draft.targetId) : []);
+			if (!strings(steps)) throw new Error("Path steps must be strings");
+			const ids = new Set(graph.nodes.map((node) => node.id));
+			for (const step of [...steps, ...(draft.targetId ? [draft.targetId] : [])]) {
+				if (!ids.has(step)) throw new Error(`Unknown path step: ${step}`);
+			}
+			const now = nowIso();
+			const value: LearningPath = { id, title: draft.title, goal: draft.goal, steps: [...steps],
+				...(draft.targetId !== undefined ? { targetId: draft.targetId } : {}),
+				source: draft.source ?? (draft.steps === undefined && draft.targetId ? "generated" : "learner"),
+				createdAt: this.readPath(id)?.createdAt ?? now, updatedAt: now };
+			this.write(path.join("paths", `${id}.json`), value);
+			return value;
+		});
 	}
 
 	/** Delete a path; return false if it was absent. */
 	deletePath(id: string): boolean {
 		const file = this.pathFile(id);
-		try { fs.unlinkSync(file); return true; } catch (error) {
-			if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
-			throw error;
-		}
+		return withFileLock(file, () => {
+			try { fs.unlinkSync(file); return true; } catch (error) {
+				if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+				throw error;
+			}
+		});
 	}
 
 	/** Generate a path against the current graph. */

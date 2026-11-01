@@ -455,3 +455,41 @@ test("addLesson stores the lesson on the attempt, awards the fail bonus once and
 	assert.throws(() => store.addLesson(skill, first.attempt.id, "   "), /nonempty/);
 	assert.throws(() => store.addLesson("../x", first.attempt.id, "x"), /Invalid skill slug/);
 });
+
+test("duplicate challenge ids require skill and update only that skill", (t) => {
+	const store = fixture(t);
+	for (const name of ["python-foundations", "javascript-essentials"]) {
+		const directory = path.join(store.root, "skills", name);
+		fs.mkdirSync(directory, { recursive: true });
+		fs.writeFileSync(path.join(directory, "challenges.json"), JSON.stringify([
+			answerChallenge({ id: "ch-classes-1", skill: name }),
+		]));
+	}
+	const draft = { challengeId: "ch-classes-1", answer: "yes", outcome: "success" as const, hintsUsed: 0 };
+	assert.throws(() => store.recordAttempt(draft), /several skills:.*javascript-essentials.*python-foundations.*pass skill/);
+	const result = store.recordAttempt({ ...draft, skill: "javascript-essentials" });
+	assert.equal(result.verified, true);
+	assert.equal(result.source, "checked");
+	assert.equal(store.progress("javascript-essentials").attempts, 1);
+	assert.equal(store.progress("python-foundations").attempts, 0);
+	const lines = fs.readFileSync(path.join(store.root, "skills/javascript-essentials/attempts.jsonl"), "utf8");
+	assert.equal(JSON.parse(lines.trim()).skill, "javascript-essentials");
+	const unique = store.addChallenge({ ...draft, skill: "python-foundations", kind: "predict", level: 1, prompt: "Unique?" });
+	assert.equal(store.recordAttempt({ ...draft, challengeId: unique.id }).attempt.skill, "python-foundations");
+});
+
+test("self-reported boss successes receive base XP and persist provenance", (t) => {
+	const store = fixture(t);
+	const challenge = store.addChallenge({ skill, kind: "boss", level: 5, prompt: "Code", format: "code",
+		language: "javascript", tests: "true" });
+	for (let i = 0; i < 8; i++) {
+		const result = store.recordAttempt({ skill, challengeId: challenge.id, answer: "code", outcome: "success",
+			hintsUsed: 0, source: "self-reported" });
+		assert.equal(result.attempt.xp, 10);
+		assert.equal(result.verified, false);
+		assert.equal(result.attempt.source, "self-reported");
+	}
+	const rows = fs.readFileSync(path.join(store.root, "skills", skill, "attempts.jsonl"), "utf8")
+		.trim().split("\n").map((line) => JSON.parse(line));
+	assert.ok(rows.every((row) => row.verified === false && row.source === "self-reported"));
+});

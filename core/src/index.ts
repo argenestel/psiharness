@@ -3,6 +3,7 @@ export * from "./slug.ts";
 export * from "./graph.ts";
 export * from "./fsrs.ts";
 export * from "./bkt.ts";
+export * from "./lock.ts";
 export * from "./store.ts";
 export * from "./memory.ts";
 export * from "./gamify.ts";

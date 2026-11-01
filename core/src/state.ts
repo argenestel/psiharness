@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { withFileLock } from "./lock.ts";
 import { newId, nowIso } from "./slug.ts";
 import type { PsiState } from "./types.ts";
 
@@ -52,20 +53,22 @@ export class StateStore {
 
 	/** Merge fields, delete explicit undefined values, and atomically replace state.json. */
 	update(patch: Partial<Omit<PsiState, "updatedAt">>): PsiState {
-		const state = { ...this.read(), ...patch, updatedAt: nowIso() };
-		for (const key of ["activeSkill", "activeTopic", "openChallenge"] as const) {
-			if (state[key] === undefined) delete state[key];
-		}
-		validate(state);
-		fs.mkdirSync(this.root, { recursive: true });
-		this.assertFile();
-		const temporary = `${this.file}.${process.pid}.${newId("tmp")}.tmp`;
-		try {
-			fs.writeFileSync(temporary, JSON.stringify(state, null, "\t") + "\n", { flag: "wx" });
-			fs.renameSync(temporary, this.file);
-		} finally {
-			fs.rmSync(temporary, { force: true });
-		}
-		return state;
+		return withFileLock(this.file, () => {
+			const state = { ...this.read(), ...patch, updatedAt: nowIso() };
+			for (const key of ["activeSkill", "activeTopic", "openChallenge"] as const) {
+				if (state[key] === undefined) delete state[key];
+			}
+			validate(state);
+			fs.mkdirSync(this.root, { recursive: true });
+			this.assertFile();
+			const temporary = `${this.file}.${process.pid}.${newId("tmp")}.tmp`;
+			try {
+				fs.writeFileSync(temporary, JSON.stringify(state, null, "\t") + "\n", { flag: "wx" });
+				fs.renameSync(temporary, this.file);
+			} finally {
+				fs.rmSync(temporary, { force: true });
+			}
+			return state;
+		});
 	}
 }

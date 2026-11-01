@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { levelFor, levelTitle } from "./gamify.ts";
+import { withFileLock } from "./lock.ts";
 import { PracticeStore } from "./practice.ts";
 import { SourceStore } from "./sources.ts";
 import { newId, nowIso } from "./slug.ts";
@@ -115,18 +116,20 @@ export class ProfileStore {
 
 	/** Validate and atomically merge profile settings. */
 	update(patch: Partial<Omit<GameProfile, "updatedAt">>): GameProfile {
-		const profile = { ...this.read(), ...patch, updatedAt: nowIso() };
-		validate(profile);
-		fs.mkdirSync(this.root, { recursive: true });
-		assertPath(this.root, this.file);
-		const temporary = `${this.file}.${process.pid}.${newId("tmp")}.tmp`;
-		try {
-			fs.writeFileSync(temporary, JSON.stringify(profile, null, "\t") + "\n", { flag: "wx" });
-			fs.renameSync(temporary, this.file);
-		} finally {
-			fs.rmSync(temporary, { force: true });
-		}
-		return profile;
+		return withFileLock(this.file, () => {
+			const profile = { ...this.read(), ...patch, updatedAt: nowIso() };
+			validate(profile);
+			fs.mkdirSync(this.root, { recursive: true });
+			assertPath(this.root, this.file);
+			const temporary = `${this.file}.${process.pid}.${newId("tmp")}.tmp`;
+			try {
+				fs.writeFileSync(temporary, JSON.stringify(profile, null, "\t") + "\n", { flag: "wx" });
+				fs.renameSync(temporary, this.file);
+			} finally {
+				fs.rmSync(temporary, { force: true });
+			}
+			return profile;
+		});
 	}
 
 	/** Summarize local-day activity; session minutes are credited to the day the session started. */

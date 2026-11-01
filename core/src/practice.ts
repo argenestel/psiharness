@@ -4,8 +4,15 @@ import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 import { levelFor, newBadges, updateStreak, xpFor } from "./gamify.ts";
 import { advanceAfterAttempt, reconcileStatuses } from "./progression.ts";
+import { withFileLock } from "./lock.ts";
 import { mathEquivalent } from "./mathexpr.ts";
 import type { Attempt, Challenge, Outcome, PracticeSession, Progress, SkillPlan, Subskill } from "./types.ts";
+
+/** Provenance stays local until the shared Attempt contract is extended. */
+export type AttemptRecord = Attempt & { verified: boolean; source: "checked" | "self-reported" | "tutor" };
+type AttemptDraft = Omit<Attempt, "id" | "at" | "xp" | "skill" | "subskillId"> & {
+	at?: string; skill?: string; verified?: boolean; source?: AttemptRecord["source"];
+};
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -217,18 +224,23 @@ export class PracticeStore {
 	readPlan(skill: string): SkillPlan | undefined { return this.read(skill, "plan.json"); }
 
 	/** Persist a skill plan as tab-indented JSON. */
-	writePlan(plan: SkillPlan): void { this.write(plan.skill, "plan.json", plan); }
+	writePlan(plan: SkillPlan): void {
+		withFileLock(this.file(plan.skill, "plan.json"), () => this.write(plan.skill, "plan.json", plan));
+	}
 
 	/** Recompute and atomically persist historical statuses, marking the plan as migrated. */
 	reconcile(skill: string): SkillPlan | undefined {
-		const plan = this.readPlan(skill);
-		if (!plan) return undefined;
-		const updated = reconcileStatuses(plan, this.listChallenges(skill), this.lines<Attempt>(skill, "attempts.jsonl"));
-		const marked = updated as SkillPlan & { reconciledAt?: string };
-		marked.reconciledAt = (plan as SkillPlan & { reconciledAt?: string }).reconciledAt ?? new Date().toISOString();
-		updated.updatedAt = new Date().toISOString();
-		this.writePlan(updated);
-		return updated;
+		if (!this.readPlan(skill)) return undefined;
+		return withFileLock(this.file(skill, "plan.json"), () => {
+			const plan = this.readPlan(skill);
+			if (!plan) return undefined;
+			const updated = reconcileStatuses(plan, this.listChallenges(skill), this.lines<Attempt>(skill, "attempts.jsonl"));
+			const marked = updated as SkillPlan & { reconciledAt?: string };
+			marked.reconciledAt = (plan as SkillPlan & { reconciledAt?: string }).reconciledAt ?? new Date().toISOString();
+			updated.updatedAt = new Date().toISOString();
+			this.writePlan(updated);
+			return updated;
+		});
 	}
 
 	/** Select the next available subskill without mutating the plan. */
@@ -236,12 +248,15 @@ export class PracticeStore {
 
 	/** Update a known subskill's status. */
 	setSubskillStatus(skill: string, id: string, status: Subskill["status"]): void {
-		const plan = this.readPlan(skill);
-		const subskill = plan?.subskills.find((candidate) => candidate.id === id);
-		if (!plan || !subskill) throw new Error(`Unknown subskill: ${id}`);
-		subskill.status = status;
-		plan.updatedAt = new Date().toISOString();
-		this.writePlan(plan);
+		if (!this.readPlan(skill)) throw new Error(`Unknown subskill: ${id}`);
+		return withFileLock(this.file(skill, "plan.json"), () => {
+			const plan = this.readPlan(skill);
+			const subskill = plan?.subskills.find((candidate) => candidate.id === id);
+			if (!plan || !subskill) throw new Error(`Unknown subskill: ${id}`);
+			subskill.status = status;
+			plan.updatedAt = new Date().toISOString();
+			this.writePlan(plan);
+		});
 	}
 
 	/** Create and persist a uniquely identified challenge. */
@@ -251,9 +266,11 @@ export class PracticeStore {
 		const errors = validateChallenge(challenge);
 		if (errors.length) throw new Error(errors.join("; "));
 		challenge.hints = [...challenge.hints];
-		const challenges = this.listChallenges(draft.skill);
-		this.write(draft.skill, "challenges.json", [...challenges, challenge]);
-		return challenge;
+		return withFileLock(this.file(draft.skill, "challenges.json"), () => {
+			const challenges = this.listChallenges(draft.skill);
+			this.write(draft.skill, "challenges.json", [...challenges, challenge]);
+			return challenge;
+		});
 	}
 
 	/** Look up a challenge within a validated skill. */
@@ -304,46 +321,62 @@ export class PracticeStore {
 	}
 
 	/** Record an attempt, progress and badges, linking it to an open session when present. */
-	recordAttempt(draft: Omit<Attempt, "id" | "at" | "xp" | "skill" | "subskillId"> & { at?: string }): {
-		attempt: Attempt; progress: Progress; leveledUp: boolean; badges: string[];
+	recordAttempt(draft: AttemptDraft): {
+		attempt: AttemptRecord; progress: Progress; leveledUp: boolean; badges: string[];
+		verified: boolean; source: AttemptRecord["source"];
 		unlocked: string[]; mastered: string[];
 	} {
-		// The stable draft has no skill: resolve its globally generated challenge id across skills.
-		const challenge = this.listSkills().flatMap((skill) => this.listChallenges(skill))
-			.find((candidate) => candidate.id === draft.challengeId);
-		if (!challenge) throw new Error(`Challenge not found: ${draft.challengeId}`);
-		const skill = challenge.skill;
-		const now = draft.at === undefined ? new Date() : new Date(draft.at);
-		const at = now.toISOString();
-		let plan = this.readPlan(skill);
-		if (plan && !(plan as SkillPlan & { reconciledAt?: string }).reconciledAt) plan = this.reconcile(skill);
-		const before = this.progress(skill);
-		const previousLevel = levelFor(before.xp).level;
-		const history = this.lines<Attempt>(skill, "attempts.jsonl");
-		const sessions = this.lines<PracticeSession>(skill, "sessions.jsonl");
-		const attempt: Attempt = { ...draft, id: randomUUID(), at, skill, subskillId: challenge.subskillId,
-			xp: xpFor({ ...draft, kind: challenge.kind, level: previousLevel }) };
-		let progress = updateStreak({ ...before, xp: before.xp + attempt.xp, attempts: before.attempts + 1,
-			successes: before.successes + Number(attempt.outcome === "success"),
-			failures: before.failures + Number(attempt.outcome === "fail") }, now);
-		progress.level = levelFor(progress.xp).level;
-		const badges = newBadges(progress, attempt, { history, kind: challenge.kind });
-		progress = { ...progress, badges: [...progress.badges, ...badges] };
-		const active = sessions.findLast((session) => !session.endedAt);
-		if (active) active.attemptIds.push(attempt.id);
-		// Atomic replacement preserves one JSON line per attempt and existing history order.
-		this.writeLines(skill, "attempts.jsonl", [...history, attempt]);
-		const advanced = plan
-			? advanceAfterAttempt(plan, this.listChallenges(skill), [...history, attempt], attempt)
-			: { unlocked: [], mastered: [] };
-		if ("plan" in advanced) {
-			advanced.plan.updatedAt = new Date().toISOString();
-			this.writePlan(advanced.plan);
+		const candidates = (draft.skill === undefined ? this.listSkills() : [draft.skill])
+			.flatMap((skill) => this.listChallenges(skill).filter((c) => c.id === draft.challengeId)
+				.map((challenge) => ({ challenge, skill })));
+		if (!candidates.length) throw new Error(`Challenge not found: ${draft.challengeId}`);
+		if (candidates.length > 1) {
+			throw new Error(`challenge "${draft.challengeId}" exists in several skills: ${candidates.map((c) => c.skill)
+				.join(", ")}; pass skill`);
 		}
-		if (active) this.writeLines(skill, "sessions.jsonl", sessions);
-		this.write(skill, "progress.json", progress);
-		return { attempt, progress, leveledUp: progress.level > previousLevel, badges,
-			unlocked: advanced.unlocked, mastered: advanced.mastered };
+		const { challenge, skill } = candidates[0];
+		return withFileLock(this.file(skill, "progress.json"), () => {
+			return withFileLock(this.file(skill, "plan.json"), () => {
+				const now = draft.at === undefined ? new Date() : new Date(draft.at);
+				const at = now.toISOString();
+				let plan = this.readPlan(skill);
+				if (plan && !(plan as SkillPlan & { reconciledAt?: string }).reconciledAt) plan = this.reconcile(skill);
+				const before = this.progress(skill);
+				const previousLevel = levelFor(before.xp).level;
+				const history = this.lines<Attempt>(skill, "attempts.jsonl");
+				const sessions = this.lines<PracticeSession>(skill, "sessions.jsonl");
+				const checked = this.checkAnswer(challenge, draft.answer);
+				const source = checked !== undefined && checked === draft.outcome ? "checked"
+					: draft.source === "self-reported" ? "self-reported" : "tutor";
+				const verified = source === "checked";
+				const outcome = draft.outcome;
+				const attempt: AttemptRecord = { ...draft, verified, source, outcome, id: randomUUID(), at, skill,
+					subskillId: challenge.subskillId,
+					xp: xpFor({ ...draft, outcome, selfReported: source === "self-reported",
+						kind: challenge.kind, level: previousLevel }) };
+				let progress = updateStreak({ ...before, xp: before.xp + attempt.xp, attempts: before.attempts + 1,
+					successes: before.successes + Number(attempt.outcome === "success"),
+					failures: before.failures + Number(attempt.outcome === "fail") }, now);
+				progress.level = levelFor(progress.xp).level;
+				const badges = newBadges(progress, attempt, { history, kind: challenge.kind });
+				progress = { ...progress, badges: [...progress.badges, ...badges] };
+				const active = sessions.findLast((session) => !session.endedAt);
+				if (active) active.attemptIds.push(attempt.id);
+				// Atomic replacement preserves one JSON line per attempt and existing history order.
+				this.writeLines(skill, "attempts.jsonl", [...history, attempt]);
+				const advanced = plan
+					? advanceAfterAttempt(plan, this.listChallenges(skill), [...history, attempt], attempt)
+					: { unlocked: [], mastered: [] };
+				if ("plan" in advanced) {
+					advanced.plan.updatedAt = new Date().toISOString();
+					this.writePlan(advanced.plan);
+				}
+				if (active) this.writeLines(skill, "sessions.jsonl", sessions);
+				this.write(skill, "progress.json", progress);
+				return { attempt, progress, leveledUp: progress.level > previousLevel, badges,
+					unlocked: advanced.unlocked, mastered: advanced.mastered, verified, source };
+			});
+		});
 	}
 
 	/**
@@ -353,36 +386,40 @@ export class PracticeStore {
 	addLesson(skill: string, attemptId: string, lesson: string): {
 		attempt: Attempt; progress: Progress; bonus: number; leveledUp: boolean;
 	} {
-		const text = typeof lesson === "string" ? lesson.trim() : "";
-		if (!text) throw new Error("Lesson must be a nonempty string");
-		const history = this.lines<Attempt>(skill, "attempts.jsonl");
-		const attempt = history.find((candidate) => candidate.id === attemptId);
-		if (!attempt) throw new Error(`Attempt not found: ${attemptId}`);
-		const first = !attempt.lesson?.trim();
-		let bonus = 0;
-		if (first) {
-			const kind = this.getChallenge(skill, attempt.challengeId)?.kind ?? "quickfire";
-			const base = { outcome: attempt.outcome, kind, level: 1, hintsUsed: Number(attempt.hintsUsed) || 0 };
-			bonus = Math.max(0, xpFor({ ...base, lesson: text }) - xpFor(base));
-		}
-		attempt.lesson = text;
-		attempt.xp = (Number(attempt.xp) || 0) + bonus;
-		const before = this.progress(skill);
-		const progress: Progress = { ...before, xp: before.xp + bonus };
-		progress.level = levelFor(progress.xp).level;
-		this.writeLines(skill, "attempts.jsonl", history);
-		if (bonus) this.write(skill, "progress.json", progress);
-		return { attempt, progress, bonus, leveledUp: progress.level > levelFor(before.xp).level };
+		return withFileLock(this.file(skill, "progress.json"), () => {
+			const text = typeof lesson === "string" ? lesson.trim() : "";
+			if (!text) throw new Error("Lesson must be a nonempty string");
+			const history = this.lines<Attempt>(skill, "attempts.jsonl");
+			const attempt = history.find((candidate) => candidate.id === attemptId);
+			if (!attempt) throw new Error(`Attempt not found: ${attemptId}`);
+			const first = !attempt.lesson?.trim();
+			let bonus = 0;
+			if (first) {
+				const kind = this.getChallenge(skill, attempt.challengeId)?.kind ?? "quickfire";
+				const base = { outcome: attempt.outcome, kind, level: 1, hintsUsed: Number(attempt.hintsUsed) || 0 };
+				bonus = Math.max(0, xpFor({ ...base, lesson: text }) - xpFor(base));
+			}
+			attempt.lesson = text;
+			attempt.xp = (Number(attempt.xp) || 0) + bonus;
+			const before = this.progress(skill);
+			const progress: Progress = { ...before, xp: before.xp + bonus };
+			progress.level = levelFor(progress.xp).level;
+			this.writeLines(skill, "attempts.jsonl", history);
+			if (bonus) this.write(skill, "progress.json", progress);
+			return { attempt, progress, bonus, leveledUp: progress.level > levelFor(before.xp).level };
+		});
 	}
 
 	/** Close any prior session for this skill, then start a fresh session. */
 	startSession(skill: string, focus?: string, now: Date = new Date()): PracticeSession {
-		const startedAt = now.toISOString();
-		this.endSession(skill, now);
-		const sessions = this.lines<PracticeSession>(skill, "sessions.jsonl");
-		const session: PracticeSession = { id: randomUUID(), skill, focus, startedAt, attemptIds: [] };
-		this.writeLines(skill, "sessions.jsonl", [...sessions, session]);
-		return session;
+		return withFileLock(this.file(skill, "progress.json"), () => {
+			const startedAt = now.toISOString();
+			this.endSession(skill, now);
+			const sessions = this.lines<PracticeSession>(skill, "sessions.jsonl");
+			const session: PracticeSession = { id: randomUUID(), skill, focus, startedAt, attemptIds: [] };
+			this.writeLines(skill, "sessions.jsonl", [...sessions, session]);
+			return session;
+		});
 	}
 
 	/** Find the latest open session for one skill or across all skills. */
@@ -394,22 +431,25 @@ export class PracticeStore {
 
 	/** Close a session once, atomically rewriting its JSONL row and crediting up to three hours. */
 	endSession(skill: string, now: Date = new Date()): PracticeSession | undefined {
-		const sessions = this.lines<PracticeSession>(skill, "sessions.jsonl");
-		const active = sessions.findLast((session) => !session.endedAt);
-		if (!active) return undefined;
-		active.endedAt = now.toISOString();
-		active.minutes = Math.max(0, Math.min(180, Math.round((now.getTime() - Date.parse(active.startedAt)) / 60_000)));
-		const progress = this.progress(skill);
-		progress.minutesLogged += active.minutes;
-		// A skipped placeholder permits time badges even before the first attempt; only hour badges apply here.
-		const last = this.lines<Attempt>(skill, "attempts.jsonl").at(-1);
-		const earned = last ? newBadges(progress, last) : newBadges(progress, {
-			id: "", challengeId: "", skill, at: active.endedAt, answer: "", outcome: "skipped", hintsUsed: 0, xp: 0,
+		if (!readText(this.root, this.file(skill, "sessions.jsonl"))) return undefined;
+		return withFileLock(this.file(skill, "progress.json"), () => {
+			const sessions = this.lines<PracticeSession>(skill, "sessions.jsonl");
+			const active = sessions.findLast((session) => !session.endedAt);
+			if (!active) return undefined;
+			active.endedAt = now.toISOString();
+			active.minutes = Math.max(0, Math.min(180, Math.round((now.getTime() - Date.parse(active.startedAt)) / 60_000)));
+			const progress = this.progress(skill);
+			progress.minutesLogged += active.minutes;
+			// A skipped placeholder permits time badges even before the first attempt; only hour badges apply here.
+			const last = this.lines<Attempt>(skill, "attempts.jsonl").at(-1);
+			const earned = last ? newBadges(progress, last) : newBadges(progress, {
+				id: "", challengeId: "", skill, at: active.endedAt, answer: "", outcome: "skipped", hintsUsed: 0, xp: 0,
 		});
 		progress.badges.push(...earned.filter((badge) => badge.startsWith("hour-")));
 		this.writeLines(skill, "sessions.jsonl", sessions);
 		this.write(skill, "progress.json", progress);
 		return active;
+		});
 	}
 
 	/** Read progress, or return an empty independent value for an unpracticed skill. */

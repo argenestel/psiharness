@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { withFileLock } from "./lock.ts";
 import { newId, nowIso } from "./slug.ts";
 import type { LearnerMemory, MemoryItem, MemoryKind, SessionRecap } from "./types.ts";
 
@@ -91,75 +92,87 @@ export class MemoryStore {
 
 	/** Set a trimmed learner name; an empty name clears it. Returns nothing. */
 	setName(name: string): void {
-		const data = this.read();
-		data.name = name.trim() || undefined;
-		this.write(data);
+		withFileLock(this.file, () => {
+			const data = this.read();
+			data.name = name.trim() || undefined;
+			this.write(data);
+		});
 	}
 
 	/** Save a fact, merging similar same-kind facts and increasing confidence. */
 	remember(draft: Draft): MemoryItem {
-		const clean = normalize(draft), data = this.read(), now = nowIso();
-		let item = data.items.find((candidate) => candidate.kind === clean.kind && similar(candidate.text, clean.text));
-		if (item) {
-			const confidence = Math.min(1, Math.max(item.confidence, clean.confidence) + 0.1);
-			Object.assign(item, clean, { confidence, updatedAt: now });
-		} else {
-			item = { ...clean, id: newId("mem"), createdAt: now, updatedAt: now };
-			data.items.push(item);
-		}
-		this.write(data);
-		return item;
+		return withFileLock(this.file, () => {
+			const clean = normalize(draft), data = this.read(), now = nowIso();
+			let item = data.items.find((candidate) => candidate.kind === clean.kind && similar(candidate.text, clean.text));
+			if (item) {
+				const confidence = Math.min(1, Math.max(item.confidence, clean.confidence) + 0.1);
+				Object.assign(item, clean, { confidence, updatedAt: now });
+			} else {
+				item = { ...clean, id: newId("mem"), createdAt: now, updatedAt: now };
+				data.items.push(item);
+			}
+			this.write(data);
+			return item;
+		});
 	}
 
 	/** Patch an existing fact using the same validation as remember. */
 	update(id: string, patch: Partial<Pick<MemoryItem, "text" | "kind" | "topic" | "skill" | "confidence" | "source">>)
 		: MemoryItem {
-		const data = this.read(), item = data.items.find((candidate) => candidate.id === id);
-		if (!item) throw new Error(`Memory item not found: ${id}`);
-		Object.assign(item, normalize({ ...item, ...patch }), { updatedAt: nowIso() });
-		this.write(data);
-		return item;
+		return withFileLock(this.file, () => {
+			const data = this.read(), item = data.items.find((candidate) => candidate.id === id);
+			if (!item) throw new Error(`Memory item not found: ${id}`);
+			Object.assign(item, normalize({ ...item, ...patch }), { updatedAt: nowIso() });
+			this.write(data);
+			return item;
+		});
 	}
 
 	/** Remove a fact, writing only when the identifier exists. */
 	forget(id: string): boolean {
-		const data = this.read(), remaining = data.items.filter((item) => item.id !== id);
-		if (remaining.length === data.items.length) return false;
-		data.items = remaining;
-		this.write(data);
-		return true;
+		return withFileLock(this.file, () => {
+			const data = this.read(), remaining = data.items.filter((item) => item.id !== id);
+			if (remaining.length === data.items.length) return false;
+			data.items = remaining;
+			this.write(data);
+			return true;
+		});
 	}
 
 	/** Rank facts with +2 for each exact skill/topic match and mark returned facts used. */
 	recall(q: Query = {}): MemoryItem[] {
-		const data = this.read(), query = tokens(q.query ?? ""), now = nowIso();
-		const score = (item: MemoryItem): number => {
-			const text = tokens(`${item.text} ${item.skill ?? ""} ${item.topic ?? ""}`);
-			const overlap = [...query].filter((word) => text.has(word)).length;
-			const title = [item.skill, item.topic].some((value) => value &&
-				(query.has(value.toLowerCase()) || value.toLowerCase() === q.query?.trim().toLowerCase()));
-			const age = Math.max(0, (Date.parse(now) - Date.parse(item.updatedAt)) / 86400000);
-			return (query.size ? 3 * overlap / query.size : 0) + (title ? 0.5 : 0) + item.confidence +
-				(item.skill !== undefined && item.skill === q.skill ? 2 : 0) +
-				(item.topic !== undefined && item.topic === q.topic ? 2 : 0) + 2 ** (-age / 30);
-		};
-		const result = data.items.filter((item) => q.kind === undefined || item.kind === q.kind)
-			.map((item) => ({ item, score: score(item) })).sort((a, b) => b.score - a.score ||
-				newest(a.item.updatedAt, b.item.updatedAt) || a.item.id.localeCompare(b.item.id))
-			.slice(0, count(q.limit ?? 12)).map(({ item }) => Object.assign(item, { lastUsedAt: now }));
-		if (result.length) this.write(data);
-		return result;
+		return withFileLock(this.file, () => {
+			const data = this.read(), query = tokens(q.query ?? ""), now = nowIso();
+			const score = (item: MemoryItem): number => {
+				const text = tokens(`${item.text} ${item.skill ?? ""} ${item.topic ?? ""}`);
+				const overlap = [...query].filter((word) => text.has(word)).length;
+				const title = [item.skill, item.topic].some((value) => value &&
+					(query.has(value.toLowerCase()) || value.toLowerCase() === q.query?.trim().toLowerCase()));
+				const age = Math.max(0, (Date.parse(now) - Date.parse(item.updatedAt)) / 86400000);
+				return (query.size ? 3 * overlap / query.size : 0) + (title ? 0.5 : 0) + item.confidence +
+					(item.skill !== undefined && item.skill === q.skill ? 2 : 0) +
+					(item.topic !== undefined && item.topic === q.topic ? 2 : 0) + 2 ** (-age / 30);
+			};
+			const result = data.items.filter((item) => q.kind === undefined || item.kind === q.kind)
+				.map((item) => ({ item, score: score(item) })).sort((a, b) => b.score - a.score ||
+					newest(a.item.updatedAt, b.item.updatedAt) || a.item.id.localeCompare(b.item.id))
+				.slice(0, count(q.limit ?? 12)).map(({ item }) => Object.assign(item, { lastUsedAt: now }));
+			if (result.length) this.write(data);
+			return result;
+		});
 	}
 
 	/** Add a trimmed session recap, retaining the latest hundred by date. */
 	addRecap(draft: Omit<SessionRecap, "id" | "date"> & { date?: string }): SessionRecap {
-		const data = this.read();
-		const recap = { ...draft, id: newId("rec"), date: draft.date ?? nowIso(),
-			minutes: Number.isFinite(draft.minutes) ? Math.max(0, draft.minutes) : 0,
-			summary: draft.summary.trim(), next: draft.next.trim() };
-		data.recaps.push(recap);
-		this.write(data);
-		return recap;
+		return withFileLock(this.file, () => {
+			const data = this.read();
+			const recap = { ...draft, id: newId("rec"), date: draft.date ?? nowIso(),
+				minutes: Number.isFinite(draft.minutes) ? Math.max(0, draft.minutes) : 0,
+				summary: draft.summary.trim(), next: draft.next.trim() };
+			data.recaps.push(recap);
+			this.write(data);
+			return recap;
+		});
 	}
 
 	/** Return the most recent recaps first. */

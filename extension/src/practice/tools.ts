@@ -111,6 +111,28 @@ function readAttempts(root: string, skill: string): Attempt[] {
 	return raw.split(/\r?\n/).filter((line) => line.trim()).map((line) => JSON.parse(line) as Attempt);
 }
 
+/** Resolve a challenge in the declared/active skill, falling back only when its id is globally unique. */
+function resolveAttemptChallenge(practice: PracticeDeps["practice"], challengeId: string, declaredSkill?: string):
+	{ skill: string; challenge: Challenge } | { error: string } {
+	if (declaredSkill !== undefined) {
+		if (!slug.test(declaredSkill) || !practice.listSkills().includes(declaredSkill)) {
+			return { error: "Select a valid skill with /skill first." };
+		}
+		const challenge = practice.getChallenge(declaredSkill, challengeId);
+		return challenge ? { skill: declaredSkill, challenge } : { error: "Challenge not found for this skill." };
+	}
+	const matches = practice.listSkills().flatMap((skill) => {
+		const challenge = practice.getChallenge(skill, challengeId);
+		return challenge ? [{ skill, challenge }] : [];
+	});
+	if (matches.length === 1) return matches[0];
+	if (matches.length > 1) {
+		const skills = matches.map((match) => match.skill).join(", ");
+		return { error: `Challenge "${challengeId}" exists in several skills: ${skills}; supply skill.` };
+	}
+	return { error: "Select a valid skill with /skill first." };
+}
+
 /** Read missed challenges without requiring a new core storage API. */
 function nextChallenge(deps: PracticeDeps, skill: string): Challenge | undefined {
 	const { practice } = deps;
@@ -298,10 +320,9 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 			hintsUsed: Type.Optional(Type.Integer({ minimum: 0 })), lesson: optionalString(), feedback: optionalString(),
 		}),
 		async execute(_id, p, _signal, _update, ctx) {
-			const skill = p.skill ?? state.skill;
-			if (!skill || !slug.test(skill)) return result({ errors: ["Select a valid skill with /skill first."] });
-			const c = practice.getChallenge(skill, p.challengeId);
-			if (!c) return result({ errors: ["Challenge not found for this skill."] });
+			const resolved = resolveAttemptChallenge(practice, p.challengeId, p.skill ?? state.skill);
+			if ("error" in resolved) return result({ errors: [resolved.error] });
+			const { skill, challenge: c } = resolved;
 			const now = Date.now();
 			if (readAttempts(practice.root, skill).some((a) => a.challengeId === c.id
 				&& now - Date.parse(a.at) >= 0 && now - Date.parse(a.at) <= 120000)) {
@@ -311,11 +332,12 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 			if (c.format === "code" && !p.outcome) {
 				return result({ errors: ["code requires an explicit outcome from a code run."] });
 			}
-			const outcome = p.outcome === "skipped" ? "skipped"
-				: c.format === "code" ? p.outcome : practice.checkAnswer(c, p.answer) ?? p.outcome;
+			const checked = p.outcome === "skipped" || c.format === "code" ? undefined : practice.checkAnswer(c, p.answer);
+			const outcome = p.outcome === "skipped" ? "skipped" : checked ?? p.outcome;
 			if (!outcome) return result({ errors: ["Open answer requires an explicit outcome graded against the rubric."] });
 			const hintsUsed = p.hintsUsed ?? (state.skill === skill && state.challengeId === c.id ? state.hintIndex : 0);
-			const recorded = practice.recordAttempt({ ...p, outcome, hintsUsed });
+			const source = checked === undefined ? "tutor" : "checked";
+			const recorded = practice.recordAttempt({ ...p, skill, outcome, hintsUsed, source, verified: source === "checked" });
 			deps.activate(skill);
 			const report = progressReport(practice, skill);
 			if (state.challengeId === c.id) { state.challengeId = undefined; state.hintIndex = 0; }
@@ -325,7 +347,8 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 			const bonus = outcome === "success" ? comboBonus(combo) : 1;
 			const widget = { type: "attempt", combo, comboBonus: bonus, comboDisplayOnly: true, outcome, xp: recorded.attempt.xp, level: report.level,
 				levelBar: report.levelBar, leveledUp: recorded.leveledUp, badges: recorded.badges, streak: report.streak };
-			return result({ widget, combo, comboBonus: bonus, comboDisplayOnly: true, outcome, xp: recorded.attempt.xp, level: report.level, leveledUp: recorded.leveledUp,
+			return result({ widget, combo, comboBonus: bonus, comboDisplayOnly: true, outcome, xp: recorded.attempt.xp,
+				level: report.level, leveledUp: recorded.leveledUp, verified: recorded.verified, source: recorded.source,
 				levelBar: report.levelBar, streak: report.streak, badges: recorded.badges,
 				guidance: outcome === "fail"
 					? "Experiment logged: failure still earns XP. Ask the learner what they will try differently. "

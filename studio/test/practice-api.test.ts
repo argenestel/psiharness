@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, readFileSync, readdirSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { Server } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
@@ -56,6 +56,8 @@ test("Practice API imports packs, grades deterministic answers and requires code
 	new StateStore(home).update({ activeSkill: "mental-math", openChallenge: { skill: "mental-math", id: challenge.id } });
 	const correct = await call("POST", path + "/attempt", { answer: source.expected, outcome: "fail" });
 	assert.equal(correct.attempt.outcome, "success");
+	assert.deepEqual([correct.source, correct.verified, correct.attempt.source, correct.attempt.verified],
+		["checked", true, "checked", true]);
 	assert.ok(correct.attempt.xp > 0);
 	assert.equal((await call("GET", "/api/state")).openChallenge, undefined);
 	const incorrect = await call("POST", path + "/attempt", { answer: "wrong", outcome: "success", lesson: "Try again" });
@@ -77,8 +79,13 @@ test("Practice API imports packs, grades deterministic answers and requires code
 	const codePath = `/api/skills/mental-math/challenges/${code.id}/attempt`;
 	await assert.rejects(call("POST", codePath, { answer: "1" }), { status: 400 });
 	await assert.rejects(call("POST", codePath, { answer: "1", outcome: "invented" }), { status: 400 });
-	assert.equal((await call("POST", codePath, { answer: "return 1", outcome: "success" })).attempt.outcome, "success");
-	assert.equal((await call("POST", codePath, { answer: "return 0", outcome: "fail" })).attempt.outcome, "fail");
+	const codeSuccess = await call("POST", codePath, { answer: "return 1", outcome: "success" });
+	assert.equal(codeSuccess.attempt.outcome, "success");
+	assert.deepEqual([codeSuccess.source, codeSuccess.verified, codeSuccess.attempt.source, codeSuccess.attempt.verified],
+		["self-reported", false, "self-reported", false]);
+	assert.equal(codeSuccess.attempt.xp, 10);
+	const codeFailure = await call("POST", codePath, { answer: "return 0", outcome: "fail" });
+	assert.equal(codeFailure.attempt.outcome, "fail");
 	const codeDetail = await call("GET", `/api/skills/mental-math/challenges/${code.id}`);
 	assert.equal(codeDetail.tests, code.tests);
 	assert.equal(codeDetail.expected, undefined);
@@ -118,6 +125,23 @@ test("every bundled pack imports and its challenges never expose answer keys", a
 			assert.equal(served.setup, source.setup);
 			assert.equal(served.starterCode, source.starterCode);
 		}
+	}
+});
+
+test("attempt routes scope duplicate challenge ids to their URL skill", async (t) => {
+	const { home, call } = fixture(t);
+	const challengeId = "duplicate-challenge";
+	for (const skill of ["python-foundations", "javascript-essentials"]) {
+		const directory = join(home, "skills", skill);
+		mkdirSync(directory, { recursive: true });
+		writeFileSync(join(directory, "challenges.json"), JSON.stringify([{
+			id: challengeId, skill, kind: "quickfire", level: 1, prompt: "Pass?", expected: "yes", hints: [],
+			createdAt: "2026-01-01",
+		}]));
+	}
+	for (const skill of ["python-foundations", "javascript-essentials"]) {
+		const result = await call("POST", `/api/skills/${skill}/challenges/${challengeId}/attempt`, { answer: "yes" });
+		assert.deepEqual([result.attempt.skill, result.source, result.verified], [skill, "checked", true]);
 	}
 });
 

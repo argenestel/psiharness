@@ -7,9 +7,10 @@ const MULTIPLIER: Record<ChallengeKind, number> = {
 
 /** Award effort XP, including failures and lessons learned. */
 export function xpFor(a: {
-	outcome: Outcome; kind: ChallengeKind; level: number; hintsUsed: number; lesson?: string;
+	outcome: Outcome; kind: ChallengeKind; level: number; hintsUsed: number; lesson?: string; selfReported?: boolean;
 }): number {
 	if (a.outcome === "skipped") return 0;
+	if (a.selfReported && a.outcome === "success") return BASE.success;
 	// Round multiplied base, add level bonus, deduct hints with a floor, then add the fail lesson bonus.
 	const earned = Math.max(1, Math.round(BASE[a.outcome] * MULTIPLIER[a.kind])
 		+ (a.level - 1) * 2 - Math.max(0, a.hintsUsed) * 2);

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
@@ -103,6 +103,8 @@ test("auto-grading overrides model grades and keeps answers private", async (t) 
 		skill: "sql", challengeId: c.details.challengeId, answer: "4", outcome: "fail",
 	});
 	assert.equal(a.details.outcome, "success");
+	assert.equal(a.details.source, "checked");
+	assert.equal(a.details.verified, true);
 	assert.ok(a.details.xp > 0);
 	const report = await f.execute("psi_progress_report", { skill: "sql" });
 	assert.equal(report.details.skills[0].successes, 1);
@@ -322,12 +324,41 @@ test("code attempts require run outcomes and return attempt widgets", async (t) 
 	assert.equal((await f.execute("psi_progress_report", {})).details.skills[0].attempts, 0);
 	const attempt = await f.execute("psi_attempt", { ...params, outcome: "fail" });
 	assert.equal(attempt.details.outcome, "fail");
+	assert.equal(attempt.details.source, "tutor");
+	assert.equal(attempt.details.verified, false);
 	assert.deepEqual(attempt.details.widget, {
-		type: "attempt", combo: 0, comboBonus: 1, comboDisplayOnly: true, outcome: "fail", xp: attempt.details.xp, level: attempt.details.level,
+		type: "attempt", combo: 0, comboBonus: 1, comboDisplayOnly: true, outcome: "fail", xp: attempt.details.xp,
+		level: attempt.details.level,
 		levelBar: attempt.details.levelBar, leveledUp: attempt.details.leveledUp,
 		badges: attempt.details.badges, streak: attempt.details.streak,
 	});
 	assert.ok(attempt.details.widget.xp > 0);
+}));
+
+test("attempt resolution falls back to a unique challenge and reports ambiguity",
+	async (t) => fixture(t, async (f, home) => {
+	const duplicateId = "duplicate-id";
+	for (const skill of ["sql", "other-skill"]) {
+		const directory = join(home, "skills", skill);
+		mkdirSync(directory, { recursive: true });
+		writeFileSync(join(directory, "challenges.json"), JSON.stringify([{
+			id: duplicateId, skill, kind: "quickfire", level: 1, prompt: "Same id", expected: "4", hints: [],
+			createdAt: new Date().toISOString(),
+		}]));
+	}
+	const ambiguous = await f.execute("psi_attempt", { challengeId: duplicateId, answer: "4" });
+	assert.match(ambiguous.details.errors[0], /several skills/);
+	const unique = { id: "unique-id", skill: "sql", kind: "quickfire", level: 1, prompt: "Unique",
+		expected: "4", hints: [], createdAt: new Date().toISOString() };
+	writeFileSync(join(home, "skills/sql/challenges.json"), JSON.stringify([
+		JSON.parse(readFileSync(join(home, "skills/sql/challenges.json"), "utf8"))[0], unique,
+	]));
+	const fallback = await f.execute("psi_attempt", { challengeId: unique.id, answer: "4" });
+	assert.equal(fallback.details.outcome, "success");
+	assert.equal(fallback.details.source, "checked");
+	assert.equal(fallback.details.verified, true);
+	const unknown = await f.execute("psi_attempt", { skill: "missing-skill", challengeId: unique.id, answer: "4" });
+	assert.match(unknown.details.errors[0], /valid skill/);
 }));
 
 
@@ -391,10 +422,10 @@ test("next selects the next subskill, then other priorities, then latest still-m
 	await grade(later.details.challengeId, "4");
 	const { PracticeStore } = await import("../../core/src/practice.ts");
 	const store = new PracticeStore(home);
-	store.recordAttempt({ challengeId: middle.details.challengeId, answer: "wrong", outcome: "fail",
+	store.recordAttempt({ skill: "sql", challengeId: middle.details.challengeId, answer: "wrong", outcome: "fail",
 		hintsUsed: 0, at: "2099-01-01T00:00:00Z" });
 	assert.equal((await next()).details.challengeId, middle.details.challengeId);
-	store.recordAttempt({ challengeId: middle.details.challengeId, answer: "4", outcome: "success",
+	store.recordAttempt({ skill: "sql", challengeId: middle.details.challengeId, answer: "4", outcome: "success",
 		hintsUsed: 0, at: "2099-01-02T00:00:00Z" });
 	assert.equal((await next()).details.challengeId, first.details.challengeId);
 	const historyFile = join(home, "skills", "sql", "attempts.jsonl");
@@ -828,7 +859,7 @@ test("recent attempts reject duplicates; older retries and other challenges work
 		const { PracticeStore } = await import("../../core/src/practice.ts");
 		const store = new PracticeStore(home);
 		const first = await f.execute("psi_challenge", draft());
-		store.recordAttempt({ challengeId: first.details.challengeId, answer: "4", outcome: "success", hintsUsed: 0 });
+		store.recordAttempt({ skill: "sql", challengeId: first.details.challengeId, answer: "4", outcome: "success", hintsUsed: 0 });
 		const params = { skill: "sql", challengeId: first.details.challengeId, answer: "4" };
 		const duplicate = await f.execute("psi_attempt", params);
 		assert.equal(duplicate.isError, true);
