@@ -5,12 +5,12 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PracticeStore } from "../core/src/practice.ts";
-import type { Challenge } from "../core/src/types.ts";
+import type { Challenge, Outcome } from "../core/src/types.ts";
 
 type Dict = Record<string, unknown>;
 
 /** Verdict for one answer of one key: graded by the pack's own rules, or skipped with a reason. */
-export type KeyVerdict = "success" | "fail" | "skip";
+export type KeyVerdict = Outcome | "skip";
 
 /** Verification of one challenge's correct/wrong pair. */
 export interface KeyCheck {

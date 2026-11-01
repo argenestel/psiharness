@@ -872,7 +872,8 @@ function numericValue(text: string): number | undefined {
 }
 
 function hasNumber(text: string, value: number): boolean {
-	for (const match of text.matchAll(NUMBER_TOKEN)) {
+	// Citation markers like [3] are source numbers, not answers.
+	for (const match of text.replace(/\[\d+\]/g, " ").matchAll(NUMBER_TOKEN)) {
 		const token = Number(match[0].replace("−", "-").replace(",", "."));
 		if (Number.isFinite(token) && Math.abs(token - value) <= 1e-9 * Math.max(1, Math.abs(value))) return true;
 	}
@@ -1266,10 +1267,43 @@ function emptyCheck(name: string): CheckScore {
 	return checkResult(name, 0, 0, []);
 }
 
+function spread(values: (number | null)[]): Spread {
+	const present = values.filter((value): value is number => value !== null);
+	if (!present.length) return { mean: null, min: null, max: null, n: 0 };
+	return { mean: present.reduce((sum, value) => sum + value, 0) / present.length,
+		min: Math.min(...present), max: Math.max(...present), n: present.length };
+}
+
+/** Per-check, overall and per-scenario spread of ratios across repeats; undefined unless some scenario repeats. */
+export function varianceFor(scenarios: ScenarioScore[]): VarianceSummary | undefined {
+	const repeats = Math.max(0, ...scenarios.map((scenario) => scenario.repeat));
+	if (repeats <= 1) return undefined;
+	const byRepeat = new Map<number, ScenarioScore[]>();
+	for (const scenario of scenarios) byRepeat.set(scenario.repeat, [...(byRepeat.get(scenario.repeat) ?? []), scenario]);
+	const groups = [...byRepeat.values()];
+	const checks: Record<string, Spread> = {};
+	for (const name of CHECK_NAMES) {
+		checks[name] = spread(groups.map((group) => mergeCheckScores(group.map((scenario) => scenario.checks[name] ?? emptyCheck(name))).ratio));
+	}
+	const overall = spread(groups.map((group) => {
+		const passed = group.reduce((sum, scenario) => sum + scenario.passed, 0), applicable = group.reduce((sum, scenario) => sum + scenario.applicable, 0);
+		return applicable ? passed / applicable : null;
+	}));
+	const byScenario = new Map<string, ScenarioScore[]>();
+	for (const scenario of scenarios) byScenario.set(scenario.scenarioId, [...(byScenario.get(scenario.scenarioId) ?? []), scenario]);
+	const perScenario: Record<string, Spread> = {};
+	for (const [id, group] of byScenario) perScenario[id] = spread(group.map((scenario) => scenario.ratio));
+	return { repeats, checks, overall, scenarios: perScenario };
+}
+
 /** Combine independently scored scenario files without treating run-health failures as contract checks. */
-export function aggregateScores(scenarios: ScenarioScore[], parseErrors: ParseError[] = [], metadata?: ReportMetadata): ScoreReport {
+export function aggregateScores(scenarios: ScenarioScore[], parseErrors: ParseError[] = [], metadata?: ReportMetadata, runs: RunSummary[] = []): ScoreReport {
 	const checks: Record<string, CheckScore> = {};
-	for (const name of CHECK_NAMES) checks[name] = mergeCheckScores(scenarios.map((scenario) => scenario.checks[name] ?? emptyCheck(name)));
+	for (const name of CHECK_NAMES) {
+		const merged = mergeCheckScores(scenarios.map((scenario) => scenario.checks[name] ?? emptyCheck(name)));
+		const notApplicable = scenarios.flatMap((scenario) => scenario.checks[name]?.notApplicable ?? []);
+		checks[name] = notApplicable.length ? { ...merged, notApplicable } : merged;
+	}
 	const passed = CHECK_NAMES.reduce((sum, name) => sum + checks[name].passed, 0);
 	const applicable = CHECK_NAMES.reduce((sum, name) => sum + checks[name].applicable, 0);
 	const health = mergeHealth(scenarios.map((scenario) => scenario.health));
@@ -1277,8 +1311,15 @@ export function aggregateScores(scenarios: ScenarioScore[], parseErrors: ParseEr
 	const errors = [...parseErrors, ...scenarios.flatMap((scenario) => scenario.parseErrors)];
 	const nonApplicable = CHECK_NAMES.reduce((sum, name) => sum + scenarios.filter((scenario) => (scenario.checks[name]?.applicable ?? 0) === 0).length, 0);
 	const overall = { passed, applicable, nonApplicable, ratio: applicable ? passed / applicable : null, score: applicable ? passed / applicable : null };
+	const guard: GuardSummary = { count: 0, byTurn: {} };
+	for (const scenario of scenarios) {
+		guard.count += scenario.guard?.count ?? 0;
+		for (const [turn, count] of Object.entries(scenario.guard?.byTurn ?? {})) guard.byTurn[`${scenario.scenario}:${turn}`] = count;
+	}
+	const variance = varianceFor(scenarios);
 	return { scenarios, checks, aggregate: checks, overall, ...overall, failures: scenarios.flatMap((scenario) => scenario.failures), health, latency, parseErrors: errors,
-		metadata: metadata ?? { scenarioCount: scenarios.length } };
+		metadata: metadata ?? { scenarioCount: scenarios.length }, guard,
+		notApplicable: CHECK_NAMES.flatMap((name) => checks[name].notApplicable ?? []), runs, ...(variance ? { variance } : {}) };
 }
 
 function loadPack(reference: string): unknown {
@@ -1352,6 +1393,43 @@ function resolveManifestPack(dir: string): unknown {
 	return {};
 }
 
+function runSummary(value: Dict, file: string): RunSummary | undefined {
+	if (typeof value.id !== "string") return undefined;
+	const answers = isObject(value.answers) && typeof value.answers.dynamic === "number" && typeof value.answers.fallback === "number"
+		? { dynamic: value.answers.dynamic, fallback: value.answers.fallback } : undefined;
+	const number = (key: string): number => typeof value[key] === "number" ? value[key] as number : 0;
+	return { id: value.id, repeat: typeof value.repeat === "number" ? value.repeat : 1, success: value.success === true,
+		turns: number("turns"), completedTurns: number("completedTurns"), toolCalls: number("toolCalls"), durationMs: number("durationMs"),
+		...(typeof value.model === "string" ? { model: value.model } : {}),
+		errors: Array.isArray(value.errors) ? value.errors.map(String) : [], ...(answers ? { answers } : {}), file };
+}
+
+/**
+ * Merge runner summaries: one `<id>[.r<k>].summary.json` per scenario run, plus a legacy `summary.json` whose
+ * `scenarios` array is used only for runs no per-scenario file covers.
+ */
+export function readRunSummaries(directory: string): RunSummary[] {
+	const runs = new Map<string, RunSummary>();
+	const add = (run: RunSummary | undefined, override: boolean): void => {
+		if (!run) return;
+		const key = `${run.id}#${run.repeat}`;
+		if (override || !runs.has(key)) runs.set(key, run);
+	};
+	let names: string[] = [];
+	try { names = readdirSync(directory).sort(); } catch { return []; }
+	for (const name of names.filter((entry) => entry.endsWith(".summary.json"))) {
+		try { const value: unknown = JSON.parse(readFileSync(join(directory, name), "utf8")); if (isObject(value)) add(runSummary(value, name), true); }
+		catch { /* a partial summary is reported by its absence */ }
+	}
+	if (names.includes("summary.json")) {
+		try {
+			const value: unknown = JSON.parse(readFileSync(join(directory, "summary.json"), "utf8"));
+			if (isObject(value) && Array.isArray(value.scenarios)) for (const item of value.scenarios) if (isObject(item)) add(runSummary(item, "summary.json"), false);
+		} catch { /* legacy file is optional */ }
+	}
+	return [...runs.values()].sort((a, b) => a.id.localeCompare(b.id) || a.repeat - b.repeat);
+}
+
 /** Score every JSONL scenario in a directory. Pack paths are resolved relative to the repository. */
 export function scoreDirectory(directory: string): ScoreReport {
 	const dir = resolve(directory);
@@ -1375,7 +1453,7 @@ export function scoreDirectory(directory: string): ScoreReport {
 	}
 	if (!scenarios.length) scenarios.push(scoreScenario({ events: [], scenario: basename(dir) }, defaultPack));
 	reportMetadata.scenarioCount = scenarios.length;
-	return aggregateScores(scenarios, parseErrors, reportMetadata);
+	return aggregateScores(scenarios, parseErrors, reportMetadata, stat.isFile() ? [] : readRunSummaries(dir));
 }
 
 function percent(value: number | null): string {
@@ -1387,35 +1465,82 @@ function reportInput(value: ScoreReport | ScenarioScore): ScoreReport {
 	return aggregateScores([value as ScenarioScore]);
 }
 
+function checkRow(name: string, check: CheckScore, na: number | string, extra = ""): string {
+	return `| ${name} | ${check.passed} | ${check.applicable - check.passed} | ${na} | ${percent(check.ratio)} |${extra}`;
+}
+
+function spreadText(value: Spread | undefined): string {
+	if (!value || value.mean === null) return "n/a";
+	return `${percent(value.mean)} (range ${percent(value.min)}–${percent(value.max)}, n=${value.n})`;
+}
+
+/** Evidence as compact JSON; position fields are record sequence numbers, so label them "event seq". */
+function evidenceText(evidence: unknown): string {
+	return JSON.stringify(evidence).replace(/"eventSeq":/g, '"event seq":');
+}
+
 /** Render a Markdown report containing aggregate ratios and every failure witness. */
 export function renderReport(value: ScoreReport | ScenarioScore): string {
 	const report = reportInput(value);
+	const variance = report.variance;
 	const lines: string[] = ["# Tutor contract score", "", `Model: ${report.metadata.model ?? "unknown"}  `,
-		`Date: ${report.metadata.date ?? "unknown"}  `, `Scenarios: ${report.metadata.scenarioCount}`, "",
-		`Overall: **${percent(report.overall.ratio)}** (${report.overall.passed} pass, ${report.overall.applicable - report.overall.passed} fail, ${report.overall.nonApplicable} N/A; ${report.overall.applicable} applicable checks)`, "",
-		"## Aggregate checks", "", "| Check | Pass | Fail | N/A | Score |", "| --- | ---: | ---: | ---: | ---: |"];
+		`Date: ${report.metadata.date ?? "unknown"}  `, `Scenarios: ${report.metadata.scenarioCount}${variance ? ` (${variance.repeats} repeats)` : ""}`, "",
+		`Overall: **${percent(report.overall.ratio)}** (${report.overall.passed} pass, ${report.overall.applicable - report.overall.passed} fail, ${report.overall.nonApplicable} N/A; ${report.overall.applicable} applicable checks)`];
+	if (variance) lines.push("", `Overall across repeats: ${spreadText(variance.overall)}`);
+	lines.push("", `Guard interventions (psi-guard entries): ${report.guard?.count ?? 0}`, "", "## Aggregate checks", "",
+		`| Check | Pass | Fail | N/A scenarios | Score |${variance ? " Mean across repeats |" : ""}`,
+		`| --- | ---: | ---: | ---: | ---: |${variance ? " --- |" : ""}`);
 	for (const name of CHECK_NAMES) {
-		const check = report.checks[name];
-		lines.push(`| ${name} | ${check.passed} | ${check.applicable - check.passed} | ${check.applicable ? 0 : 1} | ${percent(check.ratio)} |`);
+		const na = report.scenarios.filter((scenario) => (scenario.checks[name]?.applicable ?? 0) === 0).length;
+		lines.push(checkRow(name, report.checks[name], na, variance ? ` ${spreadText(variance.checks[name])} |` : ""));
 	}
-	lines.push("", "## Scenarios", "", "| Scenario | Score | Pass | Fail | N/A | Run health |", "| --- | ---: | ---: | ---: | ---: | --- |");
+	// The scenario summary table stays contiguous; per-scenario details follow it.
+	lines.push("", "## Scenarios", "", "| Scenario | Score | Pass | Fail | N/A | Dynamic answers | Guard | Run health |",
+		"| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |");
 	for (const scenario of report.scenarios) {
 		const na = CHECK_NAMES.filter((name) => scenario.checks[name].applicable === 0).length;
-		lines.push(`| ${scenario.scenario} | ${percent(scenario.ratio)} | ${scenario.passed} | ${scenario.applicable - scenario.passed} | ${na} | ${scenario.health.errors} errors, ${scenario.health.timeouts} timeouts, ${scenario.health.missingSettled} missing settled |`);
-		lines.push("", `### ${scenario.scenario} checks`, "", "| Check | Pass | Fail | N/A | Score |", "| --- | ---: | ---: | ---: | ---: |");
-		for (const name of CHECK_NAMES) {
-			const check = scenario.checks[name];
-			lines.push(`| ${name} | ${check.passed} | ${check.applicable - check.passed} | ${check.applicable ? 0 : 1} | ${percent(check.ratio)} |`);
+		const answerTotal = (scenario.answers?.dynamic ?? 0) + (scenario.answers?.fallback ?? 0);
+		const answers = answerTotal ? `${scenario.answers.dynamic}/${answerTotal}` : "–";
+		lines.push(`| ${scenario.scenario} | ${percent(scenario.ratio)} | ${scenario.passed} | ${scenario.applicable - scenario.passed} | ${na} | ${answers} | ${scenario.guard?.count ?? 0} | ${scenario.health.errors} errors, ${scenario.health.timeouts} timeouts, ${scenario.health.missingSettled} missing settled |`);
+	}
+	if (variance) {
+		lines.push("", "### Scenario spread across repeats", "", "| Scenario | Mean score (range) |", "| --- | --- |");
+		for (const [id, item] of Object.entries(variance.scenarios)) lines.push(`| ${id} | ${spreadText(item)} |`);
+	}
+	if (report.runs?.length) {
+		lines.push("", "## Run summaries", "", "| Scenario | Repeat | Run | Turns | Tools | Answers (dynamic/fallback) | Duration | Errors |",
+			"| --- | ---: | --- | ---: | ---: | --- | ---: | ---: |");
+		for (const run of report.runs) {
+			lines.push(`| ${run.id} | ${run.repeat} | ${run.success ? "ok" : "failed"} | ${run.completedTurns}/${run.turns} | ${run.toolCalls} | ${run.answers ? `${run.answers.dynamic}/${run.answers.fallback}` : "n/a"} | ${(run.durationMs / 1000).toFixed(1)} s | ${run.errors.length} |`);
 		}
-		lines.push(`Latency: TTFT median ${scenario.latency.ttft.medianMs ?? "n/a"} ms, p90 ${scenario.latency.ttft.p90Ms ?? "n/a"}; settle median ${scenario.latency.settle.medianMs ?? "n/a"} ms, p90 ${scenario.latency.settle.p90Ms ?? "n/a"}.`);
+	}
+	lines.push("", "## Scenario details");
+	for (const scenario of report.scenarios) {
+		lines.push("", `### ${scenario.scenario}`, "", "| Check | Pass | Fail | N/A | Score |", "| --- | ---: | ---: | ---: | ---: |");
+		for (const name of CHECK_NAMES) lines.push(checkRow(name, scenario.checks[name], scenario.checks[name].applicable ? 0 : 1));
+		lines.push("", `Latency: TTFT median ${scenario.latency.ttft.medianMs ?? "n/a"} ms, p90 ${scenario.latency.ttft.p90Ms ?? "n/a"} ms; settle median ${scenario.latency.settle.medianMs ?? "n/a"} ms, p90 ${scenario.latency.settle.p90Ms ?? "n/a"} ms.`);
+		if (scenario.answers?.turns.length) lines.push("", `Answer turns: ${scenario.answers.turns.map((item) => `turn ${item.turn} ${item.kind ?? "answer"} ${item.mode}${item.challengeId ? ` (${item.challengeId})` : ""}`).join("; ")}.`);
+		const guardTurns = Object.entries(scenario.guard?.byTurn ?? {});
+		if (guardTurns.length) lines.push("", `Guard interventions by turn: ${guardTurns.map(([turn, count]) => `${turn}=${count}`).join(", ")}.`);
 	}
 	lines.push("", "## Latency", "", `INFO latency: TTFT median ${report.latency.ttft.medianMs ?? "n/a"} ms, p90 ${report.latency.ttft.p90Ms ?? "n/a"} ms; settle median ${report.latency.settle.medianMs ?? "n/a"} ms, p90 ${report.latency.settle.p90Ms ?? "n/a"} ms.`, "");
-	lines.push(`TTFT slowest 5: ${report.latency.ttft.slowest5.map((sample) => `${sample.turn}=${sample.valueMs}ms`).join(", ") || "none"}.`);
-	lines.push(`Settle slowest 5: ${report.latency.settle.slowest5.map((sample) => `${sample.turn}=${sample.valueMs}ms`).join(", ") || "none"}.`);
+	const sample = (item: LatencySample) => `turn ${item.turn}=${item.valueMs}ms`;
+	const slowest = (metricName: "ttft" | "settle") => report.scenarios.flatMap((scenario) => scenario.latency[metricName].samples
+		.map((item) => ({ ...item, scenario: scenario.scenario }))).sort((a, b) => b.valueMs - a.valueMs).slice(0, 5)
+		.map((item) => `${item.scenario} ${sample(item)}`).join(", ") || "none";
+	lines.push(`TTFT slowest 5: ${slowest("ttft")}.`);
+	lines.push(`Settle slowest 5: ${slowest("settle")}.`);
 	lines.push("", "## Failures", "");
 	if (!report.failures.length) lines.push("None.");
-	else for (const item of report.failures) lines.push(`- **${item.check}**${item.turn ? ` (turn ${item.turn})` : ""}: ${item.message}${item.evidence === undefined ? "" : ` — \`${JSON.stringify(item.evidence)}\``}`);
+	else for (const item of report.failures) lines.push(`- **${item.check}** [${item.scenario ?? "scenario"}]${item.turn ? ` (turn ${item.turn})` : ""}: ${item.message}${item.evidence === undefined ? "" : ` — \`${evidenceText(item.evidence)}\``}`);
+	if (report.notApplicable?.length) {
+		lines.push("", "## Not applicable (explicit)", "");
+		for (const item of report.notApplicable) lines.push(`- **${item.check}** [${item.scenario ?? "scenario"}]${item.turn ? ` (turn ${item.turn})` : ""}${item.challengeId ? ` ${item.challengeId}` : ""}: ${item.reason}`);
+	}
 	lines.push("", "## Run health", "", `Timeouts: ${report.health.timeouts}; errors: ${report.health.errors}; missing settled: ${report.health.missingSettled}.`);
+	for (const item of [...report.health.timeoutEvidence, ...report.health.errorEvidence, ...report.health.missingSettledEvidence]) {
+		lines.push(`- ${item.check} [${item.scenario ?? "scenario"}]${item.turn ? ` (turn ${item.turn})` : ""}: ${item.message}`);
+	}
 	if (report.parseErrors.length) {
 		lines.push("", "## Parse errors", "");
 		for (const error of report.parseErrors) lines.push(`- ${error.file ?? "input"}:${error.line}: ${error.error}`);

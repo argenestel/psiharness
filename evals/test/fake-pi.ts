@@ -80,6 +80,16 @@ for (;;) {
   if (command.message === "model-error") emit({ type: "message_end", message: { role: "assistant", stopReason: "error", errorMessage: "fake provider failure", content: [] } });
   else emit({ type: "message_end", message: { role: "assistant", stopReason: "stop", content: [{ type: "text", text: "ok" }] } });
   if (command.message === "open") writeFileSync(join(home, "state.json"), JSON.stringify({ activeSkill: "demo", openChallenge: { skill: "demo", id: "c1" }, updatedAt: new Date().toISOString() }));
+  if (command.message === "present") {
+   emit({ type: "tool_execution_start", toolCallId: "present-1", toolName: "psi_challenge", args: { action: "next" } });
+   emit({ type: "tool_execution_end", toolCallId: "present-1", toolName: "psi_challenge", isError: false, result: { content: [], details: { challengeId: "c2", widget: { type: "challenge", skill: "demo", id: "c2", format: "number", prompt: "2+2?" } } } });
+  }
+  const graded = { "42": "c1", "5": "c2" }[command.message];
+  if (graded) {
+   emit({ type: "tool_execution_start", toolCallId: "attempt-" + graded, toolName: "psi_attempt", args: { challengeId: graded, answer: command.message } });
+   emit({ type: "tool_execution_end", toolCallId: "attempt-" + graded, toolName: "psi_attempt", isError: false, result: { content: [], details: { outcome: "fail" } } });
+  }
+  if (command.message === "guard") emit({ type: "entry_appended", entry: { type: "custom", customType: "psi-guard", data: { rule: "next-steps" } } });
   if (command.message === "ui") {
    const response = nextCommand(); emit({ type: "agent_settled", aborted: response?.cancelled === true });
   } else emit({ type: "agent_settled", aborted: false });
