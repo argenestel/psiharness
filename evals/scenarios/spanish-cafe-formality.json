@@ -1,0 +1,19 @@
+{
+	"id": "spanish-cafe-formality",
+	"title": "Spanish café: formal requests and estar",
+	"skillPack": "examples/skills/spanish-cafe-a1",
+	"turns": [
+		{"message": "Teach me the next step.", "kind": "teach"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Just show me", "kind": "show"},
+		{"message": "I'll guess: because a café’s location is stable, use ser for 'the café is in Madrid'.", "kind": "wrong_guess"},
+		{"message": "I’m stuck; which verb agrees with usted in ¿Podría traer un café?", "kind": "stuck"},
+		{"message": "Correct answer: location is a state, so use estar; usted takes third-person forms, while podría is the polite conditional.", "kind": "correct_answer"},
+		{"message": "/verify Podría is a softer formal request than the familiar puedes form.", "kind": "verify"}
+	],
+	"expectations": {
+		"subskills": ["ser-estar", "polite-requests", "cafe-roleplay"],
+		"notes": "Keep tú and usted consistent and explain third-person agreement for usted; use essential nature versus state/location rather than a simplistic permanent/temporary rule; close a short café roleplay with a polite request."
+	}
+}

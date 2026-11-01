@@ -1,0 +1,18 @@
+{
+	"id": "calculus-intuition-local-change",
+	"title": "Calculus intuition: from rates to a tangent",
+	"skillPack": "examples/skills/calculus-intuition",
+	"turns": [
+		{"message": "Teach me the next step.", "kind": "teach"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Just show me", "kind": "show"},
+		{"message": "I'll guess: the derivative at x=3 is the function value 9.", "kind": "wrong_guess"},
+		{"message": "I’m stuck; how does shrinking h turn a secant into a tangent?", "kind": "stuck"},
+		{"message": "Correct answer: the derivative is the limiting slope, so x² at x=3 has slope 6, not height 9.", "kind": "correct_answer"},
+		{"message": "/verify A removable hole can have a well-defined limit even though the function is undefined at that point.", "kind": "verify"}
+	],
+	"expectations": {
+		"subskills": ["rates", "limits", "derivative", "power"],
+		"notes": "Separate a function value from a rate of change and retain units where useful; use two-sided shrinking offsets to motivate the derivative and removable-hole limit; correct the height-versus-slope misconception without skipping the prediction."
+	}
+}

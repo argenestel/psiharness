@@ -1,0 +1,19 @@
+{
+	"id": "python-foundations-control-flow",
+	"title": "Python foundations: loops, functions, and recursion",
+	"skillPack": "examples/skills/python-foundations",
+	"turns": [
+		{"message": "Teach me the next step.", "kind": "teach"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Just show me", "kind": "show"},
+		{"message": "I'll guess: first_repeated should return the last duplicate because the loop has to finish.", "kind": "wrong_guess"},
+		{"message": "I’m stuck; how do I make the recursive call get closer to its base case?", "kind": "stuck"},
+		{"message": "Correct answer: keep a seen set and return immediately on the first repeated item; recursion must shrink the input.", "kind": "correct_answer"},
+		{"message": "My answer is: apply the function twice as fn(fn(value)).", "kind": "answer"},
+		{"message": "/verify first_repeated should return as soon as it sees the first value for the second time.", "kind": "verify"}
+	],
+	"expectations": {
+		"subskills": ["loops-comprehensions", "functions", "recursion"],
+		"notes": "Use a concrete trace for first_repeated and distinguish loop state from recursive base cases; accept the direct answer only after explaining why the callable is invoked exactly twice; do not expose a hidden answer before an attempt."
+	}
+}

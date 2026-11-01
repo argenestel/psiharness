@@ -1,0 +1,19 @@
+{
+	"id": "sql-lab-window-report",
+	"title": "SQL lab: aggregate first, then window",
+	"skillPack": "examples/skills/sql-lab",
+	"turns": [
+		{"message": "Teach me the next step.", "kind": "teach"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Just show me", "kind": "show"},
+		{"message": "I'll guess: SUM(price * quantity) OVER can run directly on item rows for a per-order ledger.", "kind": "wrong_guess"},
+		{"message": "I’m stuck; which rows should the window see after grouping?", "kind": "stuck"},
+		{"message": "Correct answer: aggregate item rows to one paid-order row first, then apply the window over those order totals.", "kind": "correct_answer"},
+		{"message": "/verify RANK leaves gaps after ties, while DENSE_RANK does not.", "kind": "verify"}
+	],
+	"expectations": {
+		"subskills": ["group-having", "window-ranking", "window-totals"],
+		"notes": "Keep report grain explicit (item, order, customer, or product); use an explicit ROWS frame for running totals and explain tie gaps for RANK; consecutive Continue turns advance from aggregates to windows."
+	}
+}

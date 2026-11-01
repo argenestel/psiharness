@@ -1,0 +1,18 @@
+{
+	"id": "sql-lab-select-sort",
+	"title": "SQL lab: select, filter, and deterministic ordering",
+	"skillPack": "examples/skills/sql-lab",
+	"turns": [
+		{"message": "Teach me the next step.", "kind": "teach"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Just show me", "kind": "show"},
+		{"message": "I'll guess: LIMIT 3 alone chooses the three most expensive products.", "kind": "wrong_guess"},
+		{"message": "I’m stuck; what makes a tie in price deterministic?", "kind": "stuck"},
+		{"message": "Correct answer: sort by price DESC and then product_id ASC before applying LIMIT 3.", "kind": "correct_answer"},
+		{"message": "/verify ORDER BY price DESC, product_id ASC makes the top-three result deterministic when prices tie.", "kind": "verify"}
+	],
+	"expectations": {
+		"subskills": ["select-filter", "sort-limit"],
+		"notes": "Use the seeded shop schema and preserve requested columns; explain that LIMIT operates after ORDER BY and row order is otherwise undefined; check boundary and date predicates without changing the schema."
+	}
+}

@@ -1,0 +1,20 @@
+{
+	"id": "python-foundations-first-lesson",
+	"title": "Python foundations: clean and count input",
+	"skillPack": "examples/skills/python-foundations",
+	"turns": [
+		{"message": "Teach me the next step.", "kind": "teach"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Just show me", "kind": "show"},
+		{"message": "I'll guess: normalize_name can just call title() on the raw text, so repeated spaces do not matter.", "kind": "wrong_guess"},
+		{"message": "I'll guess again: split(' ') is safer because it makes every separator explicit.", "kind": "wrong_guess"},
+		{"message": "I’m stuck; give me a small hint about the empty input.", "kind": "stuck"},
+		{"message": "Correct answer: return \" \".join(text.split()).title().", "kind": "correct_answer"},
+		{"message": "/verify split() without an argument treats a run of whitespace, including tabs, as one separator.", "kind": "verify"}
+	],
+	"expectations": {
+		"subskills": ["syntax-types", "strings", "collections"],
+		"notes": "Teach before asking for a guess; consecutive Continue turns should advance the lesson without restarting it; repair the two whitespace misconceptions, then verify the split behavior."
+	}
+}

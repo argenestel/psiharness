@@ -1,0 +1,19 @@
+{
+	"id": "spanish-cafe-greet-order",
+	"title": "Spanish café: greet and order politely",
+	"skillPack": "examples/skills/spanish-cafe-a1",
+	"turns": [
+		{"message": "Teach me the next step.", "kind": "teach"},
+		{"message": "Continue", "kind": "continue"},
+		{"message": "Just show me", "kind": "show"},
+		{"message": "I'll guess: café takes una because the English word 'coffee' feels feminine.", "kind": "wrong_guess"},
+		{"message": "I’m stuck; which phrase softens an order for a stranger?", "kind": "stuck"},
+		{"message": "Correct answer: café is masculine, so use un café; me gustaría or querría makes the request softer.", "kind": "correct_answer"},
+		{"message": "Mi respuesta: Me gustaría un café, por favor.", "kind": "answer"},
+		{"message": "/verify Buenos días is the standard general morning greeting in Spanish.", "kind": "verify"}
+	],
+	"expectations": {
+		"subskills": ["greet-introduce", "order-drinks", "numbers-prices"],
+		"notes": "Keep the café dialogue at A1 level and preserve accents when practical; correct article gender from Spanish rather than the English gloss; accept the learner’s Spanish answer after checking the polite-request pattern."
+	}
+}

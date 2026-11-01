@@ -1,0 +1,23 @@
+{
+	"ch-greet-introduce-1": {"correct": "Buenos días", "wrong": "Buenas días"},
+	"ch-greet-introduce-2": {"correct": "Me llamo Ana", "wrong": "Soy llamo Ana"},
+	"ch-greet-introduce-3": {"correct": "Gracias", "wrong": "Por favor"},
+	"ch-greet-introduce-4": {"correct": "Buenos días", "wrong": "Buenas días"},
+	"ch-order-drinks-1": {"correct": "Quiero un café, por favor", "wrong": "Quiero una café, por favor"},
+	"ch-order-drinks-2": {"correct": "Me gustaría un té, por favor", "wrong": "Me gusta un té, por favor"},
+	"ch-order-drinks-3": {"correct": "Quiero un café, por favor", "wrong": "Quiero una café, por favor"},
+	"ch-order-drinks-4": {"correct": "Quiero un café, por favor is direct; Me gustaría un café, por favor is softer and more polite.", "wrong": "Both phrases have exactly the same tone."},
+	"ch-numbers-prices-1": {"correct": "siete", "wrong": "seis"},
+	"ch-numbers-prices-2": {"correct": "veintiuno", "wrong": "veintiún"},
+	"ch-numbers-prices-3": {"correct": "cien", "wrong": "ciento"},
+	"ch-numbers-prices-4": {"correct": "¿Cuánto cuesta?", "wrong": "¿Cuánto costar?"},
+	"ch-numbers-prices-5": {"correct": "Dos euros con cincuenta céntimos", "wrong": "Dos euros con cincuenta dólares"},
+	"ch-numbers-prices-6": {"correct": "Tres dólares", "wrong": "Tres euros"},
+	"ch-ser-estar-1": {"correct": "soy", "wrong": "estoy"},
+	"ch-ser-estar-2": {"correct": "estoy", "wrong": "soy"},
+	"ch-ser-estar-3": {"correct": "es, está", "wrong": "está, es"},
+	"ch-polite-requests-1": {"correct": "¿Puede traer un agua, por favor?", "wrong": "¿Puedes traer una agua, por favor?"},
+	"ch-polite-requests-2": {"correct": "¿Me das la cuenta, por favor?", "wrong": "¿Me da la cuenta, por favor?"},
+	"ch-cafe-roleplay-1": {"correct": "Buenos días. / Buenos días.\nMe llamo Ana. / Mucho gusto.\nMe gustaría un café, por favor. / Sí, claro.\n¿Cuánto cuesta? / Dos euros.\nDos euros, gracias. / Aquí tiene.\nGracias. / De nada.", "wrong": "Good morning. I want coffee. How much? Two euros. Bye."},
+	"ch-cafe-roleplay-2": {"correct": "Buenos días. / Buenos días.\nMe llamo Luis y estoy bien. / Mucho gusto.\nMe gustaría un té, por favor. / Sí, claro.\n¿Cuánto cuesta? / Tres euros.\nTres euros. ¿Me das la cuenta, por favor? / Sí, aquí tiene.\nGracias. / De nada.", "wrong": "Hola, soy Luis. Quiero café. Son dos dólares. ¿Puedes darme la cuenta?"}
+}
