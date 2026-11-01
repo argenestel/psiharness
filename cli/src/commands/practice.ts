@@ -47,10 +47,12 @@ export async function practice(argv: string[], ctx: PracticeContext): Promise<nu
 	const available = challenges.filter((c) => !c.subskillId || rank(c) >= 0)
 		.sort((a, b) => rank(a) - rank(b));
 	const out = ctx.stdout ?? process.stdout;
-	for (const c of available.filter((c) => c.expected === undefined)) {
+	// Code challenges are graded by running their tests (psi web), so the terminal drill never text-compares them.
+	const typed = (c: Challenge) => c.expected !== undefined && c.format !== "code";
+	for (const c of available.filter((c) => !typed(c))) {
 		out.write(`${c.prompt}\n→ open-ended; run \`psi learn\` and use /practice for these\n`);
 	}
-	const queue = available.filter((c) => c.expected !== undefined
+	const queue = available.filter((c) => typed(c)
 		&& (unattempted.has(c.id) || latest.get(c.id)?.outcome === "fail"))
 		.sort((a, b) => Number(unattempted.has(b.id)) - Number(unattempted.has(a.id)));
 	const input = ctx.stdin ?? process.stdin;

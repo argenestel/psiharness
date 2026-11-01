@@ -44,7 +44,7 @@ export function updateStreak(p: Progress, now: Date = new Date()): Progress {
 }
 
 /** Display text for the help-seeking badge; legacy no-hints ids remain readable in Progress.badges. */
-export const HELP_THEN_SOLVE_LABEL = "Used a hint and then solved it";
+export const HELP_THEN_SOLVE_LABEL = "Asked for help, then solved it";
 
 /** Award new badges from updated progress; optional context supplies facts absent from the stable types. */
 export function newBadges(p: Progress, a: Attempt, context: {

@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
+import { withFileLock } from "./lock.ts";
 import type { Source, SourceKind } from "./types.ts";
 
 const SKILL_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -436,6 +437,10 @@ export class SourceStore {
 	/** Add or refresh a source, deduplicating by its canonical URL identifier. */
 	add(skill: string, draft: SourceDraft, now: Date = new Date()): Source {
 		assertSkill(skill);
+		return withFileLock(this.file(skill), () => this.addUnlocked(skill, draft, now));
+	}
+
+	private addUnlocked(skill: string, draft: SourceDraft, now: Date): Source {
 		const { canonical } = canonicalUrl(draft.url);
 		const id = hashSourceUrl(canonical);
 		const sources = this.read(skill);
@@ -472,10 +477,14 @@ export class SourceStore {
 
 	/** Remove a source by id and report whether it existed. */
 	remove(skill: string, id: string): boolean {
-		const sources = this.read(skill);
-		const remaining = sources.filter((source) => source.id !== id);
-		if (remaining.length === sources.length) return false;
-		this.write(skill, remaining);
-		return true;
+		// A no-op removal must not create the skill directory (the lock file would).
+		if (!this.read(skill).some((source) => source.id === id)) return false;
+		return withFileLock(this.file(skill), () => {
+			const sources = this.read(skill);
+			const remaining = sources.filter((source) => source.id !== id);
+			if (remaining.length === sources.length) return false;
+			this.write(skill, remaining);
+			return true;
+		});
 	}
 }

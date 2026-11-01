@@ -206,7 +206,9 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - `core/src/scheduler.ts`: `nextChallenge(skill, opts?)` → `{ challenge, reason: ChallengeReason }` — interleaved,
   spaced selection (new / due review / delayed retry / stretch), difficulty adapts toward ~70–85% success; used by
   `psi_challenge` action "next" and `GET /api/skills/:s/next`. Hints never reduce XP ("help-then-solve" badge).
-- `core/src/lock.ts`: `withFileLock(path, fn)` — every store's read-modify-write is serialized across processes.
+- `core/src/lock.ts`: `withFileLock(path, fn)` — read-modify-writes in PracticeStore, MemoryStore, ProfileStore,
+  StateStore, KnowledgeStore and SourceStore are serialized across processes (LessonStore writes whole files;
+  PsiStore topic files are single-writer).
 - Attempts are skill-scoped (`recordAttempt` takes `skill`); browser-reported code results are `verified: false`.
 - `extension/src/practice/guards.ts`: code-level guarantees — next steps always include Continue; an open challenge's
   answers are redacted from tutor text and options; challenges are blocked on continue/show-me turns until something
