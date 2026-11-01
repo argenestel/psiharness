@@ -45,36 +45,55 @@
 }
 @keyframes psi-sk-swipe { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
-/* Steps: an ordered checklist. The number is the only marker; a solid step trades it for a highlighter tick. */
-.psi-sk-steps { list-style: none; margin: 0; padding: 0; counter-reset: psi-step; }
-.psi-sk-step {
-	counter-increment: psi-step; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto;
-	align-items: start; gap: 0 12px; padding: 12px 0; border-top: 1px solid var(--rule);
+/* Level map: the steps as stops on a pencil route. Dots sit in three lanes of the track (same fractions as the
+   SVG segments' 0–120 viewBox: 20, 60, 100), so the route winds on wide screens and stays a narrow vertical line
+   on phones. Solid stops get the highlighter; the stop to work on now gets an ink ring and "Start here". */
+.psi-map { --track: 120px; list-style: none; margin: 8px 0 0; padding: 0; }
+.psi-map-stop { position: relative; padding: 12px 0 20px calc(var(--track) + 16px); min-height: 72px; }
+.psi-map-rail { position: absolute; left: 0; top: 0; bottom: 0; width: var(--track); pointer-events: none; }
+.psi-map-seg { position: absolute; left: 0; top: 24px; width: 100%; height: 100%; overflow: visible; }
+.psi-map-seg path { fill: none; stroke: var(--pencil); stroke-width: 2; }
+.psi-map-seg.is-ahead path { stroke-dasharray: 4 6; opacity: 0.7; }
+.psi-map-dot {
+	position: absolute; top: 24px; width: 18px; height: 18px; border-radius: 50%; transform: translate(-50%, -50%);
+	background: var(--paper); border: 2px solid var(--ink);
 }
-.psi-sk-step::before {
-	content: counter(psi-step) "."; grid-column: 1; grid-row: 1; color: var(--pencil);
-	font-variant-numeric: tabular-nums; text-align: right; line-height: 1.55;
-}
-.psi-sk-check { display: none; }
-.psi-sk-step.is-solid::before { content: none; }
-.psi-sk-step.is-solid .psi-sk-check {
-	display: block; grid-column: 1; grid-row: 1; justify-self: end; position: relative;
-	width: 18px; height: 18px; margin-top: 3px; background: var(--highlighter);
-}
-.psi-sk-step.is-solid .psi-sk-check::after {
+.psi-map-dot.lane-0 { left: calc(var(--track) * 20 / 120); }
+.psi-map-dot.lane-1 { left: calc(var(--track) * 60 / 120); }
+.psi-map-dot.lane-2 { left: calc(var(--track) * 100 / 120); }
+.is-solid > .psi-map-rail .psi-map-dot { width: 22px; height: 22px; background: var(--highlighter); border: 1.5px solid #1B2A4A; }
+.is-solid > .psi-map-rail .psi-map-dot::after {
 	content: ""; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px;
 	border: solid #1B2A4A; border-width: 0 2px 2px 0; transform: rotate(45deg);
 }
-.psi-sk-step.is-practising::before { color: var(--ink); font-weight: 700; }
-.psi-sk-step-body { grid-column: 2; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.psi-sk-step-title { font-weight: 700; line-height: 1.55; }
-.psi-sk-why { font-size: var(--text-13); line-height: 1.45; }
-.psi-sk-status {
-	grid-column: 3; font-size: var(--text-13); line-height: 1.55; color: var(--pencil); text-align: right; white-space: nowrap;
+/* You are here: a wide ink ring around a small ink dot, like a pin on a map. */
+.is-here > .psi-map-rail .psi-map-dot { width: 30px; height: 30px; border-width: 3px; }
+.is-here > .psi-map-rail .psi-map-dot::after {
+	content: ""; position: absolute; inset: 6px; border-radius: 50%; background: var(--ink);
 }
-.psi-sk-step.is-next .psi-sk-status, .psi-sk-step.is-practising .psi-sk-status { color: var(--ink); font-weight: 700; }
-.psi-sk-step.is-locked .psi-sk-step-title { color: var(--pencil); font-weight: 400; }
-.psi-sk-step.is-locked .psi-sk-why { display: none; }
+.is-practising > .psi-map-rail .psi-map-dot { overflow: hidden; }
+.is-practising > .psi-map-rail .psi-map-dot::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 50%; background: var(--ink); }
+.is-ready > .psi-map-rail .psi-map-dot { width: 14px; height: 14px; border-width: 1.5px; }
+.is-locked > .psi-map-rail .psi-map-dot { width: 14px; height: 14px; border: 1.5px dashed var(--pencil); }
+
+.psi-map-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; max-width: 60ch; }
+.psi-map-title { font-family: var(--font-body); font-size: var(--text-16); font-weight: 700; line-height: 1.5; margin: 0 !important; }
+.psi-map-title > span { display: inline-block; min-height: 24px; color: var(--pencil); font-weight: 400; }
+.psi-map-toggle {
+	min-height: 24px; padding: 0; border: 0; background: none; font: inherit; color: var(--ink); text-align: left;
+	white-space: normal; justify-content: flex-start;
+}
+.psi-map-toggle:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; }
+.psi-map-status { font-size: var(--text-13); color: var(--pencil); line-height: 1.45; }
+.is-here .psi-map-status { color: var(--ink); font-weight: 700; }
+.is-solid .psi-map-status, .is-practising .psi-map-status { color: var(--ink); }
+.psi-map-meta { font-size: var(--text-13); color: var(--pencil); line-height: 1.45; }
+.psi-map-panel { display: flex; flex-direction: column; gap: 12px; padding-top: 10px; }
+.psi-map-panel[hidden], .psi-map-practice[hidden] { display: none; }
+.psi-map-why { font-size: var(--text-13); line-height: 1.45; }
+.psi-map-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.psi-map-practice .psi-sk-rows { margin-top: 4px; }
+.psi-map-practice .psi-sk-empty { padding: 4px 0; }
 
 /* Filters: plain text toggles, active one underlined in ink */
 .psi-sk-filters { display: flex; gap: 4px; margin-bottom: 12px; }
@@ -154,8 +173,8 @@
 	.psi-sk-stat { padding: var(--s3) var(--s3) var(--s3) 0; }
 	.psi-sk-stat strong { font-size: var(--text-16); }
 	.psi-sk-stat:last-child { grid-column: 1 / -1; padding-left: 0; border-left: 0; border-top: 1px solid var(--rule); }
-	.psi-sk-step { grid-template-columns: 24px minmax(0, 1fr); }
-	.psi-sk-status { grid-column: 2; text-align: left; white-space: normal; }
+	.psi-map { --track: 72px; }
+	.psi-map-stop { padding-left: calc(var(--track) + 12px); }
 	.psi-sk-challenge { grid-template-columns: minmax(0, 1fr) auto; }
 	.psi-sk-prompt { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 	.psi-sk-mark { grid-row: 2; grid-column: 1; justify-content: flex-start; min-width: 0; }

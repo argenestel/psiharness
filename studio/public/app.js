@@ -13,7 +13,7 @@ export function parseRoute(hash = "#/") {
 		} };
 		if (first === "chat" && second) return { route: "chat", params: { chatId: second } };
 		if (first === "skills" && second) return { route: "skill", params: { skill: second } };
-		if (first === "memory" || first === "topics") return { route: first, params: {} };
+		if (first === "memory" || first === "topics" || first === "you") return { route: first, params: {} };
 		if (first === "paths") return { route: "paths", params: second ? { id: second } : {} };
 		// Node ids may contain "/" (subskill:sql-lab/joins); rejoin in case the id arrived unencoded.
 		if (first === "graph") return { route: "graph", params: { nodeId: parts.slice(1).join("/") } };
@@ -611,7 +611,7 @@ async function renderRoute() {
 	const host = document.createElement("div"); host.className = "psi-view-host"; app.append(host);
 	host.innerHTML = `<p class="empty psi-view">Opening…</p>`;
 	document.title = "psi";
-	setTopbar(parsed.route === "memory" ? "Memory" : parsed.route === "paths" ? "Learning paths"
+	setTopbar(parsed.route === "memory" ? "Memory" : parsed.route === "you" ? "You" : parsed.route === "paths" ? "Learning paths"
 		: parsed.route === "graph" ? "Graph"
 		: parsed.route === "skill" ? capital(titleOf(parsed.params.skill)) : "psi");
 	if (benchWanted) void topbarForSkill();
@@ -622,6 +622,11 @@ async function renderRoute() {
 			const { mountHome } = await import("./js/home.js");
 			if (token !== generation) return;
 			view = mountHome(host, { navigate });
+		} else if (parsed.route === "you") {
+			const { mountYou } = await import("./js/you.js");
+			if (token !== generation) return;
+			document.title = "You · psi";
+			view = mountYou(host);
 		} else if (parsed.route === "memory") {
 			const { mountMemory } = await import("./js/memory.js");
 			if (token !== generation) return;

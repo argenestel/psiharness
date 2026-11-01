@@ -1,6 +1,6 @@
 import { api } from "./api.js";
 import { el, emit, toast } from "./ui.js";
-import { firstSentence } from "./bench.js";
+import { firstSentence, nextSubskill } from "./bench.js";
 
 /** Built-in first problem for a learner with no packs imported; graded locally. */
 export const SAMPLE_CHALLENGE = Object.freeze({
@@ -28,6 +28,27 @@ export function heroSkillOrder(skills, active) {
 export function latestRecap(recaps) {
 	return [...(Array.isArray(recaps) ? recaps : [])].filter((r) => r && r.date)
 		.sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+}
+
+/** True once the learner has practised (any attempt in the calendar) or has a session recap. */
+export function hasHistory(summary, recap) {
+	return Boolean(recap) || (Array.isArray(summary?.calendar) && summary.calendar.some((d) => Number(d?.attempts) > 0));
+}
+
+/**
+ * The Today row's primary action: the skill to continue (recap skill, then the active skill, then the skill with the
+ * most attempts) and its next step. `skills` = [{ skill, plan, progress }]. Returns null when there is no skill.
+ */
+export function continueAction({ skills, recap, active } = {}) {
+	const list = (Array.isArray(skills) ? skills : []).filter((s) => s && s.skill);
+	const pick = list.find((s) => s.skill === recap?.skill) ?? list.find((s) => s.skill === active)
+		?? [...list].sort((a, b) => (Number(b.progress?.attempts) || 0) - (Number(a.progress?.attempts) || 0))[0];
+	if (!pick) return null;
+	const title = pick.plan?.title || pick.skill.replace(/[-_]+/g, " ");
+	const step = nextSubskill(pick.plan);
+	return { skill: pick.skill, title, step: step?.title ?? "",
+		label: step ? `Continue ${title}: ${step.title}` : `Continue ${title}`,
+		prompt: step ? `/practice ${step.title}` : "/practice" };
 }
 
 /** A grader for the built-in sample so it works before any pack is imported. */
@@ -59,12 +80,20 @@ export function mountHome(root, { navigate }) {
 	root.replaceChildren(el("div", { class: "psi-home psi-view" }, hero, goal, packs));
 
 	async function loadHero() {
-		const [memory, state, skills] = await Promise.all([
+		const [memory, state, skills, summary] = await Promise.all([
 			api.get("/api/memory").catch(() => ({})), api.get("/api/state").catch(() => ({})),
-			api.get("/api/skills").catch(() => []),
+			api.get("/api/skills").catch(() => []), api.get("/api/me").catch(() => null),
 		]);
 		if (disposed) return;
 		const recap = latestRecap(memory.recaps);
+		if (summary && hasHistory(summary, recap)) {
+			const slugs = heroSkillOrder(skills, state.activeSkill);
+			const details = await Promise.all(slugs.map((slug) => api.get(`/api/skills/${enc(slug)}`)
+				.then((d) => ({ skill: slug, plan: d.plan, progress: d.progress })).catch(() => null)));
+			if (disposed) return;
+			const action = continueAction({ skills: details.filter(Boolean), recap, active: state.activeSkill });
+			if (action) { await renderToday(summary, action, recap); return; }
+		}
 		if (recap) { renderContinue(recap); return; }
 		for (const slug of heroSkillOrder(skills, state.activeSkill)) {
 			const data = await api.get(`/api/skills/${enc(slug)}?unattempted=1`).catch(() => null);
@@ -116,6 +145,26 @@ export function mountHome(root, { navigate }) {
 		after.replaceChildren(widget.skill === "sample"
 			? el("button", { type: "button", onclick: () => document.querySelector("#learning-goal")?.focus() }, "Start a skill")
 			: el("a", { class: "button", href: `#/skills/${enc(widget.skill)}` }, "Open skill"));
+	}
+
+	async function renderToday(summary, action, recap) {
+		const { goalWidget, streakWords } = await import("./you.js");
+		if (disposed) return;
+		const practised = (summary.today?.challenges || 0) + (summary.today?.minutes || 0) > 0;
+		const streak = streakWords(summary.streakDays, practised);
+		const go = () => navigate(`#/new?${new URLSearchParams({ skill: action.skill, prompt: action.prompt })}`);
+		hero.className = "psi-today";
+		hero.replaceChildren(
+			el("h1", { id: "home-title" }, "Today"),
+			el("div", { class: "psi-today-row" },
+				goalWidget(summary),
+				el("p", { class: "psi-today-streak" }, el("strong", {}, streak.text), el("span", {}, streak.hint))),
+			el("div", { class: "psi-today-continue" },
+				el("button", { type: "button", class: "primary", onclick: go }, action.label),
+				recap?.summary ? el("p", {}, `Last time: ${firstSentence(recap.summary, 180)}`) : null,
+				el("p", { class: "psi-today-links" },
+					el("a", { href: `#/skills/${enc(action.skill)}` }, "Open skill"),
+					el("a", { href: "#/you" }, "See your progress"))));
 	}
 
 	function renderContinue(recap) {

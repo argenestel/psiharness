@@ -38,6 +38,11 @@ export function trailCaption(attempts) {
 	return `${n} ${n === 1 ? "attempt" : "attempts"}${missed ? `, ${missed} missed` : ""}`;
 }
 
+/** True on the home route, where the Today row already shows the daily goal. */
+export function isHomeHash(hash) {
+	return /^#?\/?(?:\?.*)?$/.test(String(hash ?? ""));
+}
+
 let trailModule;
 async function loadTrail() {
 	trailModule ??= import("./trail.js").catch(() => null);
@@ -50,8 +55,12 @@ async function loadTrail() {
  * whether there is anything to show, so the shell can hide the column.
  */
 export function mountBench(root, { skill, onChange, onClose } = {}) {
-	let disposed = false, token = 0, lastAttemptId, current = skill;
+	let disposed = false, token = 0, lastAttemptId, current = skill, announceTimer, goal;
 	const enc = encodeURIComponent;
+	// Kept mounted across re-renders so screen readers hear each announcement once.
+	const announce = el("div", { class: "psi-announce psi-bench-announce", role: "status", "aria-live": "polite" });
+	const today = el("section", { class: "psi-bench-block psi-bench-today", "aria-label": "Today" });
+	const syncToday = () => { today.hidden = typeof location !== "undefined" && isHomeHash(location.hash); };
 
 	async function load({ animate = false, leveledUp = false } = {}) {
 		const mine = ++token;
@@ -68,17 +77,35 @@ export function mountBench(root, { skill, onChange, onClose } = {}) {
 				if (mine === token && !disposed) { current = undefined; root.replaceChildren(); onChange?.(false); }
 				return;
 			}
-			const [data, attempts] = await Promise.all([
+			const [data, attempts, summary] = await Promise.all([
 				api.get(`/api/skills/${enc(active)}`),
 				api.get(`/api/skills/${enc(active)}/attempts?limit=40`).catch(() => []),
+				api.get("/api/me").catch(() => null),
 			]);
 			if (mine !== token || disposed) return;
 			current = active;
+			drawToday(summary);
 			await render(active, data, trailAttempts(attempts), { animate, leveledUp });
 			if (mine === token && !disposed) onChange?.(true);
 		} catch {
 			if (mine === token && !disposed) { root.replaceChildren(); onChange?.(false); }
 		}
+	}
+
+	let lastSummary;
+	async function drawToday(summary) {
+		lastSummary = summary;
+		syncToday();
+		// On home the Today row shows the goal; building a hidden ring here would spend the day's fill moment unseen.
+		if (!summary || today.hidden) { today.replaceChildren(); goal = undefined; return; }
+		const { goalWidget } = await import("./you.js");
+		if (disposed) return;
+		if (goal?.isConnected && goal.update) goal.update(summary);
+		else goal = goalWidget(summary, { compact: true });
+		const combo = Number(summary.combo) || 0;
+		today.replaceChildren(el("h3", {}, "Today"), goal,
+			combo >= 3 ? el("p", { class: "psi-bench-combo" }, `${combo} right in a row. Bonus XP is on.`) : null);
+		syncToday();
 	}
 
 	async function render(slug, data, attempts, { animate, leveledUp }) {
@@ -104,6 +131,7 @@ export function mountBench(root, { skill, onChange, onClose } = {}) {
 					el("h2", {}, el("a", { href: `#/skills/${enc(slug)}` }, plan.title || slug.replace(/[-_]+/g, " "))),
 					close),
 				target ? el("p", { class: "psi-bench-target" }, target) : null),
+			announce, today,
 			next ? el("section", { class: "psi-bench-block" },
 				el("h3", {}, "Next up"), el("p", { class: "psi-bench-next" }, next.title)) : null,
 			el("section", { class: "psi-bench-block", "aria-label": "Attempt trail" },
@@ -130,17 +158,36 @@ export function mountBench(root, { skill, onChange, onClose } = {}) {
 			lastAttemptId = id;
 			const from = detail?.attempt?.skill ?? detail?.skill;
 			const forOther = Boolean(skill && from && from !== skill);
-			if (!forOther) void load({ animate: true, leveledUp: Boolean(detail?.leveledUp) });
+			if (forOther) return;
+			// One moment per attempt: a level-up is told by the announcement, so the level number doesn't swipe too.
+			void import("./you.js").then(({ pickAnnouncement, fillAnnouncement }) => {
+				const item = pickAnnouncement(detail);
+				return load({ animate: true, leveledUp: Boolean(detail?.leveledUp) && !item }).then(() => {
+					if (!item || disposed) return;
+					fillAnnouncement(announce, item);
+					clearTimeout(announceTimer);
+					announceTimer = setTimeout(() => fillAnnouncement(announce, null), 12000);
+				});
+			}).catch(() => load({ animate: true, leveledUp: Boolean(detail?.leveledUp) }));
 		}),
+		on("psi:goal", () => { void load(); }),
 		on("psi:lesson", () => { void load(); }),
 		on("psi:status", () => { void load(); }),
 		on("psi:skills-changed", () => { void load(); }),
 	];
+	const onHash = () => {
+		syncToday();
+		if (!today.hidden && !goal && lastSummary) void drawToday(lastSummary);
+	};
+	if (typeof window !== "undefined") window.addEventListener("hashchange", onHash);
 	void load();
 	return {
 		refresh: () => load(),
 		get skill() { return current; },
-		destroy() { disposed = true; offs.forEach((off) => off()); root.replaceChildren(); },
+		destroy() {
+			disposed = true; clearTimeout(announceTimer); offs.forEach((off) => off()); root.replaceChildren();
+			if (typeof window !== "undefined") window.removeEventListener("hashchange", onHash);
+		},
 	};
 }
 

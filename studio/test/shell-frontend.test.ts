@@ -11,6 +11,7 @@ test("shell routes home, chats, skills, memory and the concept index", () => {
 	assert.deepEqual(parseRoute("#/chat/chat%201"), { route: "chat", params: { chatId: "chat 1" } });
 	assert.deepEqual(parseRoute("#/skills/mental-math"), { route: "skill", params: { skill: "mental-math" } });
 	assert.deepEqual(parseRoute("#/memory"), { route: "memory", params: {} });
+	assert.deepEqual(parseRoute("#/you"), { route: "you", params: {} });
 	assert.deepEqual(parseRoute("#/topics"), { route: "topics", params: {} });
 });
 

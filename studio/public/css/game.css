@@ -4,7 +4,7 @@
 .psi-goalw { display: flex; flex-direction: column; gap: var(--s2); min-width: 0; }
 .psi-goalw-button {
 	display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: var(--s3);
-	width: 100%; min-height: 56px; padding: var(--s1) var(--s1) var(--s1) 0; text-align: left; white-space: normal;
+	width: fit-content; max-width: 100%; min-height: 56px; padding: var(--s1) var(--s1) var(--s1) 0; text-align: left; white-space: normal;
 	font-weight: 400; background: transparent; border-color: transparent;
 }
 .psi-goalw-button:hover:not(:disabled) { border-color: transparent; }
@@ -38,14 +38,14 @@
 .psi-announce:empty { display: none; }
 .psi-announce { display: flex; flex-direction: column; gap: var(--s1); padding-bottom: var(--s4); border-bottom: 1px solid var(--rule); }
 .psi-announce-title { font-family: var(--font-display); font-weight: 800; font-size: var(--text-25); line-height: 1.15; }
-.psi-announce-title span { position: relative; display: inline-block; z-index: 0; }
-/* One highlighter stroke under the words, drawn left to right once. */
+.psi-announce-title span { position: relative; display: inline-block; padding-bottom: 10px; }
+/* One highlighter stroke under the words (never behind them: ink on yellow fails in the dark theme), drawn once. */
 .psi-announce-title span::after {
-	content: ""; position: absolute; z-index: -1; left: -2px; right: -2px; bottom: 1px; height: 10px;
+	content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px;
 	background: var(--highlighter); transform-origin: left; transform: scaleX(1);
 }
 .psi-announce.is-shown .psi-announce-title span::after { animation: psi-swipe 600ms var(--ease) both; }
-.psi-announce[data-kind="level"] .psi-announce-title span::after { height: 12px; }
+.psi-announce p { margin: 0; }
 .psi-announce-text { color: var(--ink); }
 .psi-sk-announce { margin-top: var(--s4); }
 .psi-sk-announce:empty { margin: 0; }
@@ -79,6 +79,7 @@
 .psi-you-meter { height: 12px; margin-top: var(--s3); max-width: 480px; }
 .psi-you-xp { font-size: var(--text-13); color: var(--pencil); }
 .psi-you-block { display: flex; flex-direction: column; gap: var(--s3); }
+.psi-you-block p, .psi-today p, .psi-goalw p { margin: 0; }
 .psi-you-block > h2 { font-size: var(--text-20); }
 .psi-you-block > h3 { font-family: var(--font-body); font-size: var(--text-13); font-weight: 700; color: var(--pencil); margin-top: var(--s3); }
 .psi-you-block > .psi-goalw { max-width: 420px; }
