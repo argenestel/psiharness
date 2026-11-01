@@ -6,8 +6,10 @@
 		{"message": "Teach me the next step.", "kind": "teach"},
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Just show me", "kind": "show"},
+		{"message": "Give me a challenge on this.", "kind": "challenge"},
 		{"message": "I'll guess: first_repeated should return the last duplicate because the loop has to finish.", "kind": "wrong_guess"},
 		{"message": "I’m stuck; how do I make the recursive call get closer to its base case?", "kind": "stuck"},
+		{"message": "Give me another challenge on this.", "kind": "challenge"},
 		{"message": "Correct answer: keep a seen set and return immediately on the first repeated item; recursion must shrink the input.", "kind": "correct_answer"},
 		{"message": "My answer is: apply the function twice as fn(fn(value)).", "kind": "answer"},
 		{"message": "/verify first_repeated should return as soon as it sees the first value for the second time.", "kind": "verify"}

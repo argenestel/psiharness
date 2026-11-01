@@ -22,6 +22,8 @@ export interface ParseError {
 
 export interface FailureEvidence {
 	check: string;
+	/** Scenario label (trace basename) the failure belongs to; filled in by scoreScenario. */
+	scenario?: string;
 	turn?: string;
 	attempt?: unknown;
 	message: string;
@@ -34,6 +36,61 @@ export interface CheckScore {
 	applicable: number;
 	ratio: number | null;
 	failures: FailureEvidence[];
+	/** Items the check deliberately did not score, with the reason (e.g. a spoiler check with no matchable answer). */
+	notApplicable?: NotApplicable[];
+}
+
+/** An explicitly unscored item. */
+export interface NotApplicable {
+	check: string;
+	scenario?: string;
+	turn?: string;
+	challengeId?: string;
+	reason: string;
+}
+
+/** psi-guard interventions: custom session entries the extension appends when it corrects the tutor. */
+export interface GuardSummary {
+	count: number;
+	byTurn: Record<string, number>;
+}
+
+/** How scripted answer turns were filled: from an answer key for the open challenge, or scripted fallback text. */
+export interface AnswerSummary {
+	dynamic: number;
+	fallback: number;
+	turns: { turn: string; kind?: string; mode: string; challengeId?: string }[];
+}
+
+/** One scenario run's runner summary (`<id>[.r<k>].summary.json`, or a legacy summary.json entry). */
+export interface RunSummary {
+	id: string;
+	repeat: number;
+	success: boolean;
+	turns: number;
+	completedTurns: number;
+	toolCalls: number;
+	durationMs: number;
+	model?: string;
+	errors: string[];
+	answers?: { dynamic: number; fallback: number };
+	file: string;
+}
+
+/** Spread of one ratio across repeats. */
+export interface Spread {
+	mean: number | null;
+	min: number | null;
+	max: number | null;
+	n: number;
+}
+
+/** Per-check and per-scenario spread when every scenario ran K > 1 times. */
+export interface VarianceSummary {
+	repeats: number;
+	checks: Record<string, Spread>;
+	overall: Spread;
+	scenarios: Record<string, Spread>;
 }
 
 export interface LatencySample {
@@ -80,6 +137,11 @@ export interface HealthSummary {
 
 export interface ScenarioScore {
 	scenario: string;
+	/** Scenario id from harness_meta (falls back to the label); repeats share it. */
+	scenarioId: string;
+	repeat: number;
+	guard: GuardSummary;
+	answers: AnswerSummary;
 	checks: Record<string, CheckScore>;
 	checkResults: Record<string, CheckScore>;
 	passed: number;
@@ -112,6 +174,10 @@ export interface ScoreReport {
 	latency: LatencySummary;
 	parseErrors: ParseError[];
 	metadata: ReportMetadata;
+	guard: GuardSummary;
+	notApplicable: NotApplicable[];
+	runs: RunSummary[];
+	variance?: VarianceSummary;
 }
 
 interface Entry {
@@ -162,12 +228,16 @@ interface ChallengeInfo {
 	subskillId?: string;
 	prompt?: string;
 	expected?: string;
+	format?: string;
+	language?: string;
+	choices?: string[];
 	call: ToolCall;
 }
 
 interface ChallengeIndex {
 	byId: Map<string, Dict>;
 	sources: number;
+	sourceUrls: Set<string>;
 }
 
 const CHECK_NAMES = [
@@ -296,7 +366,23 @@ function attemptRank(value: unknown): number | undefined {
 	return undefined;
 }
 
-function normalizeInput(input: unknown): { entries: Entry[]; parseErrors: ParseError[]; scenario?: string; metadata?: Dict } {
+interface Normalized {
+	entries: Entry[];
+	parseErrors: ParseError[];
+	scenario?: string;
+	metadata?: Dict;
+	guard: GuardSummary;
+	answers: AnswerSummary;
+}
+
+/** True for a pi `entry_appended` record carrying a psi-guard custom entry. */
+export function isGuardRecord(record: Dict): boolean {
+	if (record.type !== "entry_appended") return false;
+	const entry = isObject(record.entry) ? record.entry : record;
+	return entry.customType === "psi-guard";
+}
+
+function normalizeInput(input: unknown): Normalized {
 	let source: unknown = input;
 	let parseErrors: ParseError[] = [];
 	let scenario: string | undefined;
@@ -310,19 +396,34 @@ function normalizeInput(input: unknown): { entries: Entry[]; parseErrors: ParseE
 	}
 	const values = Array.isArray(source) ? source : [];
 	const entries: Entry[] = [];
+	const guard: GuardSummary = { count: 0, byTurn: {} };
+	const answers: AnswerSummary = { dynamic: 0, fallback: 0, turns: [] };
 	for (const [index, value] of values.entries()) {
 		if (!isObject(value)) continue;
 		const record = recordOf(value);
-		if (value.turn === null) continue;
+		// Guard entries are counted before the turn filter: they may arrive between turns (turn null).
+		if (isGuardRecord(record)) {
+			guard.count++;
+			const key = value.turn === null || value.turn === undefined ? "between turns" : String(value.turn);
+			guard.byTurn[key] = (guard.byTurn[key] ?? 0) + 1;
+		}
+		if (record.type === "harness_answer") {
+			const mode = record.mode === "dynamic" ? "dynamic" : "fallback";
+			answers[mode]++;
+			answers.turns.push({ turn: String(value.turn ?? record.turn ?? "?"), mode,
+				...(typeof record.kind === "string" ? { kind: record.kind } : {}),
+				...(typeof record.challengeId === "string" ? { challengeId: record.challengeId } : {}) });
+		}
 		if (record.type === "harness_meta") {
 			metadata = { ...(metadata ?? {}), ...record };
 			continue;
 		}
+		if (value.turn === null) continue;
 		if ((record.type === "harness_exit" || record.type === "harness_run_end") && value.turn === undefined) continue;
 		if (record.type === "harness_turn_sent" && value.turn === undefined && record.turn === undefined) continue;
 		entries.push({ index, turn: turnValue(value, index), attempt: attemptValue(value), at: value.at ?? record.at, record });
 	}
-	return { entries, parseErrors, scenario, metadata };
+	return { entries, parseErrors, scenario, metadata, guard, answers };
 }
 
 function selectTurns(entries: Entry[]): TurnView[] {
@@ -501,6 +602,18 @@ function resultIsError(call: ToolCall): boolean {
 	return isObject(details) && Array.isArray(details.errors) && details.errors.length > 0;
 }
 
+/** Normalize a source URL the way SourceStore dedupes: no scheme, www, hash, or trailing slash; lower case. */
+export function normalizeSourceUrl(url: string): string {
+	return url.trim().toLowerCase().replace(/#.*$/, "").replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+}
+
+function sourceUrls(packData: unknown): Set<string> {
+	const urls = new Set<string>();
+	const list = isObject(packData) && Array.isArray(packData.sources) ? packData.sources : Array.isArray(packData) ? packData : [];
+	for (const source of list) if (isObject(source) && typeof source.url === "string") urls.add(normalizeSourceUrl(source.url));
+	return urls;
+}
+
 function sourceCount(packData: unknown): number {
 	if (Array.isArray(packData)) return packData.length;
 	if (!isObject(packData)) return 0;
@@ -529,7 +642,7 @@ function buildChallengeIndex(packData: unknown): ChallengeIndex {
 		else if (isObject(value)) for (const child of Object.values(value)) visit(child, depth + 1);
 	};
 	visit(packData, 0);
-	return { byId, sources: sourceCount(packData) };
+	return { byId, sources: sourceCount(packData), sourceUrls: sourceUrls(packData) };
 }
 
 function challengeInfo(call: ToolCall, index: ChallengeIndex): ChallengeInfo {
@@ -540,12 +653,18 @@ function challengeInfo(call: ToolCall, index: ChallengeIndex): ChallengeInfo {
 	const prompt = field("prompt");
 	const subskillId = field("subskillId");
 	const skill = field("skill");
+	const format = field("format");
+	const language = field("language");
+	const choices = field("choices");
 	const expectedText = expected === undefined || expected === null ? undefined
 		: typeof expected === "string" ? expected : JSON.stringify(expected);
 	return { id, skill: typeof skill === "string" ? skill : undefined,
 		subskillId: typeof subskillId === "string" ? subskillId : undefined,
 		prompt: typeof prompt === "string" ? prompt : undefined,
-		expected: expectedText, call };
+		expected: expectedText, call,
+		format: typeof format === "string" ? format : undefined,
+		language: typeof language === "string" ? language : undefined,
+		choices: Array.isArray(choices) ? choices.map(String) : undefined };
 }
 
 function cleanProse(value: string): string {
@@ -695,8 +814,109 @@ function challengeFromState(turn: TurnView, presentations: Map<string, Challenge
 	return challengeInfo(call, index);
 }
 
-function normalizedTurnText(turn: TurnView, before?: number): string {
-	return turn.textEvents.filter((event) => before === undefined || event.pos < before).map((event) => event.text ?? "").join(" ");
+function normalizedTurnText(turn: TurnView, before?: number, after?: number): string {
+	return turn.textEvents.filter((event) => (before === undefined || event.pos < before) && (after === undefined || event.pos > after))
+		.map((event) => event.text ?? "").join(" ");
+}
+
+/** 1-based record number in the scenario trace (the JSONL line when the file has no blank lines). */
+function eventSeq(pos: number | undefined): number | undefined {
+	return pos === undefined ? undefined : Math.floor(pos / 100) + 1;
+}
+
+const LEARNER_ANSWER_KINDS = new Set(["correct_answer", "wrong_guess", "answer"]);
+
+// Instructional/meta prose is not factual teaching: invitations, peeking rules, next-step offers, and remarks about
+// the tutoring machinery (challenges, attempts, grading, hints, XP). Questions are excluded separately.
+const META_OPENER = new RegExp("^(?:don['’]?t (?:peek|look|scroll|worry)|no peeking|try (?:this|it|one|again|that|the|a|to)\\b"
+	+ "|your (?:turn|move|go)\\b|give (?:it|this) a\\b|take a (?:guess|shot|moment|stab|second)|have a go|when(?:ever)? you['’]?re ready"
+	+ "|ready\\b|pick (?:one|an?)\\b|choose (?:one|an option)\\b|click\\b|tap\\b|press\\b|reply\\b|type (?:your|it|in|out)\\b|send\\b|say it\\b|write (?:your|it|down)\\b"
+	+ "|next(?:,|:| up| we| step| chunk| time)|up next|we can\\b|we['’]?ll\\b|let['’]?s\\b|let me\\b|i['’]?ll\\b|i will\\b|i['’]?m going to"
+	+ "|i won['’]?t\\b|now (?:try|you|it['’]?s your)|go ahead|feel free|if you['’]?d like|if you want|want to\\b|nice\\b|great\\b|good (?:job|work|try|question)"
+	+ "|well done|exactly\\b|not quite|almost\\b)", "i");
+const META_MECHANICS = /\b(?:challenges?|drills?|cards?|attempts?|attempted|graded|grading|re-?grade|recorded|xp|streaks?|badges?|buttons?|quiz(?:zes)?|chunks?)\b|(?<!type )\bhints?\b/i;
+
+/** True for an instructional or meta sentence that should not require a citation. */
+export function isMetaSentence(sentence: string): boolean {
+	const body = sentence.replace(/\[\d+\]/g, "").replace(/[*_~]+/g, "").replace(/^\s*(?:[-+•]|\d+[.)])\s+/, "").trim();
+	return META_OPENER.test(body) || META_MECHANICS.test(body);
+}
+
+/** Split assistant prose into sentences, keeping line/list boundaries, after code and quotes are removed. */
+function proseSentences(text: string): string[] {
+	return cleanProse(text).split(/\n+/).flatMap((line) => line.split(/(?<=[.!?])\s+/))
+		.map((sentence) => sentence.replace(/\s+/g, " ").trim()).filter(Boolean);
+}
+
+/** Factual teaching sentences: long, not questions, not verdicts, not meta/instructional prose. */
+export function factualSentences(text: string): string[] {
+	return proseSentences(text).filter((sentence) => {
+		const body = sentence.replace(/\[\d+\]/g, "").trim();
+		return body.length >= 60 && !/[?？]/.test(body)
+			&& !/^(?:answer|result|correct|incorrect|outcome|feedback|hint|your answer)\b/i.test(body.replace(/^[*_\s]+/, ""))
+			&& !isMetaSentence(body);
+	});
+}
+
+interface SpoilerMatcher {
+	/** How the expected answer is matched. */
+	mode: "literal" | "numeric" | "math" | "choice";
+	test: (prose: string, buttons: string) => boolean;
+}
+
+const NUMBER_TOKEN = /(?<![\p{L}\p{N}_.=^])[-+−]?\d+(?:[.,]\d+)?(?![\p{L}\p{N}_^]|[.,]\d)/gu;
+
+function numericValue(text: string): number | undefined {
+	const match = /^\s*([-+−]?\d+(?:\.\d+)?)\s*(?:[\p{L}%/°]+[\p{L}\d/^%]*)?\s*$/u.exec(text);
+	return match ? Number(match[1].replace("−", "-")) : undefined;
+}
+
+function hasNumber(text: string, value: number): boolean {
+	for (const match of text.matchAll(NUMBER_TOKEN)) {
+		const token = Number(match[0].replace("−", "-").replace(",", "."));
+		if (Number.isFinite(token) && Math.abs(token - value) <= 1e-9 * Math.max(1, Math.abs(value))) return true;
+	}
+	return false;
+}
+
+function hasChoiceLetter(text: string, letter: string, labels: string[]): boolean {
+	// The label stays case-sensitive so "the answer is a list" never reads as choice A. A label counts only when
+	// no other label is named the same way: a re-listed menu ("(A) … (B) …", "Option A … Option B") is not a spoiler.
+	const patterns = [
+		(value: string) => new RegExp(`\\b(?:[Aa]nswer|[Cc]hoice|[Oo]ption)\\s*(?:is\\s*|was\\s*)?[:(]?\\s*\\(?${value}\\)?(?![\\p{L}\\p{N}])`, "u"),
+		(value: string) => new RegExp(`\\(${value}\\)`, "u"),
+	];
+	const l = letter.toUpperCase();
+	return patterns.some((pattern) => pattern(l).test(text) && !labels.filter((other) => other !== l).some((other) => pattern(other).test(text)));
+}
+
+/** Build the matcher for one challenge's expected answer, or say why the challenge cannot be checked. */
+export function spoilerMatcher(info: { expected?: string; format?: string; language?: string; choices?: string[] }): SpoilerMatcher | { skip: string } {
+	const expected = info.expected?.trim();
+	const format = info.format ?? "text";
+	if (format === "code" && info.language === "sql" && expected) return { skip: "SQL expected value is a result row set; query text cannot be literal-matched" };
+	if (!expected) return { skip: format === "code" ? `${info.language ?? "code"} challenge without an expected value (graded by tests)` : "no expected value (rubric/tutor-graded)" };
+	const normalized = normalizeAnswer(expected);
+	const literal = normalized.length >= 4 ? (text: string) => normalizeAnswer(text).includes(normalized) : undefined;
+	const number = format === "number" || /^[-+−]?\d+(?:\.\d+)?$/.test(expected) ? numericValue(expected) : undefined;
+	if (format === "choice") {
+		const clean = (value: string) => value.trim().toLowerCase().replace(/\s+/g, " ");
+		const labels = (info.choices ?? []).map((_, index) => String.fromCharCode(65 + index));
+		const index = (info.choices ?? []).findIndex((choice) => clean(choice) === clean(expected));
+		const letter = index >= 0 ? labels[index] : /^[a-z]$/i.test(expected) ? expected.toUpperCase() : undefined;
+		if (!literal && number === undefined && !letter) return { skip: "choice answer too short to match and has no label" };
+		return { mode: "choice", test: (prose, buttons) => [prose, buttons].some((text) => (literal?.(text) ?? false)
+			|| (number !== undefined && hasNumber(text, number)) || (letter !== undefined && hasChoiceLetter(text, letter, labels))) };
+	}
+	if (number !== undefined) return { mode: "numeric", test: (prose, buttons) => hasNumber(prose, number) || hasNumber(buttons, number) };
+	if (format === "math") {
+		const compact = (value: string) => value.toLowerCase().replace(/\s+/g, "").replace(/\*\*/g, "^").replace(/[·*]/g, "");
+		const target = compact(expected);
+		if (target.length < 3) return { skip: "math answer shorter than 3 characters" };
+		return { mode: "math", test: (prose, buttons) => compact(prose).includes(target) || compact(buttons).includes(target) };
+	}
+	if (!literal) return { skip: "text answer shorter than 4 normalized characters" };
+	return { mode: "literal", test: (prose, buttons) => literal(prose) || literal(buttons) };
 }
 
 function metric(samples: LatencySample[]): LatencyMetric {
@@ -882,56 +1102,82 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 		continueApplicable++;
 		const question = firstQuestionPos(turn);
 		if ((question === undefined && hasTeachingBefore(turn, undefined)) || (question !== undefined && hasTeachingBefore(turn, question))) continuePassed++;
-		else continueFailures.push(failure("continueTeaching", turn, "continue/show turn asks a question before teaching", { questionPos: question }));
+		else continueFailures.push(failure("continueTeaching", turn, question === undefined
+			? "continue/show turn has no teaching content"
+			: "continue/show turn asks a question before teaching", { eventSeq: eventSeq(question) }));
 	}
 	checks.continueTeaching = checkResult("continueTeaching", continuePassed, continueApplicable, continueFailures);
 
 	let citationPassed = 0;
 	let citationApplicable = 0;
 	const citationFailures: FailureEvidence[] = [];
+	// Sources the tutor adds during the session (psi_sources add) extend the citable range beyond the pack's list.
+	const sessionSources = new Set<string>();
 	for (const turn of turns) {
+		for (const call of turn.calls) {
+			if (call.toolName !== "psi_sources" || call.args.action !== "add" || typeof call.args.url !== "string" || resultIsError(call)) continue;
+			const url = normalizeSourceUrl(call.args.url);
+			if (!index.sourceUrls.has(url)) sessionSources.add(url);
+		}
 		const kind = turn.sentKind?.toLocaleLowerCase().replace(/[- ]+/g, "_");
 		const kindApplies = !kind || /^(?:teach|continue|show|stuck|answer|just_show_me)$/.test(kind);
 		if (!kindApplies) continue;
-		const clean = cleanProse(turn.textEvents.map((event) => event.text ?? "").join(" ")).replace(/\s+/g, " ").trim();
-		const sentences = clean.split(/(?<=[.!?])\s+|\n+/).map((sentence) => sentence.trim()).filter(Boolean);
-		const teaching = sentences.filter((sentence) => {
-			const body = sentence.replace(/\[\d+\]/g, "").trim();
-			return body.length >= 60 && !/[?？]/.test(body)
-				&& !/^(?:answer|result|correct|incorrect|outcome|feedback|hint|your answer)\b/i.test(body);
-		});
+		const prose = turn.textEvents.map((event) => event.text ?? "").join("\n");
+		const teaching = factualSentences(prose);
 		if (!teaching.length) continue;
 		citationApplicable++;
-		const citations = [...clean.matchAll(/\[(\d+)\]/g)].map((match) => Number(match[1]));
-		const valid = citations.length > 0 && citations.every((number) => number >= 1 && number <= index.sources);
-		if (valid) citationPassed++;
-		else citationFailures.push(failure("citations", turn, `teaching turn has no valid [1..${index.sources}] citations`, {
-			teaching, citations,
-		}));
+		const bound = index.sources + sessionSources.size;
+		const citations = [...cleanProse(prose).matchAll(/\[(\d+)\]/g)].map((match) => Number(match[1]));
+		const validMarkers = [...new Set(citations.filter((number) => number >= 1 && number <= bound))].sort((a, b) => a - b);
+		const invalidMarkers = [...new Set(citations.filter((number) => number < 1 || number > bound))].sort((a, b) => a - b);
+		if (validMarkers.length && !invalidMarkers.length) citationPassed++;
+		else {
+			const range = `[1..${bound}]${sessionSources.size ? ` (${index.sources} pack + ${sessionSources.size} added this session)` : ""}`;
+			const message = !citations.length
+				? `${teaching.length} factual sentence(s) but no citation markers; valid range ${range}`
+				: `invalid markers ${invalidMarkers.map((n) => `[${n}]`).join(" ")} outside ${range}; valid markers ${validMarkers.map((n) => `[${n}]`).join(" ") || "none"}`;
+			citationFailures.push(failure("citations", turn, message, {
+				validMarkers, invalidMarkers, bound, packSources: index.sources, sessionSources: sessionSources.size,
+				teaching: teaching.map((sentence) => sentence.length > 200 ? `${sentence.slice(0, 197)}...` : sentence),
+			}));
+		}
 	}
 	checks.citations = checkResult("citations", citationPassed, citationApplicable, citationFailures);
 
 	let spoilerPassed = 0;
 	let spoilerApplicable = 0;
 	const spoilerFailures: FailureEvidence[] = [];
+	const spoilerSkipped: NotApplicable[] = [];
 	const presentations = new Map<string, ChallengeInfo>();
 	for (const turn of turns) for (const call of turn.calls.filter((candidate) => candidate.toolName === "psi_challenge")) {
 		const info = challengeInfo(call, index);
 		if (info.id) presentations.set(info.id, info);
 	}
-	const observations = new Map<string, { info: ChallengeInfo; turn: TurnView; prose: string[]; buttons: string[] }>();
+	const observations = new Map<string, { info: ChallengeInfo; turn: TurnView; matcher: SpoilerMatcher; prose: string[]; buttons: string[] }>();
+	const skippedSpoilers = new Set<string>();
 	const checkSpoiler = (turn: TurnView, info: ChallengeInfo, attemptPos?: number): void => {
-		const expected = normalizeAnswer(info.expected ?? "");
-		if (expected.length < 4) return;
 		const key = info.id ?? info.call.key;
-		const prose = removePrompt(normalizedTurnText(turn, attemptPos), info.prompt);
+		const matcher = spoilerMatcher(info);
+		if ("skip" in matcher) {
+			if (!skippedSpoilers.has(key)) {
+				skippedSpoilers.add(key);
+				spoilerSkipped.push({ check: "spoilers", turn: turn.key, ...(info.id ? { challengeId: info.id } : {}), reason: matcher.skip });
+			}
+			return;
+		}
+		// Once the learner has sent an answer, echoing it before grading is not a spoiler: only text after the
+		// first psi_attempt of an answer turn (e.g. a new challenge) is learner-facing pre-attempt material.
+		const answerTurn = LEARNER_ANSWER_KINDS.has(turn.sentKind ?? "");
+		const firstAttempt = turn.calls.filter((candidate) => candidate.toolName === "psi_attempt").map((candidate) => candidate.firstPos).sort((a, b) => a - b)[0];
+		const after = answerTurn ? Math.max(firstAttempt ?? Number.POSITIVE_INFINITY, info.call.firstPos) : undefined;
+		const prose = removePrompt(normalizedTurnText(turn, attemptPos, after), info.prompt);
 		// Next-step buttons are checked even when they were emitted after psi_attempt: they are still learner-visible answers.
 		const buttons = turn.calls.filter((candidate) => candidate.toolName === "psi_next_steps").flatMap(optionTexts).join(" ");
 		const previous = observations.get(key);
 		if (previous) {
 			previous.prose.push(prose);
 			previous.buttons.push(buttons);
-		} else observations.set(key, { info, turn, prose: [prose], buttons: [buttons] });
+		} else observations.set(key, { info, turn, matcher, prose: [prose], buttons: [buttons] });
 	};
 	for (const turn of turns) {
 		for (const call of turn.calls.filter((candidate) => candidate.toolName === "psi_challenge")) {
@@ -949,16 +1195,15 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 		}
 	}
 	for (const observation of observations.values()) {
-		const expected = normalizeAnswer(observation.info.expected ?? "");
 		spoilerApplicable++;
-		const prose = observation.prose.map(normalizeAnswer).join(" ");
-		const buttons = observation.buttons.map(normalizeAnswer).join(" ");
-		if (!prose.includes(expected) && !buttons.includes(expected)) spoilerPassed++;
-		else spoilerFailures.push(failure("spoilers", observation.turn, "expected answer appears before the learner attempt", {
+		const prose = observation.prose.join("\n");
+		const buttons = observation.buttons.join("\n");
+		if (!observation.matcher.test(prose, buttons)) spoilerPassed++;
+		else spoilerFailures.push(failure("spoilers", observation.turn, `expected answer appears before the learner attempt (${observation.matcher.mode} match)`, {
 			challengeId: observation.info.id, expected: observation.info.expected,
 		}));
 	}
-	checks.spoilers = checkResult("spoilers", spoilerPassed, spoilerApplicable, spoilerFailures);
+	checks.spoilers = { ...checkResult("spoilers", spoilerPassed, spoilerApplicable, spoilerFailures), notApplicable: spoilerSkipped };
 
 	let attemptPassed = 0;
 	let attemptApplicable = 0;
@@ -999,12 +1244,22 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 
 	const passed = CHECK_NAMES.reduce((sum, name) => sum + checks[name].passed, 0);
 	const applicable = CHECK_NAMES.reduce((sum, name) => sum + checks[name].applicable, 0);
-	const allFailures = CHECK_NAMES.flatMap((name) => checks[name].failures);
 	const health = healthForTurns(turns);
 	const latency = latencyForTurns(turns);
-	const scenario = normalized.scenario ?? "scenario";
-	return { scenario, checks, checkResults: checks, passed, applicable, ratio: applicable ? passed / applicable : null,
-		score: applicable ? passed / applicable : null, failures: allFailures, health, latency, parseErrors: normalized.parseErrors };
+	const meta = normalized.metadata ?? {};
+	const scenario = normalized.scenario ?? asString(meta.scenarioId) ?? "scenario";
+	const scenarioId = asString(meta.scenarioId) ?? asString(meta.id) ?? scenario.replace(/\.r\d+$/, "");
+	const repeat = typeof meta.repeat === "number" && meta.repeat >= 1 ? meta.repeat : Number(/\.r(\d+)$/.exec(scenario)?.[1] ?? 1);
+	// Every witness names its scenario so a merged Failures list stays attributable.
+	for (const name of CHECK_NAMES) {
+		for (const item of checks[name].failures) item.scenario = scenario;
+		for (const item of checks[name].notApplicable ?? []) item.scenario = scenario;
+	}
+	for (const item of [...health.timeoutEvidence, ...health.errorEvidence, ...health.missingSettledEvidence]) item.scenario = scenario;
+	const allFailures = CHECK_NAMES.flatMap((name) => checks[name].failures);
+	return { scenario, scenarioId, repeat, guard: normalized.guard, answers: normalized.answers, checks, checkResults: checks, passed, applicable,
+		ratio: applicable ? passed / applicable : null, score: applicable ? passed / applicable : null, failures: allFailures, health, latency,
+		parseErrors: normalized.parseErrors };
 }
 
 function emptyCheck(name: string): CheckScore {

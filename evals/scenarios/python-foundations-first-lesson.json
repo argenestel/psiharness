@@ -7,9 +7,11 @@
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Just show me", "kind": "show"},
+		{"message": "Give me a challenge on this.", "kind": "challenge"},
 		{"message": "I'll guess: normalize_name can just call title() on the raw text, so repeated spaces do not matter.", "kind": "wrong_guess"},
 		{"message": "I'll guess again: split(' ') is safer because it makes every separator explicit.", "kind": "wrong_guess"},
 		{"message": "I’m stuck; give me a small hint about the empty input.", "kind": "stuck"},
+		{"message": "Give me another challenge on this.", "kind": "challenge"},
 		{"message": "Correct answer: return \" \".join(text.split()).title().", "kind": "correct_answer"},
 		{"message": "/verify split() without an argument treats a run of whitespace, including tabs, as one separator.", "kind": "verify"}
 	],

@@ -1,0 +1,224 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { registerPractice } from "../src/practice/index.ts";
+import {
+	CITATION_NOTE, HIDDEN, TEACH_FIRST, fixCitations, isContinueIntent, redactAnswers, withContinue,
+} from "../src/practice/guards.ts";
+import { SourceStore } from "../../core/src/sources.ts";
+import { ProfileStore } from "../../core/src/profile.ts";
+import { StateStore } from "../../core/src/state.ts";
+
+type Handler = (...args: any[]) => Promise<any>;
+type Tool = { name: string; execute: Handler };
+
+function fake() {
+	const tools = new Map<string, Tool>();
+	const handlers = new Map<string, Handler[]>();
+	const entries: any[] = [];
+	const api = {
+		registerTool: (tool: Tool) => tools.set(tool.name, tool),
+		registerCommand: () => undefined,
+		registerFlag: () => undefined,
+		getFlag: () => undefined,
+		on: (name: string, handler: Handler) => handlers.set(name, [...handlers.get(name) ?? [], handler]),
+		appendEntry: (customType: string, data: unknown) => entries.push({ type: "custom", customType, data }),
+		sendUserMessage: () => undefined,
+		sendMessage: () => undefined,
+	} as unknown as ExtensionAPI;
+	const ctx = {
+		sessionManager: { getBranch: () => entries },
+		ui: { notify: () => undefined, setStatus: () => undefined, setWidget: () => undefined },
+	} as unknown as ExtensionContext;
+	const fire = async (name: string, event: any = {}) => {
+		const results = [];
+		for (const handler of handlers.get(name) ?? []) results.push(await handler(event, ctx));
+		return results;
+	};
+	/** A learner message, as pi delivers it (before_agent_start, then the user message_end). */
+	const learner = async (text: string) => {
+		await fire("before_agent_start", { type: "before_agent_start", messageType: "user", prompt: text, systemPrompt: "" });
+		const results = await fire("message_end", { type: "message_end", message: { role: "user", content: [{ type: "text", text }] } });
+		assert.ok(results.every((r) => r === undefined), "learner messages are never replaced");
+	};
+	/** One finalized assistant message; returns the replacement (or the original). */
+	const assistant = async (content: unknown[]) => {
+		let message: any = { role: "assistant", content };
+		for (const result of await fire("message_end", { type: "message_end", message })) {
+			if (result?.message) { assert.equal(result.message.role, "assistant"); message = result.message; }
+		}
+		return message;
+	};
+	/** A model tool call through the tool_call gate, execution and tool_result, like pi's agent loop. */
+	const call = async (name: string, input: Record<string, unknown>) => {
+		const event = { type: "tool_call", toolCallId: "t", toolName: name, input };
+		const blocked = (await fire("tool_call", event)).find((r) => r?.block);
+		if (blocked) return { blocked };
+		const result = await tools.get(name)!.execute("t", event.input, undefined, undefined, ctx);
+		await fire("tool_result", { type: "tool_result", toolCallId: "t", toolName: name, input: event.input,
+			content: result.content, details: result.details, isError: !!result.isError });
+		return { result, input: event.input };
+	};
+	const guardEntries = (kind?: string) => entries.filter((e) => e.customType === "psi-guard" && (!kind || e.data.kind === kind));
+	return { api, ctx, handlers, entries, fire, learner, assistant, call, guardEntries };
+}
+
+async function fixture(run: (f: ReturnType<typeof fake>, home: string) => Promise<void>) {
+	const home = mkdtempSync(join(tmpdir(), "psi-guards-"));
+	const previous = process.env.PSI_HOME;
+	process.env.PSI_HOME = home;
+	const f = fake();
+	try {
+		registerPractice(f.api, { home });
+		await f.fire("session_start", { type: "session_start" });
+		await run(f, home);
+	} finally {
+		await f.fire("session_shutdown");
+		if (previous === undefined) delete process.env.PSI_HOME;
+		else process.env.PSI_HOME = previous;
+		rmSync(home, { recursive: true, force: true });
+	}
+}
+
+const greet = {
+	skill: "spanish", kind: "quickfire", level: 1, prompt: "How do you greet a server at 9 a.m.?",
+	expected: "Buenos días", acceptable: ["buen día"], hints: ["Think of the time of day."],
+};
+const text = (t: string) => ({ type: "text", text: t });
+const toolCall = (name: string, args: Record<string, unknown>) => ({ type: "toolCall", id: `c-${name}`, name, arguments: args });
+const textOf = (message: any) => message.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");
+const teaching = "A worked example first: at a café counter you open with a greeting, then the order, then thanks. "
+	+ "Spanish greetings change with the time of day, and the article in front of the drink follows its grammatical gender.";
+
+test("next steps always include Continue, dropping the last option beyond four", () => {
+	const four = ["A", "B", "C", "D"].map((label) => ({ label, message: label }));
+	assert.deepEqual(withContinue(four).options.map((o) => o.label), ["A", "B", "C", "Continue"]);
+	assert.deepEqual(withContinue(four.slice(0, 2)).options.at(-1), { label: "Continue", message: "Continue" });
+	const has = [{ label: "Continue: names", message: "go" }, { label: "Hint", message: "hint" }];
+	assert.deepEqual(withContinue(has), { options: has, changed: false });
+	assert.equal(withContinue([{ label: "▶ continue", message: "x" }, { label: "y", message: "y" }]).changed, false);
+});
+
+test("psi_next_steps is normalized in the transcript, at the tool gate and in its widget", async () => fixture(async (f) => {
+	const options = [{ label: "I'll guess", message: "guess" }, { label: "Just show me", message: "Just show me" },
+		{ label: "Hint", message: "hint" }, { label: "Skip", message: "skip" }];
+	const message = await f.assistant([text("Here is the idea."), toolCall("psi_next_steps", { options })]);
+	assert.deepEqual(message.content[1].arguments.options.map((o: any) => o.label), ["I'll guess", "Just show me", "Hint", "Continue"]);
+	assert.equal(options.length, 4, "the original call arguments are not mutated by message_end");
+	const gated = await f.call("psi_next_steps", { options: [...options] });
+	assert.deepEqual(gated.result.details.widget.options.at(-1), { label: "Continue", message: "Continue" });
+	const tool = await f.call("psi_next_steps", { options: [{ label: "Hint", message: "hint" }, { label: "Skip", message: "s" }] });
+	assert.equal(tool.result.details.widget.options.length, 3);
+	assert.ok(f.guardEntries("next-steps-continue").length >= 2);
+}));
+
+test("redaction hides accepted answers but keeps prompts, citations and learner code", () => {
+	const c = { id: "c1", prompt: "What is 2 + 2?", expected: "4", acceptable: ["four"], format: "number" as const };
+	const out = redactAnswers("What is 2 + 2? It is 4, i.e. FOUR [4]. Not 14 or 4.5. Step `x = 4` too.", [c], ["x = 4"]);
+	assert.equal(out.text, `What is 2 + 2? It is ${HIDDEN}, i.e. ${HIDDEN} [4]. Not 14 or 4.5. Step \`x = 4\` too.`);
+	assert.equal(out.count, 2);
+	const words = redactAnswers("¡Buenos días! Or buen dia. Buenos diasito stays.", [{ ...greet, id: "g" }]);
+	assert.equal(words.text, `¡${HIDDEN}! Or ${HIDDEN}. Buenos diasito stays.`);
+	assert.equal(redactAnswers("a b", [{ id: "x", prompt: "", expected: "a" }]).count, 0, "one-letter answers are skipped");
+	assert.equal(redactAnswers("print(4)", [{ id: "x", prompt: "", expected: "4", format: "code" }]).count, 0);
+});
+
+test("no spoilers: open challenge answers are hidden in text, buttons and Socratic hints until attempted",
+	async () => fixture(async (f, home) => {
+		await f.learner("Teach me greetings");
+		const shown = await f.call("psi_challenge", greet);
+		const id = shown.result.details.challengeId;
+		assert.deepEqual(new StateStore(home).read().openChallenge, { skill: "spanish", id });
+		const reply = await f.assistant([text("The card asks: How do you greet a server at 9 a.m.? (Answer: Buenos días.)"),
+			toolCall("psi_next_steps", { options: [{ label: "Say Buenos días", message: "buen día" },
+				{ label: "Continue", message: "Continue" }] })]);
+		assert.equal(textOf(reply), `The card asks: How do you greet a server at 9 a.m.? (Answer: ${HIDDEN}.)`);
+		assert.deepEqual(reply.content[1].arguments.options[0], { label: `Say ${HIDDEN}`, message: HIDDEN });
+		const ask = await f.call("psi_ask", { question: "Which greeting fits?", kind: "predict", hint: "It starts with Buenos días" });
+		assert.equal(ask.input!.hint, `It starts with ${HIDDEN}`);
+		const buttons = await f.call("psi_next_steps", { options: [{ label: "Continue", message: "Buenos días" },
+			{ label: "Hint", message: "hint" }] });
+		assert.equal(buttons.result.details.widget.options[0].message, HIDDEN);
+		assert.ok(f.guardEntries("spoiler").length >= 3);
+		// The learner's own words are theirs, and feedback in the same message as the attempt is not a spoiler.
+		await f.learner("My answer: buenas días");
+		const feedback = await f.assistant([text("Close! The form is Buenos días because día is masculine."),
+			toolCall("psi_attempt", { challengeId: id, answer: "buenas días" })]);
+		assert.match(textOf(feedback), /The form is Buenos días/);
+		await f.call("psi_attempt", { challengeId: id, skill: "spanish", answer: "buenas días" });
+		const after = await f.assistant([text("Now you know: Buenos días.")]);
+		assert.equal(textOf(after), "Now you know: Buenos días.");
+	}));
+
+test("a challenge graded outside the session (web card) stops redaction", async () => fixture(async (f, home) => {
+	const shown = await f.call("psi_challenge", greet);
+	const { PracticeStore } = await import("../../core/src/practice.ts");
+	new PracticeStore(home).recordAttempt({ challengeId: shown.result.details.challengeId, answer: "Buenos días",
+		outcome: "success", hintsUsed: 0 });
+	new StateStore(home).update({ openChallenge: undefined });
+	assert.equal(textOf(await f.assistant([text("Yes, Buenos días.")])), "Yes, Buenos días.");
+}));
+
+test("a challenge created in the same message hides its answer from that message's text", async () => fixture(async (f) => {
+	await f.learner("Teach me greetings");
+	const message = await f.assistant([text(`${teaching} Ready? Say buen día to the server.`),
+		toolCall("psi_challenge", greet)]);
+	assert.ok(textOf(message).includes(`Say ${HIDDEN} to the server`), textOf(message));
+}));
+
+test("continue intent detection", () => {
+	for (const yes of ["Continue", "continue.", "Next", "go on!", "Keep going", "Just show me", "show me", "OK, continue",
+		"Continue: stack greeting plus name in one café turn."]) assert.ok(isContinueIntent(yes), yes);
+	for (const no of ["Teach me SQL", "Next challenge please", "I'll guess: una", "show me a quiz", "Try one myself", ""]) {
+		assert.ok(!isContinueIntent(no), no);
+	}
+});
+
+test("teach before testing: continue turns cannot open with a challenge", async () => fixture(async (f, home) => {
+	await f.learner("Just show me");
+	const blocked = await f.call("psi_challenge", greet);
+	assert.deepEqual(blocked.blocked, { block: true, reason: TEACH_FIRST });
+	assert.equal(f.guardEntries("teach-first").length, 1);
+	await f.assistant([text("Short intro.")]);
+	assert.ok((await f.call("psi_challenge", { ...greet, action: "next" })).blocked, "under 200 characters is not teaching");
+	await f.assistant([text(teaching)]);
+	assert.ok((await f.call("psi_challenge", greet)).result, "allowed after a teaching chunk");
+	await f.learner("continue");
+	await f.call("psi_lesson", { action: "show", skill: "spanish", subskillId: "greet" });
+	assert.ok((await f.call("psi_challenge", greet)).blocked, "a missing lesson taught nothing");
+	await f.learner("keep going");
+	await f.fire("tool_call", { type: "tool_call", toolCallId: "r", toolName: "psi_run", input: { language: "python", code: "1" } });
+	assert.ok(!(await f.call("psi_challenge", greet)).blocked, "a psi_run demo counts as teaching");
+	await f.learner("Teach me the next step.");
+	assert.ok(!(await f.call("psi_challenge", greet)).blocked, "only continue/show turns are gated");
+	new ProfileStore(home).update({ tutorMode: "test" });
+	await f.learner("Continue");
+	assert.ok(!(await f.call("psi_challenge", greet)).blocked, "test mode serves challenges directly");
+}));
+
+test("citation markers beyond the source list are removed with one note", () => {
+	const input = "Cafe [1] is masculine [3]. Both [1, 3] and [2–4] and [1][5]. Code `xs[9]` and xs[7], [8](https://a.b) stay.";
+	const out = fixCitations(input, 2);
+	assert.equal(out.text, "Cafe [1] is masculine. Both [1] and [2] and [1]. Code `xs[9]` and xs[7], [8](https://a.b) stay.");
+	assert.deepEqual(out.removed, [3, 3, 3, 4, 5]);
+	assert.deepEqual(fixCitations("Valid [1][2] and [1–2].", 2), { text: "Valid [1][2] and [1–2].", removed: [] });
+	assert.equal(fixCitations("```\nx = a[5]\n```\nok [5]", 2).text, "```\nx = a[5]\n```\nok");
+	assert.equal(fixCitations("[1-4] range", 3).text, "[1-3] range");
+});
+
+test("message_end removes unknown citations using the active skill's sources", async () => fixture(async (f, home) => {
+	await f.call("psi_challenge", { ...greet, expected: "zzz-not-used" });
+	await f.call("psi_attempt", { challengeId: new StateStore(home).read().openChallenge!.id, skill: "spanish", answer: "x" });
+	const sources = new SourceStore(home);
+	sources.add("spanish", { url: "https://www.rae.es/dpd/d%C3%ADa", title: "DPD: día" });
+	sources.add("spanish", { url: "https://dle.rae.es/llamar", title: "DLE: llamar" });
+	const valid = await f.assistant([text("Buenos días is the morning formula [1]; me llamo uses llamarse [2].")]);
+	assert.equal(textOf(valid), "Buenos días is the morning formula [1]; me llamo uses llamarse [2].");
+	const fixed = await f.assistant([text("Un café [9]."), toolCall("psi_next_steps", { options: [] }), text("Por favor [2][7].")]);
+	assert.equal(textOf(fixed), `Un café.\nPor favor [2].\n\n${CITATION_NOTE}`);
+	assert.deepEqual(f.guardEntries("citation-removed").at(-1).data, {
+		kind: "citation-removed", detail: { numbers: [9, 7], sourceCount: 2, skill: "spanish" } });
+}));

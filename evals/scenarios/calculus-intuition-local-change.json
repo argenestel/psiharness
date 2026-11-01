@@ -6,8 +6,10 @@
 		{"message": "Teach me the next step.", "kind": "teach"},
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Just show me", "kind": "show"},
+		{"message": "Give me a challenge on this.", "kind": "challenge"},
 		{"message": "I'll guess: the derivative at x=3 is the function value 9.", "kind": "wrong_guess"},
 		{"message": "I’m stuck; how does shrinking h turn a secant into a tangent?", "kind": "stuck"},
+		{"message": "Give me another challenge on this.", "kind": "challenge"},
 		{"message": "Correct answer: the derivative is the limiting slope, so x² at x=3 has slope 6, not height 9.", "kind": "correct_answer"},
 		{"message": "/verify A removable hole can have a well-defined limit even though the function is undefined at that point.", "kind": "verify"}
 	],

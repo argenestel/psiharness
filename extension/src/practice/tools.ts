@@ -96,7 +96,8 @@ function parsePlan(input: unknown): { plan?: SkillPlan; errors: string[] } {
 	return { errors, plan: { ...input, hoursGoal, createdAt: now, updatedAt: now } as SkillPlan };
 }
 
-function readAttempts(root: string, skill: string): Attempt[] {
+/** Read a skill's attempts.jsonl (refusing symlinks); missing file means no attempts. */
+export function readAttempts(root: string, skill: string): Attempt[] {
 	const file = join(root, "skills", skill, "attempts.jsonl");
 	let raw: string;
 	try {

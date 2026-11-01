@@ -6,8 +6,10 @@
 		{"message": "Teach me the next step.", "kind": "teach"},
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Just show me", "kind": "show"},
+		{"message": "Give me a challenge on this.", "kind": "challenge"},
 		{"message": "I'll guess: LIMIT 3 alone chooses the three most expensive products.", "kind": "wrong_guess"},
 		{"message": "I’m stuck; what makes a tie in price deterministic?", "kind": "stuck"},
+		{"message": "Give me another challenge on this.", "kind": "challenge"},
 		{"message": "Correct answer: sort by price DESC and then product_id ASC before applying LIMIT 3.", "kind": "correct_answer"},
 		{"message": "/verify ORDER BY price DESC, product_id ASC makes the top-three result deterministic when prices tie.", "kind": "verify"}
 	],

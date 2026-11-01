@@ -7,8 +7,10 @@
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Just show me", "kind": "show"},
+		{"message": "Give me a challenge on this.", "kind": "challenge"},
 		{"message": "I'll guess: SUM(price * quantity) OVER can run directly on item rows for a per-order ledger.", "kind": "wrong_guess"},
 		{"message": "I’m stuck; which rows should the window see after grouping?", "kind": "stuck"},
+		{"message": "Give me another challenge on this.", "kind": "challenge"},
 		{"message": "Correct answer: aggregate item rows to one paid-order row first, then apply the window over those order totals.", "kind": "correct_answer"},
 		{"message": "/verify RANK leaves gaps after ties, while DENSE_RANK does not.", "kind": "verify"}
 	],

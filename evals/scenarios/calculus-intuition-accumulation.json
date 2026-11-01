@@ -6,8 +6,10 @@
 		{"message": "Teach me the next step.", "kind": "teach"},
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Just show me", "kind": "show"},
+		{"message": "Give me a challenge on this.", "kind": "challenge"},
 		{"message": "I’ll guess: a negative rate still adds positive area to the accumulated amount.", "kind": "wrong_guess"},
 		{"message": "I’m stuck; how do I include the starting volume in an accumulation problem?", "kind": "stuck"},
+		{"message": "Give me another challenge on this.", "kind": "challenge"},
 		{"message": "Correct answer: signed area is net change, so add the initial amount separately; a negative rate makes the amount fall.", "kind": "correct_answer"},
 		{"message": "/verify The derivative of a continuous accumulation function equals the current rate at the moving boundary.", "kind": "verify"}
 	],

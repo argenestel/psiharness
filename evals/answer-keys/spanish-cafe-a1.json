@@ -6,7 +6,7 @@
 	"ch-order-drinks-1": {"correct": "Quiero un café, por favor", "wrong": "Quiero una café, por favor"},
 	"ch-order-drinks-2": {"correct": "Me gustaría un té, por favor", "wrong": "Me gusta un té, por favor"},
 	"ch-order-drinks-3": {"correct": "Quiero un café, por favor", "wrong": "Quiero una café, por favor"},
-	"ch-order-drinks-4": {"correct": "Quiero un café, por favor is direct; Me gustaría un café, por favor is softer and more polite.", "wrong": "Both phrases have exactly the same tone."},
+	"ch-order-drinks-4": {"skip": "rubric-graded explanation; no deterministic grader, manually reviewed", "correct": "Quiero un café, por favor is direct; Me gustaría un café, por favor is softer and more polite.", "wrong": "Both phrases have exactly the same tone."},
 	"ch-numbers-prices-1": {"correct": "siete", "wrong": "seis"},
 	"ch-numbers-prices-2": {"correct": "veintiuno", "wrong": "veintiún"},
 	"ch-numbers-prices-3": {"correct": "cien", "wrong": "ciento"},
@@ -18,6 +18,6 @@
 	"ch-ser-estar-3": {"correct": "es, está", "wrong": "está, es"},
 	"ch-polite-requests-1": {"correct": "¿Puede traer un agua, por favor?", "wrong": "¿Puedes traer una agua, por favor?"},
 	"ch-polite-requests-2": {"correct": "¿Me das la cuenta, por favor?", "wrong": "¿Me da la cuenta, por favor?"},
-	"ch-cafe-roleplay-1": {"correct": "Buenos días. / Buenos días.\nMe llamo Ana. / Mucho gusto.\nMe gustaría un café, por favor. / Sí, claro.\n¿Cuánto cuesta? / Dos euros.\nDos euros, gracias. / Aquí tiene.\nGracias. / De nada.", "wrong": "Good morning. I want coffee. How much? Two euros. Bye."},
-	"ch-cafe-roleplay-2": {"correct": "Buenos días. / Buenos días.\nMe llamo Luis y estoy bien. / Mucho gusto.\nMe gustaría un té, por favor. / Sí, claro.\n¿Cuánto cuesta? / Tres euros.\nTres euros. ¿Me das la cuenta, por favor? / Sí, aquí tiene.\nGracias. / De nada.", "wrong": "Hola, soy Luis. Quiero café. Son dos dólares. ¿Puedes darme la cuenta?"}
+	"ch-cafe-roleplay-1": {"skip": "rubric-graded dialogue; no deterministic grader, manually reviewed", "correct": "Buenos días. / Buenos días.\nMe llamo Ana. / Mucho gusto.\nMe gustaría un café, por favor. / Sí, claro.\n¿Cuánto cuesta? / Dos euros.\nDos euros, gracias. / Aquí tiene.\nGracias. / De nada.", "wrong": "Good morning. I want coffee. How much? Two euros. Bye."},
+	"ch-cafe-roleplay-2": {"skip": "rubric-graded dialogue; no deterministic grader, manually reviewed", "correct": "Buenos días. / Buenos días.\nMe llamo Luis y estoy bien. / Mucho gusto.\nMe gustaría un té, por favor. / Sí, claro.\n¿Cuánto cuesta? / Tres euros.\nTres euros. ¿Me das la cuenta, por favor? / Sí, aquí tiene.\nGracias. / De nada.", "wrong": "Hola, soy Luis. Quiero café. Son dos dólares. ¿Puedes darme la cuenta?"}
 }

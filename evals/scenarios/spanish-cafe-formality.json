@@ -7,8 +7,10 @@
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Just show me", "kind": "show"},
+		{"message": "Give me a challenge on this.", "kind": "challenge"},
 		{"message": "I'll guess: because a café’s location is stable, use ser for 'the café is in Madrid'.", "kind": "wrong_guess"},
 		{"message": "I’m stuck; which verb agrees with usted in ¿Podría traer un café?", "kind": "stuck"},
+		{"message": "Give me another challenge on this.", "kind": "challenge"},
 		{"message": "Correct answer: location is a state, so use estar; usted takes third-person forms, while podría is the polite conditional.", "kind": "correct_answer"},
 		{"message": "/verify Podría is a softer formal request than the familiar puedes form.", "kind": "verify"}
 	],

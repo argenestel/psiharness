@@ -11,7 +11,7 @@ type JsonObject = Record<string, unknown>;
 
 /** A single scripted tutor turn. */
 export interface EvalTurn {
-	kind: "teach" | "continue" | "show" | "wrong_guess" | "stuck" | "correct_answer" | "verify" | "answer" | "other";
+	kind: "teach" | "continue" | "show" | "challenge" | "wrong_guess" | "stuck" | "correct_answer" | "verify" | "answer" | "other";
 	message?: string;
 }
 
@@ -52,6 +52,9 @@ export interface ScenarioRunOptions {
 	timeoutMs?: number;
 	handledWaitMs?: number;
 	importTimeoutMs?: number;
+	/** 1-based repeat index; with `repeats` > 1 the trace file gets a `.r<k>` suffix. */
+	repeat?: number;
+	repeats?: number;
 	progress?: (line: string) => void;
 	warn?: (line: string) => void;
 }
@@ -69,6 +72,20 @@ export interface ScenarioResult {
 	psiHome?: string;
 	cwd?: string;
 	errors: string[];
+	repeat: number;
+	model: string;
+	startedAt: string;
+	finishedAt: string;
+	/** Answer turns (correct_answer / wrong_guess): answered from a key for the open challenge vs scripted fallback. */
+	answers: { dynamic: number; fallback: number };
+}
+
+/** The challenge the learner currently faces, as last presented by psi_challenge or persisted in state.json. */
+export interface OpenChallenge {
+	id: string;
+	skill?: string;
+	format?: string;
+	source: "widget" | "state";
 }
 
 /** Parsed command line for the eval CLI. */
@@ -80,6 +97,8 @@ export interface EvalCliOptions {
 	dryRun: boolean;
 	list: boolean;
 	keep: boolean;
+	concurrency: number;
+	repeat: number;
 }
 
 const DEFAULT_MODEL = "xai/grok-4.6";
@@ -89,7 +108,7 @@ const DEFAULT_TIMEOUT_MS = 240_000;
 const DEFAULT_HANDLED_WAIT_MS = 60_000;
 const DEFAULT_IMPORT_TIMEOUT_MS = 60_000;
 const DIALOG_METHODS = new Set(["select", "confirm", "input", "editor"]);
-const TURN_KINDS = new Set(["teach", "continue", "show", "wrong_guess", "stuck", "correct_answer", "verify", "answer", "other"]);
+const TURN_KINDS = new Set(["teach", "continue", "show", "challenge", "wrong_guess", "stuck", "correct_answer", "verify", "answer", "other"]);
 const CHALLENGE_KINDS = new Set(["quickfire", "predict", "debug", "apply", "explain", "build", "boss"]);
 
 /** Root of the repository containing this runner. */
@@ -319,6 +338,55 @@ export function safeOutputName(id: string): string {
 	return result || "scenario";
 }
 
+/** Trace/summary basename for one scenario run; repeats beyond a single run get a `.r<k>` suffix. */
+export function runFileStem(id: string, repeat = 1, repeats = 1): string {
+	return repeats > 1 ? `${safeOutputName(id)}.r${repeat}` : safeOutputName(id);
+}
+
+/**
+ * Tracks the open challenge from the RPC stream: the latest psi_challenge widget (tool_execution_end
+ * details.widget) stays open until a successful psi_attempt for it; state.json is the fallback.
+ */
+export class ChallengeTracker {
+	private latest?: OpenChallenge;
+	private readonly attempted = new Set<string>();
+	private readonly startArgs = new Map<string, JsonObject>();
+
+	/** Feed one raw pi record. */
+	observe(record: JsonObject): void {
+		const callId = typeof record.toolCallId === "string" ? record.toolCallId : undefined;
+		if (record.type === "tool_execution_start" && callId && object(record.args)) this.startArgs.set(callId, record.args);
+		if (record.type !== "tool_execution_end" || record.isError === true) return;
+		const result = object(record.result) ? record.result : {};
+		const details = object(result.details) ? result.details : {};
+		if (Array.isArray(details.errors) && details.errors.length) return;
+		if (record.toolName === "psi_challenge") {
+			const widget = object(details.widget) ? details.widget : undefined;
+			if (widget && widget.type === "challenge" && typeof widget.id === "string") {
+				this.latest = { id: widget.id, source: "widget",
+					...(typeof widget.skill === "string" ? { skill: widget.skill } : {}),
+					...(typeof widget.format === "string" ? { format: widget.format } : {}) };
+				this.attempted.delete(widget.id);
+			}
+		}
+		if (record.toolName === "psi_attempt") {
+			const args = { ...(callId ? this.startArgs.get(callId) : undefined), ...(object(record.args) ? record.args : {}) };
+			const id = typeof args.challengeId === "string" ? args.challengeId : typeof args.id === "string" ? args.id
+				: typeof details.challengeId === "string" ? details.challengeId : this.latest?.id;
+			if (id) this.attempted.add(id);
+		}
+	}
+
+	/** The challenge still awaiting an answer, if any. */
+	open(state: { challengeId?: string; activeSkill?: string }): OpenChallenge | undefined {
+		if (this.latest && !this.attempted.has(this.latest.id)) return this.latest;
+		if (state.challengeId && !this.attempted.has(state.challengeId)) {
+			return { id: state.challengeId, source: "state", ...(state.activeSkill ? { skill: state.activeSkill } : {}) };
+		}
+		return undefined;
+	}
+}
+
 function appendLine(file: string, value: unknown): void {
 	writeFileSync(file, `${JSON.stringify(value)}\n`, { flag: "a" });
 }
@@ -508,7 +576,10 @@ export async function runScenario(loaded: LoadedScenario, options: ScenarioRunOp
 	const startedAt = new Date().toISOString();
 	const scenarioDir = options.outDir;
 	mkdirSync(scenarioDir, { recursive: true });
-	const eventsFile = join(scenarioDir, `${safeOutputName(loaded.scenario.id)}.jsonl`);
+	const repeat = options.repeat ?? 1, repeats = Math.max(options.repeats ?? 1, repeat);
+	const eventsFile = join(scenarioDir, `${runFileStem(loaded.scenario.id, repeat, repeats)}.jsonl`);
+	if (existsSync(eventsFile)) rmSync(eventsFile);
+	const tracker = new ChallengeTracker(), answers = { dynamic: 0, fallback: 0 };
 	const home = mkdtempSync(join(tmpdir(), "psi-eval-home-")), cwd = mkdtempSync(join(tmpdir(), "psi-eval-cwd-"));
 	const warnings: string[] = [], errors: string[] = [];
 	const warn = options.warn ?? ((line: string) => process.stderr.write(`${line}\n`));
@@ -516,7 +587,7 @@ export async function runScenario(loaded: LoadedScenario, options: ScenarioRunOp
 	const harness = (record: JsonObject, turn: number | null = null, attempt = 0): void => log(turn, attempt, record);
 	harness({ type: "harness_meta", id: loaded.scenario.id, scenarioId: loaded.scenario.id, title: loaded.scenario.title,
 		skillPack: relativeRepoPath(loaded.packDir), skillPackSlug: loaded.slug,
-		model: options.model, startedAt, PSI_HOME: home, cwd,
+		model: options.model, startedAt, PSI_HOME: home, cwd, repeat, repeats,
 		turns: loaded.scenario.turns.map((turn, index) => ({ turn: index + 1, kind: turn.kind })) });
 	let processHandle: RpcProcess | undefined, current: TurnState | undefined, childExit: ExitInfo | undefined;
 	let attemptNumber = 0, totalTools = 0;
@@ -527,7 +598,8 @@ export async function runScenario(loaded: LoadedScenario, options: ScenarioRunOp
 		errors.push(message); harness({ type: "harness_import", ok: false, error: message });
 		const result: ScenarioResult = { id: loaded.scenario.id, title: loaded.scenario.title, success: false, turns: loaded.scenario.turns.length,
 			completedTurns: 0, toolCalls: 0, durationMs: now() - Date.parse(startedAt), path: eventsFile,
-			...(options.keep ? { psiHome: home, cwd } : {}), errors };
+			...(options.keep ? { psiHome: home, cwd } : {}), errors, repeat, model: options.model, startedAt,
+			finishedAt: new Date().toISOString(), answers };
 		if (!options.keep) { rmSync(home, { recursive: true, force: true }); rmSync(cwd, { recursive: true, force: true }); }
 		return result;
 	}
@@ -568,6 +640,7 @@ export async function runScenario(loaded: LoadedScenario, options: ScenarioRunOp
 			onRecord: (record) => {
 				const turn = current?.turn ?? null, attempt = current?.attempt ?? attemptNumber;
 				log(turn, attempt, record);
+				tracker.observe(record);
 				if (record.type === "tool_execution_start" || record.type === "toolCall") { totalTools++; if (current) current.toolCalls++; }
 				if (record.type === "extension_ui_request" && typeof record.id === "string" && DIALOG_METHODS.has(String(record.method))) {
 					const method = String(record.method);
@@ -642,13 +715,16 @@ export async function runScenario(loaded: LoadedScenario, options: ScenarioRunOp
 			const turn = loaded.scenario.turns[index], persisted = stateAfterSettlement(home, loaded.slug);
 			let message = turn.message;
 			if (turn.kind === "correct_answer" || turn.kind === "wrong_guess") {
-				const key = keyFor(scenarioKeyString(loaded.keys), persisted.challengeId, turn.kind === "correct_answer" ? "correct" : "wrong");
-				if (key !== undefined) message = key;
+				const open = tracker.open(persisted), which = turn.kind === "correct_answer" ? "correct" : "wrong";
+				const key = keyFor(scenarioKeyString(loaded.keys), open?.id, which);
+				if (key !== undefined) { message = key; answers.dynamic++; }
 				else {
-					message = fallbackMessage(turn);
-					const warning = `scenario ${loaded.scenario.id} turn ${index + 1}: no ${turn.kind} key for open challenge ${persisted.challengeId ?? "none"}; using fallback message`;
+					message = fallbackMessage(turn); answers.fallback++;
+					const warning = `scenario ${loaded.scenario.id} turn ${index + 1}: no ${turn.kind} key for open challenge ${open?.id ?? "none"}; using fallback message`;
 					warnings.push(warning); warn(warning); harness({ type: "harness_warning", message: warning }, index + 1, 0);
 				}
+				harness({ type: "harness_answer", turn: index + 1, kind: turn.kind, mode: key !== undefined ? "dynamic" : "fallback",
+					challengeId: open?.id, openFrom: open?.source, format: open?.format }, index + 1, 0);
 			}
 			if (message === undefined) throw new Error(`turn ${index + 1} has no message`);
 			let attemptResult: { state: TurnState; childExited: boolean } | undefined;
@@ -677,7 +753,7 @@ export async function runScenario(loaded: LoadedScenario, options: ScenarioRunOp
 	}
 	const result: ScenarioResult = { id: loaded.scenario.id, title: loaded.scenario.title, success: completedTurns === loaded.scenario.turns.length && errors.length === 0,
 		turns: loaded.scenario.turns.length, completedTurns, toolCalls: totalTools, durationMs: now() - Date.parse(startedAt), path: eventsFile,
-		...(options.keep ? { psiHome: home, cwd } : {}), errors };
+		...(options.keep ? { psiHome: home, cwd } : {}), errors, repeat, model: options.model, startedAt, finishedAt: new Date().toISOString(), answers };
 	if (!options.keep) { rmSync(home, { recursive: true, force: true }); rmSync(cwd, { recursive: true, force: true }); }
 	return result;
 }
@@ -686,6 +762,12 @@ export async function runScenario(loaded: LoadedScenario, options: ScenarioRunOp
 export function parseEvalArgs(argv: string[]): EvalCliOptions {
 	const scenarios: string[] = [];
 	let model = process.env.PSI_EVAL_MODEL ?? DEFAULT_MODEL, out = "", codeExec = false, dryRun = false, list = false, keep = false;
+	let concurrency = 1, repeat = 1;
+	const positive = (name: string, value: string | undefined): number => {
+		const parsed = Number(value);
+		if (!value || !Number.isInteger(parsed) || parsed < 1 || parsed > 64) throw new Error(`${name} requires an integer from 1 to 64`);
+		return parsed;
+	};
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
 		if (arg === "--scenario") { if (!argv[i + 1]) throw new Error("--scenario requires a value"); scenarios.push(argv[++i]); }
@@ -694,6 +776,10 @@ export function parseEvalArgs(argv: string[]): EvalCliOptions {
 		else if (arg.startsWith("--model=")) model = arg.slice("--model=".length);
 		else if (arg === "--out") out = argv[++i] ?? (() => { throw new Error("--out requires a value"); })();
 		else if (arg.startsWith("--out=")) out = arg.slice("--out=".length);
+		else if (arg === "--concurrency") concurrency = positive("--concurrency", argv[++i]);
+		else if (arg.startsWith("--concurrency=")) concurrency = positive("--concurrency", arg.slice("--concurrency=".length));
+		else if (arg === "--repeat") repeat = positive("--repeat", argv[++i]);
+		else if (arg.startsWith("--repeat=")) repeat = positive("--repeat", arg.slice("--repeat=".length));
 		else if (arg === "--code-exec") codeExec = true;
 		else if (arg === "--dry-run") dryRun = true;
 		else if (arg === "--list") list = true;
@@ -702,11 +788,13 @@ export function parseEvalArgs(argv: string[]): EvalCliOptions {
 		else throw new Error(`Unknown option: ${arg}`);
 	}
 	if (!out) { const stamp = new Date().toISOString().replace(/\.\d{3}Z$/, "Z").replace(/:/g, "-"); out = join(repoRoot, "evals", "results", stamp); }
-	return { scenarios, model: string(model, "model"), out: resolve(out), codeExec, dryRun, list, keep };
+	return { scenarios, model: string(model, "model"), out: resolve(out), codeExec, dryRun, list, keep, concurrency, repeat };
 }
 
 /** Compact CLI usage text. */
 export const evalHelp = `Usage: node evals/run.ts [--scenario id[,id...]] [--model provider/model] [--out dir]
+  --concurrency N  run up to N scenario sessions at once (default 1)
+  --repeat K       run every selected scenario K times; the report shows mean ± range per check
   --code-exec  opt in to execution tools
   --dry-run     validate and print selected scenarios without launching pi
   --list        list available scenarios
@@ -717,6 +805,8 @@ export function scoreResults(results: ScenarioResult[]): JsonObject {
 	const passed = results.filter((result) => result.success).length;
 	return { scenarios: results.length, passed, failed: results.length - passed, passRate: results.length ? passed / results.length : 1,
 		turns: results.reduce((sum, result) => sum + result.turns, 0), completedTurns: results.reduce((sum, result) => sum + result.completedTurns, 0),
-		toolCalls: results.reduce((sum, result) => sum + result.toolCalls, 0) };
+		toolCalls: results.reduce((sum, result) => sum + result.toolCalls, 0),
+		dynamicAnswers: results.reduce((sum, result) => sum + (result.answers?.dynamic ?? 0), 0),
+		fallbackAnswers: results.reduce((sum, result) => sum + (result.answers?.fallback ?? 0), 0) };
 }
 

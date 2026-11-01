@@ -7,8 +7,10 @@
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Jump ahead to joins now; I’ll guess the customer order query.", "kind": "other"},
 		{"message": "Just show me", "kind": "show"},
+		{"message": "Give me a challenge on this.", "kind": "challenge"},
 		{"message": "I'll guess: putting status = 'paid' in WHERE is always equivalent to putting it in ON.", "kind": "wrong_guess"},
 		{"message": "I’m stuck; why does COUNT(o.order_id) give zero for a customer with no orders?", "kind": "stuck"},
+		{"message": "Give me another challenge on this.", "kind": "challenge"},
 		{"message": "Correct answer: a LEFT JOIN preserves the left row, and a right-table filter in ON preserves unmatched customers.", "kind": "correct_answer"},
 		{"message": "/verify A right-table predicate in WHERE can remove the NULL-extended rows that a LEFT JOIN preserves.", "kind": "verify"}
 	],

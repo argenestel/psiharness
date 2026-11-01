@@ -1,6 +1,7 @@
 import { Type } from "@earendil-works/pi-ai";
 import { defineTool } from "@earendil-works/pi-coding-agent";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { withContinue } from "./guards.ts";
 
 const short = (value: unknown, max: number): value is string =>
 	typeof value === "string" && !!value.trim() && value.length <= max;
@@ -20,7 +21,10 @@ export function registerFlow(pi: ExtensionAPI): void {
 				|| p.options.some((o) => !o || !short(o.label, 60) || !short(o.message, 400))) {
 				return error("Provide 2–4 options with nonempty labels (≤60 characters) and messages (≤400 characters).");
 			}
-			return result({ widget: { type: "next_steps", options: p.options } }, "Offered next steps");
+			// Hooks normally add Continue already; this keeps the guarantee for calls that bypass them.
+			const normalized = withContinue(p.options);
+			if (normalized.changed) pi.appendEntry("psi-guard", { kind: "next-steps-continue", detail: { where: "execute" } });
+			return result({ widget: { type: "next_steps", options: normalized.options } }, "Offered next steps");
 		},
 	}));
 	pi.registerTool(defineTool({

@@ -10,6 +10,7 @@ import { registerPaths } from "./paths.ts";
 import { registerLessons } from "./lessons.ts";
 import { registerRun } from "./run.ts";
 import { registerFlow } from "./flow.ts";
+import { registerGuards } from "./guards.ts";
 import { refreshHud } from "./hud.ts";
 
 export interface PracticeState {
@@ -77,6 +78,7 @@ export function registerPractice(pi: ExtensionAPI, options: { home?: string } = 
 	registerCommands(pi, deps);
 	const paths = registerPaths(pi, options.home);
 	registerInjection(pi, deps, paths.injection);
+	registerGuards(pi, deps);
 	pi.on("session_start", async (_event, ctx) => {
 		state.skill = undefined;
 		state.challengeId = undefined;

@@ -6,8 +6,10 @@
 		{"message": "Teach me the next step.", "kind": "teach"},
 		{"message": "Continue", "kind": "continue"},
 		{"message": "Just show me", "kind": "show"},
+		{"message": "Give me a challenge on this.", "kind": "challenge"},
 		{"message": "I’ll guess: safe_divide should catch every exception and return None, because callers should never see an error.", "kind": "wrong_guess"},
 		{"message": "I’m stuck; which invalid BankAccount operation must leave the balance unchanged?", "kind": "stuck"},
+		{"message": "Give me another challenge on this.", "kind": "challenge"},
 		{"message": "Correct answer: catch only ZeroDivisionError for the documented zero denominator; unrelated errors should propagate.", "kind": "correct_answer"},
 		{"message": "The invariant is non-negative balance, and failed withdrawals or non-positive deposits must not mutate it.", "kind": "other"},
 		{"message": "/verify Rectangle.__init__ raises ValueError before storing a negative dimension.", "kind": "verify"}
