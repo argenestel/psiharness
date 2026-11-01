@@ -68,7 +68,7 @@ export function decodeEntities(text: string): string {
 	const named: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
 		ndash: "–", mdash: "—", lsquo: "‘", rsquo: "’", ldquo: "“", rdquo: "”", hellip: "…", copy: "©" };
 	return text.replace(/&(#x[\da-f]+|#\d+|\w+);/gi, (whole, key: string) => {
-		if (!key.startsWith("#")) return named[key] ?? whole;
+		if (!key.startsWith("#")) return named[key.toLowerCase()] ?? whole;
 		const n = key[1]?.toLowerCase() === "x" ? parseInt(key.slice(2), 16) : Number(key.slice(1));
 		return n > 0 && n <= 0x10ffff && !(n >= 0xd800 && n <= 0xdfff) ? String.fromCodePoint(n) : "�";
 	});
@@ -83,15 +83,15 @@ export function htmlText(html: string): { title: string; text: string } {
 	return { title, text: decodeEntities(text).replace(/[ \t]+/g, " ").replace(/\n\s*\n/g, "\n\n").trim() };
 }
 
-/** Fetch readable reference material, capped at 20,000 characters. */
-export async function fetchPage(url: string) {
-	const response = await safeHttp(url);
+/** Read reference text; the internal fullText option preserves pages for caching and quote checks. */
+export async function fetchPage(url: string, options: { fullText?: boolean; http?: typeof safeHttp } = {}) {
+	const response = await (options.http ?? safeHttp)(url);
 	const type = response.contentType.split(";")[0]!.trim().toLowerCase();
 	if (!["text/html", "application/xhtml+xml", "text/plain", "text/markdown"].includes(type)) {
 		throw new Error(`Unsupported content type: ${type}`);
 	}
 	const page = type.includes("html") ? htmlText(response.body) : { title: response.url, text: response.body };
-	return { ...page, url: response.url, text: page.text.slice(0, 20000), truncated: page.text.length > 20000 };
+	return { ...page, url: response.url, text: options.fullText ? page.text : page.text.slice(0, 20000), truncated: page.text.length > 20000 };
 }
 
 /** Parse DuckDuckGo result anchors and decode redirect targets. */

@@ -618,11 +618,32 @@ export type TutorMode =
 	| "practice" // short lesson, then challenges (default)
 	| "test";    // challenges only — for review and bosses
 
-/** Result of checking a statement against stored sources. */
+/** A ranked passage from a source page the tutor actually fetched. */
+export interface EvidencePassage {
+	sourceId: string;
+	title: string;
+	rank: number;
+	url: string;
+	sentenceIndex: number;
+	/** The matching sentence. */
+	text: string;
+	/** The sentence with its neighbours. */
+	context: string;
+	bm25: number;
+	score: number;
+}
+
+/**
+ * Result of checking a statement against stored sources. Verdicts are deliberately conservative signals,
+ * not proof: lexical evidence cannot establish semantic truth, so the tutor explains the passages with uncertainty.
+ * Legacy "supported"/"contradicted" values may appear in older sessions.
+ */
 export interface Verification {
 	claim: string;
-	verdict: "supported" | "contradicted" | "unclear";
+	verdict: "likely-supported" | "possibly-contradicted" | "unclear" | "supported" | "contradicted";
 	citations: Citation[];
+	/** Passages ranked by BM25 against the claim (newer results). */
+	evidence?: EvidencePassage[];
 	note: string;
 }
 

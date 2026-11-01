@@ -688,16 +688,22 @@ test("search decodes uddg and sorts by rank", () => {
 	assert.equal(items[0]!.url, "https://docs.python.org/3/"); assert.ok(items[0]!.rank > items[1]!.rank);
 });
 
-test("verification checks supporting, negated and unrelated pages", async (t) => fixture(t, async (f) => {
-	await localPage(t, async (base) => {
-		await f.execute("psi_skill_plan", { action: "create", plan: plan() });
-		for (const [route, verdict] of [["yes", "supported"], ["no", "contradicted"], ["other", "unclear"]]) {
-			const added = await f.execute("psi_sources", { action: "add", url: `${base}/${route}`, title: "Python lists" });
-			const checked = await f.execute("psi_verify", { claim: "Python lists are mutable" });
-			assert.equal(checked.details.widget.verdict, verdict);
-			await f.execute("psi_sources", { action: "remove", id: added.details.widget.items[0].id });
-		}
-	});
+test("verification uses cached evidence and uncertain labels", async (t) => fixture(t, async (f, home) => {
+	await f.execute("psi_skill_plan", { action: "create", plan: plan() });
+	for (const [route, text, verdict] of [
+		["yes", "Python lists are mutable. Other information.", "likely-supported"],
+		["no", "Python lists are not mutable. Other information.", "possibly-contradicted"],
+		["other", "Bananas grow on plants.", "unclear"],
+	]) {
+		const url = `https://example.org/${route}`;
+		cachePage(home, "sql", url, text!);
+		const added = await f.execute("psi_sources", { action: "add", url, title: "Python lists" });
+		const checked = await f.execute("psi_verify", { claim: "Python lists are mutable" });
+		assert.equal(checked.details.widget.verdict, verdict);
+		assert.ok(checked.details.widget.evidence.length);
+		assert.match(checked.content[0].text, /heuristic signal, not proof/);
+		await f.execute("psi_sources", { action: "remove", id: added.details.widget.items[0].id });
+	}
 }));
 
 test("mode persists; commands request tools; injection teaches first; combo is display-only", async (t) => fixture(t, async (f, home) => {
@@ -888,3 +894,95 @@ test("skipped predictions preserve skipped instead of deterministic fail", async
 	const report = await f.execute("psi_progress_report", {});
 	assert.equal(report.details.skills[0].failures, 0);
 }));
+
+import { sourceId, SourceStore } from "../../core/src/sources.ts";
+import { cachePage, readCachedPage, sourcePage, gatherEvidence } from "../src/practice/sources.ts";
+import { checkLessonQuotes, registerLessons } from "../src/practice/lessons.ts";
+
+test("lesson quotes reject missing text and accept normalized cached text without fetching", async (t) =>
+	fixture(t, async (f, home) => {
+		await f.execute("psi_skill_plan", { action: "create", plan: plan() });
+		const source = new SourceStore(home).add("sql", { url: "https://example.org/quotes", title: "Quotes" });
+		cachePage(home, "sql", source.url, 'A “LEFT” JOIN &amp; rows —  &#x41; &#39;test&#39;.');
+		let calls = 0;
+		const fetcher = async () => { calls++; throw new Error("unexpected fetch"); };
+		assert.deepEqual(await checkLessonQuotes([{ sourceId: source.id,
+			quote: 'a "left"  join & ROWS - A \'test\'.' }], [source], home, "sql", fetcher), []);
+		assert.equal(calls, 0);
+		const accepted = await f.execute("psi_lesson", { action: "write", lesson: { title: "Select",
+			explanation: "Read rows.", keyIdeas: ["Choose columns", "Read rows"],
+			citations: [{ sourceId: source.id, quote: 'a "left" join & ROWS - A \'test\'.' }] } });
+		assert.ok(!accepted.isError, JSON.stringify(accepted));
+		const saved = readFileSync(join(home, "skills/sql/lessons/select.json"), "utf8");
+		const written = await f.execute("psi_lesson", { action: "write", lesson: { title: "Select",
+			explanation: "Read rows.", keyIdeas: ["Choose columns", "Read rows"],
+			citations: [{ sourceId: source.id, quote: "invented supporting quote" }] } });
+		assert.equal(written.isError, true);
+		assert.match(written.content[0].text, /Citation \[1\].*src-/);
+		assert.match(written.content[0].text, /quote must be copied verbatim/);
+		assert.equal(readFileSync(join(home, "skills/sql/lessons/select.json"), "utf8"), saved);
+	}));
+
+test("uncached quote fetches once, writes header atomically and reports fetch failures", async (t) =>
+	fixture(t, async (_f, home) => {
+		const source = new SourceStore(home).add("sql", { url: "https://example.org/page", title: "Page" });
+		let calls = 0;
+		const fetcher = async (url: string) => { calls++; return { url, text: "SQL joins combine rows." }; };
+		const citations = [{ sourceId: source.id, quote: "SQL joins combine rows." }];
+		assert.deepEqual(await checkLessonQuotes(citations, [source], home, "sql", fetcher), []);
+		assert.deepEqual(await checkLessonQuotes(citations, [source], home, "sql", fetcher), []);
+		assert.equal(calls, 1);
+		const dir = join(home, "skills/sql/source-cache");
+		assert.deepEqual(readdirSync(dir), [`${sourceId(source.url)}.txt`]);
+		assert.match(readFileSync(join(dir, `${sourceId(source.url)}.txt`), "utf8"),
+			/^# fetchedAt: .*Z\n# url: https:\/\/example.org\/page\n\nSQL/);
+		assert.equal(readCachedPage(home, "sql", source.url)!.text, "SQL joins combine rows.");
+		const missing = { ...source, id: "missing", url: "https://example.org/fail" };
+		assert.match((await checkLessonQuotes([{ sourceId: "missing", quote: "SQL" }], [missing], home, "sql",
+			async () => { throw new Error("offline"); })).join(""), /could not verify citation 1:.*offline/);
+	}));
+
+test("source cache caps full UTF-8 file at 2 MiB and retrieval caps missing fetches at three", async (t) =>
+	fixture(t, async (_f, home) => {
+		const url = "https://example.org/large";
+		await sourcePage(home, "sql", url, async () => ({ url, text: "😀".repeat(600000) }));
+		const raw = readFileSync(join(home, "skills/sql/source-cache", `${sourceId(url)}.txt`));
+		assert.ok(raw.length <= 2 * 1024 * 1024);
+		assert.ok(!raw.toString("utf8").includes("�"));
+		const store = new SourceStore(home);
+		const sources = Array.from({ length: 5 }, (_, i) => store.add("sql", {
+			url: `https://example.org/${i}`, title: String(i), excerpt: "Stored fallback." }));
+		let calls = 0;
+		const gathered = await gatherEvidence(home, "sql", sources, async (url) => {
+			calls++; return { url, text: "Fetched evidence." };
+		});
+		assert.equal(calls, 3); assert.equal(gathered.documents.length, 5);
+	}));
+
+
+test("psi_fetch caches full text but returns 20k and explicitly skips cache without active skill", async () => {
+	const home = mkdtempSync(join(tmpdir(), "psi-fetch-seam-"));
+	try {
+		const { PracticeStore } = await import("../../core/src/practice.ts");
+		const { MemoryStore } = await import("../../core/src/memory.ts");
+		const f = fake(), state: import("../src/practice/index.ts").PracticeState = { hintIndex: 0 };
+		let calls = 0;
+		registerLessons(f.api, { practice: new PracticeStore(home), memory: new MemoryStore(home), state,
+			resume() {}, persist() {}, activate() {}, refresh() {} }, { fetcher: async (url) => {
+				calls++; return { url, text: "a".repeat(25000) };
+			} });
+		const url = "https://example.org/read";
+		const skipped = await f.execute("psi_fetch", { url });
+		assert.match(skipped.content[0].text, /Skipped caching: no active skill/);
+		assert.equal(existsSync(join(home, "skills")), false);
+		state.skill = "sql";
+		const fetched = await f.execute("psi_fetch", { url });
+		assert.equal(fetched.details.text.length, 20000);
+		assert.equal(fetched.details.truncated, true);
+		assert.equal(readCachedPage(home, "sql", url)!.text.length, 25000);
+		assert.equal(calls, 2);
+		const page = await fetchPage(url, { http: async () => ({ url,
+			body: "x".repeat(25000), contentType: "text/plain" }) });
+		assert.equal(page.text.length, 20000);
+	} finally { rmSync(home, { recursive: true, force: true }); }
+});
