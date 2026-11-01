@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { fileURLToPath } from "node:url";
 import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { isAbsolute, join } from "node:path";
@@ -45,6 +46,7 @@ function fake() {
 		sendMessage: (message: { content: string }) => messages.push(message.content),
 	} as unknown as ExtensionAPI;
 	const ctx = {
+		cwd: process.env.PSI_HOME ?? process.cwd(),
 		ui: {
 			notify: (message: string) => notifications.push(message),
 			setStatus: (_key: string, text: string) => statuses.push(text),
@@ -66,10 +68,13 @@ async function fixture(t: Parameters<typeof load>[0], run: (f: ReturnType<typeof
 	if (!extension) return;
 	const home = mkdtempSync(join(tmpdir(), "psi-extension-"));
 	const previous = process.env.PSI_HOME;
+	const previousExec = process.env.PSI_CODE_EXEC;
+	process.env.PSI_CODE_EXEC = "1";
 	process.env.PSI_HOME = home;
 	try { const f = fake(); extension(f.api); await run(f); }
 	finally {
 		if (previous === undefined) delete process.env.PSI_HOME; else process.env.PSI_HOME = previous;
+		if (previousExec === undefined) delete process.env.PSI_CODE_EXEC; else process.env.PSI_CODE_EXEC = previousExec;
 		rmSync(home, { recursive: true, force: true });
 	}
 }
@@ -77,7 +82,8 @@ async function fixture(t: Parameters<typeof load>[0], run: (f: ReturnType<typeof
 test("registers all tools, commands, and session flags", async (t) => fixture(t, async (f) => {
 	assert.deepEqual([...f.tools.keys()].sort(), [
 		"psi_concept_graph", "psi_lesson_plan", "psi_cards_add", "psi_review_next", "psi_review_grade", "psi_mastery",
-		"psi_storyboard", "psi_explorable", "psi_manim", "psi_crew", "psi_note",
+		"psi_storyboard", "psi_explorable", "psi_note",
+		...(process.env.PSI_CODE_EXEC === "1" ? ["psi_manim", "psi_crew"] : []),
 	].sort());
 	assert.deepEqual([...f.commands.keys()].sort(), [
 		"learn", "map", "lesson", "quiz", "review", "visualize", "explore", "crew", "studio", "progress", "tutor",
@@ -318,5 +324,65 @@ test("psi_manim publishes CamelCase scene videos under kebab-case artifact names
 	} finally {
 		process.env.PATH = previous;
 		rmSync(bin, { recursive: true, force: true });
+	}
+});
+
+test("execution tools register only with exact PSI_CODE_EXEC opt-in and web policy names are registered", async () => {
+	const { default: install } = await import("../src/index.ts");
+	const { webToolNames } = await import("../src/tool-policy.ts");
+	const home = mkdtempSync(join(tmpdir(), "psi-gates-"));
+	const before = { home: process.env.PSI_HOME, exec: process.env.PSI_CODE_EXEC };
+	try {
+		process.env.PSI_HOME = home;
+		for (const enabled of [undefined, "0", "true", "1"]) {
+			if (enabled === undefined) delete process.env.PSI_CODE_EXEC; else process.env.PSI_CODE_EXEC = enabled;
+			const f = fake();
+			install(f.api);
+			for (const name of ["psi_run", "psi_manim", "psi_crew"]) assert.equal(f.tools.has(name), enabled === "1");
+			assert.deepEqual(webToolNames(), [...f.tools.keys()].sort());
+		}
+	} finally {
+		if (before.home === undefined) delete process.env.PSI_HOME; else process.env.PSI_HOME = before.home;
+		if (before.exec === undefined) delete process.env.PSI_CODE_EXEC; else process.env.PSI_CODE_EXEC = before.exec;
+		rmSync(home, { recursive: true, force: true });
+	}
+});
+
+test("web read hook allows canonical data files and blocks traversal and symlink escapes", async () => {
+	const { symlinkSync } = await import("node:fs");
+	const { default: install } = await import("../src/index.ts");
+	const home = mkdtempSync(join(tmpdir(), "psi-read-"));
+	const root = join(home, "data");
+	const { mkdirSync } = await import("node:fs");
+	mkdirSync(root);
+	writeFileSync(join(root, "allowed"), "ok");
+	writeFileSync(join(home, "secret"), "secret");
+	symlinkSync(join(home, "secret"), join(root, "escape"));
+	const previous = { root: process.env.PSI_WEB_READ_ROOT, home: process.env.PSI_HOME };
+	try {
+		process.env.PSI_HOME = process.env.PSI_WEB_READ_ROOT = root;
+		const f = fake();
+		install(f.api);
+		for (const path of ["../secret", join(home, "secret"), "escape", "missing", undefined]) {
+			const results = await f.fire("tool_call", { toolName: "read", input: { path } });
+			assert.ok(results.some((result) => result?.block));
+		}
+		const relativeEvent = { toolName: "read", input: { path: "allowed" } };
+		assert.ok((await f.fire("tool_call", relativeEvent)).every((result) => !result?.block));
+		assert.equal(relativeEvent.input.path, join(root, "allowed"));
+		const event = { toolName: "read", input: { path: join(root, "allowed") } };
+		assert.ok((await f.fire("tool_call", event)).every((result) => !result?.block));
+		assert.equal(event.input.path, join(root, "allowed"));
+		assert.ok((await f.fire("tool_call", { toolName: "psi_note", input: {} })).every((r) => !r?.block));
+		// The tutor may read psi's bundled skills, but not the rest of the repository.
+		const skill = fileURLToPath(new URL("../../skills/teach-first/SKILL.md", import.meta.url));
+		assert.ok((await f.fire("tool_call", { toolName: "read", input: { path: skill } })).every((r) => !r?.block));
+		const outside = fileURLToPath(new URL("../../package.json", import.meta.url));
+		assert.ok((await f.fire("tool_call", { toolName: "read", input: { path: outside } })).some((r) => r?.block));
+	} finally {
+		if (previous.root === undefined) delete process.env.PSI_WEB_READ_ROOT;
+		else process.env.PSI_WEB_READ_ROOT = previous.root;
+		if (previous.home === undefined) delete process.env.PSI_HOME; else process.env.PSI_HOME = previous.home;
+		rmSync(home, { recursive: true, force: true });
 	}
 });

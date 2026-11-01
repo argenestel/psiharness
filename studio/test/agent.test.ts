@@ -48,7 +48,7 @@ test("AgentHub frames RPC bytes, sequences/replays events, forwards commands and
 	assert.equal(state.cwd, join(home, "workspace"));
 	assert.equal(state.home, home);
 	assert.equal(state.args[state.args.indexOf("--model") + 1], "test/model");
-	assert.equal(state.args[state.args.indexOf("--tools") + 1], "read,psi_*");
+	assert.equal(state.args[state.args.indexOf("--tools") + 1], ["read", ...psiToolNames()].join(","));
 	assert.equal(state.args[state.args.indexOf("--session-dir") + 1], join(home, "web-sessions"));
 	assert.equal(state.args[state.args.indexOf("--psi-skill") + 1], "mental-math");
 	assert.deepEqual(state.args.slice(0, 2), ["--mode", "rpc"]);

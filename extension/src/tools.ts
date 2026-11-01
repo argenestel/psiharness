@@ -175,7 +175,7 @@ export function registerTools(
 			return toolResult({ path }, "Use /studio to view this artifact.");
 		},
 	}));
-	pi.registerTool(defineTool({
+	if (process.env.PSI_CODE_EXEC === "1") pi.registerTool(defineTool({
 		name: "psi_manim",
 		label: "Manim",
 		description: "Render manim code, or transpile a saved storyboard to Python (optionally render it).",
@@ -213,7 +213,7 @@ export function registerTools(
 				...(result.outputs.length ? { media: result.outputs } : {}) }, "Use /studio to view rendered artifacts.");
 		},
 	}));
-	pi.registerTool(defineTool({
+	if (process.env.PSI_CODE_EXEC === "1") pi.registerTool(defineTool({
 		name: "psi_crew",
 		label: "Lesson crew",
 		description: "Run specialist role tasks, or build a complete multi-agent lesson for a concept.",

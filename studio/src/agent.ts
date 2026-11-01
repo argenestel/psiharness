@@ -6,6 +6,8 @@ import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ServerResponse } from "node:http";
 import { skillIndex } from "../../crew/src/runner.ts";
+import { childEnv } from "../../crew/src/child-env.ts";
+import { webToolNames } from "../../extension/src/tool-policy.ts";
 
 const repo = fileURLToPath(new URL("../../", import.meta.url));
 type RecordData = Record<string, unknown>;
@@ -67,26 +69,23 @@ export function redactRecord<T>(value: T, depth = 0): T {
 	return value;
 }
 
-/** psi tool names registered by the extension, for hosts whose --tools rejects patterns (omp). */
-export function psiToolNames(dir = join(repo, "extension/src")): string[] {
-	const names = new Set<string>();
-	const walk = (folder: string) => {
-		for (const entry of readdirSync(folder, { withFileTypes: true })) {
-			const path = join(folder, entry.name);
-			if (entry.isDirectory()) walk(path);
-			else if (entry.name.endsWith(".ts")) {
-				for (const match of readFileSync(path, "utf8").matchAll(/\bname:\s*"(psi_[a-z0-9_]+)"/g)) names.add(match[1]);
-			}
-		}
-	};
-	try { walk(dir); } catch { /* Fall back to the pattern below. */ }
-	return [...names].sort();
+/** Explicit permitted psi tool names, shared with the extension policy. */
+export function psiToolNames(): string[] {
+	return webToolNames();
+}
+
+/** Environment used by the RPC spawn; the read hook is mandatory for web children. */
+export function agentEnv(home: string, source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+	return { ...childEnv(source), PSI_HOME: home, PSI_WEB_READ_ROOT: home };
 }
 
 /** Argument vector for one chat's RPC host process. */
 export function agentArgs(opts: { omp: boolean; directory: string; file: string } & ChatOptions): string[] {
-	const tools = process.env.PSI_WEB_TOOLS
-		?? (opts.omp ? ["read", ...psiToolNames()].join(",") || "read" : "read,psi_*");
+	// PSI_WEB_TOOLS may narrow this list, but cannot grant capabilities or introduce globs.
+	const allowed = ["read", ...psiToolNames()];
+	const requested = process.env.PSI_WEB_TOOLS?.split(",").map((name) => name.trim());
+	const tools = allowed.filter((name) => !requested || requested.includes(name)).join(",");
+	if (!tools) throw new Error("PSI_WEB_TOOLS must select at least one permitted tool.");
 	// omp rejects unknown flags (no --skill/--prompt-template/--no-mcp), so it gets a readable skill index instead.
 	const resources = opts.omp
 		? ["--append-system-prompt", skillIndex(join(repo, "skills"))]
@@ -399,7 +398,7 @@ export class AgentHub {
 		// Skill/topic flags apply once; later respawns resume from the extension's own session entries.
 		chat.skill = chat.topic = undefined;
 		const child = spawn(bin, args, { cwd: join(this.home, "workspace"),
-			env: { ...process.env, PSI_HOME: this.home }, stdio: ["pipe", "pipe", "pipe"], shell: false });
+			env: agentEnv(this.home), stdio: ["pipe", "pipe", "pipe"], shell: false });
 		chat.child = child;
 		this.children.add(child);
 		let pending = Buffer.alloc(0);

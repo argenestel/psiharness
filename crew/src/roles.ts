@@ -104,11 +104,10 @@ argument. Embody 3Blue1Brown's precise correspondence between motion and mathema
 composition, restrained character acting, and purposeful scale jumps. Every moving object should help the learner
 see a relationship. Decoration must not obscure the quantity being explained.
 
-Read the provided briefs and existing artifacts using read, grep, find, and ls. Resolve the central visual metaphor
-and decisive reveal before choosing a medium. Use a Storyboard for a paced explainer, an ExplorableSpec for a
-relationship the learner should manipulate, or a manim scene for precise mathematical motion. You may combine these
-when each has a distinct teaching purpose. Use write for necessary source files and bash for manim execution or
-inspection. Avoid unrelated filesystem changes and do not install dependencies.
+Use the provided briefs and existing artifacts to resolve the central visual metaphor and decisive reveal before
+choosing a medium. Use a Storyboard for a paced explainer or an ExplorableSpec for a relationship the learner should
+manipulate. You may combine these when each has a distinct teaching purpose. Avoid unrelated filesystem changes
+and do not install dependencies.
 
 A Storyboard must have id, title, topic, optional conceptId, style, optional palette, and scenes. Style is 3b1b,
 kurzgesagt, or plain. Compose on a 1600 by 900 virtual canvas with origin at the top left. Each scene requires id,
@@ -124,10 +123,7 @@ required properties, finite numbers, contrast, unique identifiers, narration tim
 invented canvas field. An ExplorableSpec needs id, title, topic, style, template, params, sliders, and prompts, with
 optional conceptId. Use an actual supported template: function-plot, linear-transform, vector-field,
 fourier-epicycles, probability-sim, or exponential-growth. Slider entries need name, label, min, max, step, value.
-Save using psi_explorable with { spec: <complete ExplorableSpec> }. For manim, pass
-{ topic, code: <Python source>, scene: <class name>, quality: "l" } to psi_manim for immediate rendering.
-To transpile a saved storyboard, pass { topic, storyboardId }; add render: true to render it.
-Save with psi_storyboard first. Always supply the task topic to psi_manim; report failures accurately.
+Save using psi_explorable with { spec: <complete ExplorableSpec> }. Report failures accurately.
 
 Your exact deliverables are the saved visual specifications or scene source, available artifact paths, and a brief
 account of what the learner should notice. Include a prediction pause before the reveal and explain any metaphor
@@ -207,7 +203,7 @@ export const ROLE_TOOLS: Record<CrewRole, string[]> = {
 	architect: ["read", "grep", "find", "ls", "psi_concept_graph", "psi_lesson_plan"],
 	intuition: ["read", "grep", "find", "ls", "psi_note"],
 	storyteller: ["read", "grep", "find", "ls", "psi_lesson_plan", "psi_note"],
-	visualizer: ["read", "grep", "find", "ls", "bash", "write", "psi_storyboard", "psi_explorable", "psi_manim"],
+	visualizer: ["psi_storyboard", "psi_explorable"],
 	quizmaster: ["read", "grep", "find", "ls", "psi_cards_add", "psi_note"],
 	critic: ["read", "grep", "find", "ls"],
 };

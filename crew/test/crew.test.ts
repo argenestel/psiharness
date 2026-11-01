@@ -216,6 +216,9 @@ test("buildLesson strictly orders phases, writes briefs, and passes graph contex
 		assert.ok(index("visualizer", "end") < index(role, "start"));
 	}
 	assert.ok(history.every((row) => row.message.includes("The important concept: A testable summary.")));
+	const visualBrief = history.find((row) => row.role === "visualizer")!.message;
+	assert.match(visualBrief, /Intuition brief:\nintuition final reply/);
+	assert.match(visualBrief, /Storyteller brief:\nstoryteller final reply/);
 	for (const role of ["intuition", "storyteller", "visualizer"]) {
 		assert.match(readFileSync(join(store.topicDir(topic), "crew", `${role}.md`), "utf8"), /final reply/);
 	}

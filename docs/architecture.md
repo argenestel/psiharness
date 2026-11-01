@@ -26,8 +26,13 @@ ratings update BKT mastery; producing a lesson or visual does not.
 - `cli/src/practice-commands.ts` dispatches model-free skill listing, drills, hours, memory, progress, and imports
   to `cli/src/commands/`. Terminal drills use the same answer checker and progress store as the extension.
 
-Practice state is separate from topic-card mastery: passing drills does not update BKT or automatically mark a
-subskill solid. The 70–85% success target is guidance in host skills, not a scheduler in the core.
+Practice state is separate from topic-card BKT mastery. `PracticeStore.recordAttempt()` calls
+`advanceAfterAttempt()` in `core/src/progression.ts`, saves the updated plan, and returns mastered/unlocked ids.
+An eligible subskill becomes solid after success on at least min(3, distinct challenge count) distinct challenges,
+at least 60% success over its last five attempts (or all available), and success on every existing boss or level ≥4
+challenge. Prerequisites must already be solid; newly eligible locked dependents become active. Saved solid statuses
+are preserved during advancement; reconciliation can rebuild statuses from history. The 70–85% teaching target
+remains guidance rather than a core scheduler.
 
 ## Module boundaries
 
@@ -137,7 +142,7 @@ and the status widget
 | architect | read, grep, find, ls, `psi_concept_graph`, `psi_lesson_plan` |
 | intuition | read, grep, find, ls, `psi_note` |
 | storyteller | read, grep, find, ls, `psi_lesson_plan`, `psi_note` |
-| visualizer | read, grep, find, ls, bash, write, `psi_storyboard`, `psi_explorable`, `psi_manim` |
+| visualizer | `psi_storyboard`, `psi_explorable`; `psi_manim` with execution opt-in; bash/write with both opt-ins |
 | quizmaster | read, grep, find, ls, `psi_cards_add`, `psi_note` |
 | critic | read, grep, find, ls (read-only) |
 
@@ -183,3 +188,27 @@ The practice layer uses first-20-hours plans, learner memory, failure XP, and bu
 In the optional concept layer, FSRS-5 schedules when to return to a card; BKT estimates whether a concept is known; the teaching contract, skills, and
 prompts push retrieval, prediction, visuals paired with words, and worked examples. Evidence, how psi applies each
 idea, and what psi deliberately leaves out: [learning science](learning-science.md).
+
+## Execution capability and web reads
+
+`PSI_CODE_EXEC=1` enables the execution tools `psi_run`, `psi_manim` (including Python rendering), and
+`psi_crew` (agent spawning). Without that exact opt-in, these tools are unregistered and absent from web tool
+lists. Crew visualizers default to `psi_storyboard` and `psi_explorable`; only they can gain bash/write, requiring
+both `PSI_CODE_EXEC=1` and `PSI_CREW_ALLOW_BASH=1`. Other roles never receive bash/write. Direct crew library/CLI
+APIs remain available; the tool gate governs model-facing extension capabilities.
+
+Crew and web RPC children share `crew/src/child-env.ts`: basic OS/locale variables, `PSI_*`, exact documented pi
+provider credential/config variables, and `PI_CODING_AGENT_DIR` (default auth/config remains reachable via HOME).
+No generic credential patterns, AWS variables, NODE_OPTIONS, SSH variables, or unrelated tokens are inherited.
+Documented provider tokens such as HF_TOKEN and COPILOT_GITHUB_TOKEN are explicit exceptions. This limits inherited
+environment exposure; HOME/auth files and same-user filesystem permissions still matter.
+
+Web hosts use the explicit policy in `extension/src/tool-policy.ts`, never `psi_*` or source discovery.
+`PSI_WEB_TOOLS` can only narrow that policy. New tools require an explicit policy edit and registration coverage.
+Both pi and omp use the same computed list; host-specific flags and LF-JSONL framing are unchanged.
+
+Pi documents a blocking `tool_call` extension hook rather than a read-root CLI setting. Web spawns set
+`PSI_WEB_READ_ROOT=PSI_HOME`; the extension hook canonicalizes read paths, rejects missing/outside paths and symlink
+escapes, then replaces the input with the checked absolute path. Ordinary host sessions keep their normal reads.
+This also prevents web reads of repository skills outside PSI_HOME. The hook is an application guard, not an OS
+sandbox: same-user execution can read other files or race filesystem changes. Use Docker for host isolation.

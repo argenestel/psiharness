@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { PsiStore } from "../../core/src/index.ts";
 import type { CrewResult, CrewTask } from "../../core/src/index.ts";
 import { ROLE_PROMPTS, ROLE_TOOLS } from "./roles.ts";
+import { childEnv } from "./child-env.ts";
 
 /** Host process and storage settings shared by crew operations. */
 export interface CrewOptions {
@@ -53,8 +54,15 @@ export function crewHost(opts: Pick<CrewOptions, "host" | "bin"> = {}): "pi" | "
 const OMP_TOOL_NAMES: Record<string, string> = { ls: "glob", find: "glob" };
 
 /** A role's tool allowlist in the given host's vocabulary, without duplicates. */
-export function roleTools(role: CrewTask["role"], host: "pi" | "omp" = "pi"): string[] {
-	const tools = ROLE_TOOLS[role].map((tool) => host === "omp" ? OMP_TOOL_NAMES[tool] ?? tool : tool);
+export function roleTools(
+	role: CrewTask["role"], host: "pi" | "omp" = "pi", source: NodeJS.ProcessEnv = process.env,
+): string[] {
+	const allowed = [...ROLE_TOOLS[role]];
+	if (role === "visualizer" && source.PSI_CODE_EXEC === "1") {
+		allowed.push("psi_manim");
+		if (source.PSI_CREW_ALLOW_BASH === "1") allowed.push("bash", "write");
+	}
+	const tools = allowed.map((tool) => host === "omp" ? OMP_TOOL_NAMES[tool] ?? tool : tool);
 	return [...new Set(tools)];
 }
 
@@ -64,7 +72,10 @@ export function crewArgs(task: CrewTask, opts: Pick<CrewOptions, "model" | "args
 	const omp = crewHost(opts) === "omp";
 	// pi loads skills/prompts by flag; omp has no such flags (unknown flags abort), so it gets a readable index.
 	const resources = omp ? [] : ["--skill", skillsPath, "--prompt-template", promptsPath];
-	const system = [ROLE_PROMPTS[task.role], ...(omp ? [skillIndex()] : []), message].filter(Boolean).join("\n\n");
+	const capabilities = task.role === "visualizer" && process.env.PSI_CODE_EXEC === "1"
+		? "Manim is available through psi_manim with { topic, code, scene } or { topic, storyboardId, render: true }."
+			+ (process.env.PSI_CREW_ALLOW_BASH === "1" ? " bash and write are also enabled." : "") : "";
+	const system = [ROLE_PROMPTS[task.role], capabilities, ...(omp ? [skillIndex()] : []), message].filter(Boolean).join("\n\n");
 	return ["-p", "--mode", "json", "--no-session", "-e", extensionPath, ...resources,
 		"--tools", roleTools(task.role, omp ? "omp" : "pi").join(","), "--append-system-prompt", system,
 		...(opts.model ? ["--model", opts.model] : []), ...(opts.args ?? []).filter((arg) => arg !== "--"), "--", message];
@@ -141,7 +152,7 @@ export async function runCrewTask(task: CrewTask, opts: CrewOptions = {}): Promi
 		const bin = opts.bin ?? process.env.PSI_BIN ?? ((opts.host ?? process.env.PSI_HOST) === "omp" ? "omp" : "pi");
 		const args = crewArgs(task, { ...opts, bin });
 		const execution = await new Promise<{ stdout: string; error?: string }>((resolve) => {
-			const child = spawn(bin, args, { cwd: topicDir, env: { ...process.env, PSI_HOME: store.root },
+			const child = spawn(bin, args, { cwd: topicDir, env: { ...childEnv(), PSI_HOME: store.root },
 				stdio: ["ignore", "pipe", "pipe"], shell: false });
 			let stdout = "";
 			let stderr = "";
@@ -242,7 +253,9 @@ export async function buildLesson(topic: string, conceptId: string, opts: CrewOp
 	};
 	save(intuition);
 	save(storyteller);
-	const visualizer = await runCrewTask(task("visualizer", "Turn the briefs into saved visual artifacts.",
+	const visualizer = await runCrewTask(task("visualizer",
+		`Turn the briefs into saved visual artifacts.\nIntuition brief:\n${intuition.output}`
+			+ `\nStoryteller brief:\n${storyteller.output}`,
 		["crew/intuition.md", "crew/storyteller.md"]), options);
 	save(visualizer);
 	const status = visualizer.ok ? "Review the saved visual output."

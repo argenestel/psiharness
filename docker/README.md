@@ -69,21 +69,22 @@ entrypoint logs only which files it copied and warns when no credentials are pre
 
 ## Code execution
 
-Compose sets `PSI_CODE_EXEC=1` for `web` and `psi` so tutor code demos and verification can run inside
-the container with `psi_run`: Python via `python3`, JavaScript via Node, and SQL via Python's `sqlite3`.
-The base image installs Python and checks `import sqlite3` during the build. Learner code challenges
-still run in the browser sandbox (Pyodide, JavaScript Worker, or sql.js).
+Compose sets `PSI_CODE_EXEC=1` for `web` and `psi`. The execution capability covers `psi_run`
+(Python, JavaScript, SQL, optionally bash), `psi_manim` (Python rendering), and `psi_crew` (child agents).
+Set `PSI_CODE_EXEC=0` to disable all three model-facing tools. Crew visualizers receive bash/write only
+when **both** `PSI_CODE_EXEC=1` and `PSI_CREW_ALLOW_BASH=1`; other roles never receive them.
+Bash in `psi_run` separately requires `PSI_CODE_EXEC_BASH=1`.
 
-**Implementation gap in this checkout:** `extension/` and `studio/` currently contain no `psi_run` tool
-or handling for `PSI_CODE_EXEC` / `PSI_CODE_EXEC_BASH`. These Docker settings prepare the runtime but do
-not add the tool. The intended per-run limits are a 10 s timeout, 64 KB output cap, a fresh temporary
-working directory, and a stripped environment without inherited secrets; none of those container-runner
-guarantees could be verified from the current code. The browser challenge runner separately has a 10 s
-execution timeout (90 s for initial Python/SQL runtime loading).
+`psi_run` uses a fresh temporary directory, stripped environment, 10 s timeout and 64 KB output cap.
+Crew and web pi/omp children inherit an allowlisted environment with pi provider credentials and config paths,
+not arbitrary host secrets. Web tools use an explicit list; a pi extension hook restricts the read tool to
+canonical paths beneath `PSI_HOME`, blocking symlink escapes. This guard does not confine enabled execution.
 
-Set `PSI_CODE_EXEC=0` in `docker/.env` to disable in-container `psi_run` execution once the tool is
-implemented. Bash stays off by default (`PSI_CODE_EXEC_BASH=0`); allowing it requires both
-`PSI_CODE_EXEC=1` and `PSI_CODE_EXEC_BASH=1`. Recreate `web` after changing either setting:
+All server-side code runs as the **same user** inside the container. This is not a security sandbox against
+a malicious learner or prompt injection: enabled execution can access that user's files and credentials.
+Prefer Docker isolation over running psi on a bare host, and avoid mounting sensitive host files.
+Learner code challenges still run in the browser sandbox (Pyodide, JavaScript Worker, or sql.js).
+Recreate `web` after changing execution settings:
 
 ```sh
 docker compose -f docker/compose.yml up -d web
