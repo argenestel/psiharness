@@ -95,7 +95,7 @@ test("streaks, achievements and totals in plain words", () => {
 
 test("one announcement per attempt: level-up first, then the most notable badge", () => {
 	assert.deepEqual(you.pickAnnouncement({ leveledUp: true, progress: { level: 5 }, badges: ["comeback"] }),
-		{ kind: "level", key: "level-5", title: "Level 5", text: "Solid foundations", spoken: "Level 5. Solid foundations." });
+		{ kind: "level", key: "level-5", title: "Skill level 5", text: "Solid foundations", spoken: "Skill level 5. Solid foundations." });
 	const badge = you.pickAnnouncement({ leveledUp: false, badges: ["first-attempt", "comeback", "unknown"] });
 	assert.equal(badge.title, "New: Comeback");
 	assert.equal(badge.text, "Solved a step right after missing it.");

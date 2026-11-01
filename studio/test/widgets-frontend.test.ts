@@ -163,13 +163,15 @@ const sourcesPath = "../public/js/sources.js";
 const { verdictWords, kindWords, rankSteps, resolveCitation } = await import(sourcesPath);
 const { normalizeOptions, comboWords, ranIn } = await import(widgetsPath);
 
-test("verdicts read as plain words with ink/pencil marks", () => {
+test("verdicts read as conservative words with ink/pencil marks", () => {
 	const two = [{ sourceId: "a" }, { sourceId: "b" }, { sourceId: "a" }];
-	assert.deepEqual(verdictWords("supported", two), { words: "Supported by 2 sources", mark: "check", count: 2 });
-	assert.equal(verdictWords("supported", [{ sourceId: "a" }]).words, "Supported by 1 source");
+	const note = "Matched by wording, not meaning — read the passages.";
+	assert.deepEqual(verdictWords("likely-supported", two),
+		{ words: "The sources likely support this", mark: "check", count: 2, note, verdict: "likely-supported" });
 	assert.equal(verdictWords("supported", []).words, "Couldn't confirm from the sources");
-	assert.equal(verdictWords("contradicted", two).words, "Sources disagree");
+	assert.equal(verdictWords("possibly-contradicted", two).words, "A source may contradict this");
 	assert.equal(verdictWords("unclear", two).mark, "query");
+	assert.equal(verdictWords("unclear", two).note, note);
 });
 
 test("sources: kinds in words, 5-step trust, and numbered lookup", () => {

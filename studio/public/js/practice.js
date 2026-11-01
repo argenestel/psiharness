@@ -1,5 +1,5 @@
 import { api } from "./api.js";
-import { el, on, toast, formatLevel, streakLabel, hoursLabel } from "./ui.js";
+import { el, on, toast, formatLevel, streakLabel, hoursLabel, gameRules, currentGameLayer } from "./ui.js";
 import { nextSubskill } from "./bench.js";
 import { pickAnnouncement, fillAnnouncement } from "./you.js";
 
@@ -255,12 +255,17 @@ export function mountPractice(host, { skill, navigate } = {}) {
 			el("h1", {}, title),
 			target ? el("p", { class: "psi-sk-target" }, /[.!?]$/.test(target) ? target : `${target}.`)
 				: el("p", { class: "psi-sk-target psi-sk-quiet" }, "No target yet. Ask the tutor to plan this skill."),
-			el("button", { type: "button", class: "primary", onclick: () => openTutor("/practice") }, "Practice with the tutor"));
+			el("div", { class: "psi-sk-head-actions" },
+				refs.tryNext = el("button", { type: "button", class: "primary", "aria-controls": "psi-sk-next",
+					onclick: () => void tryNext() }, "Try next"),
+				el("button", { type: "button", onclick: () => openTutor("/practice") }, "Practice with the tutor")));
+		// The scheduler's pick (GET /api/skills/:s/next) opens here, with its reason above the sheet.
+		refs.next = el("section", { class: "psi-sk-next", id: "psi-sk-next", "aria-label": "Next challenge", hidden: true });
 		refs.trail = el("div", { class: "psi-sk-trail" });
 		refs.stats = el("div", { class: "psi-sk-stats" });
 		// Level-up and achievement moments are written into this live region after an attempt.
 		refs.announce = el("div", { class: "psi-announce psi-sk-announce", role: "status", "aria-live": "polite" });
-		root.append(header, renderMap(plan),
+		root.append(header, refs.next, renderMap(plan),
 			el("section", { class: "psi-sk-block", "aria-labelledby": "psi-sk-trail-h" },
 				el("h2", { id: "psi-sk-trail-h" }, "Your attempts"), refs.trail, refs.stats, refs.announce),
 			renderChallenges());
@@ -286,11 +291,13 @@ export function mountPractice(host, { skill, navigate } = {}) {
 		const minutes = Number(p.minutesLogged) || 0;
 		const hoursPct = Math.max(0, Math.min(100, (minutes / 60 / goal) * 100));
 		const streak = streakLabel(p.streakDays);
+		const motion = gameRules(currentGameLayer()).motion;
 		refs.stats.replaceChildren(
-			el("div", { class: `psi-sk-stat psi-sk-level${leveledUp ? " is-levelup" : ""}` },
-				el("strong", {}, lvl.label),
+			// The skill's level is game layer (hidden when off); the skill name is the page heading above it.
+			el("div", { class: `psi-sk-stat psi-sk-level psi-game${leveledUp && motion ? " is-levelup" : ""}` },
+				el("strong", {}, lvl.skillLabel),
 				// Meters appear once there is progress to fill; an empty track reads as an underline.
-				lvl.percent > 0 ? el("div", { class: "psi-sk-meter is-level", role: "progressbar", "aria-label": `${lvl.label} progress`,
+				lvl.percent > 0 ? el("div", { class: "psi-sk-meter is-level psi-game-fill", role: "progressbar", "aria-label": `${lvl.skillLabel} progress`,
 					"aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(lvl.percent),
 					"aria-valuetext": lvl.toNextLabel }, el("span", { style: { width: `${lvl.percent}%` } })) : null,
 				el("span", { class: "psi-sk-quiet" }, lvl.toNextLabel)),
@@ -300,7 +307,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 					"aria-valuemin": "0", "aria-valuemax": String(goal), "aria-valuenow": String(Math.round(minutes / 6) / 10),
 					"aria-valuetext": hoursLabel(minutes, goal) }, el("span", { style: { width: `${hoursPct}%` } })) : null,
 				el("span", { class: "psi-sk-quiet" }, hoursLabel(minutes, goal))),
-			el("div", { class: "psi-sk-stat" },
+			el("div", { class: "psi-sk-stat psi-game" },
 				el("strong", {}, streak ? streak.charAt(0).toUpperCase() + streak.slice(1) : "No streak yet"),
 				el("span", { class: "psi-sk-quiet" },
 					streak ? "Practise tomorrow to keep it going." : "Practise today to start one.")));
@@ -492,20 +499,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 			const [{ renderToolWidget }, full] = await Promise.all([import("./widgets.js"),
 				api.get(`/api/skills/${enc(/** @type {string} */ (skill))}/challenges/${enc(c.id)}`)]);
 			if (disposed || sheet.hidden) return;
-			const ctx = {
-				api, skill,
-				// The sheet narrates every saved attempt for chat; here the page itself shows the result.
-				continueAfterAttempt: false,
-				send: async (message) => {
-					const text = String(message ?? "").trim();
-					// Attempts and lessons are already saved and drawn here; only real questions go to the tutor.
-				if (!text || /^(Answered challenge|Lesson for challenge)\b/.test(text)) return;
-					if (text === "Next challenge") { openNext(c); return; }
-					openTutor(text);
-				},
-				toast: (message, opts) => toast(message, opts),
-				onAttempt: recordAttempt,
-			};
+			const ctx = sheetCtx(() => openNext(c));
 			const result = { details: { widget: { ...full, type: "challenge" } } };
 			const widget = await renderToolWidget("psi_challenge", { skill, id: c.id }, result, ctx);
 			if (disposed || sheet.hidden) { widget?.destroy?.(); return; }
@@ -519,6 +513,62 @@ export function mountPractice(host, { skill, navigate } = {}) {
 			sheet.replaceChildren(el("p", { class: "psi-sk-error" }, `Couldn't open this challenge. ${failure(error)}`),
 				el("button", { type: "button", onclick: () => openTutor(`Let's work on this challenge: ${c.prompt}`) },
 					"Try it with the tutor"));
+		}
+	}
+
+	/** Context for a sheet opened on this page: results draw here; "Next challenge" runs `onNext`. */
+	function sheetCtx(onNext) {
+		return {
+			api, skill,
+			// The sheet narrates every saved attempt for chat; here the page itself shows the result.
+			continueAfterAttempt: false,
+			send: async (message) => {
+				const text = String(message ?? "").trim();
+				// Attempts and lessons are already saved and drawn here; only real questions go to the tutor.
+				if (!text || /^(Answered challenge|Lesson for challenge)\b/.test(text)) return;
+				if (text === "Next challenge") { onNext(); return; }
+				openTutor(text);
+			},
+			toast: (message, opts) => toast(message, opts),
+			onAttempt: recordAttempt,
+		};
+	}
+
+	/** Ask the scheduler for the next challenge (new, due review, retry or a step up) and open it under the header. */
+	async function tryNext() {
+		const panel = refs.next, button = refs.tryNext;
+		if (!panel || !button || button.disabled) return;
+		panel._destroy?.(); panel._destroy = undefined;
+		button.disabled = true; button.textContent = "Finding one…";
+		panel.hidden = false;
+		try {
+			const [{ renderToolWidget }, next] = await Promise.all([import("./widgets.js"),
+				api.get(`/api/skills/${enc(/** @type {string} */ (skill))}/next`)]);
+			if (disposed) return;
+			const close = el("button", { type: "button", class: "quiet psi-sk-next-close", onclick: () => {
+				panel._destroy?.(); panel._destroy = undefined; panel.hidden = true; panel.replaceChildren(); button.focus();
+			} }, "Close");
+			if (!next?.challenge) {
+				panel.replaceChildren(el("div", { class: "psi-sk-empty" },
+					el("p", { class: "psi-sk-quiet" }, "Nothing is scheduled right now. Ask the tutor for a new challenge."),
+					el("button", { type: "button", onclick: () => openTutor("/challenge") }, "Get a challenge"), close));
+				return;
+			}
+			const result = { details: { widget: { ...next.challenge, type: "challenge", skill }, reason: next.reason } };
+			const widget = await renderToolWidget("psi_challenge", { skill, id: next.challenge.id }, result,
+				sheetCtx(() => void tryNext()));
+			if (disposed) return;
+			const node = /** @type {HTMLElement | null} */ (widget instanceof Node ? widget : widget?.el);
+			if (!(node instanceof Node)) throw new Error("The challenge sheet isn't available");
+			panel.replaceChildren(node, el("div", { class: "psi-sk-next-bar" }, close));
+			if (typeof widget?.destroy === "function") panel._destroy = () => widget.destroy();
+			const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+			panel.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+			(/** @type {HTMLElement | null} */ (node.querySelector("input, textarea, button")))?.focus({ preventScroll: true });
+		} catch (error) {
+			if (!disposed) panel.replaceChildren(el("p", { class: "psi-sk-error" }, `Couldn't find the next challenge. ${failure(error)}`));
+		} finally {
+			if (!disposed) { button.disabled = false; button.textContent = "Try next"; }
 		}
 	}
 
@@ -552,7 +602,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 		if (c) { c.attempted = true; c.attempts = (c.attempts ?? 0) + 1; c.lastOutcome = attempt.outcome; }
 		drawTrail(true);
 		// One stroke per moment: the announcement carries a level-up, so the level number doesn't swipe as well.
-		const moment = pickAnnouncement(detail);
+		const moment = gameRules(currentGameLayer()).announce ? pickAnnouncement(detail) : null;
 		drawStats(Boolean(detail.leveledUp) && !moment);
 		if (moment && refs.announce) {
 			fillAnnouncement(refs.announce, moment);
@@ -588,6 +638,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 		destroy() {
 			disposed = true;
 			clearTimeout(refs.announceTimer);
+			refs.next?._destroy?.();
 			for (const cleanup of cleanups) cleanup();
 			for (const sheet of host.querySelectorAll(".psi-sk-sheet")) (/** @type {HTMLElement & { _destroy?: () => void }} */ (sheet))._destroy?.();
 			host.replaceChildren();

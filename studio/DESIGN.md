@@ -156,3 +156,18 @@ aria-live for streaming replies and results; reduced motion respected; works at 
 - **Model choice:** a quiet control in the composer footer and in New chat: "Model: grok-4.6" opening a list grouped
   by provider with search. The choice persists per browser and can change mid-chat ("Switched to …" appears as a
   single pencil line in the conversation).
+
+## Honesty and the game layer
+
+- **Game layer setting** (You page and sidebar Settings): **On** (default), **Quiet** (numbers stay; no meters,
+  fills, strokes, count-ups or announcements), **Off** (no XP, levels, streaks, badges, combo or goal ring
+  anywhere; progress is shown only as learning: the trail, route map, practice time and totals in neutral words).
+  Applied through `<html data-game="on|quiet|off">`.
+- **Asking for help is never penalised.** Hints cost nothing; a hinted solve says "Solved with a hint — that's how
+  learning works." The badge is "Asked for help, then solved it".
+- **Verification shows evidence first:** the passages (matched sentence marked in context, with source and trust),
+  then a conservative verdict ("The sources likely support this" / "A source may contradict this" / "Couldn't
+  confirm from the sources") and always the note "Matched by wording, not meaning — read the passages."
+- **Why this challenge:** review, retry and stretch picks say so in one quiet line above the sheet.
+- **Levels:** "Skill level N" belongs to one skill; "Your level N" is the learner overall. A challenge's own
+  difficulty is "Difficulty N", never "Level".

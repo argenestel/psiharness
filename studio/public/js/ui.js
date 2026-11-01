@@ -13,15 +13,39 @@
  *   Known events: "psi:attempt" (detail = attempt result {attempt, progress, leveledUp, badges}),
  *   "psi:status" (detail = extension status/widget record or {skill}), "psi:skills-changed",
  *   "psi:chats-changed" (sidebar refreshes), "psi:bench" (detail = {open?: boolean} toggles the bench panel).
- * - `formatLevel(xp)` → { level, into, span, toNext, percent, label: "Level 3", toNextLabel: "40 XP to level 4" }.
+ * - `formatLevel(xp)` → { level, into, span, toNext, percent, label: "Level 3", skillLabel: "Skill level 3",
+ *   toNextLabel: "40 XP to level 4" }. "Level 3" is for the sidebar skill rows only; elsewhere say "Skill level 3"
+ *   (one skill) or "Your level 3" (overall, see format.overallLevelLabel).
+ * - `applyGameLayer(layer)` sets <html data-game> and emits "psi:game"; `cachedGameLayer()`, `currentGameLayer()`,
+ *   `gameRules(layer)` → { numbers, motion, announce, fills, goal }.
  * - `streakLabel(days)` → "3-day streak" | "" ; `hoursLabel(minutes, goal = 20)` → "1.5 of 20 hours".
  * - Re-exports from ./format.js: levelInfo, relativeTime, chatTitle, badgeLabel.
  *
  * No framework, no globals other than the "psi:*" CustomEvents dispatched on window.
  */
-import { levelInfo, relativeTime, chatTitle, badgeLabel } from "./format.js";
+import { levelInfo, relativeTime, chatTitle, badgeLabel, normalizeGameLayer, currentGameLayer, gameRules,
+	skillLevelLabel } from "./format.js";
 
-export { levelInfo, relativeTime, chatTitle, badgeLabel };
+export { levelInfo, relativeTime, chatTitle, badgeLabel, currentGameLayer, gameRules };
+
+const GAME_KEY = "psi-game";
+/** The game layer remembered by this browser (applied before /api/me answers, so nothing flashes). */
+export function cachedGameLayer() {
+	try { return normalizeGameLayer(localStorage.getItem(GAME_KEY)); } catch { return "on"; }
+}
+/**
+ * Apply the game layer to the page: sets <html data-game="on|quiet|off"> (CSS hides or calms the game parts),
+ * remembers it in this browser, and emits "psi:game" ({ layer }) when it changed so views can redraw.
+ */
+export function applyGameLayer(layer) {
+	const next = normalizeGameLayer(layer);
+	if (typeof document === "undefined") return next;
+	const changed = document.documentElement.dataset.game !== next;
+	document.documentElement.dataset.game = next;
+	try { localStorage.setItem(GAME_KEY, next); } catch { /* blocked storage: the server profile still has it */ }
+	if (changed) emit("psi:game", { layer: next });
+	return next;
+}
 
 /** Small DOM builder: el("button", { class: "primary", onclick }, "Check answer"). */
 export function el(tag, attrs = {}, ...children) {
@@ -69,7 +93,8 @@ export function on(name, fn) {
 /** Level details plus ready-made labels. */
 export function formatLevel(xp) {
 	const info = levelInfo(xp);
-	return { ...info, label: `Level ${info.level}`, toNextLabel: `${info.toNext} XP to level ${info.level + 1}` };
+	return { ...info, label: `Level ${info.level}`, skillLabel: skillLevelLabel(info.level),
+		toNextLabel: `${info.toNext} XP to level ${info.level + 1}` };
 }
 
 /** "3-day streak" in plain words; empty for no streak. */

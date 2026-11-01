@@ -129,3 +129,57 @@
 @media (prefers-reduced-motion: reduce) {
 	.psi-goalw.is-celebrating .psi-ring-fill, .psi-announce.is-shown .psi-announce-title span::after { animation: none; }
 }
+
+/* ---------- Game layer setting: <html data-game="on|quiet|off"> ---------- */
+/* Off: XP, levels, streaks, badges, combo and the goal ring are gone. The attempt trail, route map, practice time
+   and totals stay: they are learning progress, not the game. */
+:root[data-game="off"] .psi-game { display: none !important; }
+/* Quiet: the numbers stay, but nothing celebrates: no fills, no strokes, no draw-in, no announcements. */
+:root[data-game="quiet"] .psi-game-fill, :root[data-game="off"] .psi-game-fill,
+:root[data-game="quiet"] .psi-ring-arc, :root[data-game="quiet"] .psi-ring-fill { display: none !important; }
+:root[data-game="quiet"] .psi-goalw.is-met .psi-ring-n { fill: var(--ink); }
+:root[data-game="quiet"] .psi-announce, :root[data-game="off"] .psi-announce { display: none !important; }
+:root[data-game="quiet"] .psi-xp {
+	background: transparent; color: var(--pencil); padding: 0; font-weight: 400;
+}
+:root[data-game="quiet"] .psi-level-up strong::after, :root[data-game="quiet"] .psi-sk-level strong::after,
+:root[data-game="quiet"] .psi-bench-level strong::after { display: none; }
+:root:not([data-game="on"]) .is-new .psi-mark-swipe, :root:not([data-game="on"]) .is-new .psi-mark-ring,
+:root:not([data-game="on"]) .psi-sheet-result.is-new .psi-mark-swipe,
+:root:not([data-game="on"]) .psi-sheet-result.is-new .psi-mark-ring { animation: none; stroke-dasharray: 1 0; }
+:root:not([data-game="on"]) .psi-goalw.is-celebrating .psi-ring-fill { animation: none; }
+:root:not([data-game="on"]) .psi-combo-ticks { display: none; }
+
+/* ---------- Segmented control (Game layer: On / Quiet / Off) ---------- */
+.psi-seg { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--s2); }
+.psi-seg-legend { padding: 0; margin-bottom: var(--s2); font-weight: 700; font-size: var(--text-16); }
+.psi-seg-options { display: inline-flex; width: fit-content; max-width: 100%; border: 1px solid var(--rule); border-radius: var(--radius); }
+.psi-seg-input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+.psi-seg-option {
+	display: inline-flex; align-items: center; justify-content: center; min-height: 40px; min-width: 72px; padding: 0 var(--s4);
+	font-weight: 700; color: var(--pencil); cursor: pointer; background: var(--sheet);
+}
+.psi-seg-option ~ .psi-seg-option { border-left: 1px solid var(--rule); }
+.psi-seg-option:first-of-type { border-radius: 5px 0 0 5px; }
+.psi-seg-option:last-of-type { border-radius: 0 5px 5px 0; }
+.psi-seg-option:hover { color: var(--ink); }
+.psi-seg-input:checked + .psi-seg-option { background: var(--ink); color: var(--on-ink); }
+.psi-seg-input:focus-visible + .psi-seg-option { outline: 2px solid var(--ink); outline-offset: 2px; position: relative; z-index: 1; }
+.psi-seg-note { font-size: var(--text-13); color: var(--pencil); max-width: 52ch; }
+.psi-seg-status { font-size: var(--text-13); color: var(--alert); }
+.psi-seg-status:empty { display: none; }
+.psi-seg.is-compact .psi-seg-legend { font-size: var(--text-13); margin-bottom: var(--s1); }
+.psi-seg.is-compact .psi-seg-option { min-width: 0; flex: 1; padding: 0 var(--s3); min-height: 36px; font-size: var(--text-13); }
+.psi-seg.is-compact .psi-seg-options { width: 100%; }
+
+/* Sidebar footer: a quiet disclosure. */
+.psi-settings { padding: 0 var(--s2); }
+.psi-settings > summary {
+	cursor: pointer; width: fit-content; padding: 4px 0; font-size: var(--text-13); color: var(--pencil); list-style-position: inside;
+}
+.psi-settings > summary:hover { color: var(--ink); }
+.psi-settings[open] > summary { color: var(--ink); margin-bottom: var(--s2); }
+.psi-settings-body { padding-bottom: var(--s2); }
+
+.psi-today-level { margin-top: var(--s1); }
+.psi-you-settings .psi-seg-legend { font-family: var(--font-body); }

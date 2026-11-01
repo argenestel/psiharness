@@ -1,9 +1,10 @@
 import { createCodeLab, warmUp } from "./codelab.js";
 import { markSvg, renderTrail } from "./trail.js";
-import { badgeLabel, levelInfo } from "./format.js";
+import { badgeLabel, currentGameLayer, freshBadges, gameRules, hintedSolveNote, levelInfo, reasonLine,
+	skillLevelLabel } from "./format.js";
 import * as ui from "./ui.js";
-import { citedNumbers, forgetSources, loadSources, numbered, renderSourceList, resolveCitation, verdictWords,
-	wireCitations } from "./sources.js";
+import { citedNumbers, evidenceRows, forgetSources, kindWords, loadSources, numbered, rankMeter, renderSourceList,
+	resolveCitation, verdictWords, wireCitations } from "./sources.js";
 import { replyRow } from "./chat.js";
 
 /** Stable, compact display of a learner answer. */
@@ -123,10 +124,14 @@ function button(text, action, className = "") {
 	return el;
 }
 function reducedMotion() { return !!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches; }
+/** No game motion when reduced motion is asked for, or the learner set the game layer to quiet or off. */
+function stillGame() { return reducedMotion() || !gameRules(currentGameLayer()).motion; }
+/** Mark a node as part of the game layer: hidden by CSS when the layer is off. */
+function gameOnly(el) { el.classList.add("psi-game"); return el; }
 function countUp(el, xp) {
 	const target = Number(xp) || 0;
 	el.textContent = `+${target} XP`;
-	if (typeof requestAnimationFrame !== "function" || reducedMotion() || target <= 0) return;
+	if (typeof requestAnimationFrame !== "function" || stillGame() || target <= 0) return;
 	const start = performance.now();
 	const tick = (now) => {
 		const fraction = Math.min(1, (now - start) / 600);
@@ -173,7 +178,7 @@ const MAC = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform ?? "");
 function levelMeter(level) {
 	const n = Math.max(1, Math.min(5, Number(level) || 1));
 	const wrap = node("span", "psi-level");
-	wrap.append(node("span", "", `Level ${n}`));
+	wrap.append(node("span", "", `Difficulty ${n}`));
 	const meter = node("span", "psi-level-meter");
 	meter.setAttribute("aria-hidden", "true");
 	for (let i = 1; i <= 5; i++) meter.append(node("span", i <= n ? "is-on" : ""));
@@ -185,14 +190,19 @@ function levelMeter(level) {
 const RESULT_WORDS = { success: "Solved it.", partial: "Partly right.", fail: "Missed it.", skipped: "Skipped." };
 
 function badgesLine(badges) {
-	const names = (badges ?? []).map(badgeLabel).filter(Boolean);
+	const names = freshBadges(badges).map(badgeLabel).filter(Boolean);
 	if (!names.length) return null;
-	return node("p", "psi-badge-line", `${names.length === 1 ? "New badge" : "New badges"}: ${names.join(", ")}`);
+	return gameOnly(node("p", "psi-badge-line", `${names.length === 1 ? "New badge" : "New badges"}: ${names.join(", ")}`));
 }
 function levelUpLine(level) {
-	const p = node("p", "psi-level-up", "You reached ");
-	p.append(node("strong", "", `Level ${level}`));
+	const p = gameOnly(node("p", "psi-level-up", "You reached "));
+	p.append(node("strong", "", skillLevelLabel(level).replace(/^S/, "s")));
 	return p;
+}
+/** "Solved with a hint — that's how learning works." under a hinted solve (shown in every game layer). */
+function hintedLine(outcome, hintsUsed) {
+	const words = hintedSolveNote(outcome, hintsUsed);
+	return words ? node("p", "psi-hinted", words) : null;
 }
 
 let choiceId = 0;
@@ -204,7 +214,7 @@ function challengeSheet(d, ctx) {
 	const hintsTotal = Math.max(0, Number(d.hintsCount) || 0);
 	const sheet = node("section", "psi-widget psi-sheet psi-challenge");
 	sheet.dataset.format = format;
-	sheet.setAttribute("aria-label", `${phrase}, level ${level} of 5`);
+	sheet.setAttribute("aria-label", `${phrase}, difficulty ${level} of 5`);
 
 	const head = node("header", "psi-sheet-head");
 	head.append(node("h3", "psi-sheet-kind", phrase), levelMeter(level));
@@ -403,13 +413,15 @@ function challengeSheet(d, ctx) {
 			result.append(node("p", "psi-result-note", "Sent to your tutor to grade. Your answer stays here."));
 			return;
 		}
-		if (!reducedMotion()) result.classList.add("is-new");
+		if (!stillGame()) result.classList.add("is-new");
 		sheet.classList.add(`is-${outcome}`);
 		const line = node("p", "psi-result-line");
-		const xp = node("span", "psi-xp");
+		const xp = gameOnly(node("span", "psi-xp"));
 		line.append(markSvg(outcome), node("span", "", RESULT_WORDS[outcome] ?? "Saved."), xp);
 		result.append(line);
 		countUp(xp, a.xp);
+		const hinted = hintedLine(outcome, Math.max(hintsUsed, Number(a.hintsUsed) || 0));
+		if (hinted) result.append(hinted);
 		if (outcome === "success") {
 			// The REST attempt has no combo; the learner summary does.
 			void apiFor(ctx).then((api) => api.get("/api/me")).then((me) => {
@@ -452,7 +464,7 @@ function challengeSheet(d, ctx) {
 				}
 				const bonus = Number(saved?.bonus) || 0;
 				const done = node("p", "psi-saved-lesson", `Lesson saved: ${text}`);
-				if (bonus > 0) done.append(" ", node("span", "psi-xp", `+${bonus} XP`));
+				if (bonus > 0) done.append(" ", gameOnly(node("span", "psi-xp", `+${bonus} XP`)));
 				box.replaceChildren(done, row);
 				next.classList.add("is-primary");
 				next.focus();
@@ -503,7 +515,9 @@ function challengeSheet(d, ctx) {
 	});
 	sync();
 	// A sheet replayed from history (or reopened later) says how it went last time instead of looking untouched.
-	if (d.skill && d.id && d.skill !== "sample") {
+	// A scheduled review or retry is meant to be answered again: its reason line says why, so don't lock it.
+	const scheduled = d.reason === "review" || d.reason === "retry";
+	if (d.skill && d.id && d.skill !== "sample" && !scheduled) {
 		void apiFor(ctx).then((api) => api.get(endpoint)).then((info) => {
 			if (!graded && !busy && PREVIOUS_WORDS[info?.lastOutcome]) showPrevious(info.lastOutcome);
 		}).catch(() => { /* The sheet works without it. */ });
@@ -521,7 +535,36 @@ function challengeSheet(d, ctx) {
 		}
 		sheet.insertBefore(note, fields);
 	}
-	return sheet;
+	return withReason(sheet, d, ctx);
+}
+
+/**
+ * Put the scheduler's reason as one quiet line above the sheet ("A step up", "Review: from Strings, last seen
+ * 3 days ago"). A new challenge has no line and the sheet is returned as it is.
+ */
+function withReason(sheet, d, ctx) {
+	const reason = d.reason;
+	if (!["review", "retry", "stretch"].includes(reason)) return sheet;
+	const wrap = node("div", "psi-sheet-wrap");
+	const line = node("p", "psi-sheet-reason", reasonLine(reason));
+	wrap.append(line, sheet);
+	if (reason !== "review" || !d.skill || d.skill === "sample") return wrap;
+	// The review line names the step and when the learner last saw this one; fill it in once known.
+	line.textContent = "Review";
+	const base = `/api/skills/${encodeURIComponent(d.skill)}`;
+	void apiFor(ctx).then(async (api) => {
+		const [info, detail, attempts] = await Promise.all([
+			d.subskillId ? { subskillId: d.subskillId } : api.get(`${base}/challenges/${encodeURIComponent(d.id)}`).catch(() => ({})),
+			api.get(base).catch(() => ({})),
+			d.lastSeen ? [] : api.get(`${base}/attempts?limit=200`).catch(() => []),
+		]);
+		const subskillId = info?.subskillId;
+		const subskill = (detail?.plan?.subskills ?? []).find((s) => s.id === subskillId)?.title ?? "";
+		const mine = (Array.isArray(attempts) ? attempts : []).filter((a) => a?.challengeId === d.id)
+			.map((a) => a.at).filter(Boolean).sort();
+		line.textContent = reasonLine("review", { subskill, lastSeen: d.lastSeen ?? mine.at(-1) });
+	}).catch(() => { line.textContent = reasonLine("review"); });
+	return wrap;
 }
 
 const PREVIOUS_WORDS = { success: "You solved this earlier.", partial: "You got this partly right earlier.",
@@ -529,7 +572,7 @@ const PREVIOUS_WORDS = { success: "You solved this earlier.", partial: "You got 
 
 function outcomeLine(outcome, xp) {
 	const line = node("p", "psi-result-line");
-	const chip = node("span", "psi-xp", `+${Number(xp) || 0} XP`);
+	const chip = gameOnly(node("span", "psi-xp", `+${Number(xp) || 0} XP`));
 	line.append(markSvg(outcome), node("span", "", RESULT_WORDS[outcome] ?? "Saved."), chip);
 	return line;
 }
@@ -544,7 +587,7 @@ export function comboWords(combo, bonus) {
 function comboLine(combo, bonus) {
 	const words = comboWords(combo, bonus);
 	if (!words) return null;
-	const line = node("p", "psi-combo");
+	const line = gameOnly(node("p", "psi-combo"));
 	const ticks = node("span", "psi-combo-ticks");
 	ticks.setAttribute("aria-hidden", "true");
 	for (let i = 0; i < words.ticks; i++) ticks.append(node("span"));
@@ -557,6 +600,9 @@ function attemptNote(d) {
 	const card = node("section", "psi-widget psi-tool-block psi-attempt");
 	card.setAttribute("role", "status");
 	card.append(outcomeLine(d.outcome, d.xp));
+	// The chat result has no hint count; the help-seeking badge says a hint was used on this solve.
+	const hinted = hintedLine(d.outcome, Number(d.hintsUsed) || ((d.badges ?? []).includes("help-then-solve") ? 1 : 0));
+	if (hinted) card.append(hinted);
 	if (d.outcome === "success") {
 		const combo = comboLine(d.combo, d.comboBonus);
 		if (combo) card.append(combo);
@@ -565,7 +611,7 @@ function attemptNote(d) {
 	const badges = badgesLine(d.badges);
 	if (badges) card.append(badges);
 	const streak = ui.streakLabel?.(d.streak ?? d.streakDays) ?? "";
-	if (streak) card.append(node("p", "psi-tool-meta", streak));
+	if (streak) card.append(gameOnly(node("p", "psi-tool-meta", streak)));
 	return card;
 }
 
@@ -591,15 +637,15 @@ function progressReport(d, ctx) {
 		const info = levelInfo(report.xp ?? report.totalXp ?? 0);
 		const level = Number(report.level) || info.level;
 		const into = report.intoLevel ?? info.into, toNext = report.toNext ?? info.toNext;
-		const stats = node("p", "psi-stat-row");
-		stats.append(node("span", "", `Level ${level}`), node("span", "", `${toNext} XP to level ${level + 1}`));
+		const stats = gameOnly(node("p", "psi-stat-row"));
+		stats.append(node("span", "", skillLevelLabel(level)), node("span", "", `${toNext} XP to level ${level + 1}`));
 		const hours = report.hours ?? { logged: (report.minutesLogged ?? 0) / 60, goal: 20 };
 		const streak = ui.streakLabel?.(report.streak ?? report.streakDays) ?? "";
-		section.append(stats, fill(into / Math.max(1, into + toNext), `Level ${level}: ${into} of ${into + toNext} XP`));
+		section.append(stats, gameOnly(fill(into / Math.max(1, into + toNext), `${skillLevelLabel(level)}: ${into} of ${into + toNext} XP`)));
 		const hoursText = `${formatAnswer(Math.round((Number(hours.logged) || 0) * 10) / 10)} of ${hours.goal ?? 20} hours`;
 		const more = node("p", "psi-stat-row");
 		more.append(node("span", "", hoursText));
-		if (streak) more.append(node("span", "", streak));
+		if (streak) more.append(gameOnly(node("span", "", streak)));
 		section.append(more, fill((Number(hours.logged) || 0) / Math.max(1, Number(hours.goal) || 20), hoursText));
 		if (Array.isArray(report.recentAttempts ?? report.trail)) {
 			section.append(renderTrail(report.recentAttempts ?? report.trail, { label: `Attempt trail for ${humanize(report.skill)}` }));
@@ -618,7 +664,7 @@ function progressReport(d, ctx) {
 		}
 		if (report.nextSubskill?.title) section.append(node("p", "psi-tool-meta", `Next up: ${report.nextSubskill.title}`));
 		const names = (report.badges ?? []).map(badgeLabel).filter(Boolean);
-		if (names.length) section.append(node("p", "psi-tool-meta", `Badges: ${names.join(", ")}`));
+		if (names.length) section.append(gameOnly(node("p", "psi-tool-meta", `Badges: ${names.join(", ")}`)));
 		card.append(section);
 	}
 	return card;
@@ -793,34 +839,82 @@ function verdictMark(mark) {
 	return svg;
 }
 
+/** One evidence passage: the matched sentence marked inside its context, then the source it came from. */
+function evidenceItem(row, source) {
+	const item = node("li", "psi-evidence-item");
+	item.value = row.n;
+	const text = node("p", "psi-evidence-text");
+	for (const part of row.segments) {
+		if (part.match) text.append(node("mark", "psi-evidence-match", part.text));
+		else text.append(document.createTextNode(part.text));
+	}
+	const quote = node("blockquote", "psi-evidence-quote");
+	quote.append(text);
+	item.append(quote, evidenceSource(row, source));
+	return item;
+}
+function evidenceSource(row, source) {
+	const meta = node("p", "psi-evidence-source");
+	meta.append(node("span", "psi-source-n", `[${row.n}]`));
+	const title = row.title || source?.title || "Source";
+	let href;
+	try { const url = new URL(String(row.url ?? source?.url)); if (/^https?:$/.test(url.protocol)) href = url.href; }
+	catch { href = undefined; }
+	const name = node(href ? "a" : "span", "psi-source-title", title);
+	if (href) {
+		/** @type {HTMLAnchorElement} */ (name).href = href;
+		name.setAttribute("target", "_blank"); name.setAttribute("rel", "noreferrer noopener");
+		name.setAttribute("aria-label", `${title} (opens in a new tab)`);
+	}
+	meta.append(name);
+	const facts = node("span", "psi-evidence-facts");
+	if (source?.kind) facts.append(node("span", "psi-source-kind", kindWords(source.kind)));
+	facts.append(rankMeter({ rank: row.rank ?? source?.rank, rankReasons: source?.rankReasons }));
+	if (row.locator) facts.append(node("span", "psi-source-locator", row.locator));
+	meta.append(facts);
+	return meta;
+}
+
+/**
+ * A claim check, evidence first: up to six passages (matched sentence marked in its context, source, kind and
+ * trust), then a conservative verdict and the note that matching is by wording, not meaning.
+ */
 function verification(d, ctx) {
-	const citations = numbered(d.citations);
-	const verdict = verdictWords(d.verdict, citations);
+	const rows = evidenceRows(d, 6);
+	const verdict = verdictWords(d.verdict, rows.length ? rows : numbered(d.citations));
 	const card = node("section", "psi-widget psi-verify");
 	card.dataset.verdict = verdict.mark;
-	card.setAttribute("role", "status");
-	const head = node("p", "psi-verify-head");
-	head.append(verdictMark(verdict.mark), node("strong", "", verdict.words));
-	card.append(head);
+	card.setAttribute("aria-label", "Claim check");
 	const claim = node("blockquote", "psi-verify-claim");
 	claim.append(node("p", "", d.claim));
-	card.append(node("p", "psi-verify-label", "The claim"), claim);
-	if (citations.length) {
-		const list = renderSourceList(citations);
-		card.append(node("p", "psi-verify-label", verdict.mark === "cross" ? "What the sources say instead" : "What the sources say"), list);
-		// Verification quotes carry ids, titles and links; fill in kind and trust from the skill's ranked list.
-		const skill = d.skill ?? ctx.skill;
-		if (skill && citations.some((c) => c.kind === undefined)) {
-			void loadSources(skill, ctx.api).then((sources) => {
-				if (!sources.length) return;
-				const merged = citations.map((c) => ({ ...sources.find((s) => s.id === c.sourceId), ...c }));
-				list.replaceWith(renderSourceList(merged));
-			});
-		}
+	card.append(node("p", "psi-verify-label", "Checking this claim"), claim);
+	card.append(node("p", "psi-verify-label", rows.length
+		? `What the sources say (${rows.length} ${rows.length === 1 ? "passage" : "passages"})` : "What the sources say"));
+	let list;
+	if (rows.length) {
+		list = node("ol", "psi-evidence");
+		for (const row of rows) list.append(evidenceItem(row));
+		card.append(list);
+	} else {
+		card.append(node("p", "psi-verify-empty", "No passage in this skill's sources matched the claim's wording."));
 	}
-	card.append(node("p", "psi-verify-note", verdict.mark === "check"
-		? "A quick match against the skill's ranked sources, not proof. Open a source to read it in full."
-		: "psi only checks the skill's ranked sources. Open one to read it in full, or ask the tutor to find more."));
+	const foot = node("div", "psi-verify-verdict");
+	const head = node("p", "psi-verify-head");
+	head.append(verdictMark(verdict.mark), node("strong", "", verdict.words));
+	foot.append(head, node("p", "psi-verify-note", verdict.note));
+	card.append(foot);
+	// Passages carry ids, titles, links and rank; fill in kind and trust reasons from the skill's ranked list.
+	const skill = d.skill ?? ctx.skill;
+	if (skill && list) {
+		void loadSources(skill, ctx.api).then((sources) => {
+			if (!sources.length) return;
+			rows.forEach((row, i) => {
+				const source = sources.find((s) => s.id === row.sourceId);
+				const item = list?.children[i];
+				if (source && item) item.lastElementChild?.replaceWith(evidenceSource(row, source));
+			});
+		});
+	}
 	return card;
 }
 
@@ -936,7 +1030,8 @@ export function renderToolWidget(toolName, args, result, ctx = {}) {
 	if (kind === "socratic") return socratic(d, ctx);
 	if (kind === "sources") return sourcesList(d, ctx);
 	if (kind === "next_steps") return replyRow(normalizeOptions(d.options), ctx, { source: "next_steps" });
-	if (kind === "challenge") return challengeSheet(d, ctx);
+	// The scheduler's reason travels beside the widget (details.reason), not inside it.
+	if (kind === "challenge") return challengeSheet({ ...d, reason: d.reason ?? result?.details?.reason }, ctx);
 	if (kind === "attempt") return attemptNote(d);
 	if (kind === "graph") {
 		const details = node("details", "psi-widget psi-graph");

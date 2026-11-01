@@ -10,7 +10,8 @@
  * - `mountYou(root)` → { destroy } — the #/you page.
  */
 import { api } from "./api.js";
-import { el, emit, on, formatLevel } from "./ui.js";
+import { el, emit, on, formatLevel, gameRules, currentGameLayer } from "./ui.js";
+import { overallLevelLabel, skillLevelLabel } from "./format.js";
 
 /** Plain level title, matching core gamify.levelTitle. */
 export function levelTitle(level) {
@@ -127,7 +128,7 @@ export const BADGE_COPY = Object.freeze({
 	"hour-10": ["10 practice hours", "halfway to 20 hours"],
 	"hour-5": ["5 practice hours", "logged 5 hours of practice"],
 	"hour-1": ["1 practice hour", "logged your first hour"],
-	"no-hints": ["No hints needed", "five solved in a row without a hint"],
+	"help-then-solve": ["Asked for help, then solved it", "used a hint and then solved it"],
 	"lesson-learned": ["Lesson learned", "wrote down what a miss taught you"],
 	"first-fail": ["Failure is progress", "missed one and kept going"],
 	"first-attempt": ["First step", "tried your first challenge"],
@@ -142,8 +143,8 @@ export function pickAnnouncement(detail) {
 	if (!detail || detail.attempt?.outcome === "pending") return null;
 	if (detail.leveledUp) {
 		const level = Number(detail.progress?.level) || formatLevel(detail.progress?.xp).level;
-		const text = levelTitle(level);
-		return { kind: "level", key: `level-${level}`, title: `Level ${level}`, text, spoken: `Level ${level}. ${text}.` };
+		const text = levelTitle(level), title = skillLevelLabel(level);
+		return { kind: "level", key: `level-${level}`, title, text, spoken: `${title}. ${text}.` };
 	}
 	const id = (Array.isArray(detail.badges) ? detail.badges : []).filter((b) => BADGE_COPY[b])
 		.sort((a, b) => BADGE_ORDER.indexOf(a) - BADGE_ORDER.indexOf(b))[0];
@@ -201,7 +202,8 @@ let widgetCount = 0;
 export function goalWidget(summary, { compact = false, onSaved } = {}) {
 	let current = summary;
 	const id = `psi-goal-picker-${++widgetCount}`;
-	const root = el("div", { class: `psi-goalw${compact ? " is-compact" : ""}` });
+	// The goal ring is game layer: hidden when off; quiet keeps the count but drops the fill and its moment.
+	const root = el("div", { class: `psi-goalw psi-game${compact ? " is-compact" : ""}` });
 	const live = el("p", { class: "psi-sr-only", role: "status", "aria-live": "polite" });
 	const status = el("p", { class: "psi-goalw-status", role: "status" });
 	const button = el("button", { type: "button", class: "psi-goalw-button", "aria-expanded": "false", "aria-controls": id });
@@ -253,8 +255,9 @@ export function goalWidget(summary, { compact = false, onSaved } = {}) {
 	function maybeCelebrate() {
 		if (!shouldCelebrate(current, readCelebrated())) return;
 		writeCelebrated(current.today.date);
-		draw(true);
-		live.textContent = "Today's goal is done.";
+		const rules = gameRules(currentGameLayer());
+		draw(rules.motion);
+		if (rules.announce) live.textContent = "Today's goal is done.";
 	}
 	button.addEventListener("click", () => toggle());
 	picker.addEventListener("keydown", (event) => {
@@ -325,32 +328,62 @@ export function mountYou(root) {
 		} finally { view.removeAttribute("aria-busy"); }
 	}
 
+	let last;
+	// Built once and moved between renders, so switching the layer keeps keyboard focus on the control.
+	const settings = el("section", { class: "psi-you-block psi-you-settings", "aria-labelledby": "you-settings" },
+		el("h2", { id: "you-settings" }, "Settings"), el("div", { class: "psi-you-settings-slot" }));
+	let settingsControl;
+	void import("./settings.js").then(({ gameLayerControl }) => {
+		if (disposed) return;
+		settingsControl = gameLayerControl({ id: "you-game-layer" });
+		settings.lastElementChild?.replaceChildren(settingsControl);
+	}).catch(() => {});
 	function render(summary, progresses) {
-		const lvl = formatLevel(summary.totalXp);
-		const streak = streakWords(summary.streakDays, (summary.today?.challenges || 0) + (summary.today?.minutes || 0) > 0);
-		const groups = achievementGroups(summary.achievements);
+		last = { summary, progresses };
+		const rules = gameRules(currentGameLayer());
 		const totals = lifetimeTotals(progresses);
-		const xpToday = Number(summary.today?.xp) || 0;
-		const meter = el("progress", { class: "psi-meter psi-you-meter", max: "100", value: String(lvl.percent),
-			"aria-label": `Level ${lvl.level}: ${lvl.toNextLabel}` }, `${lvl.percent}%`);
 		const fact = (n, words) => el("div", {}, el("dt", {}, words), el("dd", {}, String(n)));
+		const history = el("section", { class: "psi-you-block", "aria-labelledby": "you-history" },
+			el("h2", { id: "you-history" }, rules.numbers ? "Streak" : "Practice history"),
+			rules.numbers ? el("p", { class: "psi-you-streak" }, streakWords(summary.streakDays,
+				(summary.today?.challenges || 0) + (summary.today?.minutes || 0) > 0).text) : null,
+			rules.numbers ? el("p", { class: "muted" }, streakWords(summary.streakDays,
+				(summary.today?.challenges || 0) + (summary.today?.minutes || 0) > 0).hint) : null,
+			calendarNode(summary),
+			el("p", { class: "muted psi-you-note" }, "Each square is a day. Darker squares mean more attempts, misses included."));
+		const allTime = el("section", { class: "psi-you-block", "aria-labelledby": "you-all" },
+			el("h2", { id: "you-all" }, "All time"),
+			el("dl", { class: "psi-you-totals" },
+				fact(totals.attempts, "Attempts"), fact(totals.solved, "Solved"),
+				fact(totals.misses, rules.numbers ? "Misses that taught you something" : "Missed"),
+				fact(totals.hours, "Hours practised")));
+		if (!rules.numbers) {
+			// Game layer off: practice history and totals only, in plain words. No level, XP, streak or badges.
+			view.replaceChildren(
+				el("header", { class: "psi-you-head" },
+					el("h1", { class: "psi-you-level" }, "Your practice"),
+					el("p", { class: "muted" }, "What you've practised and how often. The game layer is off, so there are no points or badges here.")),
+				history, allTime, settings);
+			return;
+		}
+		const lvl = formatLevel(summary.totalXp);
+		const level = summary.level ?? lvl.level;
+		const groups = achievementGroups(summary.achievements);
+		const xpToday = Number(summary.today?.xp) || 0;
+		const meter = el("progress", { class: "psi-meter psi-you-meter psi-game-fill", max: "100", value: String(lvl.percent),
+			"aria-label": `${overallLevelLabel(level)}: ${lvl.toNextLabel}` }, `${lvl.percent}%`);
 		view.replaceChildren(
 			el("header", { class: "psi-you-head" },
-				el("h1", { class: "psi-you-level" }, `Level ${summary.level ?? lvl.level}`),
+				el("h1", { class: "psi-you-level" }, overallLevelLabel(level)),
 				el("p", { class: "psi-you-title" }, summary.levelTitle || levelTitle(lvl.level)),
 				meter,
-				el("p", { class: "psi-you-xp" }, `${lvl.toNextLabel}. ${summary.totalXp ?? 0} XP so far.`)),
+				el("p", { class: "psi-you-xp" }, `${lvl.toNextLabel}. ${summary.totalXp ?? 0} XP so far, across all your skills.`)),
 			el("section", { class: "psi-you-block", "aria-labelledby": "you-today" },
 				el("h2", { id: "you-today" }, "Today"),
-				goalWidget(summary, { onSaved: (next) => { summary = next; } }),
+				goalWidget(summary, { onSaved: (next) => { summary = next; last = { summary: next, progresses }; } }),
 				xpToday > 0 ? el("p", { class: "muted psi-you-note" }, `+${xpToday} XP today.`) : null,
 				summary.combo >= 3 ? el("p", { class: "psi-you-note" }, `${summary.combo} right in a row. Bonus XP is on.`) : null),
-			el("section", { class: "psi-you-block", "aria-labelledby": "you-streak" },
-				el("h2", { id: "you-streak" }, "Streak"),
-				el("p", { class: "psi-you-streak" }, streak.text),
-				el("p", { class: "muted" }, streak.hint),
-				calendarNode(summary),
-				el("p", { class: "muted psi-you-note" }, "Each square is a day. Darker squares mean more attempts, misses included.")),
+			history,
 			el("section", { class: "psi-you-block", "aria-labelledby": "you-ach" },
 				el("h2", { id: "you-ach" }, "Achievements"),
 				el("p", { class: "muted" }, `${groups.earned.length} of ${groups.earned.length + groups.open.length} earned`),
@@ -361,14 +394,17 @@ export function mountYou(root) {
 				groups.open.length ? el("h3", {}, "Still to earn") : null,
 				groups.open.length ? el("ul", { class: "psi-you-list" }, groups.open.map((a) => el("li", { class: "is-open" },
 					el("div", {}, el("strong", {}, a.title), el("span", {}, `How to earn it: ${a.description}`))))) : null),
-			el("section", { class: "psi-you-block", "aria-labelledby": "you-all" },
-				el("h2", { id: "you-all" }, "All time"),
-				el("dl", { class: "psi-you-totals" },
-					fact(totals.attempts, "Attempts"), fact(totals.solved, "Solved"),
-					fact(totals.misses, "Misses that taught you something"), fact(totals.hours, "Hours practised"))));
+			allTime, settings);
 	}
 
-	const offs = [on("psi:attempt", () => void load()), on("psi:lesson", () => void load())];
+	const offs = [on("psi:attempt", () => void load()), on("psi:lesson", () => void load()),
+		// Switching the game layer redraws in place (the settings control keeps focus by being rebuilt next to it).
+		on("psi:game", () => { if (last && !disposed) redraw(); })];
+	function redraw() {
+		const focused = /** @type {HTMLElement | null} */ (document.activeElement);
+		render(last.summary, last.progresses);
+		if (focused && settings.contains(focused)) focused.focus({ preventScroll: true });
+	}
 	void load();
-	return { destroy() { disposed = true; offs.forEach((off) => off()); root.replaceChildren(); } };
+	return { destroy() { disposed = true; settingsControl?.destroy?.(); offs.forEach((off) => off()); root.replaceChildren(); } };
 }

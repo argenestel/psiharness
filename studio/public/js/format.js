@@ -36,14 +36,99 @@ export function chatTitle(raw, max = 60) {
 const BADGES = {
 	"first-fail": "First fail — mistakes are data", comeback: "Comeback", "streak-3": "3-day streak",
 	"streak-7": "7-day streak", "hour-1": "First hour", "hour-5": "5 hours in", "hour-10": "10 hours in",
-	"hour-20": "20 hours — skill unlocked", "boss-slayer": "Boss slayer", "no-hints": "No hints needed",
+	"hour-20": "20 hours — skill unlocked", "boss-slayer": "Boss slayer",
+	"help-then-solve": "Asked for help, then solved it",
+	// Legacy: no longer awarded (hints are help, not a cost). Readable in history only, never announced.
+	"no-hints": "Solved without hints",
 };
+/** Badge ids that may still sit in old progress records but are never shown as newly earned. */
+export const LEGACY_BADGES = Object.freeze(["no-hints"]);
 /** Friendly badge name for a core badge id. */
 export function badgeLabel(id) {
 	const key = String(id ?? "");
 	if (BADGES[key]) return BADGES[key];
 	const words = key.replace(/[-_]+/g, " ").trim();
 	return words ? words[0].toUpperCase() + words.slice(1) : "";
+}
+/** Badges to show as just earned: legacy ids are dropped (history lists keep them). */
+export function freshBadges(badges) {
+	return (Array.isArray(badges) ? badges : []).filter((b) => b && !LEGACY_BADGES.includes(String(b)));
+}
+
+/* ---------- Game layer ---------- */
+
+/** The learner's game-layer choices, in the order the segmented control shows them. */
+export const GAME_LAYERS = Object.freeze(["on", "quiet", "off"]);
+/** Any value → "on" | "quiet" | "off" (unknown → "on", the profile default). */
+export function normalizeGameLayer(value) {
+	const v = String(value ?? "").toLowerCase();
+	return GAME_LAYERS.includes(v) ? v : "on";
+}
+/**
+ * What the game layer shows. on: everything. quiet: numbers (XP, levels, streaks, badges in lists) stay, but no
+ * animations, announcements or celebratory fills. off: no XP, levels, streaks, badges, combo or goal ring at all;
+ * learning progress (attempt trail, route map, practice time, totals) always stays.
+ */
+export function gameRules(layer) {
+	const l = normalizeGameLayer(layer);
+	return { layer: l, numbers: l !== "off", motion: l === "on", announce: l === "on", fills: l === "on",
+		goal: l !== "off", learning: true };
+}
+/** The layer applied to this page (<html data-game>), "on" outside a browser. */
+export function currentGameLayer() {
+	return normalizeGameLayer(globalThis.document?.documentElement?.dataset?.game);
+}
+/** Segmented-control labels and the one-line explanation under them. */
+export const GAME_LAYER_WORDS = Object.freeze({
+	on: { label: "On", note: "XP, levels, streaks and badges, with small celebrations." },
+	quiet: { label: "Quiet", note: "Numbers stay. No animations, announcements or fills." },
+	off: { label: "Off", note: "No XP, levels, streaks or badges. Your attempts and practice time stay." },
+});
+
+/* ---------- Level labels (per skill vs overall) ---------- */
+
+/** One skill's level, e.g. "Skill level 4" (the skill's name is the heading beside it). */
+export function skillLevelLabel(level) { return `Skill level ${Math.max(1, Math.floor(Number(level) || 1))}`; }
+/** The learner's overall level across skills, e.g. "Your level 5". */
+export function overallLevelLabel(level) { return `Your level ${Math.max(1, Math.floor(Number(level) || 1))}`; }
+
+/* ---------- Help-seeking ---------- */
+
+/** The line under a result when a hint helped, or "" (hints are help, never a cost). */
+export function hintedSolveNote(outcome, hintsUsed) {
+	return outcome === "success" && Number(hintsUsed) > 0 ? "Solved with a hint — that's how learning works." : "";
+}
+
+/* ---------- Why the scheduler picked a challenge ---------- */
+
+/** "3 days ago" style wording for a past time (longer than relativeTime, for sentences). */
+export function agoWords(iso, now = Date.now()) {
+	const then = Date.parse(iso ?? "");
+	if (!Number.isFinite(then)) return "";
+	const s = Math.max(0, (Number(now) - then) / 1000);
+	const n = (v, w) => `${v} ${w}${v === 1 ? "" : "s"} ago`;
+	if (s < 60) return "just now";
+	if (s < 3600) return n(Math.floor(s / 60), "minute");
+	if (s < 86400) return n(Math.floor(s / 3600), "hour");
+	if (s < 172800) return "yesterday";
+	if (s < 1209600) return n(Math.floor(s / 86400), "day");
+	if (s < 5184000) return n(Math.floor(s / 604800), "week");
+	return `on ${new Date(then).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+}
+/**
+ * The quiet line shown above a scheduled challenge, or "" for a new one.
+ * review → "Review: from Strings, last seen 3 days ago"; retry → "Another go at one you missed"; stretch → "A step up".
+ * @param {string | null | undefined} reason
+ * @param {{subskill?: string, lastSeen?: string, now?: number}} [context]
+ */
+export function reasonLine(reason, { subskill, lastSeen, now = Date.now() } = {}) {
+	if (reason === "retry") return "Another go at one you missed";
+	if (reason === "stretch") return "A step up";
+	if (reason !== "review") return "";
+	const from = String(subskill ?? "").trim(), seen = agoWords(lastSeen, now);
+	if (from && seen) return `Review: from ${from}, last seen ${seen}`;
+	if (from) return `Review: from ${from}`;
+	return seen ? `Review: last seen ${seen}` : "Review: one you've seen before";
 }
 
 /** Recognize the challenge card's chat notification ("Answered challenge <id>: <answer> (<outcome>, +N XP)"). */

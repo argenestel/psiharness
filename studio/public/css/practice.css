@@ -189,3 +189,12 @@
 @media (prefers-reduced-motion: reduce) {
 	.psi-sk-level.is-levelup strong::after { animation: none; }
 }
+
+/* Skill header actions and the scheduler's "Try next" panel. */
+.psi-sk-head-actions { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s3); }
+.psi-sk-next { padding: var(--s6) 0 var(--s2); border-bottom: 1px solid var(--rule); }
+.psi-sk-next .psi-sheet-wrap, .psi-sk-next > .psi-sheet { margin-top: 0; }
+.psi-sk-next-bar { display: flex; justify-content: flex-end; }
+.psi-sk-next .psi-sk-empty { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3); }
+/* Game layer off: the level and streak stats are hidden, so practice time stands alone without a divider. */
+:root[data-game="off"] .psi-sk-stats .psi-sk-stat { padding-left: 0; border-left: 0; }

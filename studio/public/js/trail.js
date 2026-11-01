@@ -14,6 +14,8 @@
  * - Pure helpers (no DOM): `trailCounts`, `trailSummary`, `markLabel`, `outcomeWord`.
  */
 
+import { currentGameLayer, gameRules } from "./format.js";
+
 export const OUTCOMES = ["success", "partial", "fail", "skipped"];
 const WORDS = { success: "solved", partial: "partly right", fail: "missed", skipped: "skipped" };
 const SVG = "http://www.w3.org/2000/svg";
@@ -55,8 +57,10 @@ function when(at, now) {
 /** Accessible label for one mark, e.g. "Attempt 4, missed, 2 h ago. Lesson: check the base case." */
 export function markLabel(attempt = {}, index = 0, now = Date.now()) {
 	const parts = [`Attempt ${index + 1}`, outcomeWord(attempt.outcome) || "recorded"];
+	if (Number(attempt.hintsUsed) > 0) parts.push("with a hint");
 	const xp = Number(attempt.xp);
-	if (Number.isFinite(xp) && xp > 0) parts.push(`+${xp} XP`);
+	// XP is game layer: left out when the learner turned the layer off.
+	if (Number.isFinite(xp) && xp > 0 && gameRules(currentGameLayer()).numbers) parts.push(`+${xp} XP`);
 	const time = when(attempt.at, now);
 	if (time) parts.push(time);
 	let text = parts.join(", ") + ".";
@@ -92,8 +96,9 @@ export function markSvg(outcome) {
 
 const state = new WeakMap();
 
+/** Marks draw in only with the game layer on and motion allowed; quiet and off place them at once. */
 function reducedMotion() {
-	return !!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+	return !!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches || !gameRules(currentGameLayer()).motion;
 }
 
 function setLabel(trailEl) {
@@ -113,8 +118,9 @@ function showTip(trailEl, mark) {
 	const head = document.createElement("strong");
 	head.textContent = word ? word[0].toUpperCase() + word.slice(1) : "Attempt";
 	s.tip.append(head);
-	const xp = Number(attempt?.xp);
-	const extra = [Number.isFinite(xp) && xp > 0 ? `+${xp} XP` : "", when(attempt?.at, Date.now())].filter(Boolean).join(", ");
+	const xp = Number(attempt?.xp), numbers = gameRules(currentGameLayer()).numbers;
+	const extra = [Number(attempt?.hintsUsed) > 0 ? "with a hint" : "", Number.isFinite(xp) && xp > 0 && numbers ? `+${xp} XP` : "",
+		when(attempt?.at, Date.now())].filter(Boolean).join(", ");
 	if (extra) s.tip.append(document.createTextNode(`, ${extra}`));
 	if (lesson) {
 		const p = document.createElement("span");

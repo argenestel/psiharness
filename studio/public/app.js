@@ -105,6 +105,11 @@ try {
 	const theme = localStorage.getItem("psi-theme");
 	if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
 } catch { /* Storage can be blocked; the system theme still applies. */ }
+// The game layer this browser last used, applied before anything renders; the profile (GET /api/me) confirms it.
+try {
+	const game = localStorage.getItem("psi-game");
+	document.documentElement.dataset.game = game === "quiet" || game === "off" ? game : "on";
+} catch { document.documentElement.dataset.game = "on"; }
 
 function setConnection(text, isError = false) {
 	connection.textContent = text;
@@ -520,8 +525,10 @@ async function topbarForSkill() {
 	try {
 		const data = await sharedApi.get(`/api/skills/${enc(bench.skill)}`);
 		if (!benchRoute(parseRoute(location.hash).route)) return;
-		const { formatLevel } = await ui();
-		setTopbar(data.plan?.title || capital(titleOf(bench.skill)), formatLevel(data.progress?.xp).label);
+		const { formatLevel, gameRules, currentGameLayer } = await ui();
+		// Under the skill name, so "Skill level 4" is this skill's level; hidden when the game layer is off.
+		setTopbar(data.plan?.title || capital(titleOf(bench.skill)),
+			gameRules(currentGameLayer()).numbers ? formatLevel(data.progress?.xp).skillLabel : "");
 	} catch { /* The top bar keeps its last title. */ }
 }
 function link(href, title, meta) {
@@ -568,6 +575,8 @@ async function refreshChrome() {
 			const p = detail.progress || {};
 			const a = link(`#/skills/${enc(slug)}`, title, formatLevel(p.xp).label);
 			a.classList.add("psi-skill-row");
+			// The row's level is game layer: hidden (with its separator) when the learner turns the layer off.
+			a.querySelectorAll(".psi-row-meta, .psi-sr-only").forEach((n) => n.classList.add("psi-game"));
 			// The hours fill appears only once there are hours to show; an empty track reads as an underline.
 			if (Number(p.minutesLogged) > 0) {
 				const hours = Math.max(1, barPercent(Number(p.minutesLogged) / 60, 20));
@@ -758,6 +767,12 @@ events.addEventListener("changed", () => {
 	if (["topic", "topics"].includes(parseRoute(location.hash).route)) void render();
 });
 window.addEventListener("focus", () => { void refreshChrome(); });
+window.addEventListener("psi:game", () => { void topbarForSkill(); });
+// Settings in the sidebar footer: the game layer control, and the profile's layer applied on load.
+import("./js/settings.js").then(({ gameLayerControl, loadGameLayer }) => {
+	document.querySelector("#settings-body")?.append(gameLayerControl({ id: "sidebar-game-layer", compact: true }));
+	void loadGameLayer();
+}).catch(() => { /* The app works without settings; the cached layer stays applied. */ });
 void renderRoute();
 }
 

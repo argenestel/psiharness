@@ -37,14 +37,75 @@ export function citedNumbers(text) {
 	return [...found].sort((a, b) => a - b);
 }
 
-/** Plain verdict for a Verification: { words, mark: "check"|"cross"|"query", count }. */
+/** Always shown under a verdict: the check compares wording, so the learner reads the passages themselves. */
+export const VERDICT_NOTE = "Matched by wording, not meaning — read the passages.";
+
+/** Legacy verdicts read as the new, conservative ones. */
+export function normalizeVerdict(verdict) {
+	if (verdict === "supported" || verdict === "likely-supported") return "likely-supported";
+	if (verdict === "contradicted" || verdict === "possibly-contradicted") return "possibly-contradicted";
+	return "unclear";
+}
+
+/**
+ * Conservative verdict words for a Verification: { words, mark: "check"|"cross"|"query", count, note, verdict }.
+ * Support needs at least one passage or citation to point at; without one it is "Couldn't confirm".
+ * Ink and pencil marks only, never red or green.
+ */
 export function verdictWords(verdict, citations = []) {
 	const count = new Set((citations ?? []).map((c) => c?.sourceId ?? c?.url ?? c?.title).filter(Boolean)).size;
-	if (verdict === "supported" && count > 0) {
-		return { words: `Supported by ${count} ${count === 1 ? "source" : "sources"}`, mark: "check", count };
+	const v = normalizeVerdict(verdict);
+	const base = { count, note: VERDICT_NOTE };
+	if (v === "likely-supported" && count > 0) {
+		return { ...base, verdict: v, words: "The sources likely support this", mark: "check" };
 	}
-	if (verdict === "contradicted") return { words: "Sources disagree", mark: "cross", count };
-	return { words: "Couldn't confirm from the sources", mark: "query", count };
+	if (v === "possibly-contradicted") return { ...base, verdict: v, words: "A source may contradict this", mark: "cross" };
+	return { ...base, verdict: "unclear", words: "Couldn't confirm from the sources", mark: "query" };
+}
+
+/**
+ * Split a passage's context around its matched sentence: [{ text, match }]. Whitespace and case differences are
+ * tolerated; when the sentence isn't inside the context, only the sentence is shown (as the match).
+ */
+export function evidenceSegments(context, sentence) {
+	const ctx = String(context ?? ""), text = String(sentence ?? "").trim();
+	if (!text) return ctx ? [{ text: ctx, match: false }] : [];
+	if (!ctx.trim()) return [{ text, match: true }];
+	let at = ctx.indexOf(text), length = text.length;
+	if (at < 0) {
+		// Find the sentence ignoring runs of whitespace and case, mapping back to the original offsets.
+		const pattern = text.split(/\s+/).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s+");
+		const found = new RegExp(pattern, "i").exec(ctx);
+		if (found) { at = found.index; length = found[0].length; }
+	}
+	// Not inside the context (a stale cache or a re-split page): show the matched sentence on its own.
+	if (at < 0) return [{ text, match: true }];
+	return [{ text: ctx.slice(0, at), match: false }, { text: ctx.slice(at, at + length), match: true },
+		{ text: ctx.slice(at + length), match: false }].filter((part) => part.text);
+}
+
+/**
+ * Passages to show for a Verification, best first, at most `limit` (6): each { n, sourceId, title, url, rank,
+ * locator, segments }. n follows the numbered citations (so the tutor's [n] matches); legacy results without
+ * evidence fall back to their citation quotes.
+ */
+export function evidenceRows(d, limit = 6) {
+	const citations = numbered(d?.citations);
+	const order = new Map();
+	for (const c of citations) if (c.sourceId && !order.has(c.sourceId)) order.set(c.sourceId, c.n);
+	const numberFor = (id) => {
+		if (!order.has(id)) order.set(id, Math.max(0, ...order.values()) + 1);
+		return order.get(id);
+	};
+	const evidence = (Array.isArray(d?.evidence) ? d.evidence : []).filter((p) => p && (p.text || p.context));
+	if (evidence.length) {
+		return evidence.slice(0, limit).map((p) => ({ n: numberFor(p.sourceId ?? p.url ?? p.title), sourceId: p.sourceId,
+			title: p.title, url: p.url, rank: p.rank,
+			locator: Number.isInteger(p.sentenceIndex) ? `Sentence ${p.sentenceIndex + 1}` : "",
+			segments: evidenceSegments(p.context || p.text, p.text) }));
+	}
+	return citations.filter((c) => c.quote).slice(0, limit).map((c) => ({ n: c.n, sourceId: c.sourceId, title: c.title,
+		url: c.url, rank: c.rank, locator: c.locator ?? "", segments: evidenceSegments(c.quote, c.quote) }));
 }
 
 /** Find citation n in a numbered list (items with n, else 1-based position). */

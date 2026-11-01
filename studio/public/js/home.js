@@ -1,6 +1,7 @@
 import { api } from "./api.js";
 import { el, emit, toast } from "./ui.js";
 import { firstSentence, nextSubskill } from "./bench.js";
+import { overallLevelLabel } from "./format.js";
 
 /** Built-in first problem for a learner with no packs imported; graded locally. */
 export const SAMPLE_CHALLENGE = Object.freeze({
@@ -156,9 +157,12 @@ export function mountHome(root, { navigate }) {
 		hero.className = "psi-today";
 		hero.replaceChildren(
 			el("h1", { id: "home-title" }, "Today"),
-			el("div", { class: "psi-today-row" },
+			// Goal ring, streak and overall level are the game layer: the whole row hides when it is off.
+			el("div", { class: "psi-today-row psi-game" },
 				goalWidget(summary),
-				el("p", { class: "psi-today-streak" }, el("strong", {}, streak.text), el("span", {}, streak.hint))),
+				el("p", { class: "psi-today-streak" }, el("strong", {}, streak.text), el("span", {}, streak.hint),
+					el("span", { class: "psi-today-level" }, `${overallLevelLabel(summary.level)}, ${String(summary.levelTitle || "")
+						.toLowerCase() || "getting started"}`))),
 			el("div", { class: "psi-today-continue" },
 				el("button", { type: "button", class: "primary", onclick: go }, action.label),
 				recap?.summary ? el("p", {}, `Last time: ${firstSentence(recap.summary, 180)}`) : null,

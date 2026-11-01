@@ -433,3 +433,27 @@ a.psi-source-title:hover { text-decoration-color: currentColor; }
 .psi-rank.is-plain { cursor: default; }
 .psi-source-reasons { margin: 6px 0 0; padding-left: 16px; color: var(--pencil); font-size: .8125rem; }
 .psi-source-reasons li + li { margin-top: 2px; }
+
+/* ───────────────────────────────────────────── scheduler reason, hinted solves ── */
+.psi-sheet-wrap { margin-block: 16px; min-width: 0; }
+.psi-sheet-wrap > .psi-sheet { margin-top: 6px; }
+.psi-sheet-reason { margin: 0; color: var(--pencil); font-size: .875rem; }
+.psi-hinted { margin: 0; color: var(--ink); }
+
+/* ───────────────────────────────────────────── claim check: evidence first ── */
+.psi-evidence { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.psi-evidence-item { padding: 12px 0; border-top: 1px solid var(--rule); }
+.psi-evidence-item:first-child { border-top: 0; padding-top: 4px; }
+.psi-evidence-quote { margin: 0; padding: 0 0 0 12px; border-left: 2px solid var(--rule); }
+/* Context in pencil; the matched sentence in ink on a rule-coloured pencil mark (never the progress highlighter). */
+.psi-evidence-text { margin: 0; color: var(--pencil); font-size: .9375rem; line-height: 1.6; max-width: 68ch; }
+.psi-evidence-match {
+	color: var(--ink); background: color-mix(in srgb, var(--rule) 85%, transparent); padding: 1px 2px;
+	box-decoration-break: clone; -webkit-box-decoration-break: clone; border-radius: 0;
+}
+.psi-evidence-source { margin: 8px 0 0 14px; font-size: .875rem; line-height: 1.4; }
+.psi-evidence-source .psi-source-n { margin-right: 6px; }
+.psi-evidence-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 4px; color: var(--pencil); font-size: .8125rem; }
+.psi-verify-empty { margin: 0; color: var(--pencil); }
+.psi-verify-verdict { display: grid; gap: 4px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.psi-verify-verdict .psi-verify-note { margin: 0 0 0 34px; }
