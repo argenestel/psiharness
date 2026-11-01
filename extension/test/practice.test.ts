@@ -987,3 +987,12 @@ test("hint use keeps XP intact and earns help-then-solve on success", async (t) 
 	assert.ok(solved.details.badges.includes("help-then-solve"));
 	assert.ok(!solved.details.badges.includes("no-hints"));
 }));
+
+test("terminal status line respects the game layer setting", async () => {
+	const { statusLine } = await import("../src/practice/hud.ts");
+	const p = { skill: "sql", level: 3, levelBar: "▰▰▱", streak: 4, hours: { logged: 6.5, goal: 20 } } as Parameters<
+		typeof statusLine>[0];
+	assert.equal(statusLine(p, "on"), "ψ sql · Lv 3 ▰▰▱ · 🔥4 · 6.5/20h");
+	assert.equal(statusLine(p, "quiet"), "ψ sql · Lv 3 · 🔥4 · 6.5/20h");
+	assert.equal(statusLine(p, "off"), "ψ sql · 6.5/20h");
+});

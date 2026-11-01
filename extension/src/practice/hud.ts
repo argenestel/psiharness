@@ -1,6 +1,8 @@
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import type { PracticeStore } from "../../../core/src/practice.ts";
 import * as gamify from "../../../core/src/gamify.ts";
+import { ProfileStore } from "../../../core/src/profile.ts";
+import type { GameLayer } from "../../../core/src/types.ts";
 import type { PracticeDeps } from "./index.ts";
 
 /** A small clamped progress bar. */
@@ -24,6 +26,18 @@ export function progressReport(practice: PracticeStore, skill: string) {
 	};
 }
 
+/** The learner's game-layer setting; "on" when the profile can't be read. */
+function gameLayer(deps: PracticeDeps): GameLayer {
+	try { return new ProfileStore(deps.practice.root).read().gameLayer ?? "on"; } catch { return "on"; }
+}
+
+/** Footer text: with the game layer off, only learning progress (hours) is shown — no level, XP bar or streak. */
+export function statusLine(p: ReturnType<typeof progressReport>, layer: GameLayer): string {
+	const hours = `${p.hours.logged.toFixed(1)}/${p.hours.goal}h`;
+	if (layer === "off") return `ψ ${p.skill} · ${hours}`;
+	return `ψ ${p.skill} · Lv ${p.level}${layer === "quiet" ? "" : ` ${p.levelBar}`} · 🔥${p.streak} · ${hours}`;
+}
+
 /** Refresh the plain-text footer and active session widget without exposing answers. */
 export function refreshHud(ctx: ExtensionContext, deps: PracticeDeps): void {
 	const { skill, challengeId, plannedMinutes } = deps.state;
@@ -33,8 +47,7 @@ export function refreshHud(ctx: ExtensionContext, deps: PracticeDeps): void {
 		return;
 	}
 	const p = progressReport(deps.practice, skill);
-	ctx.ui.setStatus("psi-practice", `ψ ${skill} · Lv ${p.level} ${p.levelBar} · 🔥${p.streak}`
-		+ ` · ${p.hours.logged.toFixed(1)}/${p.hours.goal}h`);
+	ctx.ui.setStatus("psi-practice", statusLine(p, gameLayer(deps)));
 	const session = deps.practice.activeSession(skill);
 	if (!session) {
 		ctx.ui.setWidget("psi-practice", undefined);
