@@ -218,3 +218,19 @@ test("equal-timestamp attempts preserve log order for combo calculation", (t) =>
 		attempt("a-second", at), attempt("b-third", at)], true);
 	assert.equal(store.summarize(new Date(2026, 2, 10, 18)).combo, 2);
 });
+
+
+test("gameLayer defaults, round-trips, tolerates invalid saved values and reaches summaries", (t) => {
+	const home = fixture(t), store = new ProfileStore(home);
+	assert.equal(store.read().gameLayer, "on");
+	for (const gameLayer of ["quiet", "off", "on"] as const) {
+		store.update({ gameLayer });
+		assert.equal(new ProfileStore(home).read().gameLayer, gameLayer);
+		assert.equal(store.summarize().gameLayer, gameLayer);
+	}
+	for (const gameLayer of [undefined, null, "invalid", 1, {}]) {
+		write(home, "profile.json", { ...store.read(), gameLayer });
+		assert.equal(store.read().gameLayer, "on");
+	}
+	assert.throws(() => store.update({ gameLayer: "invalid" as "on" }), /gameLayer/);
+});

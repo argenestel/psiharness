@@ -5,6 +5,8 @@ import { randomUUID } from "node:crypto";
 import { levelFor, newBadges, updateStreak, xpFor } from "./gamify.ts";
 import { advanceAfterAttempt, reconcileStatuses } from "./progression.ts";
 import { withFileLock } from "./lock.ts";
+import { selectNextChallenge } from "./scheduler.ts";
+import type { ChallengeSelection, SchedulerOptions } from "./scheduler.ts";
 import { mathEquivalent } from "./mathexpr.ts";
 import type { Attempt, Challenge, Outcome, PracticeSession, Progress, SkillPlan, Subskill } from "./types.ts";
 
@@ -285,6 +287,14 @@ export class PracticeStore {
 			? new Set(this.lines<Attempt>(skill, "attempts.jsonl").map((a) => a.challengeId)) : new Set<string>();
 		return challenges.filter((challenge) => (opts.subskillId === undefined || challenge.subskillId === opts.subskillId)
 			&& !attempted.has(challenge.id));
+	}
+
+	/** Select an adaptive item from a read-only snapshot of this store. */
+	nextChallenge(skill: string, opts: SchedulerOptions = {}): ChallengeSelection | undefined {
+		const plan = this.readPlan(skill);
+		const subskillId = opts.subskillId ?? (plan && this.nextSubskill(plan)?.id);
+		return selectNextChallenge(skill, { plan, challenges: this.listChallenges(skill),
+			attempts: this.lines<Attempt>(skill, "attempts.jsonl") }, { ...opts, subskillId });
 	}
 
 	/** Grade explicit expected/acceptable answers; open answers require tutor grading. */

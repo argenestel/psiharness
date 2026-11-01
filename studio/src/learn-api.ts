@@ -3,7 +3,7 @@ import { ProfileStore } from "../../core/src/profile.ts";
 import { SourceStore } from "../../core/src/sources.ts";
 import { LessonStore } from "../../core/src/lessons.ts";
 import { PracticeStore } from "../../core/src/practice.ts";
-import type { GameProfile } from "../../core/src/types.ts";
+import type { PracticeProfile } from "../../core/src/profile.ts";
 import { apiError } from "./practice-api.ts";
 
 /** Profile, ranked source and resolved lesson routes, before the legacy path validator. */
@@ -29,7 +29,7 @@ export async function handleLearnRoute(req: IncomingMessage, res: ServerResponse
 			let body;
 			try { body = JSON.parse(raw); } catch { throw apiError(400, "Invalid JSON"); }
 			if (!body || typeof body !== "object" || Array.isArray(body)) throw apiError(400, "Expected JSON object");
-			const patch: Partial<Omit<GameProfile, "updatedAt">> = {};
+			const patch: Partial<Omit<PracticeProfile, "updatedAt">> = {};
 			if (body.dailyGoal !== undefined) {
 				const goal = body.dailyGoal;
 				if (!goal || !["challenges", "minutes"].includes(goal.kind) ||
@@ -41,6 +41,10 @@ export async function handleLearnRoute(req: IncomingMessage, res: ServerResponse
 			if (body.tutorMode !== undefined) {
 				if (!["teach", "practice", "test"].includes(body.tutorMode)) throw apiError(400, "Invalid tutorMode");
 				patch.tutorMode = body.tutorMode;
+			}
+			if (body.gameLayer !== undefined) {
+				if (!["on", "quiet", "off"].includes(body.gameLayer)) throw apiError(400, "Invalid gameLayer");
+				patch.gameLayer = body.gameLayer;
 			}
 			send({ profile: profile.update(patch), summary: profile.summarize() });
 		} else {

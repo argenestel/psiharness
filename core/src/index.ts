@@ -14,3 +14,4 @@ export * from "./sources.ts";
 export * from "./lessons.ts";
 export * from "./profile.ts";
 export * from "./progression.ts";
+export * from "./scheduler.ts";

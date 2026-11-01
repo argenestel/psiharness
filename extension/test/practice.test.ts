@@ -402,40 +402,28 @@ test("plans refuse accidental replacement and merge updates without losing progr
 	assert.equal(JSON.parse(readFileSync(file, "utf8")).title, "Start over");
 }));
 
-test("next selects the next subskill, then other priorities, then latest still-missed challenges", async (t) => fixture(t, async (f, home) => {
-	await f.execute("psi_skill_plan", { action: "create", plan: plan({ subskills: [
-		{ ...plan().subskills[0], priority: 2 }, { ...plan().subskills[0], id: "later", priority: 3 },
-		{ ...plan().subskills[0], id: "middle", priority: 1, prerequisites: ["select"] },
-	] }) });
-	const later = await f.execute("psi_challenge", draft({ subskillId: "later" }));
-	const middle = await f.execute("psi_challenge", draft({ subskillId: "middle" }));
+test("next reports reasons, honors subskill focus, and delays immediate retries", async (t) => fixture(t, async (f, home) => {
+	await f.execute("psi_skill_plan", { action: "create", plan: plan() });
 	const first = await f.execute("psi_challenge", draft({ subskillId: "select" }));
-	const next = () => f.execute("psi_challenge", { action: "next" });
-	const grade = (id: string, answer: string) => f.execute("psi_attempt", { challengeId: id, answer });
-	assert.equal((await next()).details.challengeId, first.details.challengeId);
+	const next = () => f.execute("psi_challenge", { action: "next", subskillId: "select" });
+	const selected = await next();
+	assert.equal(selected.details.challengeId, first.details.challengeId);
+	assert.equal(selected.details.reason, "new");
+	for (const key of ["expected", "acceptable", "answer", "rubric"]) {
+		assert.equal(Object.hasOwn(selected.details.widget, key), false);
+	}
 	const { StateStore } = await import("../../core/src/state.ts");
 	assert.equal(new StateStore(home).read().openChallenge?.id, first.details.challengeId);
-	await grade(first.details.challengeId, "wrong");
-	assert.equal((await next()).details.challengeId, middle.details.challengeId);
-	await grade(middle.details.challengeId, "wrong");
-	assert.equal((await next()).details.challengeId, later.details.challengeId);
-	await grade(later.details.challengeId, "4");
+	await f.execute("psi_attempt", { challengeId: first.details.challengeId, answer: "wrong" });
+	assert.match((await next()).content[0].text, /No challenges remain/);
 	const { PracticeStore } = await import("../../core/src/practice.ts");
 	const store = new PracticeStore(home);
-	store.recordAttempt({ skill: "sql", challengeId: middle.details.challengeId, answer: "wrong", outcome: "fail",
-		hintsUsed: 0, at: "2099-01-01T00:00:00Z" });
-	assert.equal((await next()).details.challengeId, middle.details.challengeId);
-	store.recordAttempt({ skill: "sql", challengeId: middle.details.challengeId, answer: "4", outcome: "success",
-		hintsUsed: 0, at: "2099-01-02T00:00:00Z" });
+	for (let i = 0; i < 2; i++) {
+		const c = store.addChallenge({ skill: "sql", subskillId: "select", kind: "apply", level: 1, prompt: "Other" });
+		store.recordAttempt({ skill: "sql", challengeId: c.id, answer: "", outcome: "success", hintsUsed: 0 });
+	}
+	assert.equal((await next()).details.reason, "retry");
 	assert.equal((await next()).details.challengeId, first.details.challengeId);
-	const historyFile = join(home, "skills", "sql", "attempts.jsonl");
-	writeFileSync(historyFile, readFileSync(historyFile, "utf8").split("\n").filter(Boolean).map((line) => {
-		const a = JSON.parse(line);
-		if (a.challengeId === first.details.challengeId) a.at = new Date(Date.now() - 120001).toISOString();
-		return JSON.stringify(a);
-	}).join("\n") + "\n");
-	await grade(first.details.challengeId, "4");
-	assert.match((await next()).content[0].text, /No challenges remain.*action.*create/);
 }));
 
 test("next widgets match create and never leak expected answers into model text", async (t) => fixture(t, async (f) => {
@@ -444,6 +432,7 @@ test("next widgets match create and never leak expected answers into model text"
 			...(language ? { format: "code", language, tests: "PRIVATE_TESTS", setup: "PRIVATE_SETUP" } : {}) }));
 		const next = await f.execute("psi_challenge", { action: "next", skill: "sql" });
 		assert.deepEqual(next.details.widget, created.details.widget);
+		assert.equal(next.details.reason, "new");
 		assert.doesNotMatch(JSON.stringify(next.content), /SECRET_ROWS|expected|PRIVATE_/);
 		assert.equal(next.details.widget.expected, language === "sql" ? "SECRET_ROWS" : undefined);
 		await f.execute("psi_attempt", { challengeId: next.details.challengeId, answer: "SECRET_ROWS", outcome: "success" });
@@ -986,3 +975,13 @@ test("psi_fetch caches full text but returns 20k and explicitly skips cache with
 		assert.equal(page.text.length, 20000);
 	} finally { rmSync(home, { recursive: true, force: true }); }
 });
+
+
+test("hint use keeps XP intact and earns help-then-solve on success", async (t) => fixture(t, async (f) => {
+	const created = await f.execute("psi_challenge", draft());
+	await f.execute("psi_hint", { challengeId: created.details.challengeId, n: 1 });
+	const solved = await f.execute("psi_attempt", { challengeId: created.details.challengeId, answer: "4" });
+	assert.equal(solved.details.xp, 5);
+	assert.ok(solved.details.badges.includes("help-then-solve"));
+	assert.ok(!solved.details.badges.includes("no-hints"));
+}));

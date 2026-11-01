@@ -133,33 +133,6 @@ function resolveAttemptChallenge(practice: PracticeDeps["practice"], challengeId
 	return { error: "Select a valid skill with /skill first." };
 }
 
-/** Read missed challenges without requiring a new core storage API. */
-function nextChallenge(deps: PracticeDeps, skill: string): Challenge | undefined {
-	const { practice } = deps;
-	const plan = practice.readPlan(skill);
-	const next = plan && practice.nextSubskill(plan);
-	if (next) {
-		const first = practice.listChallenges(skill, { subskillId: next.id, unattempted: true })[0];
-		if (first) return first;
-	}
-	const priorities = new Map(plan?.subskills.map((s) => [s.id, s.priority]));
-	const untried = practice.listChallenges(skill, { unattempted: true }).sort((a, b) =>
-		(priorities.get(a.subskillId ?? "") ?? Infinity) - (priorities.get(b.subskillId ?? "") ?? Infinity));
-	if (untried.length) return untried[0];
-	const history = readAttempts(practice.root, skill);
-	const latest = new Map<string, Attempt>();
-	for (const attempt of history) {
-		const previous = latest.get(attempt.challengeId);
-		if (!previous || Date.parse(attempt.at) >= Date.parse(previous.at)) latest.set(attempt.challengeId, attempt);
-	}
-	for (const attempt of [...latest.values()].filter((a) => a.outcome === "fail")
-		.sort((a, b) => Date.parse(b.at) - Date.parse(a.at))) {
-		const challenge = practice.getChallenge(skill, attempt.challengeId);
-		if (challenge) return challenge;
-	}
-	return undefined;
-}
-
 /** Present saved and newly created challenges through the same private widget. */
 function presentChallenge(c: Challenge, deps: PracticeDeps, ctx: ExtensionContext) {
 	deps.activate(c.skill);
@@ -295,8 +268,12 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 			const skill = p.skill ?? state.skill;
 			if (!skill || !slug.test(skill)) return result({ errors: ["Select a skill with /skill first."] });
 			if (p.action === "next") {
-				const c = nextChallenge(deps, skill);
-				return c ? presentChallenge(c, deps, ctx) : result({ message:
+				const selected = practice.nextChallenge(skill, { subskillId: p.subskillId });
+				if (selected) {
+					const shown = presentChallenge(selected.challenge, deps, ctx);
+					return { ...shown, details: { ...(shown.details as Record<string, unknown>), reason: selected.reason } };
+				}
+				return result({ message:
 					"No challenges remain; create one with action \"create\"." });
 			}
 			const { action: _action, ...fields } = p;

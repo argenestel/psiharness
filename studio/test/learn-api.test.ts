@@ -98,3 +98,21 @@ test("web pack import includes sources and lessons and remains a no-op on repeat
 	assert.ok(new LessonStore(home).list("python-foundations").length > 0);
 	assert.deepEqual(await api.handle("POST", parts, url, {}), { skill: "python-foundations", alreadyImported: true });
 });
+
+
+test("profile gameLayer validation accepts presentation modes and rejects other values", async (t) => {
+	const { request } = fixture(t);
+	assert.equal((await request("/api/me")).body.gameLayer, "on");
+	for (const gameLayer of ["on", "quiet", "off"]) {
+		const response = await request("/api/me/profile", "PUT", { gameLayer });
+		assert.equal(response.status, 200);
+		assert.equal(response.body.profile.gameLayer, gameLayer);
+		assert.equal(response.body.summary.gameLayer, gameLayer);
+	}
+	for (const gameLayer of ["unknown", "", 1, null, {}, []]) {
+		const response = await request("/api/me/profile", "PUT", { gameLayer });
+		assert.equal(response.status, 400);
+		assert.equal(response.body.error, "Invalid gameLayer");
+	}
+	assert.equal((await request("/api/me")).body.gameLayer, "off");
+});

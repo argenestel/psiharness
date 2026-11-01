@@ -649,10 +649,17 @@ export interface Verification {
 
 // ═════════════════════════════════════════════════════════════════ game layer ══
 
+/** How visible the game layer is: quiet = no animations or announcements; off = no XP/levels/badges/streak shown. */
+export type GameLayer = "on" | "quiet" | "off";
+
+/** Why the scheduler picked a challenge. */
+export type ChallengeReason = "new" | "review" | "retry" | "stretch";
+
 /** Learner-wide profile for the game layer, at $PSI_HOME/profile.json. */
 export interface GameProfile {
 	dailyGoal: { kind: "challenges" | "minutes"; target: number };
 	tutorMode: TutorMode;
+	gameLayer: GameLayer;
 	updatedAt: string;
 }
 
@@ -671,6 +678,7 @@ export interface LearnerSummary {
 	dailyGoal: GameProfile["dailyGoal"];
 	/** How the tutor balances teaching and testing (from the profile). */
 	tutorMode: TutorMode;
+	gameLayer: GameLayer;
 	streakDays: number;
 	/** Last 84 days, oldest first: attempts per day. */
 	calendar: { date: string; attempts: number }[];

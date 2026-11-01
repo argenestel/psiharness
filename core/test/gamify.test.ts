@@ -25,15 +25,16 @@ test("XP outcome and kind tables reward failure and round multiplied bases", () 
 	}
 });
 
-test("XP applies level bonuses, hint floors, skipped zero, and a final lesson bonus", () => {
-	const base = { kind: "boss", outcome: "fail", level: 3, hintsUsed: 1 } as const;
-	assert.equal(xpFor(base), 14);
-	assert.equal(xpFor({ ...base, lesson: " Try again " }), 19);
-	assert.equal(xpFor({ ...base, lesson: "  " }), 14);
-	assert.equal(xpFor({ ...base, hintsUsed: 100 }), 1);
-	assert.equal(xpFor({ ...base, hintsUsed: 100, lesson: "Look for patterns" }), 6);
-	assert.equal(xpFor({ ...base, outcome: "success", lesson: "Ignored" }), 32);
+test("XP is hint-neutral, preserves level bonuses, skipped zero, and fail lessons", () => {
+	const base = { kind: "boss", outcome: "fail", level: 3, hintsUsed: 0 } as const;
+	assert.equal(xpFor(base), 16);
+	assert.equal(xpFor({ ...base, lesson: " Try again " }), 21);
+	assert.equal(xpFor({ ...base, lesson: "  " }), 16);
+	assert.equal(xpFor({ ...base, outcome: "success" }), 34);
 	assert.equal(xpFor({ ...base, outcome: "skipped", lesson: "Ignored" }), 0);
+	for (const outcome of ["success", "partial", "fail", "skipped"] as const) {
+		assert.equal(xpFor({ ...base, outcome, hintsUsed: 3 }), xpFor({ ...base, outcome, hintsUsed: 0 }));
+	}
 });
 
 test("levels use triangular boundaries 0, 50, 150, 300, 500", () => {
@@ -86,14 +87,13 @@ test("comeback uses consecutive failures on the same known subskill", () => {
 	assert.deepEqual(newBadges(p, attempt()), []);
 });
 
-test("no-hints requires five consecutive hint-free successes including the current attempt", () => {
+test("help-then-solve celebrates successful help-seeking and tolerates legacy badges", () => {
 	const p = progress({ attempts: 5 });
-	const history = Array.from({ length: 4 }, () => attempt());
-	assert.deepEqual(newBadges(p, attempt(), { history }), ["no-hints"]);
-	assert.deepEqual(newBadges(p, attempt({ hintsUsed: 1 }), { history }), []);
-	assert.deepEqual(newBadges(p, attempt(), { history: history.slice(1) }), []);
-	assert.deepEqual(newBadges(p, attempt(), { history: [attempt({ outcome: "partial" }), ...history.slice(1)] }), []);
-	assert.deepEqual(newBadges(p, attempt(), { history: [attempt({ hintsUsed: 1 }), ...history.slice(1)] }), []);
+	assert.deepEqual(newBadges(p, attempt({ hintsUsed: 1 })), ["help-then-solve"]);
+	assert.deepEqual(newBadges(p, attempt()), []);
+	assert.deepEqual(newBadges(p, attempt({ hintsUsed: 1, outcome: "partial" })), []);
+	assert.deepEqual(newBadges({ ...p, badges: ["no-hints"] }, attempt({ hintsUsed: 3 })), ["help-then-solve"]);
+	assert.deepEqual(newBadges({ ...p, badges: ["help-then-solve", "no-hints"] }, attempt({ hintsUsed: 1 })), []);
 });
 
 test("comboBonus returns the documented success XP multiplier at every boundary", () => {

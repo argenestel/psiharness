@@ -279,3 +279,22 @@ test("server wires PATCH /api/memory/:id behind X-Psi and the attempts route", a
 	const saved = await call(lessonPath, "POST", { lesson: "Round first" }, psi);
 	assert.deepEqual([saved.status, saved.body.bonus, saved.body.attempt.lesson], [200, 5, "Round first"]);
 });
+
+
+test("next challenge route returns selection reasons without answer keys, including SQL", async (t) => {
+	const { home, call } = fixture(t);
+	const store = new PracticeStore(home);
+	const c = store.addChallenge({ skill: "sql", kind: "apply", level: 1, prompt: "Select rows",
+		format: "code", language: "sql", tests: "SELECT 1", expected: "PRIVATE_ROWS",
+		acceptable: ["PRIVATE_ALTERNATIVE"], rubric: ["PRIVATE_RUBRIC"], hints: ["PRIVATE_HINT"] });
+	const selected = await call("GET", "/api/skills/sql/next");
+	assert.equal(selected.challenge.id, c.id);
+	assert.equal(selected.reason, "new");
+	for (const key of ["expected", "acceptable", "rubric", "hints", "answer"]) {
+		assert.equal(Object.hasOwn(selected.challenge, key), false);
+	}
+	assert.doesNotMatch(JSON.stringify(selected), /PRIVATE/);
+	store.recordAttempt({ skill: "sql", challengeId: c.id, answer: "query", outcome: "success", hintsUsed: 0 });
+	assert.deepEqual(await call("GET", "/api/skills/sql/next"), { challenge: null, reason: null });
+	await assert.rejects(call("GET", "/api/skills/missing/next"), { status: 404 });
+});

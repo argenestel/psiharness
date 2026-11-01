@@ -169,16 +169,16 @@ test("attempts update progress and levels from XP before the attempt and persist
 	assert.deepEqual(store.progress(skill), before);
 });
 
-test("stored history drives comeback and no-hints badges across fresh store instances", (t) => {
+test("stored history drives comeback and help-then-solve badges across fresh store instances", (t) => {
 	const store = fixture(t);
 	const c = store.addChallenge(draft);
-	const record = (outcome: "success" | "fail") => new PracticeStore(store.root)
-		.recordAttempt({ challengeId: c.id, outcome, answer: "", hintsUsed: 0 });
+	const record = (outcome: "success" | "fail", hintsUsed = 0) => new PracticeStore(store.root)
+		.recordAttempt({ challengeId: c.id, outcome, answer: "", hintsUsed });
 	record("fail");
 	record("fail");
 	assert.ok(record("success").badges.includes("comeback"));
 	for (let i = 0; i < 3; i++) assert.ok(!record("success").badges.includes("no-hints"));
-	assert.ok(record("success").badges.includes("no-hints"));
+	assert.ok(record("success", 1).badges.includes("help-then-solve"));
 	assert.deepEqual(record("success").badges, []);
 });
 

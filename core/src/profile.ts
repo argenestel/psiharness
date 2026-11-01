@@ -6,7 +6,16 @@ import { withFileLock } from "./lock.ts";
 import { PracticeStore } from "./practice.ts";
 import { SourceStore } from "./sources.ts";
 import { newId, nowIso } from "./slug.ts";
-import type { Achievement, Attempt, GameProfile, LearnerSummary, PracticeSession } from "./types.ts";
+import type { Achievement, Attempt, GameLayer, GameProfile, LearnerSummary, PracticeSession } from "./types.ts";
+
+/** Presentation only: on shows all rewards; quiet keeps numbers without animations/announcements;
+ * off hides XP, levels, badges and streaks. Practice records continue in every mode.
+ */
+export type { GameLayer } from "./types.ts";
+/** Local extension until the shared profile contract includes gameLayer. */
+export interface PracticeProfile extends GameProfile { gameLayer: GameLayer }
+/** Local summary extension for presentation clients. */
+export interface PracticeSummary extends LearnerSummary { gameLayer: GameLayer }
 
 type Context = {
 	attempts: Attempt[]; comboMax: number; comeback: boolean; goalMet: boolean; streakMax: number;
@@ -77,12 +86,13 @@ function lines<T>(root: string, file: string): T[] {
 	return (readText(root, file) ?? "").split("\n").filter((line) => line.trim()).map((line) => JSON.parse(line) as T);
 }
 
-function validate(profile: GameProfile): void {
+function validate(profile: PracticeProfile): void {
 	if (!profile.dailyGoal || !["challenges", "minutes"].includes(profile.dailyGoal.kind) ||
 		!Number.isFinite(profile.dailyGoal.target) || profile.dailyGoal.target <= 0) {
 		throw new Error("Daily goal requires a positive target and challenges or minutes kind");
 	}
 	if (!["teach", "practice", "test"].includes(profile.tutorMode)) throw new Error("Invalid tutor mode");
+	if (!["on", "quiet", "off"].includes(profile.gameLayer)) throw new Error("Invalid gameLayer");
 }
 
 function run(attempts: Attempt[]): { current: number; max: number } {
@@ -105,17 +115,18 @@ export class ProfileStore {
 	}
 
 	/** Read the profile, defaulting to five challenges per day in practice mode. */
-	read(): GameProfile {
+	read(): PracticeProfile {
 		const text = readText(this.root, this.file);
-		const profile: GameProfile = text === undefined
-			? { dailyGoal: { kind: "challenges", target: 5 }, tutorMode: "practice", updatedAt: nowIso() }
+		const profile: PracticeProfile = text === undefined
+			? { dailyGoal: { kind: "challenges", target: 5 }, tutorMode: "practice", gameLayer: "on", updatedAt: nowIso() }
 			: JSON.parse(text);
+		if (!["on", "quiet", "off"].includes(profile.gameLayer)) profile.gameLayer = "on";
 		validate(profile);
 		return profile;
 	}
 
 	/** Validate and atomically merge profile settings. */
-	update(patch: Partial<Omit<GameProfile, "updatedAt">>): GameProfile {
+	update(patch: Partial<Omit<PracticeProfile, "updatedAt">>): PracticeProfile {
 		return withFileLock(this.file, () => {
 			const profile = { ...this.read(), ...patch, updatedAt: nowIso() };
 			validate(profile);
@@ -133,7 +144,7 @@ export class ProfileStore {
 	}
 
 	/** Summarize local-day activity; session minutes are credited to the day the session started. */
-	summarize(now = new Date()): LearnerSummary {
+	summarize(now = new Date()): PracticeSummary {
 		if (!Number.isFinite(now.getTime())) throw new Error("Invalid summary date");
 		const profile = this.read(), practice = new PracticeStore(this.root), sources = new SourceStore(this.root);
 		const skills = practice.listSkills();
@@ -213,7 +224,7 @@ export class ProfileStore {
 		});
 		return { today: { date: today, challenges: todays.length, minutes: minutesToday,
 			xp: todays.reduce((sum, a) => sum + a.xp, 0), goalMet }, dailyGoal: profile.dailyGoal, tutorMode: profile.tutorMode,
-			streakDays, calendar: Array.from({ length: 84 }, (_, i) => {
+			gameLayer: profile.gameLayer, streakDays, calendar: Array.from({ length: 84 }, (_, i) => {
 				const date = day(offset(now, i - 83));
 				return { date, attempts: counts.get(date) ?? 0 };
 			}), totalXp, level, levelTitle: levelTitle(level), combo, achievements };

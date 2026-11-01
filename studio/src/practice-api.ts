@@ -200,6 +200,14 @@ export class PracticeApi {
 		if (p.length === 2 && method === "GET") return this.practice.listSkills();
 		const skill = p[2];
 		if (!skill || !this.practice.listSkills().includes(skill)) throw apiError(404, "Skill not found");
+		if (p.length === 4 && p[3] === "next" && method === "GET") {
+			const selected = this.practice.nextChallenge(skill);
+			if (!selected) return { challenge: null, reason: null };
+			const safe = publicChallenge(selected.challenge, this.attempts(skill));
+			// The scheduling endpoint never serves answer keys, including SQL sandbox expected rows.
+			const { expected: _expected, ...challenge } = safe as PublicChallenge & { expected?: string };
+			return { challenge, reason: selected.reason };
+		}
 		if (p.length === 4 && p[3] === "attempts" && method === "GET") return this.recentAttempts(skill, url);
 		if (p.length === 6 && p[3] === "attempts" && p[5] === "lesson" && method === "POST") {
 			if (typeof body.lesson !== "string" || !body.lesson.trim()) throw apiError(400, "Expected a non-empty lesson");

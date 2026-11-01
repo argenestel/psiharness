@@ -11,9 +11,9 @@ export function xpFor(a: {
 }): number {
 	if (a.outcome === "skipped") return 0;
 	if (a.selfReported && a.outcome === "success") return BASE.success;
-	// Round multiplied base, add level bonus, deduct hints with a floor, then add the fail lesson bonus.
+	// Hints are help: round the base, add level and fail-lesson bonuses without hint deductions.
 	const earned = Math.max(1, Math.round(BASE[a.outcome] * MULTIPLIER[a.kind])
-		+ (a.level - 1) * 2 - Math.max(0, a.hintsUsed) * 2);
+		+ (a.level - 1) * 2);
 	return earned + (a.outcome === "fail" && a.lesson?.trim() ? 5 : 0);
 }
 
@@ -43,6 +43,9 @@ export function updateStreak(p: Progress, now: Date = new Date()): Progress {
 	return { ...p, streakDays, lastPracticeDate: today };
 }
 
+/** Display text for the help-seeking badge; legacy no-hints ids remain readable in Progress.badges. */
+export const HELP_THEN_SOLVE_LABEL = "Used a hint and then solved it";
+
 /** Award new badges from updated progress; optional context supplies facts absent from the stable types. */
 export function newBadges(p: Progress, a: Attempt, context: {
 	history?: readonly Attempt[]; kind?: ChallengeKind;
@@ -58,10 +61,7 @@ export function newBadges(p: Progress, a: Attempt, context: {
 			: history?.filter((previous) => previous.subskillId === a.subskillId);
 		if (sameSubskill && sameSubskill.length >= 2
 			&& sameSubskill.slice(-2).every((previous) => previous.outcome === "fail")) earned.push("comeback");
-		if (a.hintsUsed === 0 && history && history.length >= 4
-			&& history.slice(-4).every((previous) => previous.outcome === "success" && previous.hintsUsed === 0)) {
-			earned.push("no-hints");
-		}
+		if (a.hintsUsed > 0) earned.push("help-then-solve");
 		if (context.kind === "boss") earned.push("boss-slayer");
 	}
 	for (const days of [3, 7, 30]) if (p.streakDays >= days) earned.push(`streak-${days}`);
