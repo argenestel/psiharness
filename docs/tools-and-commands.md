@@ -28,7 +28,7 @@ Registered in `extension/src/practice/lessons.ts` and `extension/src/practice/fl
 | `psi_verify` | `claim`, `skill?` | Ranks sentences from the skill's sources against the claim with BM25 (cached pages; up to three uncached pages are fetched; otherwise the stored excerpt). Returns evidence passages, numbered citations, a note, and a conservative verdict: `likely-supported`, `possibly-contradicted`, or `unclear`. The verdict matches wording, not meaning; it is a signal, not proof. |
 | `psi_next_steps` | `options: { label (≤ 60), message (≤ 400) }[]` (2–4) | One-click replies at the end of a turn. A guard always adds "Continue" (replacing the fourth option if needed) and redacts open-challenge answers from labels and messages. |
 | `psi_ask` | `question`, `kind: predict\|why\|what-if`, `hint?` | A light Socratic prompt inside a lesson: ungraded, no XP. The web card has an answer box and "Just show me". |
-| `psi_run` | `language: python\|javascript\|sql\|bash`, `code`, `setup?`, `stdin?` | **Needs `PSI_CODE_EXEC=1`.** Runs a tutor demo in a fresh temp directory with a stripped environment (`PATH`, `HOME`, `LANG` only), 10 s timeout, 64 KB output cap per stream. `sql` runs against in-memory SQLite via `python3`. `bash` also needs `PSI_CODE_EXEC_BASH=1`. Returns stdout, stderr, exit code, timing, and a `run` widget. |
+| `psi_run` | `language: python\|javascript\|sql\|bash`, `code`, `setup?`, `stdin?` | **Needs `PSI_CODE_EXEC=1`.** Runs a tutor demo (in Docker: in the isolated `runner` container, see `PSI_RUN_SOCKET`) in a fresh temp directory with a stripped environment (`PATH`, `HOME`, `LANG` only), 10 s timeout, 64 KB output cap per stream. `sql` runs against in-memory SQLite via `python3`. `bash` also needs `PSI_CODE_EXEC_BASH=1`. Returns stdout, stderr, exit code, timing, and a `run` widget. |
 
 ## Practice
 
@@ -245,6 +245,7 @@ the bind host, or a name in `PSI_STUDIO_ALLOWED_HOSTS` (else 421).
 | `PSI_STUDIO_ALLOWED_HOSTS` | web server | Comma-separated extra names accepted by the `Host` header check. |
 | `PSI_CODE_EXEC` | extension, web tool policy, crew, tutor prompt | `1` registers `psi_run`, `psi_manim`, `psi_crew` and adds them to web chats; the tutor prompt then asks it to verify computed results with `psi_run`. Any other value: absent. |
 | `PSI_CODE_EXEC_BASH` | `psi_run` | `1` additionally allows `language: "bash"`. |
+| `PSI_RUN_SOCKET` | `psi_run` | Unix socket of the isolated runner (`extension/src/practice/run-server.ts`); when set, code runs there and never locally. Compose sets it for `web` and `psi`. |
 | `PSI_CREW_ALLOW_BASH` | crew | `1` (with `PSI_CODE_EXEC=1`) gives the crew visualizer `bash` and `write`. No other role ever gets them. |
 | `PSI_CREW_MODEL` | `psi_crew` | Model for crew children (default: the session's model). Shell `psi crew` uses `--model`. |
 | `PSI_MANIM_RUNNER` | visual | Default Manim runner: `auto`, `local`, or `docker`. |

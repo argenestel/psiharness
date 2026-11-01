@@ -14,11 +14,13 @@ x-hardening: &hardening
   cap_drop: [ALL]
   security_opt: ["no-new-privileges:true"]
   init: true
+  # Process count is bounded per container by pids_limit (a cgroup limit). Not ulimit nproc: that counts every
+  # process of the UID on the whole host, and UID 1000 is usually the desktop user, so containers could not start.
+  pids_limit: 256
   ulimits:
     nofile:
       soft: 4096
       hard: 8192
-    nproc: 1024
   tmpfs:
     - /tmp:size=256m,mode=1777,exec,nosuid,nodev
     - /home/psi/.cache:size=128m,uid=1000,gid=1000,mode=0700
@@ -39,6 +41,33 @@ services:
       - pi-home:/home/psi/.pi
       - "${PSI_PI_HOST_DIR:-${HOME}/.pi/agent}:/run/pi-host:ro"
 
+  # Executes tutor code (psi_run) for web/psi. Holds no credentials, no learner data and no network: model-written
+  # code cannot read the pi login or /data, or send anything anywhere. Reached only through the psi-run socket volume.
+  runner:
+    build: *build-base
+    image: psi:latest
+    entrypoint: ["node", "/opt/psi/extension/src/practice/run-server.ts", "/run/psi-run/run.sock"]
+    <<: *hardening
+    network_mode: none
+    environment:
+      - PSI_CODE_EXEC_BASH=${PSI_CODE_EXEC_BASH:-0}
+    # Replaces the hardening tmpfs list; /data is a throwaway tmpfs so the image's VOLUME leaves no orphan volume.
+    tmpfs:
+      - /tmp:size=256m,mode=1777,exec,nosuid,nodev
+      - /home/psi/.cache:size=16m,uid=1000,gid=1000,mode=0700
+      - /data:size=1m,uid=1000,gid=1000,mode=0700
+    volumes:
+      - psi-run:/run/psi-run
+    mem_limit: ${PSI_RUNNER_MEMORY:-512m}
+    pids_limit: 128
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get({socketPath:'/run/psi-run/run.sock',path:'/health'},(r)=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+
   # psi web — the default service. The pi agent and all its tools run inside this container.
   web:
     build: *build-base
@@ -48,6 +77,8 @@ services:
     depends_on:
       pi-auth:
         condition: service_completed_successfully
+      runner:
+        condition: service_healthy
     ports:
       # Loopback only: never reachable from other machines. Container port is fixed at 4173.
       - "127.0.0.1:${PSI_WEB_PORT:-4173}:4173"
@@ -66,9 +97,11 @@ services:
       - PSI_WEB_MODEL=${PSI_WEB_MODEL:-xai/grok-4.6}
       - PSI_CODE_EXEC=${PSI_CODE_EXEC:-1}
       - PSI_CODE_EXEC_BASH=${PSI_CODE_EXEC_BASH:-0}
+      - PSI_RUN_SOCKET=/run/psi-run/run.sock
     volumes:
       - psi-data:/data
       - pi-home:/home/psi/.pi
+      - psi-run:/run/psi-run
     mem_limit: ${PSI_WEB_MEMORY:-2g}
     pids_limit: 512
     restart: unless-stopped
@@ -134,6 +167,8 @@ services:
     depends_on:
       pi-auth:
         condition: service_completed_successfully
+      runner:
+        condition: service_healthy
     stdin_open: true
     tty: true
     env_file:
@@ -146,9 +181,11 @@ services:
       - PSI_HOME=/data
       - PSI_CODE_EXEC=${PSI_CODE_EXEC:-1}
       - PSI_CODE_EXEC_BASH=${PSI_CODE_EXEC_BASH:-0}
+      - PSI_RUN_SOCKET=/run/psi-run/run.sock
     volumes:
       - psi-data:/data
       - pi-home:/home/psi/.pi
+      - psi-run:/run/psi-run
     mem_limit: ${PSI_CLI_MEMORY:-2g}
     pids_limit: 512
 
@@ -166,3 +203,5 @@ volumes:
     name: psi-data
   pi-home:
     name: psi-pi-home
+  psi-run:
+    name: psi-run

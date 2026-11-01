@@ -189,7 +189,9 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 ### continuous lessons, sandboxed code execution, light Socratic prompts
 - `psi_run` {language: "python"|"javascript"|"sql"|"bash", code, setup?, stdin?} — executes code for demos and to
   VERIFY computed claims before stating them. Enabled only when `PSI_CODE_EXEC=1` (set by the Docker `web`/`psi`
-  services; off on a bare host unless the user opts in). Runs in a fresh temp dir with a stripped env, 10 s timeout,
+  services; off on a bare host unless the user opts in). With `PSI_RUN_SOCKET` (Compose) it runs in the separate
+  no-network, no-secrets `runner` container via `extension/src/practice/run-server.ts` (fails closed if unreachable);
+  `run-core.ts` holds the pi-free executor. Runs in a fresh temp dir with a stripped env, 10 s timeout,
   output capped at 64 KB, no inherited secrets. sql runs in an in-memory SQLite (`python3 -c` with sqlite3). Result:
   stdout, stderr, exitCode, ms + `details.widget {type:"run", language, code, stdout, stderr, exitCode, ms}`.
 - `psi_next_steps` {options: [{label, message}] (2–4)} — the tutor ends every turn by offering what to do next as

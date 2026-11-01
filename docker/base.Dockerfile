@@ -25,9 +25,9 @@ RUN if [ "$INSTALL_OMP" = "1" ]; then \
 # User setup before COPY so source edits only invalidate the final layers.
 RUN groupmod -n psi node \
 	&& usermod -l psi -d /home/psi -m node \
-	&& mkdir -p /data /home/psi/.pi/agent /home/psi/.cache \
-	&& chmod 0700 /home/psi/.pi /home/psi/.pi/agent \
-	&& chown -R psi:psi /data /home/psi
+	&& mkdir -p /data /home/psi/.pi/agent /home/psi/.cache /run/psi-run \
+	&& chmod 0700 /home/psi/.pi /home/psi/.pi/agent /run/psi-run \
+	&& chown -R psi:psi /data /home/psi /run/psi-run
 
 COPY . /opt/psi/
 RUN chmod -R a+rX,go-w /opt/psi \

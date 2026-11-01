@@ -28,7 +28,10 @@ sync_pi() {
 			log "cannot read $name in the host pi dir (container runs as UID $(id -u)); skipped"
 			continue
 		fi
-		if [ "${PSI_SYNC_AUTH:-0}" = "1" ] || [ ! -s "$dest/$name" ]; then
+		# Copy when forced, missing, or the host copy is newer: OAuth providers rotate refresh tokens, so a
+		# container copy older than the host's is usually dead (invalid_grant). A copy the container refreshed
+		# itself is newer than the host's and is kept.
+		if [ "${PSI_SYNC_AUTH:-0}" = "1" ] || [ ! -s "$dest/$name" ] || [ "$src/$name" -nt "$dest/$name" ]; then
 			tmp="$(mktemp "$dest/.$name.XXXXXX")"
 			cat "$src/$name" >"$tmp"
 			chmod 600 "$tmp"

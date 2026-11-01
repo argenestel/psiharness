@@ -55,10 +55,13 @@ Instead:
    never sees the host directory, and nothing is ever written back to the host.
    - Log in on the host first (`pi`, then `/login`). The container runs as UID 1000; your `auth.json` must be
      readable by that UID (it is when your host user is UID 1000).
-   - Re-copy after logging in again on the host: `PSI_SYNC_AUTH=1 docker compose -f docker/compose.yml up -d`.
+   - Every `up` re-copies any file that is newer on the host, so a fresh host login reaches the container
+     automatically. To force a full re-copy: `PSI_SYNC_AUTH=1 docker compose -f docker/compose.yml up -d`.
    - Use another directory: `PSI_PI_HOST_DIR=/path/to/agent-dir`.
-   - OAuth tokens (e.g. xAI) are refreshed inside the container and saved in `pi-home`. If a provider rotates
-     refresh tokens, the host and container copies can drift; log in again where it fails, then re-sync.
+   - OAuth tokens (e.g. xAI) are refreshed inside the container and saved in `pi-home`. Providers that rotate
+     refresh tokens make the two copies independent: whichever side refreshes first can leave the other with a
+     dead token (`invalid_grant`). Log in again on the host and run `up` again; for a long-running container,
+     an API key in `docker/.env` avoids this.
 2. **API keys.** Copy `docker/.env.example` to `docker/.env` (gitignored) and set `XAI_API_KEY`,
    `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`, or export them in your shell. Unset keys are not passed.
    If you use only keys, create an empty host dir first (`mkdir -p ~/.pi/agent`) so Docker does not create it
@@ -76,14 +79,21 @@ unused by the tutor until you put `PSI_CODE_EXEC=1` in `docker/.env` (passed thr
 when **both** `PSI_CODE_EXEC=1` and `PSI_CREW_ALLOW_BASH=1`; other roles never receive them.
 Bash in `psi_run` separately requires `PSI_CODE_EXEC_BASH=1`.
 
-`psi_run` uses a fresh temporary directory, stripped environment, 10 s timeout and 64 KB output cap.
+`psi_run` code does not run in the agent's container. Compose starts a separate **`runner`** service with no
+network (`network_mode: none`), no learner data, no pi login, a read-only root, no capabilities, 512 MB of memory
+and 128 processes. `web` and `psi` reach it only through a Unix socket on the `psi-run` volume
+(`PSI_RUN_SOCKET`); if the runner is down, `psi_run` fails instead of running code locally. Each run gets a fresh
+temporary directory, a stripped environment (`PATH`, `HOME`, `LANG`), a 10 s timeout and a 64 KB output cap. So
+model-written demo code, including code steered by a fetched page, cannot read your tokens or `/data` or send
+anything out. Demos that need the internet or `pip install` will fail by design.
+
 Crew and web pi/omp children inherit an allowlisted environment with pi provider credentials and config paths,
 not arbitrary host secrets. Web tools use an explicit list; a pi extension hook restricts the read tool to
-canonical paths beneath `PSI_HOME` and psi's bundled `skills/` and `prompts/`, blocking symlink escapes. This guard does not confine enabled execution.
+canonical paths beneath `PSI_HOME` and psi's bundled `skills/` and `prompts/`, blocking symlink escapes.
 
-All server-side code runs as the **same user** inside the container. This is not a security sandbox against
-a malicious learner or prompt injection: enabled execution can access that user's files and credentials.
-Prefer Docker isolation over running psi on a bare host, and avoid mounting sensitive host files.
+`psi_manim` and `psi_crew` (and `psi_run` outside Compose, when `PSI_RUN_SOCKET` is unset) still run as the
+**same user** as the agent, with access to that user's files and credentials. They are not a sandbox against a
+malicious learner or prompt injection; keep them off unless you need them, and avoid mounting sensitive host files.
 Learner code challenges still run in the browser sandbox (Pyodide, JavaScript Worker, or sql.js).
 Recreate `web` after changing execution settings:
 
@@ -94,7 +104,9 @@ docker compose -f docker/compose.yml up -d web
 New `docker compose ... run --rm psi` containers pick up the settings automatically. These defaults
 apply to the `web` and `psi` Compose services; plain `docker run` requires explicit `-e` flags.
 The shared hardening keeps `/tmp` on a 256 MB executable tmpfs with `nosuid,nodev`, and limits open
-files to 4096 (soft) / 8192 (hard) and processes/threads per UID to 1024, alongside service pids/memory caps.
+files to 4096 (soft) / 8192 (hard), with per-container pids and memory caps. (There is deliberately no
+`ulimit nproc`: Linux counts it per UID across the whole host, and UID 1000 is usually your desktop user, whose
+existing processes would stop containers from starting.)
 
 ## Data: backup, restore, reset
 
