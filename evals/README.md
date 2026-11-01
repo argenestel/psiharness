@@ -113,8 +113,10 @@ informational: a guard-corrected turn still scores on what the learner finally s
 Question and citation detection are heuristics. Question counting excludes fenced/inline code, double-quoted
 text, markdown table rows (column labels like `Austin?`) and Spanish-style `¿…?` spans (target-language examples
 such as **¿Cómo se llama?**, not questions to the learner). A `psi_ask` or `psi_challenge` that a guard blocked was
-never shown, so it is neither a question nor a subskill's first challenge. Continuation/repair teaching text is a non-question sentence of at least 40 characters; continuation also accepts
-`psi_lesson` or `psi_run`. Factual explanations use a 60-character sentence threshold (sentences are split on line
+never shown, so it is neither a question nor a subskill's first challenge. Continuation/repair teaching text is at
+least 40 characters of non-question, non-meta prose (an announcement such as "Next piece: …" is not teaching);
+positions inside one assistant message follow its final block order, not the earlier streamed `toolcall_end`;
+continuation also accepts `psi_lesson` or `psi_run`. Factual explanations use a 60-character sentence threshold (sentences are split on line
 breaks too, so list items stand alone) and omit verdicts, questions and meta/instructional prose: invitations and
 next-step offers ("Don't peek", "Try this", "Your turn", "We can…", "Next…", "Let's…"), verdicts and session remarks
 ("That's right…", "We're still on…", "We still owe…", "Continue keeps…"), remarks about the tutoring machinery

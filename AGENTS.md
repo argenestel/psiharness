@@ -211,8 +211,14 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
   PsiStore topic files are single-writer).
 - Attempts are skill-scoped (`recordAttempt` takes `skill`); browser-reported code results are `verified: false`.
 - `extension/src/practice/guards.ts`: code-level guarantees — next steps always include Continue; an open challenge's
-  answers are redacted from tutor text and options; challenges are blocked on continue/show-me turns until something
-  was taught; [n] citations beyond the skill's sources are removed. Each intervention appends a `psi-guard` entry.
+  answers are redacted from tutor text and options (single-digit answers only after an answer cue or in a table cell);
+  challenges and psi_ask are blocked on continue/show-me turns until something was taught; a new subskill's first
+  challenge waits for its lesson (not in test mode; released after two blocks); the turn after a graded miss must
+  teach before a new challenge or psi_ask; [n] citations beyond the skill's sources are removed. Each intervention
+  appends a `psi-guard` entry. `inject.ts` also adds a short per-request reminder (cite [n], one question last, no
+  rhetorical questions, continue = teach now, open challenge id) to a copy of the latest message — never persisted.
+- `studio/src/agent.ts` holds streamed text/thinking deltas while a challenge card is open (shown, not yet attempted),
+  so the browser renders only the guard-redacted `message_end`.
 - `evals/`: scripted learner sessions against the real model; `node evals/run.ts …` then `node evals/score.ts <dir>`.
 
 ### visual (`visual/src/index.ts` re-exports) — optional extras

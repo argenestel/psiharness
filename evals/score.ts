@@ -475,6 +475,7 @@ function addMessageEvents(events: TimelineEvent[], message: Dict, pos: number): 
 function buildTurn(key: string, entries: Entry[]): TurnView {
 	const timeline: TimelineEvent[] = [];
 	const deltaEvents: TimelineEvent[] = [];
+	const updateCalls: TimelineEvent[] = [];
 	let completeText = false;
 	let sentKind: string | undefined;
 	let sentAt: unknown;
@@ -505,7 +506,9 @@ function buildTurn(key: string, entries: Entry[]): TurnView {
 			continue;
 		}
 		if (record.type === "message_update" && update.type === "toolcall_end" && isObject(update.toolCall)) {
-			timeline.push({ pos: base, kind: "tool", toolName: toolNameOf(update.toolCall), args: argsOf(update.toolCall), record: update.toolCall });
+			const event = { pos: base, kind: "tool" as const, toolName: toolNameOf(update.toolCall), args: argsOf(update.toolCall), record: update.toolCall };
+			updateCalls.push(event);
+			timeline.push(event);
 			continue;
 		}
 		if (record.type === "tool_execution_start" || record.type === "tool_execution_end") {
@@ -525,6 +528,15 @@ function buildTurn(key: string, entries: Entry[]): TurnView {
 	}
 	if (completeText) for (const event of deltaEvents) {
 		const index = timeline.indexOf(event);
+		if (index >= 0) timeline.splice(index, 1);
+	}
+	// A streamed toolcall_end arrives before its message_end, so it would sort ahead of the text that precedes the
+	// call in the same message. When the finalized message carries the call, its block order wins.
+	const finalized = new Set(timeline.filter((event) => event.kind === "tool" && event.record?.type === "toolCall")
+		.map((event) => toolIdOf(event.record!)).filter(Boolean));
+	for (const event of updateCalls) {
+		const id = toolIdOf(event.record!);
+		const index = id && finalized.has(id) ? timeline.indexOf(event) : -1;
 		if (index >= 0) timeline.splice(index, 1);
 	}
 	timeline.sort((a, b) => a.pos - b.pos);
@@ -746,9 +758,12 @@ function optionCount(call: ToolCall): number {
 	return Array.isArray(source) ? source.length : 0;
 }
 
+/** At least 40 characters of non-question, non-meta prose ("Next piece: …" announces teaching; it is not teaching). */
 function isTeachingText(text: string): boolean {
-	const clean = cleanProse(text).replace(/\[\d+\]/g, "").replace(/\s+/g, " ").trim();
-	return clean.length >= 40 && !/[?？]/.test(clean);
+	const sentences = proseSentences(text).map((sentence) => sentence.replace(/¿[^?？]*[?？]/g, " ").trim());
+	if (sentences.some((sentence) => /[?？]/.test(sentence))) return false;
+	const clean = sentences.filter((sentence) => !isMetaSentence(sentence)).join(" ").replace(/\[\d+\]/g, "").replace(/\s+/g, " ").trim();
+	return clean.length >= 40;
 }
 
 function firstQuestionPos(turn: TurnView): number | undefined {
@@ -850,7 +865,7 @@ const LEARNER_ANSWER_KINDS = new Set(["correct_answer", "wrong_guess", "answer"]
 const META_OPENER = new RegExp("^(?:don['’]?t (?:peek|look|scroll|worry)|no peeking|try (?:this|it|one|again|that|the|a|to)\\b"
 	+ "|your (?:turn|move|go)\\b|give (?:it|this) a\\b|take a (?:guess|shot|moment|stab|second)|have a go|when(?:ever)? you['’]?re ready"
 	+ "|ready\\b|pick (?:one|an?)\\b|choose (?:one|an option)\\b|click\\b|tap\\b|press\\b|reply\\b|type (?:your|it|in|out)\\b|send\\b|say it\\b|write (?:your|it|down)\\b"
-	+ "|next(?:,|:| up| we| step| chunk| time)|up next|we can\\b|we['’]?ll\\b|let['’]?s\\b|let me\\b|i['’]?ll\\b|i will\\b|i['’]?m going to"
+	+ "|next(?:,|:| up| we| step| chunk| time| piece| bit| move)|up next|we can\\b|we['’]?ll\\b|let['’]?s\\b|let me\\b|i['’]?ll\\b|i will\\b|i['’]?m going to"
 	+ "|i won['’]?t\\b|now (?:try|you|it['’]?s your)|go ahead|feel free|if you['’]?d like|if you want|want to\\b|nice\\b|great\\b|good (?:job|work|try|question)"
 	+ "|well done|exactly\\b|not quite|almost\\b"
 	// Verdicts on the learner's answer and remarks about where the session is ("We're still on …", "Continue keeps …").
@@ -1179,7 +1194,9 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 	const spoilerFailures: FailureEvidence[] = [];
 	const spoilerSkipped: NotApplicable[] = [];
 	const presentations = new Map<string, ChallengeInfo>();
-	for (const turn of turns) for (const call of turn.calls.filter((candidate) => candidate.toolName === "psi_challenge")) {
+	// A blocked psi_challenge (teach-first / lesson-first guards) never showed a card, so it has no answer to spoil.
+	const shown = (call: ToolCall) => call.toolName === "psi_challenge" && !resultIsError(call);
+	for (const turn of turns) for (const call of turn.calls.filter(shown)) {
 		const info = challengeInfo(call, index);
 		if (info.id) presentations.set(info.id, info);
 	}
@@ -1213,7 +1230,7 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 		} else observations.set(key, { info, turn, matcher, prose: [prose], buttons: [buttons] });
 	};
 	for (const turn of turns) {
-		for (const call of turn.calls.filter((candidate) => candidate.toolName === "psi_challenge")) {
+		for (const call of turn.calls.filter(shown)) {
 			const info = challengeInfo(call, index);
 			const attemptPos = turn.calls.filter((candidate) => candidate.toolName === "psi_attempt" && attemptRecorded(candidate))
 				.map((candidate) => candidate.firstPos).find((position) => position > call.firstPos);

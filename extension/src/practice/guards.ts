@@ -208,6 +208,8 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 	let learner = "";
 	let learnerTexts: string[] = [];
 	let teachChars = 0, teachTools = 0;
+	// After a graded miss, the learner's next turn is a repair turn: teach before any new question or challenge.
+	let repairDue = false, repairing = false;
 	let presented: { skill: string; id: string; at: number } | undefined;
 	const closed = new Set<string>(), pending = new Set<string>();
 	// Subskills whose lesson was shown or written this session, and how often a challenge was held back for each.
@@ -216,12 +218,15 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		try { pi.appendEntry("psi-guard", { kind, detail }); } catch { /* counters never break a turn */ }
 	};
 	const newTurn = (text: string) => {
+		repairing = repairDue || (repairing && text === learner);
+		repairDue = false;
 		learner = text;
 		learnerTexts = [...learnerTexts, text].slice(-50);
 		teachChars = 0;
 		teachTools = 0;
 	};
-	const mustTeach = (chars = teachChars, tools = teachTools) => isContinueIntent(learner) && tools <= 0 && chars < 200
+	const mustTeach = (chars = teachChars, tools = teachTools) => (repairing || isContinueIntent(learner))
+		&& tools <= 0 && chars < 200
 		&& attempt(() => profile.read().tutorMode) !== "test";
 	const attempted = (skill: string, id: string, since: number) => attempt(() => readAttempts(home, skill)
 		.some((a) => a.challengeId === id && Date.parse(a.at) >= since - 1000)) ?? false;
@@ -306,6 +311,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 
 	pi.on("session_start", async () => {
 		learner = ""; learnerTexts = []; teachChars = 0; teachTools = 0; presented = undefined;
+		repairDue = false; repairing = false;
 		closed.clear(); pending.clear(); taught.clear(); lessonBlocks.clear();
 	});
 	pi.on("before_agent_start", async (event) => {
@@ -386,7 +392,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 			case "psi_challenge": {
 				if (mustTeach()) {
 					const action = input.action ?? "create";
-					fire("teach-first", { learner: learner.slice(0, 120), teachChars, action });
+					fire("teach-first", { learner: learner.slice(0, 120), teachChars, action, repair: repairing });
 					return { block: true, reason: TEACH_FIRST };
 				}
 				const subskillId = lessonNeeded(input);
@@ -399,7 +405,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 			case "psi_next_steps": guardNextSteps(input, unspoken(openChallenges()), "tool_call"); return;
 			case "psi_ask":
 				if (mustTeach()) {
-					fire("teach-first", { learner: learner.slice(0, 120), teachChars, tool: "psi_ask" });
+					fire("teach-first", { learner: learner.slice(0, 120), teachChars, tool: "psi_ask", repair: repairing });
 					return { block: true, reason: ASK_AFTER_TEACHING };
 				}
 				guardAsk(input, unspoken(openChallenges()), "tool_call");
@@ -417,6 +423,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		if (event.toolName === "psi_attempt" && typeof input.challengeId === "string") {
 			pending.delete(input.challengeId);
 			if (!event.isError && typeof details?.outcome === "string") closed.add(input.challengeId);
+			if (!event.isError && (details?.outcome === "fail" || details?.outcome === "partial")) repairDue = true;
 		}
 		// A missing or failed lesson taught nothing; a failing psi_run demo still showed something.
 		if (event.toolName === "psi_lesson" && (input.action === "show" || input.action === "write")) {

@@ -154,3 +154,43 @@ test("latency uses the first thinking or tool-call delta and sentAt", () => {
 	assert.equal(result.latency.ttft.medianMs, 5);
 	assert.equal(result.latency.settle.medianMs, 50);
 });
+
+test("text before a tool call in the same message counts as before it, though toolcall_end streams first", () => {
+	const ask = { type: "toolCall", id: "ask-1", name: "psi_ask", arguments: { question: "Why?" } };
+	const result = score([
+		sent(1, "continue"),
+		row(1, { type: "message_update", assistantMessageEvent: { type: "toolcall_end", toolCall: ask } }, 110),
+		row(1, { type: "message_end", message: { role: "assistant", content: [{ type: "text", text: explanation }, ask] } }, 120),
+		row(1, { type: "tool_execution_start", toolCallId: "ask-1", toolName: "psi_ask", args: ask.arguments }, 130),
+		settled(1),
+	]);
+	assert.equal(result.checks.continueTeaching.failures.length, 0);
+});
+
+test("tables and Spanish examples do not stop a chunk from counting as teaching", () => {
+	const result = score([
+		sent(1, "show"), text(1, `${explanation}\n\n| name | kept? |\n| --- | --- |\n| spoon | no |\n\n**¿Cómo te llamas?**`),
+		settled(1),
+	]);
+	assert.equal(result.checks.continueTeaching.failures.length, 0);
+});
+
+test("an announcement is not teaching: a prompt right after 'Next piece: …' still comes before teaching", () => {
+	const ask = { type: "toolCall", id: "ask-2", name: "psi_ask", arguments: { question: "Why?" } };
+	const result = score([
+		sent(1, "continue"),
+		row(1, { type: "message_end", message: { role: "assistant",
+			content: [{ type: "text", text: "Next piece: telling the barista who you are." }, ask] } }, 120),
+		text(1, explanation), settled(1),
+	]);
+	assert.equal(result.checks.continueTeaching.failures.length, 1);
+});
+
+test("a challenge a guard blocked has no answer to spoil", () => {
+	const result = score([
+		sent(1, "challenge"), ended(1, "psi_challenge", { action: "create", subskillId: "greet", expected: "por favor" },
+			{ content: [{ type: "text", text: "Subskill is new: show its lesson first" }] }, true),
+		text(1, "Add por favor to turn an order into a polite request for a stranger at the café counter."), settled(1),
+	]);
+	assert.equal(result.checks.spoilers.applicable, 0);
+});

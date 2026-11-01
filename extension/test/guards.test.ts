@@ -298,3 +298,18 @@ test("each model request carries a turn reminder on a copy of the latest learner
 	assert.match(note, /Cite \[n\]/);
 	assert.match(note, /one question, placed last/);
 }));
+
+test("the turn after a graded miss teaches before a new prompt or challenge", async () => fixture(async (f) => {
+	await f.learner("Teach me greetings");
+	const id = (await f.call("psi_challenge", greet)).result.details.challengeId;
+	await f.learner("buenas días");
+	await f.call("psi_attempt", { challengeId: id, skill: "spanish", answer: "buenas días" });
+	await f.learner("I'm stuck; why buenos?");
+	assert.deepEqual((await f.call("psi_ask", { question: "Which ending?", kind: "why" })).blocked,
+		{ block: true, reason: ASK_AFTER_TEACHING });
+	assert.ok((await f.call("psi_challenge", greet)).blocked, "no new challenge before the repair");
+	await f.assistant([text(teaching)]);
+	assert.ok((await f.call("psi_challenge", greet)).result, "allowed once the repair taught something");
+	await f.learner("Give me another one");
+	assert.ok((await f.call("psi_ask", { question: "Which ending?", kind: "why" })).result, "only the next turn is gated");
+}));

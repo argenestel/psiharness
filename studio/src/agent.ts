@@ -19,6 +19,8 @@ interface Chat {
 	base: number; seq: number; historyEnd: number; loaded: boolean;
 	records: Event[]; subscribers: Map<ServerResponse, Sink>; timer?: ReturnType<typeof setTimeout>;
 	waiters: Map<string, (record: RecordData | undefined) => void>;
+	/** A challenge card is showing and not yet attempted; while true, assistant text streams are held. */
+	challengeOpen?: boolean; holdText?: boolean;
 }
 
 /** One SSE client's write queue: chunks wait here while the socket buffer is full. */
@@ -67,6 +69,34 @@ export function redactRecord<T>(value: T, depth = 0): T {
 	}
 	for (const item of Object.values(object)) redactRecord(item, depth + 1);
 	return value;
+}
+
+/**
+ * Whether a record opens a challenge (a shown psi_challenge) or closes it (a recorded psi_attempt), from either the
+ * live tool_execution_end or a replayed toolResult message.
+ */
+export function challengeSignal(record: RecordData): "open" | "close" | undefined {
+	const message = isObject(record.message) ? record.message : undefined;
+	const live = record.type === "tool_execution_end";
+	const replayed = record.type === "message_end" && message?.role === "toolResult";
+	if (!live && !replayed) return undefined;
+	const source = live ? record : message!;
+	if (source.isError) return undefined;
+	const result = live ? (isObject(record.result) ? record.result : {}) : message!;
+	const details = isObject(result.details) ? result.details : {};
+	if (source.toolName === "psi_challenge" && details.challengeId) return "open";
+	if (source.toolName === "psi_attempt" && details.recorded !== false && !details.errors) return "close";
+	return undefined;
+}
+
+/**
+ * Streamed text and thinking deltas are held while a challenge is open: the tutor's spoiler guard rewrites the
+ * message only when it ends, so the browser renders that final, redacted message_end instead of raw deltas.
+ */
+export function holdsDelta(record: RecordData, hold: boolean | undefined): boolean {
+	const update = record.assistantMessageEvent;
+	return !!hold && record.type === "message_update" && isObject(update)
+		&& /^(text|thinking)_(start|delta|end)$/.test(String(update.type));
 }
 
 /** Explicit permitted psi tool names, shared with the extension policy. */
@@ -269,6 +299,13 @@ export class AgentHub {
 		const update = record.assistantMessageEvent;
 		// Partial tool-call JSON can carry answer keys and is never rendered; the completed call follows.
 		if (type === "message_update" && isObject(update) && update.type === "toolcall_delta") return;
+		const signal = challengeSignal(record);
+		if (signal) chat.challengeOpen = signal === "open";
+		if (type === "message_start" && isObject(record.message) && record.message.role === "assistant") {
+			chat.holdText = chat.challengeOpen;
+		}
+		if (holdsDelta(record, chat.holdText)) return;
+		if (type === "message_end") chat.holdText = false;
 		redactRecord(record);
 		if (type === "agent_end") delete record.messages; // Duplicates every message; the UI does not use it.
 		if (type === "agent_start") chat.running = true;
