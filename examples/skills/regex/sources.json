@@ -7,13 +7,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "Regular expressions are patterns used to match character combinations in strings. In JavaScript, regular expressions are also objects.",
-		"accessedAt": "2026-10-31T20:15:38.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-b8bd6b96e4",
@@ -23,13 +23,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "Character class: Matches any one of the enclosed characters.",
-		"accessedAt": "2026-10-31T20:15:38.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-bb68cbc8a5",
@@ -39,13 +39,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "Lookahead assertion: Matches \"x\" only if \"x\" is followed by \"y\".",
-		"accessedAt": "2026-10-31T20:15:38.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-d27926157b",
@@ -55,13 +55,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "By default quantifiers like * and + are \"greedy\", meaning that they try to match as many times as possible.",
-		"accessedAt": "2026-10-31T20:15:38.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-c4a55b141a",
@@ -71,13 +71,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "Capturing group: Matches x and remembers the match.",
-		"accessedAt": "2026-10-31T20:15:38.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-c57a87abf6",
@@ -87,13 +87,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "The lastIndex data property of a RegExp instance specifies the index at which to start the next match.",
-		"accessedAt": "2026-10-31T20:15:38.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-3326cd8bc3",
@@ -103,13 +103,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "The matchAll() method of String values returns an iterator of all results matching this string against a regular expression, including capturing groups.",
-		"accessedAt": "2026-10-31T20:15:38.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-5915b11be6",
@@ -119,12 +119,12 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: Official Python documentation (docs.python.org)",
-			"Openly licensed (PSF License Version 2)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (PSF License Version 2) (+3)"
 		],
 		"license": "PSF License Version 2",
 		"excerpt": "| has very low precedence in order to make it work reasonably when you're alternating multi-character strings.",
-		"accessedAt": "2026-10-31T20:15:38.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	}
 ]

@@ -1,0 +1,71 @@
+{
+	"skill": "git-fluency",
+	"subskillId": "branch-work",
+	"title": "Branches are movable pointers",
+	"explanation": "A branch in Git is just a lightweight, movable **pointer** to a commit. When you commit on a branch, that branch's pointer moves forward to the new commit. A special pointer, **HEAD**, tells Git which branch you are currently on.\n\n```bash\ngit branch experiment        # create a pointer at the current commit; you stay where you are\ngit switch experiment        # move HEAD to that branch\ngit switch -c hotfix         # create a branch and switch to it in one step (older: git checkout -b hotfix)\ngit switch -                 # go back to the previously checked-out branch\n```\n\nSwitching branches changes your working directory to match the last commit on that branch — Git adds, removes, and modifies files for you. If Git can't do that cleanly — for example because uncommitted edits would be overwritten — it won't let you switch at all, so commit (or otherwise put aside) your work before switching.",
+	"keyIdeas": [
+		"A branch is a lightweight pointer to a commit; it moves when you commit.",
+		"HEAD points at the branch you are on.",
+		"`git branch name` creates; `git switch name` moves; `git switch -c name` does both.",
+		"Switching rewrites your working directory to that branch's last commit."
+	],
+	"workedExample": {
+		"problem": "On branch `trunk`, create a branch `specials` *without* leaving `trunk`, then switch to it, commit a new file `specials.md`, and switch back. Show that the file exists only on `specials`.",
+		"steps": [
+			"`git branch specials` creates the pointer at the current commit; `git branch --show-current` still says `trunk`.",
+			"`git switch specials` moves HEAD; the commit you make now advances only `specials`.",
+			"Switching back with `git switch trunk` makes the working directory match trunk's last commit, so `specials.md` disappears from disk (it is safe in the other branch).",
+			"Run it in a throwaway folder:\n```sh\ngit init -q -b trunk shop && cd shop\nprintf 'tea\\n' > menu.md && git add menu.md && git commit -q -m 'Add menu'\ngit branch specials\n[ \"$(git branch --show-current)\" = trunk ]   # created, but we did not move\ngit switch -q specials\nprintf 'iced tea\\n' > specials.md && git add specials.md && git commit -q -m 'Add specials'\ngit switch -q trunk\n[ ! -e specials.md ]                           # not on trunk\ngit ls-tree --name-only specials | grep -qx specials.md\necho ok\n```"
+		],
+		"answer": "`specials.md` is committed on `specials` only; on `trunk` the file is absent from the working directory, and `trunk` still points at `Add menu`."
+	},
+	"pitfalls": [
+		"Assuming `git branch name` also switches to it — it only creates the pointer.",
+		"Switching with uncommitted conflicting edits and being surprised when Git refuses.",
+		"Committing on the wrong branch because you didn't check `git status` (it prints the current branch)."
+	],
+	"citations": [
+		{
+			"sourceId": "src-bf0a16a9d6",
+			"quote": "A branch in Git is simply a lightweight movable pointer to one of these commits.",
+			"locator": "Branches in a Nutshell"
+		},
+		{
+			"sourceId": "src-bf0a16a9d6",
+			"quote": "This creates a new pointer to the same commit you're currently on.",
+			"locator": "Creating a New Branch"
+		},
+		{
+			"sourceId": "src-bf0a16a9d6",
+			"quote": "How does Git know what branch you're currently on? It keeps a special pointer called HEAD.",
+			"locator": "Creating a New Branch"
+		},
+		{
+			"sourceId": "src-bf0a16a9d6",
+			"quote": "Create a new branch and switch to it: git switch -c new-branch.",
+			"locator": "Switching Branches (note)"
+		},
+		{
+			"sourceId": "src-bf0a16a9d6",
+			"quote": "Return to your previously checked out branch: git switch -.",
+			"locator": "Switching Branches (note)"
+		},
+		{
+			"sourceId": "src-e5acaae758",
+			"quote": "HEAD is the pointer to the current branch reference, which is in turn a pointer to the last commit made on that branch.",
+			"locator": "The HEAD"
+		},
+		{
+			"sourceId": "src-bf0a16a9d6",
+			"quote": "If you switch to an older branch, your working directory will be reverted to look like it did the last time you committed on that branch.",
+			"locator": "Switching Branches (note)"
+		},
+		{
+			"sourceId": "src-bf0a16a9d6",
+			"quote": "If Git cannot do it cleanly, it will not let you switch at all.",
+			"locator": "Switching Branches (note)"
+		}
+	],
+	"createdAt": "2026-10-31T20:28:52.000Z",
+	"updatedAt": "2026-10-31T20:28:52.000Z"
+}

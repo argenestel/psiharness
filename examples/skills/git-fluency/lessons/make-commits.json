@@ -1,0 +1,61 @@
+{
+	"skill": "git-fluency",
+	"subskillId": "make-commits",
+	"title": "Commits are snapshots; amend only what is private",
+	"explanation": "`git commit` records the snapshot you set up in the index — anything you didn't stage stays modified in your working directory for a later commit. Give the message inline with `-m \"...\"`, written as a short imperative summary (\"Add cafe menu\"). Each commit stores a pointer to its parent, so the commits form a history.\n\nIf you notice right away that you forgot a file or mistyped the message, `git commit --amend` redoes the **last** commit: it takes the current index (plus a new message with `-m`, or the old one with `--no-edit`) and builds a new commit that *replaces* the old one. It is as if the old commit never happened.\n\n```bash\ngit commit -m \"Add cafe menu\"\ngit add forgotten.md\ngit commit --amend --no-edit     # same message, now including forgotten.md\n```\n\nThat replacement is exactly why amending is only for **local** commits. If you already pushed the commit, others may have built on it; amending and force-pushing rewrites history under them. For published work, make a new commit instead.",
+	"keyIdeas": [
+		"A commit records the staged snapshot, not your whole working directory.",
+		"`-m` sets the message inline; keep it a short imperative summary.",
+		"`--amend` replaces the last commit with a new one built from the index.",
+		"Amend only commits that are still local; fix published work with a new commit."
+	],
+	"workedExample": {
+		"problem": "You commit `menu.md` with the message `Add menu`, then realise you forgot `prices.md` and want the message to say `Add menu and prices`. The commit is unpushed. Fix it so history shows one commit, not two.",
+		"steps": [
+			"Stage the forgotten file: `git add prices.md`.",
+			"Amend with a new message: `git commit --amend -m \"Add menu and prices\"` — this rebuilds the last commit from the index.",
+			"Confirm the count did not grow and the new commit contains both files.",
+			"Run it in a throwaway folder:\n```sh\ngit init -q -b trunk shop && cd shop\nprintf '# Shop\\n' > README.md && git add README.md && git commit -q -m 'Initial commit'\nprintf 'tea\\n' > menu.md; printf 'tea 3\\n' > prices.md\ngit add menu.md && git commit -q -m 'Add menu'\nbefore=$(git rev-parse HEAD)\ngit add prices.md\ngit commit -q --amend -m 'Add menu and prices'\n[ \"$(git rev-list --count HEAD)\" = 2 ]                 # still two commits\n[ \"$(git log -1 --format=%s)\" = 'Add menu and prices' ]\n[ \"$(git rev-parse HEAD)\" != \"$before\" ]              # a new commit replaced the old one\ngit ls-tree --name-only HEAD | grep -qx prices.md\necho ok\n```"
+		],
+		"answer": "Two commits in total (the initial one and the amended `Add menu and prices`), and the amended commit has a new id because it replaced the old one."
+	},
+	"pitfalls": [
+		"Amending a commit that is already pushed, forcing teammates to reconcile rewritten history.",
+		"Expecting unstaged edits to be included in a commit or an amend — only the index is used.",
+		"Writing vague messages like \"fix\" or \"stuff\" that make `git log` useless later."
+	],
+	"citations": [
+		{
+			"sourceId": "src-52ab18684b",
+			"quote": "Remember that the commit records the snapshot you set up in your staging area. Anything you didn't stage is still sitting there modified",
+			"locator": "Committing Your Changes"
+		},
+		{
+			"sourceId": "src-52ab18684b",
+			"quote": "you can type your commit message inline with the commit command by specifying it after a -m flag",
+			"locator": "Committing Your Changes"
+		},
+		{
+			"sourceId": "src-bf0a16a9d6",
+			"quote": "the next commit stores a pointer to the commit that came immediately before it.",
+			"locator": "Branches in a Nutshell"
+		},
+		{
+			"sourceId": "src-e11e9f0450",
+			"quote": "This command takes your staging area and uses it for the commit.",
+			"locator": "Undoing Things"
+		},
+		{
+			"sourceId": "src-e11e9f0450",
+			"quote": "Effectively, it's as if the previous commit never happened, and it won't show up in your repository history.",
+			"locator": "Undoing Things"
+		},
+		{
+			"sourceId": "src-e11e9f0450",
+			"quote": "Only amend commits that are still local and have not been pushed somewhere. Amending previously pushed commits and force pushing the branch will cause problems for your collaborators.",
+			"locator": "Undoing Things"
+		}
+	],
+	"createdAt": "2026-10-31T20:28:52.000Z",
+	"updatedAt": "2026-10-31T20:28:52.000Z"
+}

@@ -7,13 +7,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "const only prevents re-assignments, but doesn't prevent mutations.",
-		"accessedAt": "2026-10-31T19:58:33.000Z"
+		"accessedAt": "2026-10-31T20:28:51.000Z"
 	},
 	{
 		"id": "src-ddfd2ea0f9",
@@ -23,13 +23,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "The map() method returns a new array of the return value from executing callback on every array item.",
-		"accessedAt": "2026-10-31T19:58:33.000Z"
+		"accessedAt": "2026-10-31T20:28:51.000Z"
 	},
 	{
 		"id": "src-6f30193829",
@@ -39,13 +39,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "The destructuring syntax is a JavaScript syntax that makes it possible to unpack values from arrays, or properties from objects, into distinct variables.",
-		"accessedAt": "2026-10-31T19:58:33.000Z"
+		"accessedAt": "2026-10-31T20:28:51.000Z"
 	},
 	{
 		"id": "src-a638557db8",
@@ -55,13 +55,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "You can use spread syntax to merge multiple objects into one new object.",
-		"accessedAt": "2026-10-31T19:58:33.000Z"
+		"accessedAt": "2026-10-31T20:28:51.000Z"
 	},
 	{
 		"id": "src-656c21a51c",
@@ -71,13 +71,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "A closure is the combination of a function bundled together (enclosed) with references to its surrounding state (the lexical environment).",
-		"accessedAt": "2026-10-31T19:58:33.000Z"
+		"accessedAt": "2026-10-31T20:28:51.000Z"
 	},
 	{
 		"id": "src-c1910e1157",
@@ -87,13 +87,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "A Promise is an object representing the eventual completion or failure of an asynchronous operation.",
-		"accessedAt": "2026-10-31T19:58:33.000Z"
+		"accessedAt": "2026-10-31T20:28:51.000Z"
 	},
 	{
 		"id": "src-e16806a7c5",
@@ -103,13 +103,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "Each time when an async function is called, it returns a new Promise which will be resolved with the value returned by the async function, or rejected with an exception uncaught within the async function.",
-		"accessedAt": "2026-10-31T19:58:33.000Z"
+		"accessedAt": "2026-10-31T20:28:51.000Z"
 	},
 	{
 		"id": "src-f84fc5e7a8",
@@ -119,12 +119,12 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: MDN Web Docs, the standard web-platform reference (developer.mozilla.org)",
-			"Openly licensed (CC BY-SA 2.5)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-SA 2.5) (+3)"
 		],
 		"license": "CC BY-SA 2.5",
 		"excerpt": "Classes are a template for creating objects. They encapsulate data with code to work on that data.",
-		"accessedAt": "2026-10-31T19:58:33.000Z"
+		"accessedAt": "2026-10-31T20:28:51.000Z"
 	}
 ]

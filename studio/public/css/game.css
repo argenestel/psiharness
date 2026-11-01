@@ -1,0 +1,130 @@
+/* Game layer: daily goal ring, You page, announcements, home Today row. Tokens come from styles.css. */
+
+/* ---------- Daily goal ring ---------- */
+.psi-goalw { display: flex; flex-direction: column; gap: var(--s2); min-width: 0; }
+.psi-goalw-button {
+	display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: var(--s3);
+	width: 100%; min-height: 56px; padding: var(--s1) var(--s1) var(--s1) 0; text-align: left; white-space: normal;
+	font-weight: 400; background: transparent; border-color: transparent;
+}
+.psi-goalw-button:hover:not(:disabled) { border-color: transparent; }
+.psi-goalw-button:hover .psi-goalw-change { color: var(--ink); text-decoration-thickness: 2px; }
+.psi-goalw-text { display: flex; flex-direction: column; min-width: 0; }
+.psi-goalw-text strong { font-family: var(--font-display); font-weight: 600; font-size: var(--text-20); line-height: 1.2; }
+.psi-goalw-text span { font-size: var(--text-13); color: var(--pencil); line-height: 1.4; }
+.psi-goalw-change { font-size: var(--text-13); color: var(--pencil); text-decoration: underline; text-underline-offset: 3px; }
+.psi-goalw.is-compact .psi-goalw-text strong { font-size: var(--text-16); font-family: var(--font-body); font-weight: 700; }
+
+.psi-ring { display: block; overflow: visible; }
+.psi-ring-track { fill: none; stroke: var(--rule); stroke-width: 4; }
+.psi-ring-arc { fill: none; stroke: var(--highlighter); stroke-width: 4; }
+.psi-ring-fill { fill: var(--highlighter); transform-origin: 22px 22px; }
+.psi-ring-n { fill: var(--ink); font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+.psi-goalw.is-met .psi-ring-n { fill: #1B2A4A; }
+/* The once-a-day moment: the disc fills from the centre, then stays. Reduced motion makes it instant. */
+.psi-goalw.is-celebrating .psi-ring-fill { animation: psi-goal-fill 700ms var(--ease) both; }
+@keyframes psi-goal-fill { from { transform: scale(0); } to { transform: scale(1); } }
+
+.psi-goalw-picker { display: flex; flex-direction: column; gap: var(--s2); padding: var(--s3) 0 var(--s2); border-top: 1px solid var(--rule); }
+.psi-goalw-ask { font-weight: 700; }
+.psi-goalw-row { display: grid; grid-template-columns: 88px repeat(3, minmax(0, 52px)); align-items: center; gap: var(--s2); }
+.psi-goalw-row > span { font-size: var(--text-13); color: var(--pencil); }
+.psi-goalw-choice { min-height: 36px; padding: 0; font-variant-numeric: tabular-nums; }
+.psi-goalw-choice[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.psi-goalw-status { font-size: var(--text-13); color: var(--pencil); }
+.psi-goalw-status:empty { display: none; }
+
+/* ---------- Announcement (level-up / achievement) ---------- */
+.psi-announce:empty { display: none; }
+.psi-announce { display: flex; flex-direction: column; gap: var(--s1); padding-bottom: var(--s4); border-bottom: 1px solid var(--rule); }
+.psi-announce-title { font-family: var(--font-display); font-weight: 800; font-size: var(--text-25); line-height: 1.15; }
+.psi-announce-title span { position: relative; display: inline-block; z-index: 0; }
+/* One highlighter stroke under the words, drawn left to right once. */
+.psi-announce-title span::after {
+	content: ""; position: absolute; z-index: -1; left: -2px; right: -2px; bottom: 1px; height: 10px;
+	background: var(--highlighter); transform-origin: left; transform: scaleX(1);
+}
+.psi-announce.is-shown .psi-announce-title span::after { animation: psi-swipe 600ms var(--ease) both; }
+.psi-announce[data-kind="level"] .psi-announce-title span::after { height: 12px; }
+.psi-announce-text { color: var(--ink); }
+.psi-sk-announce { margin-top: var(--s4); }
+.psi-sk-announce:empty { margin: 0; }
+
+/* ---------- Bench additions ---------- */
+.psi-bench-today[hidden] { display: none; }
+.psi-bench-combo { font-size: var(--text-13); color: var(--ink); }
+
+/* ---------- Home: Today row ---------- */
+.psi-today { display: flex; flex-direction: column; gap: var(--s4); }
+.psi-today h1 { font-size: var(--text-39); }
+.psi-today-row {
+	display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s4) var(--s8); align-items: center;
+	padding: var(--s4) 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+}
+.psi-today-streak { display: flex; flex-direction: column; }
+.psi-today-streak strong { font-family: var(--font-display); font-weight: 600; font-size: var(--text-20); line-height: 1.2; }
+.psi-today-streak span { font-size: var(--text-13); color: var(--pencil); }
+.psi-today-continue { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s2); }
+.psi-today-continue .primary { white-space: normal; text-align: left; min-height: 48px; padding: var(--s2) var(--s4); }
+.psi-today-continue p { color: var(--pencil); max-width: 60ch; }
+.psi-today-links { display: flex; flex-wrap: wrap; gap: var(--s4); font-size: var(--text-13); }
+.psi-today-links a { color: var(--pencil); }
+.psi-today-links a:hover { color: var(--ink); }
+
+/* ---------- You page ---------- */
+.psi-you { display: flex; flex-direction: column; gap: var(--s8); max-width: 720px; }
+.psi-you-head { display: flex; flex-direction: column; gap: var(--s2); padding-bottom: var(--s6); border-bottom: 1px solid var(--rule); }
+.psi-you-level { font-size: var(--text-39); font-weight: 800; letter-spacing: -0.01em; }
+.psi-you-title { font-family: var(--font-display); font-weight: 600; font-size: var(--text-20); color: var(--ink); }
+.psi-you-meter { height: 12px; margin-top: var(--s3); max-width: 480px; }
+.psi-you-xp { font-size: var(--text-13); color: var(--pencil); }
+.psi-you-block { display: flex; flex-direction: column; gap: var(--s3); }
+.psi-you-block > h2 { font-size: var(--text-20); }
+.psi-you-block > h3 { font-family: var(--font-body); font-size: var(--text-13); font-weight: 700; color: var(--pencil); margin-top: var(--s3); }
+.psi-you-block > .psi-goalw { max-width: 420px; }
+.psi-you-note { font-size: var(--text-13); }
+.psi-you-streak { font-family: var(--font-display); font-weight: 600; font-size: var(--text-25); line-height: 1.15; }
+.psi-you-block > .psi-you-streak + .muted { margin-top: calc(-1 * var(--s2)); }
+
+/* Calendar: 12 week columns, Monday at the top; ink at three strengths, never green. */
+.psi-cal { display: flex; gap: var(--s1); margin-top: var(--s2); width: fit-content; max-width: 100%; }
+.psi-cal-col { display: grid; grid-template-rows: 16px repeat(7, 16px); gap: var(--s1); }
+.psi-cal-weekdays { padding-right: var(--s1); }
+.psi-cal-weekdays span { font-size: 11px; line-height: 16px; color: var(--pencil); }
+.psi-cal-month { font-size: 11px; line-height: 16px; color: var(--pencil); white-space: nowrap; width: 16px; overflow: visible; }
+.psi-cal-day { width: 16px; height: 16px; box-shadow: inset 0 0 0 1px var(--rule); }
+.psi-cal-day.is-1 { background: color-mix(in srgb, var(--ink) 28%, var(--paper)); box-shadow: none; }
+.psi-cal-day.is-2 { background: color-mix(in srgb, var(--ink) 58%, var(--paper)); box-shadow: none; }
+.psi-cal-day.is-3 { background: var(--ink); box-shadow: none; }
+.psi-cal-day.is-today { outline: 2px solid var(--ink); outline-offset: 1px; }
+.psi-cal-day.is-future { visibility: hidden; }
+
+.psi-you-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.psi-you-list li {
+	display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s4); align-items: baseline;
+	padding: var(--s3) 0; border-bottom: 1px solid var(--rule);
+}
+.psi-you-list li > div { display: flex; flex-direction: column; min-width: 0; }
+.psi-you-list strong { font-weight: 700; }
+.psi-you-list span { font-size: var(--text-13); color: var(--pencil); }
+.psi-you-list time { font-size: var(--text-13); color: var(--pencil); white-space: nowrap; }
+.psi-you-list .is-open strong { color: var(--pencil); font-weight: 400; }
+
+.psi-you-totals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; border-top: 1px solid var(--rule); }
+.psi-you-totals > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: var(--s1); padding: var(--s3) var(--s4) var(--s3) 0; }
+.psi-you-totals > div + div { padding-left: var(--s4); border-left: 1px solid var(--rule); }
+.psi-you-totals dt { font-size: var(--text-13); color: var(--pencil); }
+.psi-you-totals dd { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--text-25); line-height: 1.1; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 767px) {
+	.psi-today h1, .psi-you-level { font-size: var(--text-31); }
+	.psi-today-row { grid-template-columns: minmax(0, 1fr); }
+	.psi-you-totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.psi-you-totals > div:nth-child(3) { padding-left: 0; border-left: 0; }
+	.psi-you-totals > div:nth-child(n + 3) { border-top: 1px solid var(--rule); }
+	.psi-goalw-row { grid-template-columns: 88px repeat(3, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.psi-goalw.is-celebrating .psi-ring-fill, .psi-announce.is-shown .psi-announce-title span::after { animation: none; }
+}

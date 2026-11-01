@@ -1,0 +1,66 @@
+{
+	"skill": "git-fluency",
+	"subskillId": "inspect-history",
+	"title": "Reading history: log, graphs, and diffs",
+	"explanation": "`git log` lists commits newest first, each with its id (SHA-1), author, date, and message. A few options make it much more useful:\n\n- `--oneline` — one short line per commit; ideal for scanning.\n- `--graph` — draws the branch and merge structure as ASCII art beside the log.\n- `-p` (or `--patch`) — shows the diff each commit introduced; `-2` limits output to the last two commits.\n\n```bash\ngit log --oneline --graph      # compact history of the current branch, with merges drawn\ngit log -p -2                  # the last two commits with their patches\ngit log --stat                 # which files each commit touched\n```\n\nDiffs answer \"what changed?\" at different levels: `git diff` compares your working directory with the index, `git diff --staged` compares the index with the last commit, and `git log -p` shows what each recorded commit changed. Inspecting before acting — especially before merging, rebasing, or resetting — is the cheapest way to avoid mistakes.",
+	"keyIdeas": [
+		"`git log` is newest-first; `--oneline` compacts it.",
+		"`--graph` draws branches and merges.",
+		"`-p` shows each commit's patch; `-N` limits how many.",
+		"Inspect before you merge, rebase, or reset."
+	],
+	"workedExample": {
+		"problem": "A repository has `trunk` and a branch `cocoa` with two extra commits. Show a compact graph of both branches, then show only the last commit's patch, and list which files `cocoa` changed compared with `trunk`.",
+		"steps": [
+			"Name both branches to include their history: `git log --oneline --graph trunk cocoa`.",
+			"`git log -p -1 cocoa` prints the newest commit on `cocoa` with its diff.",
+			"`git diff --stat trunk cocoa` summarises the file-level differences between the two branch tips.",
+			"Run it in a throwaway folder:\n```sh\ngit init -q -b trunk shop && cd shop\nprintf 'tea\\n' > menu.md && git add menu.md && git commit -q -m 'Add menu'\ngit switch -q -c cocoa\nprintf 'cocoa\\n' >> menu.md && git commit -q -am 'Add cocoa to menu'\nprintf 'cocoa 5\\n' > prices.md && git add prices.md && git commit -q -m 'Price cocoa'\ngit log --oneline --graph trunk cocoa\n[ \"$(git log --oneline trunk..cocoa | wc -l)\" -eq 2 ]          # two commits only on cocoa\ngit log -p -1 cocoa | grep -q '^+cocoa 5'                        # the patch of the newest commit\n[ \"$(git diff --name-only trunk cocoa | sort | tr '\\n' ' ')\" = 'menu.md prices.md ' ]\necho ok\n```"
+		],
+		"answer": "The graph shows `Price cocoa` and `Add cocoa to menu` above `Add menu`; the last patch adds `cocoa 5`; `cocoa` differs from `trunk` in `menu.md` and `prices.md`."
+	},
+	"pitfalls": [
+		"Reading plain `git log` output for a branchy history instead of adding `--graph`.",
+		"Using `git diff` to see what was committed — it compares the working directory with the index, not commits.",
+		"Running a destructive command (reset, rebase) without first checking the log for what will move."
+	],
+	"citations": [
+		{
+			"sourceId": "src-7db8ebb825",
+			"quote": "By default, with no arguments, git log lists the commits made in that repository in reverse chronological order; that is, the most recent commits show up first.",
+			"locator": "Viewing the Commit History"
+		},
+		{
+			"sourceId": "src-7db8ebb825",
+			"quote": "--oneline Shorthand for --pretty=oneline --abbrev-commit used together.",
+			"locator": "Common options to git log"
+		},
+		{
+			"sourceId": "src-7db8ebb825",
+			"quote": "--graph Display an ASCII graph of the branch and merge history beside the log output.",
+			"locator": "Common options to git log"
+		},
+		{
+			"sourceId": "src-7db8ebb825",
+			"quote": "One of the more helpful options is -p or --patch, which shows the difference (the patch output) introduced in each commit. You can also limit the number of log entries displayed",
+			"locator": "Viewing the Commit History"
+		},
+		{
+			"sourceId": "src-7db8ebb825",
+			"quote": "--stat Show statistics for files modified in each commit.",
+			"locator": "Common options to git log"
+		},
+		{
+			"sourceId": "src-52ab18684b",
+			"quote": "That command compares what is in your working directory with what is in your staging area.",
+			"locator": "Viewing Your Staged and Unstaged Changes"
+		},
+		{
+			"sourceId": "src-52ab18684b",
+			"quote": "This command compares your staged changes to your last commit",
+			"locator": "Viewing Your Staged and Unstaged Changes"
+		}
+	],
+	"createdAt": "2026-10-31T20:28:52.000Z",
+	"updatedAt": "2026-10-31T20:28:52.000Z"
+}

@@ -58,6 +58,14 @@ const TOOL_WORDS = {
 	psi_manim: ["Rendered an animation", "Rendering an animation"],
 	psi_crew: ["Asked the lesson crew", "Asking the lesson crew"],
 	psi_note: ["Saved a lesson note", "Saving a lesson note", (n) => `Saved ${n} lesson notes`],
+	psi_lesson: [null, "Opening the lesson"],
+	psi_verify: [null, "Checking the sources"],
+	psi_run: [null, "Running the code"],
+	psi_next_steps: [null, "Choosing what comes next"],
+	psi_ask: [null, "Thinking of a question"],
+	psi_fetch: ["Read a reference page", "Reading a reference page", (n) => `Read ${n} reference pages`],
+	psi_search: ["Searched for sources", "Searching for sources"],
+	psi_path: ["Checked your learning path", "Checking your learning path"],
 };
 const ACTION_WORDS = {
 	psi_skill_plan: {
@@ -70,6 +78,11 @@ const ACTION_WORDS = {
 		start: ["Started a practice session", "Starting a practice session"],
 		stop: ["Ended the practice session", "Ending the practice session"],
 		status: ["Checked the practice timer", "Checking the practice timer"],
+	},
+	psi_sources: {
+		list: [null, "Looking up the sources"],
+		add: ["Added a source", "Adding a source"],
+		remove: ["Removed a source", "Removing a source"],
 	},
 };
 
@@ -142,6 +155,7 @@ const COMMAND_ECHOES = [
 	[/^Topic: [^\n]*?\. Focus: [^\n]*?\. Build an intuition-first/, () => "/visualize"],
 	[/^Topic: [^\n]*?\. Focus: [^\n]*?\. Build a slider-driven/, () => "/explore"],
 	[/^Topic: [^\n]*?\. Focus: [^\n]*?\. Build a full multi-agent/, () => "/crew"],
+	[/^Run psi_verify for this claim \(data\): ("(?:\\.|[^"\\])*")/, (m) => `/verify ${unquote(m[1])}`],
 ];
 function unquote(json) { try { return JSON.parse(json); } catch { return json.slice(1, -1); } }
 /**
@@ -320,6 +334,124 @@ export function sendErrorText(error) {
 		return "Couldn't reach the tutor. Check that psi web is running, then retry.";
 	}
 	return `The tutor couldn't take that message: ${message.replace(/\.$/, "")}. Retry, or reload the page.`;
+}
+
+// ───────────────────────────────────────── continuous lessons: replies, checks, tutor mode ──
+
+/** The reply offered after a teaching turn that brought no options of its own. */
+export const DEFAULT_REPLIES = [{ label: "Continue", message: "Continue" }];
+
+const sameReply = (a, b) => String(a ?? "").trim().replace(/[.!]+$/, "").toLowerCase()
+	=== String(b ?? "").trim().replace(/[.!]+$/, "").toLowerCase();
+/**
+ * What a row of reply buttons shows. `nextUserText` is the learner's next message after this turn
+ * (undefined while the turn is the latest). Returns { mode: "active"|"waiting"|"sent"|"chosen"|"hidden", chosen? }.
+ */
+export function replyRowState({ options = [], nextUserText, busy = false, chosen } = {}) {
+	if (nextUserText === undefined) {
+		if (chosen) return { mode: "sent", chosen };
+		return { mode: busy ? "waiting" : "active" };
+	}
+	const match = options.find((option) => sameReply(option.message, nextUserText) || sameReply(option.label, nextUserText));
+	return match ? { mode: "chosen", chosen: match.label } : { mode: "hidden" };
+}
+
+const SHOWS_ITS_OWN_REPLIES = new Set(["psi_challenge", "psi_ask", "psi_next_steps"]);
+/** A finished turn that taught something (a lesson, a demo run, or a real explanation) and so earns a Continue. */
+export function isTeachingTurn({ text = "", tools = [], error = false } = {}) {
+	if (error) return false;
+	const names = tools.map((tool) => tool?.name);
+	if (names.some((name) => SHOWS_ITS_OWN_REPLIES.has(name))) return false;
+	if (names.some((name) => name === "psi_lesson" || name === "psi_run")) return true;
+	return String(text).trim().length >= 160;
+}
+
+const FILLER = /^(let'?s|let us|great|nice|good|ok|okay|sure|alright|all right|here|now|next|so|welcome|hi|hello|thanks|yes|no|well)\b/i;
+function plainSentence(text) {
+	return text.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/(\*\*|__|\*|_|`)/g, "")
+		.replace(/\s*(?:\[\d{1,2}(?:\s*[,–-]\s*\d{1,2})*\])+/g, "").replace(/\s+/g, " ").trim();
+}
+/**
+ * The sentence "Check this" verifies when nothing is selected: the first cited sentence, else the first
+ * statement of six words or more that isn't a question or a pleasantry. Code, headings and lists are skipped.
+ */
+export function mainClaim(markdown) {
+	const prose = String(markdown ?? "").replace(/(```|~~~)[\s\S]*?(?:\1|$)/g, "\n\n").split(/\n{2,}/)
+		.map((block) => block.trim()).filter((block) => block && !/^(#{1,6}\s|>|\s*[-*+]\s|\s*\d+\.\s|\||\$\$)/.test(block));
+	const sentences = prose.flatMap((block) => block.replace(/\n/g, " ").split(/(?<=[.!?])\s+(?=[A-Z0-9`*_"“(])/));
+	const statement = (s) => !/\?\s*$/.test(s) && plainSentence(s).split(" ").length >= 6 && !FILLER.test(plainSentence(s));
+	const cited = sentences.find((s) => /(?<![\p{L}\p{N}_\]])\[\d{1,2}\]/u.test(s) && !/\?\s*$/.test(s));
+	const pick = cited ?? sentences.find(statement) ?? sentences.find((s) => plainSentence(s).length >= 12) ?? "";
+	const claim = plainSentence(pick);
+	return claim.length > 300 ? `${claim.slice(0, 297).trimEnd()}…` : claim;
+}
+/** The message "Check this" sends: "/verify <claim>" on one line, or "" when there is nothing to check. */
+export function verifyMessage(claim) {
+	const text = String(claim ?? "").replace(/\s+/g, " ").trim();
+	if (!text) return "";
+	return `/verify ${text.length > 400 ? `${text.slice(0, 399).trimEnd()}…` : text}`;
+}
+
+/** Tutor modes in the composer switch: [value, label, what changes]. */
+export const TUTOR_MODES = [
+	["teach", "Teach", "more explanation, fewer questions."],
+	["practice", "Practice", "a short lesson, then challenges."],
+	["test", "Test", "challenges only, for review."],
+];
+/** The pencil line shown when the mode changes, e.g. "Mode: Teach — more explanation, fewer questions." */
+export function modeLine(mode) {
+	const entry = TUTOR_MODES.find(([value]) => value === mode);
+	return entry ? `Mode: ${entry[1]} — ${entry[2]}` : "";
+}
+
+/** Set a reply row's display from replyRowState(). */
+export function setReplyState(row, { mode, chosen }) {
+	row.dataset.state = mode;
+	row.hidden = mode === "hidden" || mode === "waiting";
+	const buttons = row.querySelectorAll(".psi-reply");
+	for (const item of buttons) {
+		item.disabled = mode !== "active";
+		item.classList.toggle("is-chosen", !!chosen && item.textContent === chosen);
+	}
+	const words = row.querySelector(".psi-replies-chosen");
+	const collapsed = mode === "chosen";
+	row.querySelector(".psi-replies-buttons").hidden = collapsed;
+	row.querySelector(".psi-replies-keys").hidden = mode !== "active";
+	if (words) { words.hidden = !collapsed; words.textContent = collapsed ? `You picked: ${chosen}` : ""; }
+}
+
+/**
+ * A row of one-click replies (Alt+1…4). Clicking sends the option's message through `ctx.send`; the chat then
+ * keeps only the latest turn's row active and collapses older ones to what was picked.
+ */
+export function replyRow(options, ctx = {}, { source = "default" } = {}) {
+	const row = make("div", "psi-replies");
+	row.dataset.source = source;
+	row.setAttribute("role", "group");
+	row.setAttribute("aria-label", "Ways to carry on");
+	row.psiOptions = options;
+	const buttons = make("div", "psi-replies-buttons");
+	options.slice(0, 4).forEach((option, index) => {
+		const item = make("button", index === 0 ? "psi-reply is-first" : "psi-reply", option.label);
+		item.type = "button";
+		item.setAttribute("aria-keyshortcuts", `Alt+${index + 1}`);
+		item.addEventListener("click", () => { void pick(option); });
+		buttons.append(item);
+	});
+	const count = Math.min(4, options.length);
+	const keys = make("p", "psi-replies-keys", count > 1 ? `Alt+1 to ${count} picks one` : "Alt+1 picks it");
+	keys.setAttribute("aria-hidden", "true");
+	const chosen = make("p", "psi-replies-chosen"); chosen.hidden = true;
+	row.append(buttons, keys, chosen);
+	setReplyState(row, { mode: "active" });
+	async function pick(option) {
+		if (row.dataset.state !== "active") return;
+		row.dataset.chosen = option.label;
+		setReplyState(row, { mode: "sent", chosen: option.label });
+		try { await ctx.send?.(option.message); }
+		catch { delete row.dataset.chosen; setReplyState(row, { mode: "active" }); }
+	}
+	return row;
 }
 
 function make(tag, className, text) {

@@ -96,6 +96,21 @@ function parsePlan(input: unknown): { plan?: SkillPlan; errors: string[] } {
 	return { errors, plan: { ...input, hoursGoal, createdAt: now, updatedAt: now } as SkillPlan };
 }
 
+function readAttempts(root: string, skill: string): Attempt[] {
+	const file = join(root, "skills", skill, "attempts.jsonl");
+	let raw: string;
+	try {
+		for (const path of [join(root, "skills"), join(root, "skills", skill), file]) {
+			if (lstatSync(path).isSymbolicLink()) throw new Error("Refusing symlink: " + path);
+		}
+		raw = readFileSync(file, "utf8");
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+		throw error;
+	}
+	return raw.split(/\r?\n/).filter((line) => line.trim()).map((line) => JSON.parse(line) as Attempt);
+}
+
 /** Read missed challenges without requiring a new core storage API. */
 function nextChallenge(deps: PracticeDeps, skill: string): Challenge | undefined {
 	const { practice } = deps;
@@ -109,20 +124,9 @@ function nextChallenge(deps: PracticeDeps, skill: string): Challenge | undefined
 	const untried = practice.listChallenges(skill, { unattempted: true }).sort((a, b) =>
 		(priorities.get(a.subskillId ?? "") ?? Infinity) - (priorities.get(b.subskillId ?? "") ?? Infinity));
 	if (untried.length) return untried[0];
-	const file = join(practice.root, "skills", skill, "attempts.jsonl");
-	let raw: string;
-	try {
-		for (const path of [join(practice.root, "skills"), join(practice.root, "skills", skill), file]) {
-			if (lstatSync(path).isSymbolicLink()) throw new Error("Refusing symlink: " + path);
-		}
-		raw = readFileSync(file, "utf8");
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
-		throw error;
-	}
+	const history = readAttempts(practice.root, skill);
 	const latest = new Map<string, Attempt>();
-	for (const line of raw.split(/\r?\n/).filter((line) => line.trim())) {
-		const attempt = JSON.parse(line) as Attempt;
+	for (const attempt of history) {
 		const previous = latest.get(attempt.challengeId);
 		if (!previous || Date.parse(attempt.at) >= Date.parse(previous.at)) latest.set(attempt.challengeId, attempt);
 	}
@@ -298,10 +302,17 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 			if (!skill || !slug.test(skill)) return result({ errors: ["Select a valid skill with /skill first."] });
 			const c = practice.getChallenge(skill, p.challengeId);
 			if (!c) return result({ errors: ["Challenge not found for this skill."] });
+			const now = Date.now();
+			if (readAttempts(practice.root, skill).some((a) => a.challengeId === c.id
+				&& now - Date.parse(a.at) >= 0 && now - Date.parse(a.at) <= 120000)) {
+				return { ...result({ errors: ["Attempt already recorded within the last 2 minutes; coach without re-grading."] }),
+					isError: true };
+			}
 			if (c.format === "code" && !p.outcome) {
 				return result({ errors: ["code requires an explicit outcome from a code run."] });
 			}
-			const outcome = c.format === "code" ? p.outcome : practice.checkAnswer(c, p.answer) ?? p.outcome;
+			const outcome = p.outcome === "skipped" ? "skipped"
+				: c.format === "code" ? p.outcome : practice.checkAnswer(c, p.answer) ?? p.outcome;
 			if (!outcome) return result({ errors: ["Open answer requires an explicit outcome graded against the rubric."] });
 			const hintsUsed = p.hintsUsed ?? (state.skill === skill && state.challengeId === c.id ? state.hintIndex : 0);
 			const recorded = practice.recordAttempt({ ...p, outcome, hintsUsed });

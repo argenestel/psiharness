@@ -7,13 +7,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: Official Python documentation (docs.python.org)",
-			"Openly licensed (PSF License Version 2)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (PSF License Version 2) (+3)"
 		],
 		"license": "PSF License Version 2",
 		"excerpt": "The times listed for dict objects are average-case times, as they assume the hash function for the objects is sufficiently robust to make collisions uncommon.",
-		"accessedAt": "2026-10-31T20:10:14.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-a876ee603b",
@@ -23,13 +23,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: Official Python documentation (docs.python.org)",
-			"Openly licensed (PSF License Version 2)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (PSF License Version 2) (+3)"
 		],
 		"license": "PSF License Version 2",
 		"excerpt": "To implement a queue, use collections.deque which was designed to have fast appends and pops from both ends.",
-		"accessedAt": "2026-10-31T20:10:14.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-be20e7fa9b",
@@ -39,13 +39,13 @@
 		"kind": "official-docs",
 		"rank": 98,
 		"rankReasons": [
-			"Official documentation",
-			"Trusted domain: Official Python documentation (docs.python.org)",
-			"Openly licensed (PSF License Version 2)"
+			"Official documentation (+90)",
+			"Trusted domain (+5)",
+			"Open license (PSF License Version 2) (+3)"
 		],
 		"license": "PSF License Version 2",
 		"excerpt": "Sorts are guaranteed to be stable. That means that when multiple records have the same key, their original order is preserved.",
-		"accessedAt": "2026-10-31T20:10:14.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-21391ff64e",
@@ -53,15 +53,14 @@
 		"title": "Problem Solving with Algorithms and Data Structures using Python, 3rd ed. — 2.3 Big O Notation",
 		"publisher": "Runestone Academy (Bradley N. Miller, David L. Ranum)",
 		"kind": "textbook",
-		"rank": 93,
+		"rank": 88,
 		"rankReasons": [
-			"Open textbook",
-			"Trusted domain: Runestone Academy open textbook platform (runestone.academy)",
-			"Openly licensed (CC BY-NC-SA 4.0)"
+			"Textbook (+85)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "The order of magnitude function describes the part of \\(T(n)\\) that increases the fastest as the value of n increases.",
-		"accessedAt": "2026-10-31T20:10:14.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-abdce53cbf",
@@ -69,15 +68,14 @@
 		"title": "Problem Solving with Algorithms and Data Structures using Python, 3rd ed. — 5.4 The Binary Search",
 		"publisher": "Runestone Academy (Bradley N. Miller, David L. Ranum)",
 		"kind": "textbook",
-		"rank": 93,
+		"rank": 88,
 		"rankReasons": [
-			"Open textbook",
-			"Trusted domain: Runestone Academy open textbook platform (runestone.academy)",
-			"Openly licensed (CC BY-NC-SA 4.0)"
+			"Textbook (+85)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "The maximum number of comparisons is logarithmic with respect to the number of items in the list.",
-		"accessedAt": "2026-10-31T20:10:14.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-39bc578f72",
@@ -85,15 +83,14 @@
 		"title": "Problem Solving with Algorithms and Data Structures using Python, 3rd ed. — 5.11 The Merge Sort",
 		"publisher": "Runestone Academy (Bradley N. Miller, David L. Ranum)",
 		"kind": "textbook",
-		"rank": 93,
+		"rank": 88,
 		"rankReasons": [
-			"Open textbook",
-			"Trusted domain: Runestone Academy open textbook platform (runestone.academy)",
-			"Openly licensed (CC BY-NC-SA 4.0)"
+			"Textbook (+85)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "Merging is the process of taking two smaller sorted lists and combining them together into a single sorted new list.",
-		"accessedAt": "2026-10-31T20:10:14.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-19250474cb",
@@ -101,15 +98,14 @@
 		"title": "Problem Solving with Algorithms and Data Structures using Python, 3rd ed. — 3.18 Palindrome Checker",
 		"publisher": "Runestone Academy (Bradley N. Miller, David L. Ranum)",
 		"kind": "textbook",
-		"rank": 93,
+		"rank": 88,
 		"rankReasons": [
-			"Open textbook",
-			"Trusted domain: Runestone Academy open textbook platform (runestone.academy)",
-			"Openly licensed (CC BY-NC-SA 4.0)"
+			"Textbook (+85)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "Since we can remove both of the front and rear characters directly, we can compare them and continue only if they match.",
-		"accessedAt": "2026-10-31T20:10:14.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	},
 	{
 		"id": "src-df9f983ea1",
@@ -119,12 +115,12 @@
 		"kind": "course",
 		"rank": 88,
 		"rankReasons": [
-			"University course material",
-			"Trusted domain: MIT OpenCourseWare (ocw.mit.edu)",
-			"Openly licensed (CC BY-NC-SA 4.0)"
+			"Course material (+80)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 4.0) (+3)"
 		],
 		"license": "CC BY-NC-SA 4.0",
 		"excerpt": "Idea! Visit outgoing adjacencies recursively, but never revisit a vertex",
-		"accessedAt": "2026-10-31T20:10:14.000Z"
+		"accessedAt": "2026-10-31T20:28:52.000Z"
 	}
 ]

@@ -1,0 +1,126 @@
+[
+	{
+		"id": "src-478a532531",
+		"url": "https://git-scm.com/docs/git-merge",
+		"title": "Git reference manual: git-merge",
+		"publisher": "Git project (git-scm.com)",
+		"kind": "official-docs",
+		"rank": 95,
+		"rankReasons": [
+			"Official documentation (+90)",
+			"Trusted domain (+5)"
+		],
+		"excerpt": "With --no-ff, create a merge commit in all cases, even when the merge could instead be resolved as a fast-forward.",
+		"accessedAt": "2026-10-31T20:28:52.000Z"
+	},
+	{
+		"id": "src-a523d4cd15",
+		"url": "https://git-scm.com/docs/git-revert",
+		"title": "Git reference manual: git-revert",
+		"publisher": "Git project (git-scm.com)",
+		"kind": "official-docs",
+		"rank": 95,
+		"rankReasons": [
+			"Official documentation (+90)",
+			"Trusted domain (+5)"
+		],
+		"excerpt": "Given one or more existing commits, revert the changes that the related patches introduce, and record some new commits that record them.",
+		"accessedAt": "2026-10-31T20:28:52.000Z"
+	},
+	{
+		"id": "src-52ab18684b",
+		"url": "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository",
+		"title": "Pro Git 2.2: Recording Changes to the Repository",
+		"publisher": "Pro Git, 2nd ed. (Scott Chacon, Ben Straub) — git-scm.com",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 3.0) (+3)"
+		],
+		"license": "CC BY-NC-SA 3.0",
+		"excerpt": "Remember that the commit records the snapshot you set up in your staging area. Anything you didn't stage is still sitting there modified",
+		"accessedAt": "2026-10-31T20:28:52.000Z"
+	},
+	{
+		"id": "src-7db8ebb825",
+		"url": "https://git-scm.com/book/en/v2/Git-Basics-Viewing-the-Commit-History",
+		"title": "Pro Git 2.3: Viewing the Commit History",
+		"publisher": "Pro Git, 2nd ed. (Scott Chacon, Ben Straub) — git-scm.com",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 3.0) (+3)"
+		],
+		"license": "CC BY-NC-SA 3.0",
+		"excerpt": "By default, with no arguments, git log lists the commits made in that repository in reverse chronological order; that is, the most recent commits show up first.",
+		"accessedAt": "2026-10-31T20:28:52.000Z"
+	},
+	{
+		"id": "src-e11e9f0450",
+		"url": "https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things",
+		"title": "Pro Git 2.4: Undoing Things",
+		"publisher": "Pro Git, 2nd ed. (Scott Chacon, Ben Straub) — git-scm.com",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 3.0) (+3)"
+		],
+		"license": "CC BY-NC-SA 3.0",
+		"excerpt": "Only amend commits that are still local and have not been pushed somewhere.",
+		"accessedAt": "2026-10-31T20:28:52.000Z"
+	},
+	{
+		"id": "src-bf0a16a9d6",
+		"url": "https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell",
+		"title": "Pro Git 3.1: Branches in a Nutshell",
+		"publisher": "Pro Git, 2nd ed. (Scott Chacon, Ben Straub) — git-scm.com",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 3.0) (+3)"
+		],
+		"license": "CC BY-NC-SA 3.0",
+		"excerpt": "A branch in Git is simply a lightweight movable pointer to one of these commits.",
+		"accessedAt": "2026-10-31T20:28:52.000Z"
+	},
+	{
+		"id": "src-50019211ee",
+		"url": "https://git-scm.com/book/en/v2/Git-Branching-Rebasing",
+		"title": "Pro Git 3.6: Rebasing",
+		"publisher": "Pro Git, 2nd ed. (Scott Chacon, Ben Straub) — git-scm.com",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 3.0) (+3)"
+		],
+		"license": "CC BY-NC-SA 3.0",
+		"excerpt": "Do not rebase commits that exist outside your repository and that people may have based work on.",
+		"accessedAt": "2026-10-31T20:28:52.000Z"
+	},
+	{
+		"id": "src-e5acaae758",
+		"url": "https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified",
+		"title": "Pro Git 7.7: Reset Demystified",
+		"publisher": "Pro Git, 2nd ed. (Scott Chacon, Ben Straub) — git-scm.com",
+		"kind": "textbook",
+		"rank": 93,
+		"rankReasons": [
+			"Textbook (+85)",
+			"Trusted domain (+5)",
+			"Open license (CC BY-NC-SA 3.0) (+3)"
+		],
+		"license": "CC BY-NC-SA 3.0",
+		"excerpt": "The index is your proposed next commit.",
+		"accessedAt": "2026-10-31T20:28:52.000Z"
+	}
+]

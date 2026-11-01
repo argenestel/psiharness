@@ -2,6 +2,9 @@ import { createCodeLab, warmUp } from "./codelab.js";
 import { markSvg, renderTrail } from "./trail.js";
 import { badgeLabel, levelInfo } from "./format.js";
 import * as ui from "./ui.js";
+import { citedNumbers, forgetSources, loadSources, numbered, renderSourceList, resolveCitation, verdictWords,
+	wireCitations } from "./sources.js";
+import { replyRow } from "./chat.js";
 
 /** Stable, compact display of a learner answer. */
 export function formatAnswer(value) {
@@ -72,6 +75,34 @@ export function widgetKindFor(toolName, result) {
 		case "psi_skill_plan": return Array.isArray((d.plan ?? d).subskills) ? "plan" : null;
 		// psi_memory_remember has no widget: the turn's activity line already says "Saved a note about you".
 		case "psi_concept_graph": return typeof d.mermaid === "string" ? "graph" : null;
+		default: break;
+	}
+	return learnKindFor(d);
+}
+
+/** Normalize reply options to 1–4 { label, message } pairs (strings stand for both). */
+export function normalizeOptions(options) {
+	const seen = new Set(), out = [];
+	for (const option of Array.isArray(options) ? options : []) {
+		const label = String(typeof option === "string" ? option : option?.label ?? "").trim();
+		const message = String(typeof option === "string" ? option : option?.message ?? label).trim() || label;
+		if (!label || seen.has(label.toLowerCase())) continue;
+		seen.add(label.toLowerCase());
+		out.push({ label, message });
+		if (out.length === 4) break;
+	}
+	return out;
+}
+
+/** The teach-first widgets, keyed by details.widget.type whichever tool sent them. */
+function learnKindFor(d) {
+	switch (d?.type) {
+		case "lesson": return typeof d.title === "string" && typeof d.explanation === "string" ? "lesson" : null;
+		case "verification": return typeof d.claim === "string" ? "verification" : null;
+		case "run": return typeof d.code === "string" ? "run" : null;
+		case "next_steps": return normalizeOptions(d.options).length ? "next_steps" : null;
+		case "socratic": return typeof d.question === "string" && d.question.trim() ? "socratic" : null;
+		case "sources": return Array.isArray(d.items) ? "sources" : null;
 		default: return null;
 	}
 }
@@ -102,12 +133,12 @@ function countUp(el, xp) {
 	el.textContent = "+0 XP";
 	requestAnimationFrame(tick);
 }
-async function markdown(el, text, { inline = false } = {}) {
+async function markdown(el, text, { inline = false, cites = false } = {}) {
 	el.textContent = text;
 	try {
 		const mod = await import("./markdown.js");
 		if (typeof mod.renderMarkdown !== "function") return;
-		const rendered = await mod.renderMarkdown(text);
+		const rendered = await mod.renderMarkdown(text, { cites });
 		if (!(rendered instanceof Node)) return;
 		// Inline uses (choices, hints) unwrap a single paragraph so text sits on the row.
 		const only = rendered.childNodes.length === 1 ? rendered.firstChild : null;
@@ -376,6 +407,13 @@ function challengeSheet(d, ctx) {
 		line.append(markSvg(outcome), node("span", "", RESULT_WORDS[outcome] ?? "Saved."), xp);
 		result.append(line);
 		countUp(xp, a.xp);
+		if (outcome === "success") {
+			// The REST attempt has no combo; the learner summary does.
+			void apiFor(ctx).then((api) => api.get("/api/me")).then((me) => {
+				const combo = comboLine(me?.combo);
+				if (combo) line.after(combo);
+			}).catch(() => { /* The result reads fine without it. */ });
+		}
 		if (a.feedback) result.append(node("p", "psi-feedback", a.feedback));
 		if (response.leveledUp) result.append(levelUpLine(response.progress?.level ?? levelInfo(response.progress?.xp).level));
 		const badges = badgesLine(response.badges);
@@ -493,10 +531,33 @@ function outcomeLine(outcome, xp) {
 	return line;
 }
 
+/** Combo words for a run of correct answers: { text: "3 in a row", ticks, bonus: "×1.2 XP" | "" }, or null under 2. */
+export function comboWords(combo, bonus) {
+	const n = Math.floor(Number(combo) || 0);
+	if (n < 2) return null;
+	const multiplier = Number(bonus) > 1 ? Number(bonus) : n >= 5 ? 1.5 : n >= 3 ? 1.2 : 1;
+	return { text: `${n} in a row`, ticks: Math.min(n, 10), bonus: multiplier > 1 ? `×${multiplier} XP` : "" };
+}
+function comboLine(combo, bonus) {
+	const words = comboWords(combo, bonus);
+	if (!words) return null;
+	const line = node("p", "psi-combo");
+	const ticks = node("span", "psi-combo-ticks");
+	ticks.setAttribute("aria-hidden", "true");
+	for (let i = 0; i < words.ticks; i++) ticks.append(node("span"));
+	line.append(ticks, node("span", "psi-combo-text", words.text));
+	if (words.bonus) line.append(node("span", "psi-combo-bonus", words.bonus));
+	return line;
+}
+
 function attemptNote(d) {
 	const card = node("section", "psi-widget psi-tool-block psi-attempt");
 	card.setAttribute("role", "status");
 	card.append(outcomeLine(d.outcome, d.xp));
+	if (d.outcome === "success") {
+		const combo = comboLine(d.combo, d.comboBonus);
+		if (combo) card.append(combo);
+	}
 	if (d.leveledUp) card.append(levelUpLine(d.level ?? 1));
 	const badges = badgesLine(d.badges);
 	if (badges) card.append(badges);
@@ -610,11 +671,268 @@ function artifactFrame(toolName, result) {
 	return card;
 }
 
+// ───────────────────────────────────────────── teach first: lesson, sources, checks, runs, prompts ──
+
+/** The default replies under a lesson card. */
+export const LESSON_REPLIES = [
+	{ label: "Continue", message: "Continue" },
+	{ label: "Show me another example", message: "Show me another example" },
+	{ label: "I'm stuck", message: "I'm stuck" },
+];
+
+function section(title, className = "") {
+	const el = node("section", `psi-lesson-part ${className}`.trim());
+	el.append(node("h4", "", title));
+	return el;
+}
+
+function lessonCard(d, ctx) {
+	const card = node("article", "psi-widget psi-lesson-card");
+	const titleId = `psi-lesson-title-${++choiceId}`;
+	card.setAttribute("aria-labelledby", titleId);
+	const citations = numbered(d.citations);
+	const lookup = (n) => resolveCitation(citations, n);
+	const title = node("h3", "psi-lesson-title", d.title);
+	title.id = titleId;
+	card.append(title);
+	const body = node("div", "psi-lesson-body psi-prose");
+	card.append(body);
+	void markdown(body, d.explanation ?? "", { cites: true }).then(() => {
+		// A lesson whose text has no [n] markers still points its last paragraph at every source it cites.
+		if (!body.querySelector(".psi-cite") && citations.length) {
+			const target = [...body.querySelectorAll(":scope > p")].at(-1);
+			if (target) {
+				const sup = node("sup", "psi-cite-group");
+				for (const c of citations) {
+					const mark = node("button", "psi-cite", `[${c.n}]`);
+					mark.type = "button"; mark.dataset.cite = String(c.n);
+					mark.setAttribute("aria-label", `Source ${c.n}`); mark.setAttribute("aria-haspopup", "dialog");
+					sup.append(mark);
+				}
+				target.append(sup);
+			}
+		}
+		wireCitations(body, lookup);
+	});
+	const ideas = (d.keyIdeas ?? []).filter((idea) => typeof idea === "string" && idea.trim());
+	if (ideas.length) {
+		const part = section("Key ideas", "psi-lesson-ideas");
+		const list = node("ul");
+		for (const idea of ideas) {
+			const item = node("li");
+			void markdown(item, idea, { inline: true, cites: true }).then(() => wireCitations(item, lookup));
+			list.append(item);
+		}
+		part.append(list);
+		card.append(part);
+	}
+	const example = d.workedExample;
+	if (example && (example.problem || example.steps?.length)) {
+		const part = section("Worked example", "psi-lesson-example");
+		if (example.problem) {
+			const problem = node("div", "psi-lesson-problem psi-prose");
+			void markdown(problem, example.problem);
+			part.append(problem);
+		}
+		const steps = node("ol", "psi-lesson-steps");
+		for (const step of example.steps ?? []) {
+			const item = node("li", "psi-prose");
+			void markdown(item, String(step), { inline: true });
+			steps.append(item);
+		}
+		if (steps.childElementCount) part.append(steps);
+		if (example.answer) {
+			const reveal = node("details", "psi-lesson-answer");
+			const summary = node("summary", "", "Show the answer");
+			const answer = node("div", "psi-prose");
+			void markdown(answer, String(example.answer));
+			reveal.append(summary, answer);
+			reveal.addEventListener("toggle", () => { summary.textContent = reveal.open ? "Hide the answer" : "Show the answer"; });
+			part.append(reveal);
+		}
+		card.append(part);
+	}
+	const pitfalls = (d.pitfalls ?? []).filter((p) => typeof p === "string" && p.trim());
+	if (pitfalls.length) {
+		const part = section("Common mistakes", "psi-lesson-pitfalls");
+		const list = node("ul");
+		for (const pitfall of pitfalls) {
+			const item = node("li");
+			void markdown(item, pitfall, { inline: true });
+			list.append(item);
+		}
+		part.append(list);
+		card.append(part);
+	}
+	if (citations.length) {
+		const foot = node("footer", "psi-lesson-sources");
+		foot.append(node("h4", "", "Sources"), renderSourceList(citations));
+		card.append(foot);
+	}
+	card.append(replyRow(LESSON_REPLIES, ctx, { source: "lesson" }));
+	return card;
+}
+
+const VERDICT_MARKS = {
+	// Ink and pencil only: a check in ink, a crossing-out in pencil, a dotted question ring in pencil.
+	check: "M4 13l5 5L20 6",
+	cross: "M5 5l14 14M19 5L5 19",
+	query: "M9.2 9a3 3 0 1 1 4.3 2.7c-.9.5-1.5 1.1-1.5 2.1V15M12 18.6v.2",
+};
+function verdictMark(mark) {
+	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	svg.setAttribute("viewBox", "0 0 24 24");
+	svg.setAttribute("aria-hidden", "true");
+	svg.setAttribute("class", `psi-verdict-mark is-${mark}`);
+	const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+	path.setAttribute("d", VERDICT_MARKS[mark] ?? VERDICT_MARKS.query);
+	svg.append(path);
+	return svg;
+}
+
+function verification(d, ctx) {
+	const citations = numbered(d.citations);
+	const verdict = verdictWords(d.verdict, citations);
+	const card = node("section", "psi-widget psi-verify");
+	card.dataset.verdict = verdict.mark;
+	card.setAttribute("role", "status");
+	const head = node("p", "psi-verify-head");
+	head.append(verdictMark(verdict.mark), node("strong", "", verdict.words));
+	card.append(head);
+	const claim = node("blockquote", "psi-verify-claim");
+	claim.append(node("p", "", d.claim));
+	card.append(node("p", "psi-verify-label", "The claim"), claim);
+	if (citations.length) {
+		const list = renderSourceList(citations);
+		card.append(node("p", "psi-verify-label", verdict.mark === "cross" ? "What the sources say instead" : "What the sources say"), list);
+		// Verification quotes carry ids, titles and links; fill in kind and trust from the skill's ranked list.
+		const skill = d.skill ?? ctx.skill;
+		if (skill && citations.some((c) => c.kind === undefined)) {
+			void loadSources(skill, ctx.api).then((sources) => {
+				if (!sources.length) return;
+				const merged = citations.map((c) => ({ ...sources.find((s) => s.id === c.sourceId), ...c }));
+				list.replaceWith(renderSourceList(merged));
+			});
+		}
+	}
+	card.append(node("p", "psi-verify-note", verdict.mark === "check"
+		? "A quick match against the skill's ranked sources, not proof. Open a source to read it in full."
+		: "psi only checks the skill's ranked sources. Open one to read it in full, or ask the tutor to find more."));
+	return card;
+}
+
+function fenced(code, language) {
+	const longest = Math.max(2, ...(String(code).match(/`+/g) ?? []).map((run) => run.length));
+	const fence = "`".repeat(longest + 1);
+	return `${fence}${language ?? ""}\n${code}\n${fence}`;
+}
+/** "ran in 120 ms" / "ran in 1.4 s" for a run widget. */
+export function ranIn(ms) {
+	const value = Number(ms);
+	if (!Number.isFinite(value) || value < 0) return "";
+	return value < 1000 ? `ran in ${Math.round(value)} ms` : `ran in ${(value / 1000).toFixed(1)} s`;
+}
+
+function runResult(d) {
+	const card = node("section", "psi-widget psi-ran");
+	const head = node("header", "psi-ran-head");
+	head.append(node("strong", "", "psi ran this"));
+	const meta = [d.language ? String(d.language).replace(/^./, (c) => c.toUpperCase()) : "", ranIn(d.ms)].filter(Boolean);
+	if (meta.length) head.append(node("span", "psi-ran-meta", meta.join(", ")));
+	card.append(head);
+	const code = node("div", "psi-ran-code");
+	void markdown(code, fenced(d.code, d.language));
+	card.append(code);
+	const out = node("div", "psi-ran-output");
+	out.setAttribute("aria-label", "Output");
+	const stdout = String(d.stdout ?? ""), stderr = String(d.stderr ?? "");
+	if (stdout) out.append(node("pre", "psi-ran-stdout", stdout.replace(/\n$/, "")));
+	if (stderr) out.append(node("pre", "psi-ran-stderr", stderr.replace(/\n$/, "")));
+	if (!stdout && !stderr) out.append(node("p", "psi-ran-empty", "No output."));
+	const exit = d.exitCode;
+	if (exit === null || d.timedOut) out.append(node("p", "psi-ran-exit", "Stopped before it finished (10 s limit)."));
+	else if (Number(exit) !== 0 && exit !== undefined) out.append(node("p", "psi-ran-exit", `Exited with code ${exit}`));
+	card.append(out);
+	return card;
+}
+
+function socratic(d, ctx) {
+	const card = node("section", "psi-widget psi-socratic");
+	card.setAttribute("aria-label", "A question to think about");
+	const question = node("div", "psi-socratic-question psi-prose");
+	void markdown(question, d.question);
+	card.append(question, node("p", "psi-socratic-frame", "No wrong answers here — it just helps the explanation land."));
+	const form = node("form", "psi-socratic-form");
+	const id = `psi-guess-${++choiceId}`;
+	const label = node("label", "psi-socratic-label", "Your guess");
+	label.htmlFor = id;
+	const input = node("input", "psi-socratic-input");
+	input.id = id; input.type = "text"; input.autocomplete = "off";
+	const share = node("button", "is-primary", "Share my guess");
+	share.type = "submit";
+	const show = button("Just show me", () => finish("Just show me", "You asked to see it."));
+	const row = node("div", "psi-socratic-actions");
+	row.append(share, show);
+	form.append(label, input, row);
+	card.append(form);
+	if (d.hint) {
+		const nudge = node("details", "psi-socratic-hint");
+		nudge.append(node("summary", "", "A nudge"));
+		const text = node("p");
+		void markdown(text, String(d.hint), { inline: true });
+		nudge.append(text);
+		card.append(nudge);
+	}
+	const done = node("p", "psi-socratic-done");
+	done.hidden = true;
+	card.append(done);
+	form.addEventListener("submit", (event) => {
+		event.preventDefault();
+		const guess = input.value.trim();
+		if (!guess) { notify(ctx, "Type a guess, or choose Just show me."); input.focus(); return; }
+		finish(`My guess: ${guess}`, `You guessed: ${guess}`);
+	});
+	function finish(message, words) {
+		card.dataset.answered = message;
+		form.hidden = true;
+		card.querySelector(".psi-socratic-hint")?.remove();
+		done.textContent = words; done.hidden = false;
+		void send(ctx, message);
+	}
+	/** Chat calls this when the prompt is no longer the latest turn (or was answered by typing). */
+	card.psiSettle = (nextUserText) => {
+		if (!form.hidden) {
+			const text = String(nextUserText ?? "").trim();
+			form.hidden = true;
+			card.querySelector(".psi-socratic-hint")?.remove();
+			done.textContent = /^just show me$/i.test(text) ? "You asked to see it."
+				: text.startsWith("My guess: ") ? `You guessed: ${text.slice(10)}` : "Answered in the chat.";
+			done.hidden = false;
+		}
+	};
+	return card;
+}
+
+function sourcesList(d, ctx) {
+	if (ctx.skill) forgetSources(ctx.skill);
+	const items = numbered(d.items);
+	const details = node("details", "psi-widget psi-sources-widget");
+	details.append(node("summary", "", items.length ? `Sources for this skill (${items.length})` : "No sources saved for this skill yet"));
+	if (items.length) details.append(renderSourceList(items));
+	return details;
+}
+
 /** Render a supported tool result, or return null so chat can show its normal fallback. */
 export function renderToolWidget(toolName, args, result, ctx = {}) {
 	const kind = widgetKindFor(toolName, result);
 	if (!kind) return null;
 	const d = dataFor(result);
+	if (kind === "lesson") return lessonCard(d, ctx);
+	if (kind === "verification") return verification(d, ctx);
+	if (kind === "run") return runResult(d);
+	if (kind === "socratic") return socratic(d, ctx);
+	if (kind === "sources") return sourcesList(d, ctx);
+	if (kind === "next_steps") return replyRow(normalizeOptions(d.options), ctx, { source: "next_steps" });
 	if (kind === "challenge") return challengeSheet(d, ctx);
 	if (kind === "attempt") return attemptNote(d);
 	if (kind === "graph") {

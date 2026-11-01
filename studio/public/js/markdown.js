@@ -5,15 +5,37 @@ export function safeLink(value) {
 	catch { return undefined; }
 }
 
-/** Parse inline tokens without interpreting HTML or executing content. */
-export function parseInline(text) {
+// Citation markers: "[1]", "[1, 2]", "[1][3]", "[2–4]", not after a word ("xs[1]") and not a link ("[1](…)").
+const CITE = String.raw`(?<![\p{L}\p{N}_\]\)\x60])((?:\[\d{1,2}(?:\s*[,–-]\s*\d{1,2})*\])+)(?!\()`;
+/** Numbers in a citation marker group, ranges expanded: "[1][3–4]" → [1, 3, 4]. */
+export function citeNumbers(marker) {
+	const numbers = [];
+	for (const group of String(marker).match(/\[[^\]]*\]/g) ?? []) {
+		for (const part of group.slice(1, -1).split(",")) {
+			const [a, b] = part.split(/[–-]/).map((x) => Number(x.trim()));
+			if (!Number.isInteger(a) || a < 1) continue;
+			const end = Number.isInteger(b) && b >= a && b - a < 10 ? b : a;
+			for (let n = a; n <= end; n++) if (!numbers.includes(n)) numbers.push(n);
+		}
+	}
+	return numbers;
+}
+const INLINE = String.raw`(\x60+)([\s\S]*?)\1|\$\$([\s\S]*?)\$\$|\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$([^$\n]+)\$|\[([^\]]*)\]\(([^\s]*?)\)|\*\*([^*]+)\*\*|(?<![\p{L}\p{N}_])__([^_\n]+)__(?![\p{L}\p{N}_])|\*([^*\n]+)\*|(?<![\p{L}\p{N}_])_([^_\n]+)_(?![\p{L}\p{N}_])`;
+const PLAIN = new RegExp(INLINE, "gu"), CITED = new RegExp(`${INLINE}|${CITE}`, "gu");
+
+/** Parse inline tokens without interpreting HTML or executing content. `{ cites: true }` adds citation tokens. */
+export function parseInline(text, opts = {}) {
 	const tokens = [];
-	const pattern = /(`+)([\s\S]*?)\1|\$\$([\s\S]*?)\$\$|\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$([^$\n]+)\$|\[([^\]]*)\]\(([^\s]*?)\)|\*\*([^*]+)\*\*|(?<![\p{L}\p{N}_])__([^_\n]+)__(?![\p{L}\p{N}_])|\*([^*\n]+)\*|(?<![\p{L}\p{N}_])_([^_\n]+)_(?![\p{L}\p{N}_])/gu;
+	const pattern = opts.cites ? CITED : PLAIN;
+	pattern.lastIndex = 0;
 	let start = 0;
 	for (const match of text.matchAll(pattern)) {
 		if (match.index > start) tokens.push({ type: "text", text: text.slice(start, match.index) });
 		if (match[1]) tokens.push({ type: "code", text: match[2] });
-		else if (match[3] !== undefined || match[4] !== undefined || match[5] !== undefined || match[6] !== undefined) {
+		else if (match[13]) {
+			const numbers = citeNumbers(match[13]);
+			tokens.push(numbers.length ? { type: "cite", numbers, raw: match[13] } : { type: "text", text: match[0] });
+		} else if (match[3] !== undefined || match[4] !== undefined || match[5] !== undefined || match[6] !== undefined) {
 			tokens.push({ type: "math", text: match[3] ?? match[4] ?? match[5] ?? match[6],
 				display: match[3] !== undefined || match[4] !== undefined, raw: match[0] });
 		} else if (match[7] !== undefined) {
@@ -25,11 +47,13 @@ export function parseInline(text) {
 	if (start < text.length) tokens.push({ type: "text", text: text.slice(start) });
 	return tokens;
 }
+const parseInlineWith = (text, opts) => parseInline(text, opts);
 const cells = (line) => line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
 const special = (line) => /^(\s*$|\s*```|\s*~~~|#{1,6}\s|>\s?|\s*[-*+]\s|\s*\d+\.\s|\$\$|\\\[)/.test(line);
 
 /** Pure block AST. Raw HTML remains ordinary text, including during partial streams. */
-export function parseMarkdown(value) {
+export function parseMarkdown(value, opts = {}) {
+	const parseInline = (text) => parseInlineWith(text, opts);
 	const lines = String(value ?? "").replace(/\r\n?/g, "\n").split("\n");
 	const blocks = [];
 	let i = 0;
@@ -63,7 +87,7 @@ export function parseMarkdown(value) {
 		} else if (/^>\s?/.test(lines[i])) {
 			const quote = [];
 			while (i < lines.length && /^>\s?/.test(lines[i])) quote.push(lines[i++].replace(/^>\s?/, ""));
-			block = { type: "quote", blocks: parseMarkdown(quote.join("\n")) };
+			block = { type: "quote", blocks: parseMarkdown(quote.join("\n"), opts) };
 		} else if (/^\s*(?:[-*+]|\d+\.)\s/.test(lines[i])) {
 			const ordered = /^\s*\d+\./.test(lines[i]), items = [];
 			while (i < lines.length && (ordered ? /^\s*\d+\.\s/ : /^\s*[-*+]\s/).test(lines[i])) {
@@ -112,13 +136,25 @@ function math(token) {
 	else if (globalThis.window) loadKatex().then(render);
 	return el;
 }
-function inline(parent, tokens) {
+function citeMarks(token) {
+	const sup = node("sup", undefined, "psi-cite-group");
+	for (const n of token.numbers) {
+		const mark = node("button", `[${n}]`, "psi-cite");
+		mark.type = "button"; mark.dataset.cite = String(n);
+		mark.setAttribute("aria-label", `Source ${n}`); mark.setAttribute("aria-haspopup", "dialog");
+		mark.setAttribute("aria-expanded", "false");
+		sup.append(mark);
+	}
+	return sup;
+}
+function inline(parent, tokens, opts = {}) {
 	for (const token of tokens) {
 		if (token.type === "math") { parent.append(math(token)); continue; }
+		if (token.type === "cite") { parent.append(citeMarks(token)); continue; }
 		const nested = ["strong", "em", "link"].includes(token.type);
 		const el = node(({ code: "code", strong: "strong", em: "em", link: "a" })[token.type] || "span", nested ? undefined : token.text);
 		// Bold, emphasis and link text may hold `code` or math ("**if `n == 0`, stop**").
-		if (nested) inline(el, parseInline(token.text));
+		if (nested) inline(el, parseInline(token.text, token.type === "link" ? {} : opts), opts);
 		if (token.type === "link") { el.href = token.href; el.target = "_blank"; el.rel = "noopener noreferrer"; }
 		parent.append(el);
 	}
@@ -166,11 +202,11 @@ function highlight(parent, text, language) {
 			: node("span", token.text, `psi-tok-${token.type}`));
 	}
 }
-function build(block) {
+function build(block, opts = {}) {
 	if (block.type === "math") return math(block);
 	const el = node(({ heading: `h${block.level}`, paragraph: "p", quote: "blockquote", code: "figure",
 		list: block.ordered ? "ol" : "ul", table: "table" })[block.type] || "div");
-	if (block.inline) inline(el, block.inline);
+	if (block.inline) inline(el, block.inline, opts);
 	if (block.type === "code") {
 		el.className = "psi-code";
 		const caption = node("figcaption");
@@ -186,8 +222,8 @@ function build(block) {
 		const pre = node("pre"), code = node("code"); highlight(code, block.text, block.language);
 		pre.append(code); el.append(caption, pre);
 	}
-	if (block.items) for (const item of block.items) { const li = node("li"); inline(li, item); el.append(li); }
-	if (block.blocks) el.append(...block.blocks.map(build));
+	if (block.items) for (const item of block.items) { const li = node("li"); inline(li, item, opts); el.append(li); }
+	if (block.blocks) el.append(...block.blocks.map((child) => build(child, opts)));
 	if (block.rows) {
 		const head = node("thead"), body = node("tbody");
 		block.rows.forEach((row, index) => {
@@ -205,15 +241,15 @@ function build(block) {
 	return el;
 }
 /** Build independent fragments; callers can retain unchanged leading blocks during streaming. */
-export function renderMarkdownBlocks(text) {
-	return parseMarkdown(text).map((block) => {
-		const fragment = document.createDocumentFragment(); fragment.append(build(block));
+export function renderMarkdownBlocks(text, opts = {}) {
+	return parseMarkdown(text, opts).map((block) => {
+		const fragment = document.createDocumentFragment(); fragment.append(build(block, opts));
 		return { raw: block.raw, fragment };
 	});
 }
-/** Safe DOM rendering. No source HTML is interpreted. */
-export function renderMarkdown(text) {
+/** Safe DOM rendering. No source HTML is interpreted. `{ cites: true }` turns [n] into source markers. */
+export function renderMarkdown(text, opts = {}) {
 	const fragment = document.createDocumentFragment();
-	for (const block of renderMarkdownBlocks(text)) fragment.append(block.fragment);
+	for (const block of renderMarkdownBlocks(text, opts)) fragment.append(block.fragment);
 	return fragment;
 }

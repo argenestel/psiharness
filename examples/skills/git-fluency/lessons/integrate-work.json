@@ -1,0 +1,77 @@
+{
+	"skill": "git-fluency",
+	"subskillId": "integrate-work",
+	"title": "Merge or rebase?",
+	"explanation": "There are two ways to bring one branch's work into another.\n\n**Merge.** `git merge topic` (run on the receiving branch). If the receiving branch hasn't moved since `topic` split off, Git just moves the pointer forward — a **fast-forward**, no new commit. If both sides have new commits, Git performs a three-way merge of the two tips and their common ancestor and records a **merge commit** with two parents. `--no-ff` forces a merge commit even when a fast-forward was possible, so the branch stays visible in history.\n\n**Rebase.** `git rebase trunk` (run on `topic`) takes the commits unique to `topic` and **replays** them, one by one, on top of `trunk`. The result is a straight line, and `trunk` can then fast-forward to include it. The final snapshot is the same as with a merge — only the history differs.\n\n```bash\ngit switch trunk && git merge --no-ff topic   # keep a merge commit\ngit switch topic && git rebase trunk          # or: replay topic onto trunk for linear history\n```\n\nRebasing creates *new* commits with new ids. The rule: **do not rebase commits that exist outside your repository and that people may have based work on.** Rebase your private work freely; merge shared work.",
+	"keyIdeas": [
+		"Fast-forward: the pointer just moves; no merge commit.",
+		"Three-way merge of diverged branches creates a merge commit; `--no-ff` always creates one.",
+		"Rebase replays your unique commits on top of another branch: linear history, new commit ids.",
+		"Never rebase commits others may have based work on."
+	],
+	"workedExample": {
+		"problem": "`trunk` and a branch `bakery` have both gained a commit since they split. Integrate `bakery` into `trunk` in two ways and compare: (a) merge, and (b) rebase `bakery` onto `trunk`, then fast-forward.",
+		"steps": [
+			"(a) On `trunk`, `git merge bakery -m 'Merge bakery'` must combine two diverged tips, so Git creates a merge commit with two parents.",
+			"(b) In a second copy, on `bakery` run `git rebase trunk`: bakery's commit is replayed on top of trunk's new commit, getting a new id.",
+			"Then on `trunk`, `git merge --ff-only bakery` succeeds because `trunk` is now an ancestor of `bakery` — history is a straight line.",
+			"Both approaches end with the same files; only the shape of history differs.",
+			"Run it in a throwaway folder:\n```sh\ngit init -q -b trunk base && cd base\nprintf 'tea\\n' > menu.md && git add menu.md && git commit -q -m 'Add menu'\ngit switch -q -c bakery && printf 'scones\\n' > bakery.md && git add bakery.md && git commit -q -m 'Add bakery'\ngit switch -q trunk && printf 'tea 3\\n' > prices.md && git add prices.md && git commit -q -m 'Add prices'\ncd .. && git clone -q base merged && git clone -q base rebased\ncd merged && git switch -q bakery && git switch -q trunk\ngit merge -q bakery -m 'Merge bakery'\n[ \"$(git rev-list --parents -n 1 HEAD | wc -w)\" -eq 3 ]      # merge commit: itself + two parents\ncd ../rebased && git switch -q bakery && old=$(git rev-parse HEAD)\ngit rebase -q trunk\n[ \"$(git rev-parse HEAD)\" != \"$old\" ]   # replayed as a new commit\ngit switch -q trunk && git merge -q --ff-only bakery\n[ \"$(git rev-list --merges --count HEAD)\" -eq 0 ]           # linear: no merge commits\n[ \"$(git rev-parse HEAD^{tree})\" = \"$(cd ../merged && git rev-parse HEAD^{tree})\" ]   # same snapshot\necho ok\n```"
+		],
+		"answer": "Merging creates a two-parent merge commit; rebasing replays `Add bakery` as a new commit on top of `Add prices` so `trunk` fast-forwards with no merge commit. Both end with identical files (the same tree)."
+	},
+	"pitfalls": [
+		"Rebasing a branch teammates already pulled, so their history no longer matches yours.",
+		"Expecting `git merge` to always create a merge commit — it fast-forwards when it can unless you pass `--no-ff`.",
+		"Running the command on the wrong branch: you merge *into* the branch you're on, and rebase the branch you're on *onto* another."
+	],
+	"citations": [
+		{
+			"sourceId": "src-478a532531",
+			"quote": "With --ff, when possible resolve the merge as a fast-forward (only update the branch pointer to match the merged branch; do not create a merge commit).",
+			"locator": "OPTIONS: --ff"
+		},
+		{
+			"sourceId": "src-478a532531",
+			"quote": "With --no-ff, create a merge commit in all cases, even when the merge could instead be resolved as a fast-forward.",
+			"locator": "OPTIONS: --no-ff"
+		},
+		{
+			"sourceId": "src-50019211ee",
+			"quote": "It performs a three-way merge between the two latest branch snapshots (C3 and C4) and the most recent common ancestor of the two (C2), creating a new snapshot (and commit).",
+			"locator": "The Basic Rebase"
+		},
+		{
+			"sourceId": "src-50019211ee",
+			"quote": "With the rebase command, you can take all the changes that were committed on one branch and replay them on a different branch.",
+			"locator": "The Basic Rebase"
+		},
+		{
+			"sourceId": "src-50019211ee",
+			"quote": "whether it's the last of the rebased commits for a rebase or the final merge commit after a merge, is the same snapshot — it's only the history that is different.",
+			"locator": "The Basic Rebase"
+		},
+		{
+			"sourceId": "src-478a532531",
+			"quote": "the branches to be merged must be tied together by a merge commit that has both of them as its parents.",
+			"locator": "TRUE MERGE"
+		},
+		{
+			"sourceId": "src-50019211ee",
+			"quote": "At this point, you can go back to the master branch and do a fast-forward merge.",
+			"locator": "The Basic Rebase"
+		},
+		{
+			"sourceId": "src-50019211ee",
+			"quote": "Do not rebase commits that exist outside your repository and that people may have based work on.",
+			"locator": "The Perils of Rebasing"
+		},
+		{
+			"sourceId": "src-50019211ee",
+			"quote": "When you rebase stuff, you're abandoning existing commits and creating new ones that are similar but different.",
+			"locator": "The Perils of Rebasing"
+		}
+	],
+	"createdAt": "2026-10-31T20:28:52.000Z",
+	"updatedAt": "2026-10-31T20:28:52.000Z"
+}

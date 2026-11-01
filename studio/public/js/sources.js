@@ -1,0 +1,244 @@
+// Ranked, checkable references for psi web: citation markers, source lists, the source popover and verdict words.
+// Pure helpers (citedNumbers, kindWords, rankSteps, verdictWords, resolveCitation) never touch the DOM.
+import { parseInline, parseMarkdown } from "./markdown.js";
+
+const KIND_WORDS = {
+	"official-docs": "Official documentation", textbook: "Textbook", course: "Course material",
+	paper: "Research paper", reference: "Reference work", video: "Video lecture", article: "Article",
+	forum: "Forum answer",
+};
+/** A source kind in words, e.g. "official-docs" → "Official documentation". */
+export function kindWords(kind) { return KIND_WORDS[kind] ?? "Reference"; }
+
+/** Rank 0…100 as 1…5 steps for the small meter (0 or unknown → 0 steps). */
+export function rankSteps(rank) {
+	const value = Number(rank);
+	if (!Number.isFinite(value) || value <= 0) return 0;
+	return Math.max(1, Math.min(5, Math.ceil(value / 20)));
+}
+
+function inlineCites(tokens, into) {
+	for (const token of tokens ?? []) {
+		if (token.type === "cite") for (const n of token.numbers) into.add(n);
+		// Bold and emphasis keep their raw text; parse it again for markers.
+		else if (["strong", "em"].includes(token.type)) inlineCites(parseInline(token.text, { cites: true }), into);
+	}
+}
+function blockCites(block, into) {
+	if (block.inline) inlineCites(block.inline, into);
+	for (const item of block.items ?? []) inlineCites(item, into);
+	for (const row of block.rows ?? []) for (const cell of row) inlineCites(cell, into);
+	for (const child of block.blocks ?? []) blockCites(child, into);
+}
+/** Citation numbers used in markdown prose ([1], [2, 3], [1][4]), ascending; code spans and fences are ignored. */
+export function citedNumbers(text) {
+	const found = new Set();
+	for (const block of parseMarkdown(String(text ?? ""), { cites: true })) blockCites(block, found);
+	return [...found].sort((a, b) => a - b);
+}
+
+/** Plain verdict for a Verification: { words, mark: "check"|"cross"|"query", count }. */
+export function verdictWords(verdict, citations = []) {
+	const count = new Set((citations ?? []).map((c) => c?.sourceId ?? c?.url ?? c?.title).filter(Boolean)).size;
+	if (verdict === "supported" && count > 0) {
+		return { words: `Supported by ${count} ${count === 1 ? "source" : "sources"}`, mark: "check", count };
+	}
+	if (verdict === "contradicted") return { words: "Sources disagree", mark: "cross", count };
+	return { words: "Couldn't confirm from the sources", mark: "query", count };
+}
+
+/** Find citation n in a numbered list (items with n, else 1-based position). */
+export function resolveCitation(items, n) {
+	const list = Array.isArray(items) ? items : [];
+	return list.find((item) => Number(item?.n) === Number(n)) ?? (list.some((item) => item?.n != null)
+		? undefined : list[Number(n) - 1]);
+}
+
+/** Numbered items for display: keeps n when present, else numbers by position. */
+export function numbered(items) {
+	return (Array.isArray(items) ? items : []).map((item, index) => ({ ...item, n: Number(item?.n) || index + 1 }));
+}
+
+// ─────────────────────────────────────────────────────────────── loading ──
+const cache = new Map();
+/** Ranked sources for one skill (GET /api/skills/:s/sources), cached per skill for this page. */
+export function loadSources(skill, api) {
+	if (!skill || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(skill)) return Promise.resolve([]);
+	if (!cache.has(skill)) {
+		const client = api ? Promise.resolve(api) : import("./api.js").then((mod) => mod.api);
+		const request = client.then((c) => c.get(`/api/skills/${encodeURIComponent(skill)}/sources`))
+			.then((list) => numbered(Array.isArray(list) ? list : []))
+			.catch(() => { cache.delete(skill); return []; });
+		cache.set(skill, request);
+	}
+	return cache.get(skill);
+}
+/** Forget cached sources (after psi_sources add/remove). */
+export function forgetSources(skill) { if (skill) cache.delete(skill); else cache.clear(); }
+
+// ──────────────────────────────────────────────────────────────── DOM ──
+function node(tag, className = "", text) {
+	const el = document.createElement(tag);
+	if (className) el.className = className;
+	if (text !== undefined) el.textContent = String(text);
+	return el;
+}
+let tipId = 0;
+
+/** The small 5-step rank meter; the plain rank reasons show on hover and keyboard focus. */
+export function rankMeter(item) {
+	const steps = rankSteps(item?.rank);
+	const wrap = node("span", "psi-rank");
+	wrap.tabIndex = 0;
+	const reasons = (item?.rankReasons ?? []).filter(Boolean);
+	const label = steps ? `Trust ${steps} of 5` : "Trust not rated";
+	wrap.setAttribute("aria-label", reasons.length ? `${label}: ${reasons.join(". ")}` : label);
+	const meter = node("span", "psi-rank-meter");
+	meter.setAttribute("aria-hidden", "true");
+	for (let i = 1; i <= 5; i++) meter.append(node("span", i <= steps ? "is-on" : ""));
+	wrap.append(meter, node("span", "psi-rank-label", label));
+	if (reasons.length) {
+		const tip = node("span", "psi-rank-tip");
+		tip.id = `psi-rank-tip-${++tipId}`;
+		tip.setAttribute("role", "tooltip");
+		tip.setAttribute("aria-hidden", "true");
+		const list = node("ul");
+		for (const reason of reasons) list.append(node("li", "", reason));
+		tip.append(list);
+		wrap.append(tip);
+	}
+	return wrap;
+}
+
+function safeHref(url) {
+	try { const parsed = new URL(String(url)); return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : undefined; }
+	catch { return undefined; }
+}
+
+/** One source as a block: [n] title — publisher, kind in words, rank meter, link, quote. */
+export function sourceEntry(item, { number = true } = {}) {
+	const entry = node("div", "psi-source");
+	const head = node("p", "psi-source-head");
+	if (number && item?.n != null) head.append(node("span", "psi-source-n", `[${item.n}]`));
+	const title = item?.title ?? item?.sourceId ?? "Source";
+	const href = safeHref(item?.url);
+	const name = href ? node("a", "psi-source-title", title) : node("span", "psi-source-title", title);
+	if (href) {
+		name.href = href; name.target = "_blank"; name.rel = "noreferrer noopener";
+		name.setAttribute("aria-label", `${title} (opens in a new tab)`);
+	}
+	head.append(name);
+	if (item?.publisher) head.append(node("span", "psi-source-publisher", ` — ${item.publisher}`));
+	entry.append(head);
+	const meta = node("p", "psi-source-meta");
+	if (item?.sourceMissing) meta.append(node("span", "", "This source is no longer in the skill's list."));
+	else {
+		meta.append(node("span", "psi-source-kind", kindWords(item?.kind)), rankMeter(item));
+		if (item?.locator) meta.append(node("span", "psi-source-locator", item.locator));
+	}
+	entry.append(meta);
+	const quote = item?.quote ?? item?.excerpt;
+	if (quote) {
+		const block = node("blockquote", "psi-source-quote");
+		block.append(node("p", "", quote));
+		entry.append(block);
+	}
+	return entry;
+}
+
+/** An ordered list of sources, numbered [n] (keeps each item's n). */
+export function renderSourceList(items, opts = {}) {
+	const list = node("ol", "psi-source-list");
+	for (const item of numbered(items)) {
+		const row = node("li");
+		row.value = item.n;
+		row.append(sourceEntry(item, opts));
+		list.append(row);
+	}
+	return list;
+}
+
+let openPopover;
+/** Close the open source popover, if any. */
+export function closeSourcePopover({ restoreFocus = true } = {}) {
+	const current = openPopover;
+	if (!current) return;
+	openPopover = undefined;
+	current.cleanup();
+	current.el.remove();
+	current.anchor?.setAttribute?.("aria-expanded", "false");
+	if (restoreFocus && current.anchor?.isConnected) current.anchor.focus();
+}
+
+/**
+ * Open a popover beside a citation marker showing one source (or a "loading"/"not found" line while
+ * `item` is a promise or missing). Escape, the close button and clicks outside close it. Returns { close }.
+ */
+export function sourcePopover(anchor, item, { n } = {}) {
+	if (openPopover?.anchor === anchor) { closeSourcePopover(); return { close() {} }; }
+	closeSourcePopover({ restoreFocus: false });
+	const pop = node("div", "psi-source-popover");
+	pop.setAttribute("role", "dialog");
+	pop.setAttribute("aria-label", n != null ? `Source ${n}` : "Source");
+	pop.tabIndex = -1;
+	const body = node("div", "psi-source-popover-body");
+	const close = node("button", "psi-source-close", "Close");
+	close.type = "button";
+	close.addEventListener("click", () => closeSourcePopover());
+	pop.append(body, close);
+	const fill = (value) => {
+		if (!pop.isConnected && openPopover?.el !== pop) return;
+		body.replaceChildren(value ? sourceEntry({ ...value, n: value.n ?? n })
+			: node("p", "psi-source-missing", `Source ${n ?? ""} isn't in this skill's list, so it can't be checked here.`.replace("  ", " ")));
+		place();
+	};
+	if (item && typeof item.then === "function") {
+		body.append(node("p", "psi-source-missing", "Looking up the source…"));
+		item.then(fill, () => fill(undefined));
+	} else fill(item);
+	document.body.append(pop);
+	function place() {
+		const box = anchor.getBoundingClientRect();
+		const width = Math.min(360, globalThis.innerWidth - 32);
+		pop.style.width = `${width}px`;
+		const left = Math.max(16, Math.min(box.left - 12, globalThis.innerWidth - width - 16));
+		const height = pop.offsetHeight;
+		const below = box.bottom + 8;
+		const top = below + height > globalThis.innerHeight - 8 && box.top - height - 8 > 8 ? box.top - height - 8 : below;
+		pop.style.left = `${Math.round(left)}px`;
+		pop.style.top = `${Math.round(Math.max(8, top))}px`;
+	}
+	place();
+	const onKey = (event) => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeSourcePopover(); } };
+	const onDown = (event) => { if (!pop.contains(event.target) && event.target !== anchor && !anchor.contains(event.target)) closeSourcePopover({ restoreFocus: false }); };
+	const onMove = () => closeSourcePopover({ restoreFocus: false });
+	document.addEventListener("keydown", onKey, true);
+	document.addEventListener("pointerdown", onDown, true);
+	globalThis.addEventListener("resize", onMove);
+	const scroller = anchor.closest?.(".psi-chat-scroll");
+	scroller?.addEventListener("scroll", onMove, { passive: true });
+	openPopover = { el: pop, anchor, cleanup() {
+		document.removeEventListener("keydown", onKey, true);
+		document.removeEventListener("pointerdown", onDown, true);
+		globalThis.removeEventListener("resize", onMove);
+		scroller?.removeEventListener("scroll", onMove);
+	} };
+	anchor.setAttribute("aria-expanded", "true");
+	pop.focus({ preventScroll: true });
+	return { close: () => { if (openPopover?.el === pop) closeSourcePopover(); } };
+}
+
+/**
+ * Make the [n] markers inside `root` open source popovers. `lookup(n)` returns a source, a promise of one,
+ * or undefined. Safe to call repeatedly: markers are wired once.
+ */
+export function wireCitations(root, lookup) {
+	for (const marker of root.querySelectorAll?.("button.psi-cite:not([data-wired])") ?? []) {
+		marker.dataset.wired = "1";
+		marker.addEventListener("click", (event) => {
+			event.preventDefault();
+			const n = Number(marker.dataset.cite);
+			sourcePopover(marker, lookup(n), { n });
+		});
+	}
+}

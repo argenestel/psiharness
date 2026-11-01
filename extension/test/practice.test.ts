@@ -84,6 +84,7 @@ const plan = (overrides = {}) => ({
 test("registers every practice tool, command, lifecycle handler, and skill flag", async (t) => fixture(t, async (f) => {
 	assert.deepEqual([...f.tools.keys()].sort(), ["psi_memory_remember", "psi_memory_recall", "psi_memory_forget",
 		"psi_recap", "psi_skill_plan", "psi_challenge", "psi_attempt", "psi_hint", "psi_practice_session",
+		"psi_ask", "psi_next_steps", ...(process.env.PSI_CODE_EXEC === "1" ? ["psi_run"] : []),
 		"psi_progress_report", "psi_path", "psi_lesson", "psi_sources", "psi_fetch", "psi_search", "psi_verify"].sort());
 	assert.deepEqual([...f.commands.keys()].sort(), ["skill", "practice", "challenge", "boss", "quest", "hint",
 		"remember", "memory", "forget", "recap", "hours", "streak", "path", "mode", "verify", "sources"].sort());
@@ -111,7 +112,9 @@ test("failed attempts earn XP, with extra XP for a recorded lesson", async (t) =
 	const c = await f.execute("psi_challenge", draft());
 	const base = { skill: "sql", challengeId: c.details.challengeId, answer: "9" };
 	const failed = await f.execute("psi_attempt", base);
-	const learned = await f.execute("psi_attempt", { ...base, lesson: "Count both pairs next time." });
+	const other = await f.execute("psi_challenge", draft());
+	const learned = await f.execute("psi_attempt", { ...base, challengeId: other.details.challengeId,
+		lesson: "Count both pairs next time." });
 	assert.equal(failed.details.outcome, "fail");
 	assert.ok(failed.details.xp > 0);
 	assert.ok(learned.details.xp > failed.details.xp);
@@ -394,6 +397,12 @@ test("next selects the next subskill, then other priorities, then latest still-m
 	store.recordAttempt({ challengeId: middle.details.challengeId, answer: "4", outcome: "success",
 		hintsUsed: 0, at: "2099-01-02T00:00:00Z" });
 	assert.equal((await next()).details.challengeId, first.details.challengeId);
+	const historyFile = join(home, "skills", "sql", "attempts.jsonl");
+	writeFileSync(historyFile, readFileSync(historyFile, "utf8").split("\n").filter(Boolean).map((line) => {
+		const a = JSON.parse(line);
+		if (a.challengeId === first.details.challengeId) a.at = new Date(Date.now() - 120001).toISOString();
+		return JSON.stringify(a);
+	}).join("\n") + "\n");
 	await grade(first.details.challengeId, "4");
 	assert.match((await next()).content[0].text, /No challenges remain.*action.*create/);
 }));
@@ -674,4 +683,177 @@ test("mode persists; commands request tools; injection teaches first; combo is d
 	const a = await f.execute("psi_attempt", { skill: "sql", challengeId: c.details.challengeId, answer: "4" });
 	assert.equal(a.details.combo, 1); assert.equal(a.details.widget.comboBonus, 1);
 	assert.equal(a.details.widget.comboDisplayOnly, true);
+}));
+
+import { runCode } from "../src/practice/run.ts";
+
+async function withEnv(values: Record<string, string | undefined>, run: () => Promise<void>) {
+	const previous = Object.fromEntries(Object.keys(values).map((key) => [key, process.env[key]]));
+	for (const [key, value] of Object.entries(values)) {
+		if (value === undefined) delete process.env[key]; else process.env[key] = value;
+	}
+	try { await run(); }
+	finally {
+		for (const [key, value] of Object.entries(previous)) {
+			if (value === undefined) delete process.env[key]; else process.env[key] = value;
+		}
+	}
+}
+
+test("execution registration and prompt are enabled only by exact opt-in", async (t) => {
+	for (const enabled of [undefined, "0", "true", "1"]) {
+		await withEnv({ PSI_CODE_EXEC: enabled }, () => fixture(t, async (f) => {
+			assert.equal(f.tools.has("psi_run"), enabled === "1");
+			const prompt = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
+			assert.equal(prompt.includes("psi_run"), enabled === "1");
+			if (enabled !== "1") assert.doesNotMatch(prompt, /code execution/i);
+			assert.match(prompt, /psi_next_steps.*2–4.*Continue/);
+			assert.match(prompt, /already graded\/saved/);
+			assert.ok(prompt.length - "Base\n\n".length <= 2500);
+			if (enabled === "1") {
+				const result = await f.execute("psi_run", { language: "javascript",
+					code: "import { writeSync } from 'node:fs'; writeSync(1, '42\\n');" });
+				assert.equal(result.details.widget.type, "run");
+				assert.equal(result.details.widget.stdout, "42\n");
+				assert.match(result.content[0].text, /```javascript/);
+			}
+		}));
+	}
+});
+
+test("python, javascript and SQL execute setup, code and stdin", async (t) => {
+	const cases = [
+		{ language: "python" as const, setup: "x = 40", code: "print(x + int(input()))", stdin: "2\n" },
+		{ language: "javascript" as const, setup: "const x = 40;",
+			code: "import { writeSync } from 'node:fs'; writeSync(1, String(x + 2));" },
+		{ language: "sql" as const, setup: "CREATE TABLE t(n); INSERT INTO t VALUES (40);",
+			code: "SELECT n + 2 FROM t; SELECT 'safe; quote'" },
+	];
+	for (const input of cases) {
+		try {
+			const result = await runCode(input);
+			assert.equal(result.exitCode, 0, result.stderr);
+			assert.match(result.stdout, /42/, JSON.stringify({ input, result }));
+			if (input.language === "sql") assert.match(result.stdout, /safe; quote/);
+			assert.equal(result.timedOut, false);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === "ENOENT") { t.skip("Interpreter unavailable"); return; }
+			throw error;
+		}
+	}
+});
+
+test("runner strips secrets and removes its temporary working directory", async () => {
+	await withEnv({ PSI_TEST_SECRET: "private", OPENAI_API_KEY: "private", PSI_CODE_EXEC: "1" }, async () => {
+		const result = await runCode({ language: "javascript", code:
+			"import { writeSync } from 'node:fs'; writeSync(1, JSON.stringify({env: process.env, cwd: process.cwd()}))" });
+		const data = JSON.parse(result.stdout);
+		assert.deepEqual(Object.keys(data.env).sort(), ["HOME", "LANG", "PATH"]);
+		assert.equal(data.env.PSI_TEST_SECRET, undefined);
+		assert.equal(data.env.OPENAI_API_KEY, undefined);
+		assert.equal(data.env.HOME, data.cwd);
+		assert.equal(existsSync(data.cwd), false);
+	});
+});
+
+test("runner kills a timed-out process group within 15 seconds", async () => {
+	const started = Date.now();
+	const result = await runCode({ language: "javascript", code:
+		"import { writeSync } from 'node:fs'; writeSync(1, String(process.pid)); while (true) {}" });
+	assert.equal(result.timedOut, true);
+	assert.equal(result.exitCode, null);
+	assert.ok(Date.now() - started < 15000);
+	assert.throws(() => process.kill(Number(result.stdout.trim()), 0), { code: "ESRCH" });
+});
+
+test("runner caps stdout and stderr independently and reports nonzero exits", async () => {
+	const result = await runCode({ language: "javascript", code:
+		"import { writeSync } from 'node:fs'; writeSync(1, 'x'.repeat(70000)); "
+			+ "writeSync(2, 'y'.repeat(70000)); process.exitCode = 3;" });
+	assert.equal(result.exitCode, 3);
+	assert.equal(result.truncated, true);
+	for (const text of [result.stdout, result.stderr]) {
+		assert.match(text, /\n\[output truncated at 64 KB\]$/);
+		assert.equal(text.split("\n")[0]!.length, 65536);
+	}
+});
+
+test("bash requires its separate opt-in and tool errors remain readable", async (t) => {
+	await withEnv({ PSI_CODE_EXEC: "1", PSI_CODE_EXEC_BASH: undefined }, () => fixture(t, async (f) => {
+		const result = await f.execute("psi_run", { language: "bash", code: "echo forbidden" });
+		assert.equal(result.isError, true);
+		assert.match(result.content[0].text, /PSI_CODE_EXEC_BASH=1/);
+	}));
+	await withEnv({ PSI_CODE_EXEC_BASH: "1" }, async () => {
+		const result = await runCode({ language: "bash", setup: "x=40", code: "echo $((x + 2))" });
+		assert.equal(result.stdout, "42\n");
+	});
+});
+
+test("next steps validate limits and preserve widget options", async (t) => fixture(t, async (f) => {
+	const options = [{ label: "Continue", message: "Continue" }, { label: "Demo", message: "Show a demo" }];
+	const result = await f.execute("psi_next_steps", { options });
+	assert.deepEqual(result.details.widget, { type: "next_steps", options });
+	assert.equal(result.content[0].text, "Offered next steps");
+	for (const invalid of [[], options.slice(0, 1), [...options, ...options, options[0]],
+		[{ label: " ", message: "x" }, options[0]], [{ label: "x", message: " " }, options[0]],
+		[{ label: "x".repeat(61), message: "x" }, options[0]],
+		[{ label: "x", message: "x".repeat(401) }, options[0]]]) {
+		assert.equal((await f.execute("psi_next_steps", { options: invalid })).isError, true);
+	}
+}));
+
+test("Socratic prompts validate and never record attempts or award XP", async (t) => fixture(t, async (f, home) => {
+	await f.execute("psi_challenge", draft({ kind: "predict" }));
+	const { PracticeStore } = await import("../../core/src/practice.ts");
+	const before = new PracticeStore(home).progress("sql");
+	const original = PracticeStore.prototype.recordAttempt;
+	PracticeStore.prototype.recordAttempt = () => { throw new Error("Unexpected recordAttempt"); };
+	try {
+		for (const kind of ["predict", "why", "what-if"]) {
+			const p = { question: "What might happen?", kind, hint: "Watch the loop" };
+			assert.deepEqual((await f.execute("psi_ask", p)).details.widget, { type: "socratic", ...p });
+		}
+		for (const p of [{ question: " ", kind: "predict" }, { question: "x".repeat(401), kind: "why" },
+			{ question: "x", kind: "invalid" }, { question: "x", kind: "why", hint: "x".repeat(401) }]) {
+			assert.equal((await f.execute("psi_ask", p)).isError, true);
+		}
+	} finally { PracticeStore.prototype.recordAttempt = original; }
+	assert.deepEqual(new PracticeStore(home).progress("sql"), before);
+	assert.equal(existsSync(join(home, "skills", "sql", "attempts.jsonl")), false);
+}));
+
+test("recent attempts reject duplicates; older retries and other challenges work", async (t) => {
+	await fixture(t, async (f, home) => {
+		const { PracticeStore } = await import("../../core/src/practice.ts");
+		const store = new PracticeStore(home);
+		const first = await f.execute("psi_challenge", draft());
+		store.recordAttempt({ challengeId: first.details.challengeId, answer: "4", outcome: "success", hintsUsed: 0 });
+		const params = { skill: "sql", challengeId: first.details.challengeId, answer: "4" };
+		const duplicate = await f.execute("psi_attempt", params);
+		assert.equal(duplicate.isError, true);
+		assert.match(duplicate.content[0].text, /already recorded/);
+		assert.equal(store.progress("sql").attempts, 1);
+		const file = join(home, "skills", "sql", "attempts.jsonl");
+		const attempt = JSON.parse(readFileSync(file, "utf8").trim());
+		attempt.at = new Date(Date.now() - 120001).toISOString();
+		writeFileSync(file, JSON.stringify(attempt) + "\n");
+		assert.equal((await f.execute("psi_attempt", params)).details.outcome, "success");
+		assert.equal((await f.execute("psi_attempt", params)).isError, true);
+		const other = await f.execute("psi_challenge", draft());
+		assert.equal((await f.execute("psi_attempt", { ...params, challengeId: other.details.challengeId }))
+			.details.outcome, "success");
+		assert.equal(store.progress("sql").attempts, 3);
+	});
+});
+
+test("skipped predictions preserve skipped instead of deterministic fail", async (t) => fixture(t, async (f, home) => {
+	const c = await f.execute("psi_challenge", draft({ kind: "predict" }));
+	const result = await f.execute("psi_attempt", { challengeId: c.details.challengeId, answer: "Just show me",
+		outcome: "skipped" });
+	assert.equal(result.details.outcome, "skipped");
+	const attempt = JSON.parse(readFileSync(join(home, "skills", "sql", "attempts.jsonl"), "utf8").trim());
+	assert.equal(attempt.outcome, "skipped");
+	const report = await f.execute("psi_progress_report", {});
+	assert.equal(report.details.skills[0].failures, 0);
 }));

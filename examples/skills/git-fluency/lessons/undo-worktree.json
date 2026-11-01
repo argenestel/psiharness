@@ -1,0 +1,62 @@
+{
+	"skill": "git-fluency",
+	"subskillId": "undo-worktree",
+	"title": "Undoing local changes: restore and reset",
+	"explanation": "Pick the undo command by *which layer* you want to change: the working directory, the index, or the branch pointer.\n\n- `git restore <file>` replaces the file in your working directory with the last staged or committed version. **Any local changes to that file are gone** — only use it when you are sure.\n- `git restore --staged <file>` unstages: the index goes back to HEAD's version, your working file is untouched.\n- `git reset <commit>` moves the **current branch pointer** to `<commit>` and then, depending on the mode, keeps going:\n\n| Mode | Moves branch | Resets index | Resets working directory |\n|---|---|---|---|\n| `--soft` | yes | no | no |\n| `--mixed` (default) | yes | yes | no |\n| `--hard` | yes | yes | **yes** |\n\nSo `git reset --soft HEAD~1` undoes the last commit but leaves its changes staged, `--mixed` also unstages them, and `--hard` throws them away. `--hard` is the one form of reset that destroys data: uncommitted work it overwrites cannot be recovered. Committed work usually can (see the next lesson).",
+	"keyIdeas": [
+		"`git restore <file>` discards working-directory edits to that file (permanently).",
+		"`git restore --staged <file>` only unstages.",
+		"`reset --soft` moves the branch; `--mixed` also resets the index; `--hard` also resets files.",
+		"`--hard` and `restore <file>` destroy uncommitted work — double-check first."
+	],
+	"workedExample": {
+		"problem": "Starting from three commits A → B → C on `trunk`, show what each reset mode does when you move the branch back to commit A, returning to C in between.",
+		"steps": [
+			"Remember A's id: `a=$(git rev-parse HEAD~2)`. Any commit reference works as the target of a reset.",
+			"`git reset --soft \"$a\"`: the branch points at A, and the changes from B and C are all staged (`git diff --name-only --cached` lists `log.md`).",
+			"Return to C with `git reset --hard ORIG_HEAD` (reset saves the previous tip in `ORIG_HEAD`).",
+			"`git reset --mixed \"$a\"`: branch at A, index matches A, but the file on disk still contains B and C's lines (unstaged). Then `git reset --hard \"$a\"`: branch, index, and file all match A.",
+			"Run it in a throwaway folder:\n```sh\ngit init -q -b trunk shop && cd shop\nfor step in A B C; do echo \"$step\" >> log.md; git add log.md; git commit -q -m \"$step\"; done\na=$(git rev-parse HEAD~2)\ngit reset -q --soft \"$a\"\n[ \"$(git log -1 --format=%s)\" = A ]\n[ -n \"$(git diff --name-only --cached)\" ]   # B and C are staged\n[ -z \"$(git diff --name-only)\" ]            # nothing unstaged\ngit reset -q --hard ORIG_HEAD\n[ \"$(git log -1 --format=%s)\" = C ]\ngit reset -q --mixed \"$a\"\n[ -z \"$(git diff --name-only --cached)\" ]   # index matches A\n[ -n \"$(git diff --name-only)\" ]            # B and C are unstaged edits\ngrep -q C log.md\ngit reset -q --hard ORIG_HEAD\ngit reset -q --hard \"$a\"\n[ -z \"$(git diff --name-only)\" ]\n[ \"$(cat log.md)\" = A ]                   # B and C are gone from disk\necho ok\n```"
+		],
+		"answer": "`--soft`: branch at A, B+C staged. `--mixed`: branch at A, B+C unstaged in the files. `--hard`: everything at A, the B+C edits are gone from disk (here recoverable only because they were committed)."
+	},
+	"pitfalls": [
+		"Using `git reset --hard` to unstage a file — it also wipes your edits; use `git restore --staged`.",
+		"Running `git restore <file>` on work you hadn't committed and losing it for good.",
+		"Resetting commits that are already pushed; for shared history create a reverting commit instead."
+	],
+	"citations": [
+		{
+			"sourceId": "src-e11e9f0450",
+			"quote": "It's important to understand that git restore <file> is a dangerous command. Any local changes you made to that file are gone — Git just replaced that file with the last staged or committed version.",
+			"locator": "Unmodifying a Modified File with git restore"
+		},
+		{
+			"sourceId": "src-e11e9f0450",
+			"quote": "Right below the \"Changes to be committed\" text, it says use git restore --staged <file>... to unstage.",
+			"locator": "Unstaging a Staged File with git restore"
+		},
+		{
+			"sourceId": "src-e5acaae758",
+			"quote": "The reset command overwrites these three trees in a specific order, stopping when you tell it to: Move the branch HEAD points to (stop here if --soft).",
+			"locator": "Recap"
+		},
+		{
+			"sourceId": "src-e5acaae758",
+			"quote": "Make the index look like HEAD (stop here unless --hard). Make the working directory look like the index.",
+			"locator": "Recap"
+		},
+		{
+			"sourceId": "src-e5acaae758",
+			"quote": "If you specify the --mixed option, reset will stop at this point. This is also the default",
+			"locator": "Step 2: Updating the Index (--mixed)"
+		},
+		{
+			"sourceId": "src-e5acaae758",
+			"quote": "It's important to note that this flag (--hard) is the only way to make the reset command dangerous, and one of the very few cases where Git will actually destroy data.",
+			"locator": "Step 3: Updating the Working Directory (--hard)"
+		}
+	],
+	"createdAt": "2026-10-31T20:28:52.000Z",
+	"updatedAt": "2026-10-31T20:28:52.000Z"
+}

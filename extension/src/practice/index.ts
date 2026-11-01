@@ -8,6 +8,8 @@ import { registerCommands } from "./commands.ts";
 import { registerInjection } from "./inject.ts";
 import { registerPaths } from "./paths.ts";
 import { registerLessons } from "./lessons.ts";
+import { registerRun } from "./run.ts";
+import { registerFlow } from "./flow.ts";
 import { refreshHud } from "./hud.ts";
 
 export interface PracticeState {
@@ -69,6 +71,8 @@ export function registerPractice(pi: ExtensionAPI, options: { home?: string } = 
 	pi.registerFlag("psi-skill", { type: "string", description: "Start practicing this skill slug" });
 	deps.resume();
 	registerTools(pi, deps);
+	registerRun(pi);
+	registerFlow(pi);
 	registerLessons(pi, deps);
 	registerCommands(pi, deps);
 	const paths = registerPaths(pi, options.home);

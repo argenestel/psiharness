@@ -1,0 +1,72 @@
+{
+	"skill": "git-fluency",
+	"subskillId": "recover-history",
+	"title": "Recovering and reversing commits",
+	"explanation": "Two different problems, two different tools.\n\n**Undo a commit that others already have → `git revert <commit>`.** It creates a *new* commit that applies the inverse of the old one's changes, so history only moves forward and nobody's copy is invalidated. It needs a clean working tree. `--no-edit` accepts the default message without opening an editor.\n\n**Undo a local, unpushed commit → `git reset`.** `git reset --soft HEAD~1` moves the branch back one commit and leaves that commit's changes staged, ready to recommit — effectively undoing the last `git commit` command.\n\n**Find something you \"lost\" → the reflog.** Git records where `HEAD` and your branch tips have been. Anything that was committed can almost always be recovered — even commits on deleted branches or replaced by `--amend` — by finding its old id in `git reflog` and pointing a branch at it.\n\n```bash\ngit revert --no-edit 1a2b3c4    # public: add an inverse commit\ngit reset --soft HEAD~1         # private: un-commit, keep changes staged\ngit reflog                      # where has HEAD been? find the lost id\ngit branch rescue HEAD@{2}      # put a branch on it so it can't get lost again\n```",
+	"keyIdeas": [
+		"`git revert` adds a new inverse commit — safe for shared history.",
+		"`git reset --soft HEAD~1` un-commits but keeps the changes staged.",
+		"The reflog remembers where HEAD and branches have been.",
+		"Committed work is almost always recoverable; uncommitted work often is not."
+	],
+	"workedExample": {
+		"problem": "Two problems in one repository: (1) the published commit `Raise prices` must be undone without rewriting history; (2) you accidentally `git reset --hard` away a local commit `Add cocoa` and need it back.",
+		"steps": [
+			"(1) Find the commit's id and run `git revert --no-edit <id>`: a new commit restores the old prices, and the commit count goes up by one.",
+			"(2) After the mistaken hard reset, the commit is no longer on the branch — but the reflog still lists it.",
+			"Look it up in the reflog (`HEAD@{1}` is where HEAD was before the reset) and create a branch there: `git branch rescue HEAD@{1}`.",
+			"Verify the rescued branch contains the lost change.",
+			"Run it in a throwaway folder:\n```sh\ngit init -q -b trunk shop && cd shop\nprintf 'tea 3\\n' > prices.md && git add prices.md && git commit -q -m 'Add prices'\nprintf 'tea 9\\n' > prices.md && git commit -q -am 'Raise prices'\nraise=$(git rev-parse HEAD)\ngit revert --no-edit \"$raise\" > /dev/null\n[ \"$(cat prices.md)\" = 'tea 3' ]\n[ \"$(git rev-list --count HEAD)\" -eq 3 ]   # history grew; nothing rewritten\nprintf 'cocoa\\n' > menu.md && git add menu.md && git commit -q -m 'Add cocoa'\ngit reset -q --hard HEAD~1                       # oops\n[ ! -e menu.md ]\ngit reflog -3\ngit branch rescue 'HEAD@{1}'\n[ \"$(git log -1 --format=%s rescue)\" = 'Add cocoa' ]\necho recovered\n```"
+		],
+		"answer": "The revert adds a third commit that restores `tea 3`; after the bad hard reset, `git branch rescue 'HEAD@{1}'` brings `Add cocoa` back from the reflog."
+	},
+	"pitfalls": [
+		"Using `git reset` on commits teammates already pulled — revert instead.",
+		"Panicking after a bad reset or rebase: check the reflog before doing anything else.",
+		"Expecting the reflog to save uncommitted edits — it only tracks commits that refs pointed at."
+	],
+	"citations": [
+		{
+			"sourceId": "src-a523d4cd15",
+			"quote": "Given one or more existing commits, revert the changes that the related patches introduce, and record some new commits that record them. This requires your working tree to be clean",
+			"locator": "DESCRIPTION"
+		},
+		{
+			"sourceId": "src-a523d4cd15",
+			"quote": "Note: git revert is used to record some new commits to reverse the effect of some earlier commits (often only a faulty one).",
+			"locator": "DESCRIPTION"
+		},
+		{
+			"sourceId": "src-a523d4cd15",
+			"quote": "With this option, git revert will not start the commit message editor.",
+			"locator": "OPTIONS: --no-edit"
+		},
+		{
+			"sourceId": "src-e5acaae758",
+			"quote": "With reset --soft, it will simply stop there. Now take a second to look at that diagram and realize what happened: it essentially undid the last git commit command.",
+			"locator": "Step 1: Move HEAD"
+		},
+		{
+			"sourceId": "src-e11e9f0450",
+			"quote": "Remember, anything that is committed in Git can almost always be recovered.",
+			"locator": "Undoing Things"
+		},
+		{
+			"sourceId": "src-e11e9f0450",
+			"quote": "Even commits that were on branches that were deleted or commits that were overwritten with an --amend commit can be recovered",
+			"locator": "Undoing Things"
+		},
+		{
+			"sourceId": "src-e5acaae758",
+			"quote": "we could get it back by looking at our reflog",
+			"locator": "Step 3: Updating the Working Directory (--hard)"
+		},
+		{
+			"sourceId": "src-e11e9f0450",
+			"quote": "However, anything you lose that was never committed is likely never to be seen again.",
+			"locator": "Undoing Things"
+		}
+	],
+	"createdAt": "2026-10-31T20:28:52.000Z",
+	"updatedAt": "2026-10-31T20:28:52.000Z"
+}

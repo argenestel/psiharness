@@ -1,5 +1,7 @@
 import { api } from "./api.js";
 import { el, on, toast, formatLevel, streakLabel, hoursLabel } from "./ui.js";
+import { nextSubskill } from "./bench.js";
+import { pickAnnouncement, fillAnnouncement } from "./you.js";
 
 const enc = encodeURIComponent;
 const reason = (error) => String(error?.message ?? error).replace(/[.\s]+$/, "");
@@ -122,6 +124,42 @@ export function subskillStatus(sub, plan) {
 	return next?.id === sub.id ? { key: "next", text: "Next up" } : { key: "ready", text: "Not started" };
 }
 
+const LANES = [1, 2, 1, 0];
+/** Lane centres in the map track's 0–120 viewBox (CSS places the dots at the same fractions). */
+export const LANE_X = [20, 60, 100];
+
+/**
+ * The skill's steps as stops on a level map, in route order: prerequisites first, otherwise plan order
+ * (cycles and unknown prerequisites fall back to plan order). Each stop: { id, title, why, state, status,
+ * lessonAvailable, lane, next } where state is solid | here | practising | ready | locked, `here` is the
+ * step to work on now, and `next` describes the route segment to the following stop ("open" or "ahead").
+ */
+export function mapStops(plan) {
+	const subs = Array.isArray(plan?.subskills) ? plan.subskills.filter((s) => s && s.id) : [];
+	const known = new Set(subs.map((s) => s.id)), placed = new Set(), order = [];
+	for (let found = true; found && order.length < subs.length;) {
+		found = false;
+		for (const s of subs) {
+			if (placed.has(s.id) || !(s.prerequisites ?? []).every((p) => placed.has(p) || !known.has(p))) continue;
+			order.push(s); placed.add(s.id); found = true; break;
+		}
+	}
+	for (const s of subs) if (!placed.has(s.id)) order.push(s);
+	const here = nextSubskill(plan)?.id;
+	const stops = order.map((sub, i) => {
+		const words = subskillStatus(sub, plan);
+		const state = sub.status === "solid" ? "solid" : words.key === "locked" ? "locked" : sub.id === here ? "here"
+			: sub.status === "practicing" ? "practising" : "ready";
+		const status = state === "here" ? (sub.status === "practicing" ? "Continue here" : "Start here")
+			: state === "locked" ? (words.names ?? words.text.replace(/^After/, "Unlocks after"))
+			: state === "solid" ? "Solid" : state === "practising" ? "Practising" : "Not started";
+		return { id: sub.id, title: sub.title || sub.id, why: sub.why ?? "", state, status,
+			lessonAvailable: Boolean(sub.lessonAvailable), lane: LANES[i % LANES.length] };
+	});
+	return stops.map((stop, i) => ({ ...stop,
+		next: i + 1 < stops.length ? (stops[i + 1].state === "locked" ? "ahead" : "open") : null }));
+}
+
 let summarize = (attempts) => `${attempts.length} ${attempts.length === 1 ? "attempt" : "attempts"}`;
 
 /** Load ./trail.js lazily; fall back to a minimal text trail if it is unavailable. */
@@ -213,10 +251,12 @@ export function mountPractice(host, { skill, navigate } = {}) {
 			el("button", { type: "button", class: "primary", onclick: () => openTutor("/practice") }, "Practice with the tutor"));
 		refs.trail = el("div", { class: "psi-sk-trail" });
 		refs.stats = el("div", { class: "psi-sk-stats" });
-		root.append(header,
+		// Level-up and achievement moments are written into this live region after an attempt.
+		refs.announce = el("div", { class: "psi-announce psi-sk-announce", role: "status", "aria-live": "polite" });
+		root.append(header, renderMap(plan),
 			el("section", { class: "psi-sk-block", "aria-labelledby": "psi-sk-trail-h" },
-				el("h2", { id: "psi-sk-trail-h" }, "Your attempts"), refs.trail, refs.stats),
-			renderSubskills(plan), renderChallenges());
+				el("h2", { id: "psi-sk-trail-h" }, "Your attempts"), refs.trail, refs.stats, refs.announce),
+			renderChallenges());
 		drawTrail(false);
 		drawStats();
 	}
@@ -259,24 +299,122 @@ export function mountPractice(host, { skill, navigate } = {}) {
 					streak ? "Practise tomorrow to keep it going." : "Practise today to start one.")));
 	}
 
-	function renderSubskills(plan) {
-		const subs = plan.subskills ?? [];
-		const section = el("section", { class: "psi-sk-block", "aria-labelledby": "psi-sk-steps-h" },
-			el("h2", { id: "psi-sk-steps-h" }, "Steps"));
-		if (!subs.length) {
+	/** Prompt previews that tell challenges apart (shared setup sentences dropped). */
+	function previews() {
+		const all = state.challenges;
+		const distinct = distinctPrompts(all.map((c) => c.prompt));
+		return new Map(all.map((c, i) => [c.id, promptPreview(distinct[i]) || promptPreview(c.prompt)]));
+	}
+
+	/** The skill's steps as a level map: stops on a pencil route, the next one ringed in ink. */
+	function renderMap(plan) {
+		const stops = mapStops(plan);
+		const solid = stops.filter((s) => s.state === "solid").length;
+		const section = el("section", { class: "psi-sk-block psi-map-block", "aria-labelledby": "psi-sk-map-h" },
+			el("div", { class: "psi-sk-block-head" }, el("h2", { id: "psi-sk-map-h" }, "Your route"),
+				stops.length ? el("p", { class: "psi-sk-quiet psi-map-count" }, `${solid} of ${stops.length} steps solid`) : null));
+		if (!stops.length) {
 			section.append(el("p", { class: "psi-sk-quiet" }, "No steps yet. Ask the tutor to break this skill into steps."));
 			return section;
 		}
-		section.append(el("ol", { class: "psi-sk-steps" }, subs.map((sub) => {
-			const status = subskillStatus(sub, plan);
-			return el("li", { class: `psi-sk-step is-${status.key}` },
-				el("span", { class: "psi-sk-check", "aria-hidden": "true" }),
-				el("div", { class: "psi-sk-step-body" },
-					el("span", { class: "psi-sk-step-title" }, sub.title),
-					sub.why ? el("span", { class: "psi-sk-quiet psi-sk-why" }, sub.why) : null),
-				el("span", { class: "psi-sk-status", title: status.names }, status.text));
-		})));
+		refs.map = el("ol", { class: "psi-map", "aria-label": `Steps in ${plan.title || skill}` },
+			stops.map((stop) => buildStop(stop, stop.state === "here")));
+		section.append(refs.map);
 		return section;
+	}
+
+	function stopRail(stop) {
+		const rail = el("span", { class: "psi-map-rail", "aria-hidden": "true" });
+		if (stop.next) {
+			const ns = "http://www.w3.org/2000/svg";
+			const svg = document.createElementNS(ns, "svg");
+			svg.setAttribute("class", `psi-map-seg is-${stop.next}`);
+			svg.setAttribute("viewBox", "0 0 120 100");
+			svg.setAttribute("preserveAspectRatio", "none");
+			const path = document.createElementNS(ns, "path");
+			const a = LANE_X[stop.lane], b = LANE_X[stop.nextLane ?? stop.lane];
+			path.setAttribute("d", `M${a} 0 C${a} 55 ${b} 45 ${b} 100`);
+			path.setAttribute("vector-effect", "non-scaling-stroke");
+			svg.append(path);
+			rail.append(svg);
+		}
+		rail.append(el("span", { class: `psi-map-dot lane-${stop.lane}` }));
+		return rail;
+	}
+
+	function stopMeta(stop) {
+		const count = state.challenges.filter((c) => c.subskillId === stop.id).length;
+		const parts = [stop.lessonAvailable ? "Lesson ready" : "", count ? `${count} ${count === 1 ? "challenge" : "challenges"}` : ""]
+			.filter(Boolean);
+		return parts.length ? el("p", { class: "psi-map-meta" }, parts.join(", ")) : null;
+	}
+
+	function buildStop(stop, expanded = false) {
+		const stops = mapStops(state.plan);
+		const index = stops.findIndex((s) => s.id === stop.id);
+		stop = { ...stop, nextLane: stops[index + 1]?.lane };
+		const li = el("li", { class: `psi-map-stop is-${stop.state}`, dataset: { id: stop.id } });
+		const panelId = `psi-map-panel-${stop.id}`;
+		const status = el("p", { class: "psi-map-status" }, stop.status);
+		if (stop.state === "locked") {
+			li.append(stopRail(stop), el("div", { class: "psi-map-body" },
+				el("h3", { class: "psi-map-title" }, el("span", {}, stop.title)), status, stopMeta(stop)));
+			return li;
+		}
+		const panel = el("div", { class: "psi-map-panel", id: panelId, hidden: !expanded });
+		const title = el("button", { type: "button", class: "psi-map-toggle", "aria-expanded": String(expanded),
+			"aria-controls": panelId, onclick: () => {
+				const open = panel.hidden;
+				panel.hidden = !open; title.setAttribute("aria-expanded", String(open));
+				li.classList.toggle("is-expanded", open);
+			} }, stop.title);
+		const list = el("div", { class: "psi-map-practice", hidden: true });
+		const practise = el("button", { type: "button", class: stop.state === "here" && stop.status === "Continue here" ? "primary" : "",
+			"aria-expanded": "false", onclick: () => {
+				const open = list.hidden;
+				list.hidden = !open; practise.setAttribute("aria-expanded", String(open));
+				if (open && !list.firstChild) fillPractice(stop, list);
+			} }, "Practise");
+		const learn = el("button", { type: "button", class: stop.state === "here" && stop.status === "Start here" ? "primary" : "",
+			onclick: () => openTutor(`Teach me ${stop.title}`) }, "Learn this step");
+		panel.append(stop.why ? el("p", { class: "psi-sk-quiet psi-map-why" }, stop.why) : null,
+			el("div", { class: "psi-map-actions" }, stop.state === "solid" ? [practise, learn] : [learn, practise]), list);
+		li.classList.toggle("is-expanded", expanded);
+		li.append(stopRail(stop), el("div", { class: "psi-map-body" },
+			el("h3", { class: "psi-map-title" }, title), status, stopMeta(stop), panel));
+		return li;
+	}
+
+	function fillPractice(stop, list) {
+		const mine = state.challenges.filter((c) => c.subskillId === stop.id);
+		if (!mine.length) {
+			list.replaceChildren(el("div", { class: "psi-sk-empty" },
+				el("p", { class: "psi-sk-quiet" }, "No challenges for this step yet."),
+				el("button", { type: "button", onclick: () => openTutor(`Give me a challenge on ${stop.title}`) }, "Get a challenge")));
+			return;
+		}
+		const preview = previews();
+		list.replaceChildren(el("ul", { class: "psi-sk-rows", "aria-label": `Challenges for ${stop.title}` },
+			mine.map((c) => challengeRow(c, preview.get(c.id)))));
+	}
+
+	/** Redraw stop markers and status after the plan changes, leaving any open challenge sheet in place. */
+	function refreshMap() {
+		if (!refs.map?.isConnected) return;
+		const stops = mapStops(state.plan);
+		if (stops.length !== refs.map.children.length) { refs.map.closest("section")?.replaceWith(renderMap(state.plan)); return; }
+		const solid = stops.filter((s) => s.state === "solid").length;
+		const count = refs.map.closest("section")?.querySelector(".psi-map-count");
+		if (count) count.textContent = `${solid} of ${stops.length} steps solid`;
+		stops.forEach((stop, i) => {
+			const li = refs.map.children[i];
+			const busy = li.dataset.id === stop.id && li.querySelector(".psi-sk-challenge.is-open");
+			if (!busy) { li.replaceWith(buildStop(stop, li.classList.contains("is-expanded"))); return; }
+			const rail = li.querySelector(".psi-map-rail");
+			rail.replaceWith(stopRail({ ...stop, nextLane: stops[i + 1]?.lane }));
+			li.className = `psi-map-stop is-${stop.state} is-expanded`;
+			li.querySelector(".psi-map-status").textContent = stop.status;
+		});
 	}
 
 	function lastAttempt(c) {
@@ -314,8 +452,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 				: "Nothing missed right now. Misses show up here so you can go back to them.");
 		}
 		// Previews come from what differs between prompts, so rows sharing a setup sentence stay distinguishable.
-		const distinct = distinctPrompts(all.map((c) => c.prompt));
-		const preview = new Map(all.map((c, i) => [c.id, promptPreview(distinct[i]) || promptPreview(c.prompt)]));
+		const preview = previews();
 		return el("ul", { class: "psi-sk-rows", "aria-label": "Challenges" },
 			shown.map((c) => challengeRow(c, preview.get(c.id))));
 	}
@@ -338,7 +475,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 
 	async function toggle(c, row, button, sheet) {
 		if (!sheet.hidden) { closeSheet(row, button, sheet); return; }
-		for (const open of refs.list.querySelectorAll(".psi-sk-challenge.is-open")) {
+		for (const open of root.querySelectorAll(".psi-sk-challenge.is-open")) {
 			closeSheet(open, open.querySelector(":scope > button"), open.querySelector(".psi-sk-sheet"));
 		}
 		row.classList.add("is-open"); sheet.hidden = false;
@@ -380,7 +517,8 @@ export function mountPractice(host, { skill, navigate } = {}) {
 
 	/** Open the next not-yet-tried challenge after `c` inline, or ask the tutor for a new one. */
 	function openNext(c) {
-		const rows = [...refs.list.querySelectorAll(".psi-sk-challenge")];
+		const current = root.querySelector(`.psi-sk-challenge.is-open[data-id="${CSS.escape(c.id)}"]`);
+		const rows = [...(current?.closest("ul") ?? refs.list).querySelectorAll(":scope > .psi-sk-challenge")];
 		const from = rows.findIndex((r) => r.dataset.id === c.id);
 		const untried = (r) => !state.challenges.find((x) => x.id === r.dataset.id)?.attempted;
 		const next = [...rows.slice(from + 1), ...rows.slice(0, Math.max(0, from))].find(untried);
@@ -406,9 +544,25 @@ export function mountPractice(host, { skill, navigate } = {}) {
 		const c = state.challenges.find((x) => x.id === attempt.challengeId);
 		if (c) { c.attempted = true; c.attempts = (c.attempts ?? 0) + 1; c.lastOutcome = attempt.outcome; }
 		drawTrail(true);
-		drawStats(Boolean(detail.leveledUp));
-		const row = c && refs.list?.querySelector(`.psi-sk-challenge[data-id="${CSS.escape(c.id)}"] .psi-sk-mark`);
-		if (row) row.replaceChildren(renderTrail([attempt], { animateLast: true, label: "Last result" }));
+		// One stroke per moment: the announcement carries a level-up, so the level number doesn't swipe as well.
+		const moment = pickAnnouncement(detail);
+		drawStats(Boolean(detail.leveledUp) && !moment);
+		if (moment && refs.announce) {
+			fillAnnouncement(refs.announce, moment);
+			clearTimeout(refs.announceTimer);
+			refs.announceTimer = setTimeout(() => { if (!disposed) fillAnnouncement(refs.announce, null); }, 12000);
+		}
+		if (c) {
+			for (const mark of root.querySelectorAll(`.psi-sk-challenge[data-id="${CSS.escape(c.id)}"] .psi-sk-mark`)) {
+				mark.replaceChildren(renderTrail([attempt], { animateLast: true, label: "Last result" }));
+			}
+		}
+		// Statuses (solid steps, unlocked stops) come from the server's progression rules.
+		void api.get(`/api/skills/${enc(skill)}`).then((detail) => {
+			if (disposed || !detail?.plan) return;
+			state.plan = detail.plan;
+			refreshMap();
+		}).catch(() => {});
 	}
 	cleanups.push(on("attempt", recordAttempt));
 	// A lesson saved after a miss is written under that mark on the trail.
@@ -426,6 +580,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 	return {
 		destroy() {
 			disposed = true;
+			clearTimeout(refs.announceTimer);
 			for (const cleanup of cleanups) cleanup();
 			for (const sheet of host.querySelectorAll(".psi-sk-sheet")) sheet._destroy?.();
 			host.replaceChildren();

@@ -1,0 +1,62 @@
+{
+	"skill": "git-fluency",
+	"subskillId": "stage-changes",
+	"title": "The staging area: choose what goes in the next commit",
+	"explanation": "Git keeps three versions of your files in play: the last commit (**HEAD**), the **index** — also called the staging area, your *proposed next commit* — and your **working directory**, where you edit. `git add <file>` copies the file *as it is right now* into the index. If you edit the file again afterwards, the new edit is not staged until you `git add` it again.\n\n```bash\ngit status            # what is staged (\"Changes to be committed\") vs not\ngit status -s         # short form: left column = index, right column = working tree\ngit diff              # working directory vs index: edits you have NOT staged\ngit diff --staged     # index vs last commit: exactly what the next commit will record\ngit restore --staged menu.md   # unstage a file, keeping your edits\n```\n\nThis is what lets you make **focused commits**: edit several things, then stage only the changes that belong together. `git status` names the right undo command for each state, so read it before and after every `git add`.",
+	"keyIdeas": [
+		"The index (staging area) is your proposed next commit.",
+		"`git add` stages a file exactly as it is at that moment.",
+		"`git diff` = unstaged changes; `git diff --staged` = what will be committed.",
+		"`git restore --staged <file>` unstages without losing edits."
+	],
+	"workedExample": {
+		"problem": "In a repository where `menu.md` and `prices.md` are both committed, you edit both but want the next commit to contain only the menu change. Stage it, verify exactly what is staged, then change your mind and unstage it again — without losing either edit.",
+		"steps": [
+			"Stage only the file that belongs in this commit: `git add menu.md`.",
+			"Check the two columns of `git status -s`: `M ` (left column) means staged, ` M` (right column) means modified but not staged.",
+			"List what the next commit would record with `git diff --name-only --cached` — only `menu.md`.",
+			"Unstage with `git restore --staged menu.md`; the edit stays in your working directory.",
+			"Run it in a throwaway folder:\n```sh\ngit init -q -b trunk shop && cd shop\nprintf 'tea\\n' > menu.md; printf 'tea 3\\n' > prices.md\ngit add menu.md prices.md && git commit -q -m 'Start shop'\nprintf 'coffee\\n' >> menu.md; printf 'coffee 4\\n' >> prices.md\ngit add menu.md\ngit status -s                      # M  menu.md / M prices.md\n[ \"$(git diff --name-only --cached)\" = menu.md ]\ngit restore --staged menu.md\n[ -z \"$(git diff --name-only --cached)\" ]   # nothing staged now\ngrep -q coffee menu.md                       # but the edit is still there\necho ok\n```"
+		],
+		"answer": "`git add menu.md` stages only the menu; `git diff --name-only --cached` confirms it; `git restore --staged menu.md` unstages it while the edit remains in the file."
+	},
+	"pitfalls": [
+		"Editing a file after `git add` and committing, expecting the latest edit to be included — re-run `git add`.",
+		"Running `git diff` to review a commit you are about to make; it shows only *unstaged* changes.",
+		"Reaching for `git commit -a` by habit, which stages every tracked change and defeats focused commits."
+	],
+	"citations": [
+		{
+			"sourceId": "src-e5acaae758",
+			"quote": "The index is your proposed next commit. We've also been referring to this concept as Git's \"Staging Area\" as this is what Git looks at when you run git commit.",
+			"locator": "The Index"
+		},
+		{
+			"sourceId": "src-52ab18684b",
+			"quote": "It turns out that Git stages a file exactly as it is when you run the git add command.",
+			"locator": "Staging Modified Files"
+		},
+		{
+			"sourceId": "src-52ab18684b",
+			"quote": "That command compares what is in your working directory with what is in your staging area. The result tells you the changes you've made that you haven't yet staged.",
+			"locator": "Viewing Your Staged and Unstaged Changes"
+		},
+		{
+			"sourceId": "src-52ab18684b",
+			"quote": "If you want to see what you've staged that will go into your next commit, you can use git diff --staged.",
+			"locator": "Viewing Your Staged and Unstaged Changes"
+		},
+		{
+			"sourceId": "src-52ab18684b",
+			"quote": "the left-hand column indicates the status of the staging area and the right-hand column indicates the status of the working tree.",
+			"locator": "Short Status"
+		},
+		{
+			"sourceId": "src-e11e9f0450",
+			"quote": "Right below the \"Changes to be committed\" text, it says use git restore --staged <file>... to unstage.",
+			"locator": "Unstaging a Staged File with git restore"
+		}
+	],
+	"createdAt": "2026-10-31T20:28:52.000Z",
+	"updatedAt": "2026-10-31T20:28:52.000Z"
+}
