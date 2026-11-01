@@ -43,10 +43,11 @@ export type TrustedSubject =
 	| "linear-algebra"
 	| "physics"
 	| "probability"
+	| "machine-learning"
 	| "general";
 
 /** A catalog entry used to seed a skill's source list. */
-export type TrustedCatalogSource = Pick<Source, "title" | "url" | "kind"> & { publisher: string };
+export type TrustedCatalogSource = Pick<Source, "title" | "url" | "kind"> & { publisher: string; license?: string };
 
 interface TrustedDomain {
 	host: string;
@@ -80,6 +81,13 @@ const TRUSTED_DOMAINS: readonly TrustedDomain[] = [
 	{ host: "textbooks.math.gatech.edu", kind: "textbook", publisher: "Georgia Institute of Technology",
 		label: "Open university textbook (Georgia Tech)" },
 	{ host: "arxiv.org", kind: "paper", publisher: "arXiv", label: "arXiv research paper" },
+	{ host: "docs.pytorch.org", kind: "official-docs", publisher: "PyTorch Foundation", label: "Official PyTorch documentation" },
+	{ host: "pytorch.org", kind: "official-docs", publisher: "PyTorch Foundation", label: "Official PyTorch documentation" },
+	{ host: "d2l.ai", kind: "textbook", publisher: "Dive into Deep Learning",
+		label: "Dive into Deep Learning open textbook" },
+	{ host: "karpathy.ai", kind: "course", publisher: "Andrej Karpathy", label: "Neural Networks: Zero to Hero course" },
+	{ host: "github.com", pathPrefix: "/karpathy/nanoGPT", kind: "reference", publisher: "Andrej Karpathy",
+		label: "nanoGPT reference implementation" },
 	{ host: "nist.gov", kind: "reference", publisher: "NIST", label: "NIST reference" },
 	{ host: "dlmf.nist.gov", kind: "reference", publisher: "NIST",
 		label: "NIST Digital Library of Mathematical Functions" },
@@ -222,6 +230,19 @@ export const TRUSTED_SOURCES: Record<TrustedSubject, TrustedCatalogSource[]> = {
 		{ title: "Introductory Statistics 2e",
 			url: "https://openstax.org/details/books/introductory-statistics-2e",
 			kind: "textbook", publisher: "OpenStax" },
+	],
+	"machine-learning": [
+		{ title: "Learn the Basics — PyTorch Tutorials",
+			url: "https://docs.pytorch.org/tutorials/beginner/basics/intro.html",
+			kind: "official-docs", publisher: "PyTorch Foundation" },
+		{ title: "Dive into Deep Learning: Attention Mechanisms and Transformers",
+			url: "https://d2l.ai/chapter_attention-mechanisms-and-transformers/index.html",
+			kind: "textbook", publisher: "Dive into Deep Learning", license: "CC BY-SA 4.0" },
+		{ title: "Attention Is All You Need", url: "https://arxiv.org/abs/1706.03762", kind: "paper", publisher: "arXiv" },
+		{ title: "Neural Networks: Zero to Hero", url: "https://karpathy.ai/zero-to-hero.html",
+			kind: "course", publisher: "Andrej Karpathy" },
+		{ title: "nanoGPT", url: "https://github.com/karpathy/nanoGPT", kind: "reference", publisher: "Andrej Karpathy",
+			license: "MIT" },
 	],
 	general: [
 		{ title: "Knowledge", url: "https://en.wikipedia.org/wiki/Knowledge", kind: "reference", publisher: "Wikipedia" },

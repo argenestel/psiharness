@@ -90,6 +90,8 @@ services:
       - XAI_API_KEY
       - ANTHROPIC_API_KEY
       - OPENAI_API_KEY
+      - BRAVE_API_KEY
+      - PSI_SEARXNG_URL
       - PSI_HOME=/data
       - PSI_STUDIO_HOST=0.0.0.0
       - PSI_STUDIO_PORT=4173
@@ -139,6 +141,8 @@ services:
       - XAI_API_KEY
       - ANTHROPIC_API_KEY
       - OPENAI_API_KEY
+      - BRAVE_API_KEY
+      - PSI_SEARXNG_URL
       - PSI_HOME=/data
       - PSI_STUDIO_HOST=0.0.0.0
       - PSI_STUDIO_PORT=4173
@@ -178,6 +182,8 @@ services:
       - XAI_API_KEY
       - ANTHROPIC_API_KEY
       - OPENAI_API_KEY
+      - BRAVE_API_KEY
+      - PSI_SEARXNG_URL
       - PSI_HOME=/data
       - PSI_CODE_EXEC=${PSI_CODE_EXEC:-1}
       - PSI_CODE_EXEC_BASH=${PSI_CODE_EXEC_BASH:-0}

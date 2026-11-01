@@ -137,7 +137,7 @@ test("SourceStore validates strict kebab skill slugs and refuses descendant syml
 
 test("TRUSTED_SOURCES exposes exactly the requested subjects with four to eight real HTTPS entries", () => {
 	const subjects = ["python", "javascript", "sql", "git", "regex", "algorithms", "calculus", "linear-algebra",
-		"physics", "probability", "general"];
+		"physics", "probability", "machine-learning", "general"];
 	assert.deepEqual(Object.keys(TRUSTED_SOURCES).sort(), [...subjects].sort());
 	for (const subject of subjects) {
 		const entries = TRUSTED_SOURCES[subject as keyof typeof TRUSTED_SOURCES];

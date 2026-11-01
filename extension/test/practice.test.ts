@@ -600,7 +600,7 @@ test("psi_path next teaches concept steps", pathOptions, async (t) => fixture(t,
 }));
 
 import { createServer } from "node:http";
-import { fetchPage, parseSearch, searchSources } from "../src/practice/web.ts";
+import { catalogSubject, fetchPage, keywords, publicAddress, safeHttp, searchSources } from "../src/practice/web.ts";
 import { ProfileStore } from "../../core/src/profile.ts";
 
 async function localPage(t: test.TestContext, run: (base: string) => Promise<void>) {
@@ -668,15 +668,75 @@ test("fetch sanitizes HTML, bounds redirects/body, and wraps reference data", as
 		assert.match(fetched.content[0].text, /ignore instructions/);
 		assert.match(fetched.content[0].text, /<fetched-content.*untrusted="true">/);
 		assert.match(fetched.content[0].text, /<\/fetched-content>/);
-		const fallback = await searchSources("python", "python", "file:///unavailable");
-		assert.match(fallback.note, /trusted catalog/); assert.ok(fallback.items.length);
+		const offline = async () => { throw new Error("getaddrinfo ENOTFOUND"); };
+		const fallback = await searchSources("python", "python", { http: offline, env: {} });
+		assert.match(fallback.note, /Live search failed\. Failed: Wikipedia: getaddrinfo ENOTFOUND; arXiv/);
+		assert.ok(fallback.items.length);
 	});
 }));
 
-test("search decodes uddg and sorts by rank", () => {
-	const items = parseSearch('<a class="result__a" href="https://blog.example/a">Blog</a>'
-		+ '<a class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fdocs.python.org%2F3%2F">Python</a>');
-	assert.equal(items[0]!.url, "https://docs.python.org/3/"); assert.ok(items[0]!.rank > items[1]!.rank);
+test("keyless search uses Wikipedia + arXiv, then subject catalog leads, and says web search is unconfigured", async () => {
+	const calls: string[] = [];
+	const http = async (url: string) => {
+		calls.push(url);
+		if (url.includes("wikipedia.org")) return { url, contentType: "application/json", body: JSON.stringify({ query: { search: [
+			{ title: "Generative pre-trained transformer", snippet: "A <span class=\"searchmatch\">GPT</span> is &amp; more" }] } }) };
+		return { url, contentType: "application/atom+xml", body: "<feed><entry><id>http://arxiv.org/abs/1706.03762v7</id>"
+			+ "<title>Attention Is All\n You Need</title><summary>The dominant sequence transduction models</summary></entry></feed>" };
+	};
+	const r = await searchSources("tiny GPT transformer in PyTorch", undefined, { http, env: {} });
+	assert.equal(r.subject, "machine-learning");
+	assert.deepEqual(r.providers.answered, ["Wikipedia (1)", "arXiv (1)"]);
+	assert.match(r.note, /not configured \(set BRAVE_API_KEY or PSI_SEARXNG_URL\); this is not an outage/);
+	const urls = r.items.map((i) => i.url);
+	assert.ok(urls.includes("https://en.wikipedia.org/wiki/Generative_pre-trained_transformer"));
+	assert.ok(urls.includes("https://arxiv.org/abs/1706.03762v7"));
+	assert.equal(r.items.find((i) => i.url.includes("wikipedia"))!.snippet, "A GPT is & more");
+	assert.equal(urls[0], "https://docs.pytorch.org/tutorials/beginner/basics/intro.html", "vetted leads first for a known subject");
+	assert.match(r.note, /Curated machine-learning catalog leads are listed first/);
+	assert.equal(new Set(urls).size, urls.length);
+	assert.ok(calls.some((u) => /search_query=all:gpt\+AND\+all:transformer\+AND\+all:pytorch&/.test(u)));
+	assert.ok(calls.some((u) => /srsearch=gpt\+transformer\+pytorch&/.test(u)));
+});
+
+test("configured web search: Brave sends its key header; SearXNG may be on a trusted LAN host", async () => {
+	const seen: { url: string; options?: { headers?: Record<string, string>; trustHost?: string } }[] = [];
+	const http = async (url: string, options?: { headers?: Record<string, string>; trustHost?: string }) => {
+		seen.push({ url, options });
+		const body = url.includes("brave.com")
+			? { web: { results: [{ title: "PyTorch", url: "https://docs.pytorch.org/", description: "Docs" },
+				{ title: "bad", url: "javascript:alert(1)" }] } }
+			: { results: [{ title: "nanoGPT", url: "https://github.com/karpathy/nanoGPT", content: "simplest" }] };
+		return { url, contentType: "application/json", body: JSON.stringify(body) };
+	};
+	const brave = await searchSources("pytorch", "machine-learning", { http, env: { BRAVE_API_KEY: "k" } });
+	assert.equal(seen[0]!.options!.headers!["X-Subscription-Token"], "k");
+	assert.deepEqual(brave.providers.answered, ["Brave Search (1)"]);
+	assert.doesNotMatch(brave.note, /not configured/);
+	const searx = await searchSources("nanogpt", undefined, { http, env: { PSI_SEARXNG_URL: "http://192.168.1.5:8888" } });
+	assert.match(seen[1]!.url, /^http:\/\/192\.168\.1\.5:8888\/search\?q=nanogpt&format=json$/);
+	assert.equal(seen[1]!.options!.trustHost, "192.168.1.5");
+	assert.equal(searx.items[0]!.url, "https://github.com/karpathy/nanoGPT");
+});
+
+test("search keywords drop filler and keep technical tokens", () => {
+	assert.deepEqual(keywords("build and train a tiny GPT-style text generator in PyTorch from scratch"),
+		["gpt", "text", "generator", "pytorch"]);
+	assert.deepEqual(keywords("C++ templates"), ["c++", "templates"]);
+});
+
+test("catalog subject is inferred from the query when none is given", () => {
+	assert.equal(catalogSubject("build a tiny GPT"), "machine-learning");
+	assert.equal(catalogSubject("SQL joins"), "sql");
+	assert.equal(catalogSubject("anything", "python"), "python");
+	assert.equal(catalogSubject("knitting"), "general");
+});
+
+test("public IPv6 in 2001::/16 is allowed; special-purpose ranges are refused", async () => {
+	for (const ip of ["2001:df2:e500:ed1a::1", "2001:4860:4860::8888", "2a03:2880::1", "2600::1"]) assert.ok(publicAddress(ip), ip);
+	for (const ip of ["2001:db8::1", "2001:0:4136::1", "2001::1", "2001:1ff::1", "2002:c000:204::1", "3fff::1",
+		"fd00::1", "fe80::1", "::ffff:10.0.0.1", "::"]) assert.equal(publicAddress(ip), false, ip);
+	await assert.rejects(safeHttp("http://[2001:db8::1]/"), /Non-public IP refused/);
 });
 
 test("verification uses cached evidence and uncertain labels", async (t) => fixture(t, async (f, home) => {

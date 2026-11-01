@@ -163,7 +163,7 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - `core/src/sources.ts`: `rankSource(input: { url; kind?; publisher?; license?; publishedAt? }): { rank; kind; rankReasons }`
   (trusted-domain table + kind weights + recency + license openness; plain-language reasons), `sourceId(url)`,
   `TRUSTED_SOURCES` (curated starting points per subject: python, javascript, sql, algorithms, calculus, linear algebra,
-  physics, probability, general), `class SourceStore` — `$PSI_HOME/skills/<s>/sources.json`: `list(skill)` (rank desc),
+  physics, probability, machine-learning, general), `class SourceStore` — `$PSI_HOME/skills/<s>/sources.json`: `list(skill)` (rank desc),
   `add(skill, draft)` (dedupe by normalized URL, ranks it), `get(skill, id)`, `remove(skill, id)`.
 - `core/src/lessons.ts`: `class LessonStore` — `$PSI_HOME/skills/<s>/lessons/<subskillId>.json`: `read`, `write`
   (requires ≥ 1 citation whose sourceId exists in the skill's sources), `list(skill)`.
@@ -178,7 +178,8 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - Extension tools: `psi_lesson` {action: "show"|"write", subskillId?, lesson?} (show presents a lesson card
   widget; write saves a lesson with citations), `psi_sources` {action: "list"|"add"|"remove", skill?, url?, title?, kind?,
   excerpt?, license?}, `psi_fetch` {url} (reads a web page as text, ≤ 20 k chars, http/https only, no private IPs),
-  `psi_search` {query} (web search results to find sources), `psi_verify` {claim, skill?} → Verification with
+  `psi_search` {query, subject?} (Brave with `BRAVE_API_KEY` or SearXNG with `PSI_SEARXNG_URL`, else keyless
+  Wikipedia + arXiv; curated `TRUSTED_SOURCES` leads first for a known subject; never scrapes search pages), `psi_verify` {claim, skill?} → Verification with
   BM25-ranked evidence passages from cached fetched pages and conservative verdicts (likely-supported /
   possibly-contradicted / unclear); `psi_lesson write` rejects quotes not found on the fetched page;
   `/mode teach|practice|test`, `/verify <claim>`, `/sources`. Teaching contract: new or failed-twice subskill → lesson
