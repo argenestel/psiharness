@@ -85,7 +85,7 @@ export function parseMarkdown(value, opts = {}) {
 			i++;
 			block = { type: "rule" };
 		} else if (/^#{1,6}\s/.test(lines[i])) {
-			const match = lines[i++].match(/^(#{1,6})\s+(.*)$/);
+			const match = /** @type {RegExpMatchArray} */ (lines[i++].match(/^(#{1,6})\s+(.*)$/));
 			block = { type: "heading", level: match[1].length, inline: parseInline(match[2]) };
 		} else if (i + 1 < lines.length && lines[i].includes("|") && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1])) {
 			const rows = [cells(lines[i])]; i += 2;

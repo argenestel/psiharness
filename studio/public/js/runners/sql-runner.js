@@ -24,6 +24,7 @@ self.onmessage = async ({ data: { id, setup = "", code = "", tests = "", expecte
 	let db, reference, table;
 	let output = "";
 	try {
+		/** @type {PsiCodelabModule} */
 		const { compareRows } = await import("../codelab.js");
 		const SQL = await loadRuntime(id);
 		db = new SQL.Database();

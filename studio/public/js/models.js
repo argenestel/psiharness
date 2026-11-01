@@ -56,7 +56,8 @@ export function groupModels(models, first) {
 	}
 	const lead = first ? String(first).split("/")[0] : "";
 	return [...groups].map(([provider, items]) => ({ provider, models: items }))
-		.sort((a, b) => (b.provider === lead) - (a.provider === lead));
+		.sort((a, b) => /** @type {number} */ (/** @type {unknown} */ (b.provider === lead))
+			- /** @type {number} */ (/** @type {unknown} */ (a.provider === lead)));
 }
 
 /** Every whitespace-separated term must appear in the id, name or provider (case-insensitive). */
@@ -123,7 +124,8 @@ export function setPreferredModel(id) {
 }
 
 let pickerCount = 0;
-/** The composer/New chat model control. */
+/** The composer/New chat model control.
+ * @param {{value?: string, onChange?: (id: string) => void, chatId?: string, placement?: string}} [options] */
 export function modelPicker({ value, onChange, chatId, placement = "up" } = {}) {
 	const uid = `psi-model-${++pickerCount}`;
 	let current = value || "";

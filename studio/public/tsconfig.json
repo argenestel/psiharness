@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"noEmit": true,
+		"target": "ES2023",
+		"lib": ["ES2023", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"types": [],
+		"skipLibCheck": true,
+		"strict": false,
+		"noImplicitAny": false,
+		"strictNullChecks": true,
+		"allowImportingTsExtensions": true
+	},
+	"include": ["./**/*.js", "./**/*.d.ts"],
+	"exclude": ["./js/runners"]
+}

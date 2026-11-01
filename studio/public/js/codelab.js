@@ -69,7 +69,7 @@ export function splitTests(source = "", language = "python") {
 			|| /^(?:elif|else|except|finally)\b|^[)\]}]/.test(trimmed)
 			|| (language === "python" && (/[\\:]$/.test(previous) || previous.startsWith("@"))));
 		depth = Math.max(0, depth + scanLine(line, language, state));
-		if (continues) { current.push(line); continue; }
+		if (continues) { /** @type {string[]} */ (current).push(line); continue; }
 		if (!trimmed) continue;
 		if (trimmed.startsWith(language === "python" ? "#" : "//")) { comments.push(line); continue; }
 		current = [...comments, line]; comments = []; chunks.push(current);
@@ -80,7 +80,11 @@ export function splitTests(source = "", language = "python") {
 	}));
 }
 
-/** Mount an accessible, dependency-free code editor. Ctrl+Enter runs, Ctrl+Shift+Enter submits, Esc leaves. */
+/**
+ * Mount an accessible, dependency-free code editor. Ctrl+Enter runs, Ctrl+Shift+Enter submits, Esc leaves.
+ * @param {HTMLElement} el
+ * @param {{ language?: string, value?: string, onRun?: () => void, onSubmit?: () => void, onFocus?: () => void }} [options]
+ */
 export function createCodeEditor(el, { language = "javascript", value = "", onRun, onSubmit, onFocus } = {}) {
 	const wrapper = document.createElement("div");
 	wrapper.className = "psi-code-editor";
@@ -127,7 +131,7 @@ export function createCodeEditor(el, { language = "javascript", value = "", onRu
 		const before = input.value.slice(lineStart, input.selectionStart);
 		if (event.key === "Tab" && event.shiftKey) {
 			event.preventDefault();
-			const indent = input.value.slice(lineStart).match(/^ */)[0].length;
+			const indent = (/** @type {RegExpMatchArray} */ (input.value.slice(lineStart).match(/^ */)))[0].length;
 			const remove = Math.min(indent, unit.length);
 			if (!remove) return;
 			const caret = input.selectionStart;
@@ -139,7 +143,7 @@ export function createCodeEditor(el, { language = "javascript", value = "", onRu
 		if (event.key === "Tab" && !event.altKey) { event.preventDefault(); insert(unit); return; }
 		if (event.key === "Enter" && !event.shiftKey && !event.altKey) {
 			event.preventDefault();
-			const indent = before.match(/^\s*/)[0];
+			const indent = (/** @type {RegExpMatchArray} */ (before.match(/^\s*/)))[0];
 			const opens = language === "python" ? /:\s*(?:#.*)?$/.test(before) : /[{([]\s*$/.test(before);
 			insert(`\n${indent}${opens ? unit : ""}`);
 		}
@@ -207,10 +211,10 @@ async function isolatedJavascript(payload) {
 		})(), 5000, () => controller.abort());
 	} finally {
 		controller.abort();
-		channel?.port1.close();
-		channel?.port2.close();
+		/** @type {MessageChannel | undefined} */ (channel)?.port1.close();
+		/** @type {MessageChannel | undefined} */ (channel)?.port2.close();
 		// Removing the owning document terminates its worker, including infinite loops.
-		frame?.remove();
+		/** @type {HTMLIFrameElement | undefined} */ (frame)?.remove();
 	}
 }
 
@@ -314,6 +318,8 @@ function labelled(cases, results) {
 /**
  * Execute code in a timed worker; serialize runs per runtime to prevent crossed responses.
  * `onStage(stage)` reports a first-run runtime download: "loader" → "runtime" → "ready".
+ * @param {{ language?: string, setup?: string, code?: string, tests?: string, expected?: unknown,
+ * onStage?: (stage: string) => void }} [options]
  */
 export function runCode({ language = "javascript", setup = "", code = "", tests = "", expected, onStage } = {}) {
 	if (!["python", "javascript", "sql"].includes(language)) {
@@ -469,6 +475,9 @@ const STAGES = { loader: 1, runtime: 2, ready: 3 };
  * Code lab: editor on graph paper with line numbers, "Reset to starter", a first-run loading note and the output
  * panel. Returns { el, getValue, setValue, focus, run(), setDisabled(bool), input }.
  * `run()` resolves to the runCode result after rendering it.
+ * @param {HTMLElement} el
+ * @param {{ language?: string, starterCode?: string, setup?: string, tests?: string, expected?: unknown,
+ * onRun?: () => void, onSubmit?: () => void }} [options]
  */
 export function createCodeLab(el, { language = "python", starterCode = "", setup = "", tests = "", expected,
 	onRun, onSubmit } = {}) {

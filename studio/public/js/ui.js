@@ -94,7 +94,10 @@ function host() {
 	return toastHost;
 }
 
-/** Show a one-line toast. Errors persist until closed; info closes itself. */
+/** Show a one-line toast. Errors persist until closed; info closes itself.
+ * @param {string} message
+ * @param {{kind?: string, action?: {label: string, run?: () => void}, timeout?: number}} [options]
+ */
 export function toast(message, { kind = "info", action, timeout } = {}) {
 	if (typeof document === "undefined") return { close() {} };
 	const item = el("div", { class: `psi-toast${kind === "error" ? " is-error" : ""}`, role: kind === "error" ? "alert" : undefined });

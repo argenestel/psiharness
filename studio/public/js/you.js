@@ -41,6 +41,8 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
  * Bucket the summary calendar (oldest first, last entry = today) into week columns, Monday first.
  * The last column is the current week (days after today are `future`). Each column carries a month label
  * when the 1st of a month falls in it (or on the first column).
+ * @param {{date: string, attempts: number}[]} calendar
+ * @param {{weeks?: number, today?: string}} [options]
  */
 export function calendarGrid(calendar, { weeks = 12, today } = {}) {
 	const list = (Array.isArray(calendar) ? calendar : []).filter((d) => parseDay(d?.date));
@@ -192,7 +194,10 @@ async function putProfile(body) {
 }
 
 let widgetCount = 0;
-/** Daily-goal ring with its picker. `compact` is the bench size. */
+/** Daily-goal ring with its picker. `compact` is the bench size.
+ * @param {import("../../../core/src/types.ts").LearnerSummary} summary
+ * @param {{compact?: boolean, onSaved?: (summary: import("../../../core/src/types.ts").LearnerSummary) => void}} [options]
+ */
 export function goalWidget(summary, { compact = false, onSaved } = {}) {
 	let current = summary;
 	const id = `psi-goal-picker-${++widgetCount}`;

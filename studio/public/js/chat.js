@@ -135,6 +135,7 @@ export function summarizeTools(tools = []) {
 	return summary && failure ? `${summary}. ${failure}` : summary || failure;
 }
 
+/** @type {[RegExp, (match: RegExpExecArray) => string][]} */
 const COMMAND_ECHOES = [
 	// The challenge card's own notes to the tutor: show the learner's words, not the challenge id.
 	[/^Answered challenge \S+: ([\s\S]*?) \((?:success|partial|fail|skipped|pending), \+\d+ XP\)(?:\. [^\n]*)?$/,
@@ -223,11 +224,16 @@ const contentOf = (message) => typeof message?.content === "string"
 const textOf = (blocks, type) => blocks.filter((block) => block?.type === type)
 	.map((block) => block[type === "thinking" ? "thinking" : "text"] ?? "").join("\n");
 
+/** @typedef {{ role: string, blocks: Record<string, any>[], text: string, thinking: string, done: boolean, error?: any, stopReason?: any }} ChatMessage */
+/** @typedef {{ id?: string, turn?: number, name?: string, args?: any, result?: any, done?: boolean, isError?: boolean }} ChatTool */
+/** @typedef {{ seq?: number, messages: ChatMessage[], tools: ChatTool[], busy: boolean, hud: Record<string, string>, model?: string }} ChatState */
+
 /** Pure immutable projection of pi's documented JSON/RPC events. */
+/** @param {Partial<ChatState> | undefined} state @param {Record<string, any>} record @returns {ChatState} */
 export function reduceRecord(state = {}, record) {
-	if (record.seq !== undefined && record.seq <= (state.seq ?? 0)) return state;
-	const next = { messages: [], tools: [], busy: false, hud: {}, ...state,
-		seq: record.seq ?? state.seq ?? 0 };
+	if (record.seq !== undefined && record.seq <= (state.seq ?? 0)) return /** @type {ChatState} */ (state);
+	const next = /** @type {ChatState} */ ({ messages: [], tools: [], busy: false, hud: {}, ...state,
+		seq: record.seq ?? state.seq ?? 0 });
 	const event = eventOf(record);
 	if (event.type === "agent_start") next.busy = true;
 	if (["agent_settled", "agent_error", "agent_exit"].includes(event.type)) next.busy = false;
@@ -344,10 +350,12 @@ export const DEFAULT_REPLIES = [{ label: "Continue", message: "Continue" }];
 
 const sameReply = (a, b) => String(a ?? "").trim().replace(/[.!]+$/, "").toLowerCase()
 	=== String(b ?? "").trim().replace(/[.!]+$/, "").toLowerCase();
+/** @typedef {{ label: string, message: string }} ReplyOption */
 /**
  * What a row of reply buttons shows. `nextUserText` is the learner's next message after this turn
  * (undefined while the turn is the latest). Returns { mode: "active"|"waiting"|"sent"|"chosen"|"hidden", chosen? }.
  */
+/** @param {{ options?: ReplyOption[], nextUserText?: string, busy?: boolean, chosen?: string }} [state] */
 export function replyRowState({ options = [], nextUserText, busy = false, chosen } = {}) {
 	if (nextUserText === undefined) {
 		if (chosen) return { mode: "sent", chosen };
@@ -406,19 +414,20 @@ export function modeLine(mode) {
 }
 
 /** Set a reply row's display from replyRowState(). */
+/** @param {HTMLElement} row @param {{ mode: string, chosen?: string }} state */
 export function setReplyState(row, { mode, chosen }) {
 	row.dataset.state = mode;
 	row.hidden = mode === "hidden" || mode === "waiting";
 	const buttons = row.querySelectorAll(".psi-reply");
-	for (const item of buttons) {
+	for (const item of /** @type {NodeListOf<HTMLButtonElement>} */ (buttons)) {
 		item.disabled = mode !== "active";
 		item.classList.toggle("is-chosen", !!chosen && item.textContent === chosen);
 	}
 	const words = row.querySelector(".psi-replies-chosen");
 	const collapsed = mode === "chosen";
-	row.querySelector(".psi-replies-buttons").hidden = collapsed;
-	row.querySelector(".psi-replies-keys").hidden = mode !== "active";
-	if (words) { words.hidden = !collapsed; words.textContent = collapsed ? `You picked: ${chosen}` : ""; }
+	(/** @type {HTMLElement} */ (row.querySelector(".psi-replies-buttons"))).hidden = collapsed;
+	(/** @type {HTMLElement} */ (row.querySelector(".psi-replies-keys"))).hidden = mode !== "active";
+	if (words) { (/** @type {HTMLElement} */ (words)).hidden = !collapsed; words.textContent = collapsed ? `You picked: ${chosen}` : ""; }
 }
 
 /**
@@ -494,7 +503,7 @@ function button(text, action, className = "") {
 }
 const reducedMotion = () => globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 // The shell's ui.js provides toast/emit; the chat still works if it is missing.
-const uiModule = import("./ui.js").catch(() => ({}));
+const uiModule = import("./ui.js").catch(() => /** @type {Partial<typeof import("./ui.js")>} */ ({}));
 let ui = {};
 uiModule.then((module) => { ui = module; });
 function emit(name, detail) { uiModule.then((module) => { try { module.emit?.(name, detail); } catch { /* optional */ } }); }
@@ -992,7 +1001,7 @@ export function mountChat(el, options = {}) {
 		let field, finished = false;
 		function dismiss() {
 			finished = true; clearTimeout(requestTimer); overlay.remove(); activeDialog = undefined;
-			if (previous?.isConnected) previous.focus(); else input.focus();
+			if (previous?.isConnected) (/** @type {HTMLElement} */ (previous)).focus(); else input.focus();
 			nextDialog();
 		}
 		async function answer(value) {

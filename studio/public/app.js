@@ -72,13 +72,13 @@ export function isModuleLoadError(error) {
 const CHAT_LIMIT = 12;
 
 function init() {
-const app = document.querySelector("#app");
-const dialog = document.querySelector("#lightbox");
-const connection = document.querySelector("#connection");
-const benchEl = document.querySelector("#bench");
-const benchToggle = document.querySelector("#bench-toggle");
-const menuToggle = document.querySelector("#menu-toggle");
-const shade = document.querySelector("#drawer-shade");
+const app = /** @type {HTMLElement} */ (document.querySelector("#app"));
+const dialog = /** @type {HTMLDialogElement} */ (document.querySelector("#lightbox"));
+const connection = /** @type {HTMLElement} */ (document.querySelector("#connection"));
+const benchEl = /** @type {HTMLElement} */ (document.querySelector("#bench"));
+const benchToggle = /** @type {HTMLButtonElement} */ (document.querySelector("#bench-toggle"));
+const menuToggle = /** @type {HTMLButtonElement} */ (document.querySelector("#menu-toggle"));
+const shade = /** @type {HTMLElement} */ (document.querySelector("#drawer-shade"));
 let generation = 0;
 let reviewState;
 // Our own review writes echo back as filesystem change events; do not report those as external updates.
@@ -96,7 +96,7 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const meter = (value, label, thin = true) => `<progress class="psi-meter${thin ? " is-thin" : ""}" max="100" value="${value}"
 	aria-label="${escapeHtml(label)}">${value}%</progress>`;
 /** File name without directories or extension, used to match plan visuals to rendered artifacts. */
-const stem = (path) => String(path || "").split("/").pop().replace(/\.[^.]+$/, "");
+const stem = (path) => /** @type {string} */ (String(path || "").split("/").pop()).replace(/\.[^.]+$/, "");
 const pretty = (name) => capital(titleOf(stem(name)).trim()) || name;
 const kindOf = (a) => a.type.startsWith("text/html") ? "Interactive page" : a.type.startsWith("video/") ? "Video"
 	: a.type.startsWith("image/") ? "Image" : "File";
@@ -173,7 +173,7 @@ async function render() {
 			<header><h1>${escapeHtml(title)}</h1>${graph?.bigIdea ? `<p>${escapeHtml(graph.bigIdea)}</p>` : ""}</header>
 			<nav class="psi-tabs" aria-label="Topic views">${VIEWS.map(([id, label]) => `<a href="${topicPath(topic, id)}"
 				${id === view ? 'aria-current="page"' : ""}>${label}</a>`).join("")}</nav><section id="view"></section></div>`;
-		const container = document.querySelector("#view");
+		const container = /** @type {HTMLElement} */ (document.querySelector("#view"));
 		if (view === "map") renderMap(container, concepts, mastery, frontier || [], artifacts, plan);
 		else if (view === "lessons") renderLessons(container, plan, concepts, artifacts);
 		else if (view === "gallery") renderGallery(container, artifacts);
@@ -191,7 +191,7 @@ async function render() {
 		if (token === generation) {
 			app.innerHTML = `<div class="psi-view empty"><h2>Couldn't open this page</h2><p>${escapeHtml(error.message)}</p>
 				<button id="retry" type="button">Try again</button> <a class="button-link" href="#/">Go home</a></div>`;
-			document.querySelector("#retry").onclick = render;
+			(/** @type {HTMLButtonElement} */ (document.querySelector("#retry"))).onclick = render;
 		}
 	} finally { if (token === generation) app.removeAttribute("aria-busy"); }
 }
@@ -280,7 +280,7 @@ function renderMap(container, concepts, mastery, frontier, artifacts, plan) {
 	function select(id) {
 		const c = byId.get(id);
 		const links = linkedArtifacts(c, artifacts, plan);
-		const detail = document.querySelector("#concept-detail");
+		const detail = /** @type {HTMLElement} */ (document.querySelector("#concept-detail"));
 		const lists = [["Watch out for", c.misconceptions], ["Picture this", c.visualHooks]]
 			.map(([label, items]) => items?.length
 				? `<h3>${label}</h3><ul>${items.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ul>` : "").join("");
@@ -291,10 +291,10 @@ function renderMap(container, concepts, mastery, frontier, artifacts, plan) {
 			${c.intuition ? `<blockquote>${escapeHtml(c.intuition)}</blockquote>` : ""}${lists}
 			${links.length ? `<h3>Visuals</h3>${links.map((a, i) => `<button class="psi-artifact-link" type="button" data-artifact="${i}">
 				${escapeHtml(pretty(a.name))}<small>${kindOf(a)}</small></button>`).join("")}` : ""}`;
-		detail.querySelectorAll("[data-artifact]").forEach((button) => {
+		/** @type {NodeListOf<HTMLButtonElement>} */ (detail.querySelectorAll("[data-artifact]")).forEach((button) => {
 			button.onclick = () => openArtifact(links[Number(button.dataset.artifact)]);
 		});
-		document.querySelectorAll(".node")
+		/** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll(".node"))
 			.forEach((node) => node.setAttribute("aria-pressed", String(node.dataset.id === id)));
 		if (matchMedia("(max-width: 767px)").matches) detail.scrollIntoView({ block: "start" });
 	}
@@ -358,20 +358,20 @@ function renderGallery(container, artifacts) {
 }
 function openArtifact(a) {
 	if (!a) return;
-	document.querySelector("#lightbox-content").innerHTML = `<h2>${escapeHtml(pretty(a.name))}</h2>
+	(/** @type {HTMLElement} */ (document.querySelector("#lightbox-content"))).innerHTML = `<h2>${escapeHtml(pretty(a.name))}</h2>
 		<div class="lightbox-media">${media(a)}</div>
 		<a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">Open in a new tab</a>`;
 	dialog.showModal();
 }
 function closeArtifact() {
 	if (dialog.open) dialog.close();
-	document.querySelector("#lightbox-content").replaceChildren();
+	(/** @type {HTMLElement} */ (document.querySelector("#lightbox-content"))).replaceChildren();
 }
 const same = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
 function renderCard(message = "") {
 	const s = reviewState;
 	if (!s || s.token !== generation) return;
-	const container = document.querySelector("#view");
+	const container = /** @type {HTMLElement} */ (document.querySelector("#view"));
 	const card = s.cards[s.index];
 	if (!card) {
 		container.innerHTML = `<div class="psi-review"><h2>${s.reviewed ? "Review done" : "Nothing due right now"}</h2>
@@ -397,14 +397,14 @@ function renderCard(message = "") {
 			: '<div><button id="reveal" type="button" class="primary">Show answer</button></div>'}</article>
 		<p class="psi-review-message" role="status">${escapeHtml(message)}</p></div>`;
 	container.querySelector("#reveal")?.addEventListener("click", () => { s.revealed = true; renderCard(); });
-	container.querySelectorAll("[data-choice]").forEach((button) => {
+	/** @type {NodeListOf<HTMLButtonElement>} */ (container.querySelectorAll("[data-choice]")).forEach((button) => {
 		button.onclick = () => {
 			s.revealed = true; s.choice = Number(button.dataset.choice);
 			renderCard(same(card.choices[s.choice], card.answer)
 				? "Right. Now rate how easy it felt." : "Not this time. Compare with the answer, then rate it.");
 		};
 	});
-	container.querySelectorAll("[data-rating]").forEach((button) => {
+	/** @type {NodeListOf<HTMLButtonElement>} */ (container.querySelectorAll("[data-rating]")).forEach((button) => {
 		button.onclick = () => submitRating(Number(button.dataset.rating));
 	});
 	if (s.revealed) container.querySelector(".psi-ratings")?.scrollIntoView({ block: "nearest" });
@@ -493,8 +493,8 @@ const closeBench = () => {
 	if (wasOpen && !benchToggle.hidden) benchToggle.focus();
 };
 function setTopbar(title, sub = "") {
-	document.querySelector("#topbar-title").textContent = title || "psi";
-	const subEl = document.querySelector("#topbar-sub");
+	(/** @type {HTMLElement} */ (document.querySelector("#topbar-title"))).textContent = title || "psi";
+	const subEl = /** @type {HTMLElement} */ (document.querySelector("#topbar-sub"));
 	subEl.textContent = sub; subEl.hidden = !sub;
 }
 /** The bench column shows only on bench routes with an active skill. */
@@ -578,7 +578,7 @@ async function refreshChrome() {
 		fill("#sidebar-topics", () => client.get("/api/topics"), (t) => link(topicPath(t.topic, "map"),
 			topicTitle(t)), "")
 			.then(() => {
-				const nav = document.querySelector("#sidebar-topics");
+				const nav = /** @type {HTMLElement} */ (document.querySelector("#sidebar-topics"));
 				nav.querySelector(".psi-nav-note")?.remove();
 				nav.append(link("#/topics", "All concepts"));
 			}),
@@ -587,7 +587,7 @@ async function refreshChrome() {
 }
 function markCurrent() {
 	const hash = location.hash || "#/";
-	document.querySelectorAll("#sidebar a").forEach((a) => {
+	/** @type {NodeListOf<HTMLAnchorElement>} */ (document.querySelectorAll("#sidebar a")).forEach((a) => {
 		const topic = parseRoute(hash).route === "topic" && a.hash === `#/${hash.slice(2).split("/")[0]}/map`;
 		const paths = a.hash === "#/paths" && /^#\/paths(?:[/?]|$)/.test(hash);
 		const graph = a.hash === "#/graph" && /^#\/graph(?:[/?]|$)/.test(hash);
@@ -637,7 +637,7 @@ async function renderRoute() {
 			if (token !== generation) return;
 			view = mountPractice(host, { skill: parsed.params.skill, navigate });
 			// The top bar starts from the slug ("Sql lab"); swap in the plan's own title ("SQL Lab").
-			void import("./js/api.js").then(({ api: client }) => client.get(`/api/skills/${enc(parsed.params.skill)}`))
+			void import("./js/api.js").then(({ api: client }) => client.get(`/api/skills/${enc(/** @type {string} */ (parsed.params.skill))}`))
 				.then((data) => {
 					if (token !== generation || !data?.plan?.title) return;
 					setTopbar(data.plan.title); document.title = `${data.plan.title} · psi`;
@@ -666,9 +666,9 @@ async function renderRoute() {
 					...(model && { model }) });
 				chatId = created.id;
 				// Seed before mounting SSE; the chat endpoint replays its saved records on connection.
-				if (prompt) await client.post(`/api/chat/${enc(chatId)}/prompt`, { message: prompt });
+				if (prompt) await client.post(`/api/chat/${enc(/** @type {string} */ (chatId))}/prompt`, { message: prompt });
 				if (token !== generation) return;
-				history.replaceState(null, "", `#/chat/${enc(chatId)}`);
+				history.replaceState(null, "", `#/chat/${enc(/** @type {string} */ (chatId))}`);
 				markCurrent();
 				void refreshChrome();
 			}
@@ -683,7 +683,7 @@ async function renderRoute() {
 			host.innerHTML = `<div class="psi-view empty"><h2>Couldn't open this page</h2>
 				<p>${escapeHtml(String(error.message).replace(/\.$/, ""))}. Check that psi web is running, then try again.</p>
 				<button id="shell-retry" type="button">Try again</button></div>`;
-			host.querySelector("#shell-retry").onclick = renderRoute;
+			(/** @type {HTMLButtonElement} */ (host.querySelector("#shell-retry"))).onclick = renderRoute;
 		}
 	} finally { if (token === generation) app.removeAttribute("aria-busy"); }
 }
@@ -703,7 +703,7 @@ function showOffline(host, token) {
 		} catch { /* Still offline: the message and its Reload button stay. */ }
 	}, 2000);
 }
-document.querySelector("#close-lightbox").onclick = closeArtifact;
+(/** @type {HTMLButtonElement} */ (document.querySelector("#close-lightbox"))).onclick = closeArtifact;
 dialog.addEventListener("cancel", (event) => { event.preventDefault(); closeArtifact(); });
 dialog.addEventListener("click", (event) => { if (event.target === dialog) closeArtifact(); });
 menuToggle.onclick = () => {
@@ -711,20 +711,20 @@ menuToggle.onclick = () => {
 	const open = document.body.classList.toggle("psi-drawer-open");
 	menuToggle.setAttribute("aria-expanded", String(open));
 	syncShade();
-	if (open) document.querySelector("#sidebar .psi-brand")?.focus();
+	if (open) (/** @type {HTMLElement} */ (document.querySelector("#sidebar .psi-brand")))?.focus();
 };
 benchToggle.onclick = () => {
 	closeDrawer();
 	const open = document.body.classList.toggle("psi-bench-open");
 	benchToggle.setAttribute("aria-expanded", String(open));
 	syncShade();
-	if (open) benchEl.querySelector("a, button")?.focus();
+	if (open) (/** @type {HTMLElement} */ (benchEl.querySelector("a, button")))?.focus();
 };
 shade.onclick = () => { closeDrawer(); closeBench(); };
-document.querySelector("#sidebar").addEventListener("click", (event) => {
-	if (event.target.closest("a")) closeDrawer();
+(/** @type {HTMLElement} */ (document.querySelector("#sidebar"))).addEventListener("click", (event) => {
+	if ((/** @type {Element} */ (event.target)).closest("a")) closeDrawer();
 });
-document.querySelector(".psi-skip").onclick = (event) => { event.preventDefault(); app.focus(); };
+(/** @type {HTMLAnchorElement} */ (document.querySelector(".psi-skip"))).onclick = (event) => { event.preventDefault(); app.focus(); };
 window.addEventListener("hashchange", () => { void renderRoute(); });
 window.addEventListener("keydown", (event) => {
 	if (event.key === "Escape") {
@@ -732,7 +732,8 @@ window.addEventListener("keydown", (event) => {
 		closeDrawer(); closeBench();
 		if (drawer) menuToggle.focus();
 	}
-	if (dialog.open || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName) || event.target.isContentEditable) return;
+	if (dialog.open || /INPUT|TEXTAREA|SELECT/.test((/** @type {HTMLElement} */ (event.target)).tagName)
+		|| (/** @type {HTMLElement} */ (event.target)).isContentEditable) return;
 	if (event.altKey || event.ctrlKey || event.metaKey) return;
 	if (reviewState && event.code === "Space" && !reviewState.revealed && reviewState.cards[reviewState.index]) {
 		event.preventDefault(); reviewState.revealed = true; renderCard();
@@ -742,7 +743,7 @@ for (const name of ["psi:skills-changed", "psi:chats-changed", "psi:attempt"]) {
 	window.addEventListener(name, () => { void refreshChrome(); });
 }
 window.addEventListener("psi:bench", (event) => {
-	const open = event.detail?.open ?? !document.body.classList.contains("psi-bench-open");
+	const open = (/** @type {CustomEvent} */ (event)).detail?.open ?? !document.body.classList.contains("psi-bench-open");
 	if (open && !benchToggle.hidden) benchToggle.click(); else if (!open) closeBench();
 });
 events = new EventSource("/api/events");

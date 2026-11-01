@@ -29,6 +29,20 @@ node cli/src/psi.ts doctor
 Run one file with `node --test core/test/fsrs.test.ts`. Use a throwaway store for manual testing:
 `PSI_HOME=$(mktemp -d) node cli/src/psi.ts import-skill examples/skills/mental-math`.
 
+## Typechecking
+
+Run all three checks before opening a PR:
+
+- `npm run typecheck` — server/core/extension TypeScript.
+- `npx tsc -p studio/public/tsconfig.json` — browser ES modules (JSDoc-checked).
+- `npx tsc -p studio/public/js/runners/tsconfig.json` — sandbox web workers with the WebWorker library.
+
+Browser JavaScript has no build step; types are expressed as JSDoc. The browser and worker configs are separate
+from the root check so DOM and worker globals stay isolated. The worker config uses `noResolve` and a narrow
+`compareRows` declaration to avoid importing the DOM-based editor into its program; the browser check covers
+that helper's implementation. `moduleDetection: "force"` isolates each worker's script globals for checking only.
+Also run `npm test` for runtime coverage.
+
 ## Conventions
 
 **TypeScript (erasable syntax only).** `tsconfig.json` sets `erasableSyntaxOnly` and `verbatimModuleSyntax`:

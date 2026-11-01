@@ -1,0 +1,12 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ES2023", "WebWorker"],
+		"types": [],
+		"moduleDetection": "force",
+		// Type SQL's browser helper through codelab.d.ts while keeping DOM types out of workers.
+		"noResolve": true
+	},
+	"include": ["./*-worker.js", "./sql-runner.js", "./*.d.ts"],
+	"exclude": []
+}

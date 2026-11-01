@@ -17,7 +17,11 @@ export const api = {
 	del: (path) => request("DELETE", path),
 };
 
-/** Reconnect explicitly so the query cursor always reflects the latest delivered record. */
+/** Reconnect explicitly so the query cursor always reflects the latest delivered record.
+ * @param {string} chatId
+ * @param {{since?: number, onRecord?: (record: any) => void, onOpen?: (event: Event) => void,
+ * onError?: (error: any) => void}} [options]
+ */
 export function openEvents(chatId, { since = 0, onRecord, onOpen, onError } = {}) {
 	let cursor = Number(since) || 0;
 	let source, timer, closed = false;

@@ -194,7 +194,7 @@ export function renderTrail(attempts = [], { animateLast = false, label = "Attem
 	if (typeof ResizeObserver === "function") new ResizeObserver(() => keepNewestVisible(trailEl)).observe(scroller);
 
 	marks.addEventListener("keydown", (event) => {
-		const current = event.target.closest?.(".psi-trail-mark");
+		const current = /** @type {Element} */ (event.target).closest?.(".psi-trail-mark");
 		if (!current) return;
 		const all = [...marks.children];
 		const i = all.indexOf(current);
@@ -207,10 +207,10 @@ export function renderTrail(attempts = [], { animateLast = false, label = "Attem
 		const target = all[Math.max(0, Math.min(all.length - 1, next))];
 		setCurrent(trailEl, target, true);
 	});
-	marks.addEventListener("focusin", (event) => showTip(trailEl, event.target.closest?.(".psi-trail-mark")));
+	marks.addEventListener("focusin", (event) => showTip(trailEl, /** @type {Element} */ (event.target).closest?.(".psi-trail-mark")));
 	marks.addEventListener("focusout", () => showTip(trailEl, null));
 	marks.addEventListener("pointerover", (event) => {
-		const mark = event.target.closest?.(".psi-trail-mark");
+		const mark = /** @type {Element} */ (event.target).closest?.(".psi-trail-mark");
 		if (mark) showTip(trailEl, mark);
 	});
 	marks.addEventListener("pointerleave", () => {

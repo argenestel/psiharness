@@ -3,6 +3,12 @@ import { el, on, toast, formatLevel, streakLabel, hoursLabel } from "./ui.js";
 import { nextSubskill } from "./bench.js";
 import { pickAnnouncement, fillAnnouncement } from "./you.js";
 
+/** @typedef {import("../../../core/src/types.ts").SkillPlan} SkillPlan */
+/** @typedef {import("../../../core/src/types.ts").Challenge & { attempted?: boolean, attempts?: number, lastOutcome?: string }} UiChallenge */
+/** @typedef {import("../../../core/src/types.ts").Attempt} Attempt */
+/** @typedef {import("../../../core/src/types.ts").Progress} Progress */
+/** @typedef {{ plan: Partial<SkillPlan> | null, progress: Partial<Progress>, challenges: UiChallenge[], attempts: Attempt[], filter: string, open: any }} PracticeState */
+
 const enc = encodeURIComponent;
 const reason = (error) => String(error?.message ?? error).replace(/[.\s]+$/, "");
 /** "What happened, what to do" for a failed request. */
@@ -172,19 +178,20 @@ async function loadTrail() {
 		}
 	} catch { /* fall through */ }
 	const words = { success: "Solved", partial: "Partly solved", fail: "Missed", skipped: "Skipped" };
-	return (attempts, { label } = {}) => el("ol", { class: "psi-sk-fallback-trail", "aria-label": label ?? "Attempts" },
+	return (attempts, { label } = /** @type {{ label?: string }} */ ({})) => el("ol", { class: "psi-sk-fallback-trail", "aria-label": label ?? "Attempts" },
 		attempts.map((a) => el("li", { class: `is-${a.outcome}`,
 			title: a.lesson ? `${words[a.outcome]}: ${a.lesson}` : words[a.outcome] },
 			el("span", { class: "psi-visually-hidden" }, words[a.outcome] ?? a.outcome))));
 }
 
 /** Mount the skill page at #/skills/:skill. */
+/** @param {Element} host @param {{ skill?: string, navigate?: (hash: string) => void }} [options] */
 export function mountPractice(host, { skill, navigate } = {}) {
 	let disposed = false;
 	const cleanups = [];
 	const go = (hash) => (navigate ? navigate(hash) : (location.hash = hash));
 	const openTutor = (prompt) => go(`#/new?${new URLSearchParams({ skill: skill || "", prompt })}`);
-	const state = { plan: null, progress: {}, challenges: [], attempts: [], filter: "all", open: null };
+	const state = /** @type {PracticeState} */ ({ plan: null, progress: {}, challenges: [], attempts: [], filter: "all", open: null });
 	let renderTrail, refs = {};
 
 	const root = el("section", { class: "psi-sk psi-view", "aria-busy": "true" },
@@ -483,7 +490,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 		sheet.replaceChildren(el("p", { class: "psi-sk-quiet" }, "Opening the challenge…"));
 		try {
 			const [{ renderToolWidget }, full] = await Promise.all([import("./widgets.js"),
-				api.get(`/api/skills/${enc(skill)}/challenges/${enc(c.id)}`)]);
+				api.get(`/api/skills/${enc(/** @type {string} */ (skill))}/challenges/${enc(c.id)}`)]);
 			if (disposed || sheet.hidden) return;
 			const ctx = {
 				api, skill,
@@ -502,11 +509,11 @@ export function mountPractice(host, { skill, navigate } = {}) {
 			const result = { details: { widget: { ...full, type: "challenge" } } };
 			const widget = await renderToolWidget("psi_challenge", { skill, id: c.id }, result, ctx);
 			if (disposed || sheet.hidden) { widget?.destroy?.(); return; }
-			const node = widget instanceof Node ? widget : widget?.el;
+			const node = /** @type {HTMLElement | null} */ (widget instanceof Node ? widget : widget?.el);
 			if (!(node instanceof Node)) throw new Error("The challenge sheet isn't available");
 			sheet.replaceChildren(node);
 			if (typeof widget?.destroy === "function") sheet._destroy = () => widget.destroy();
-			node.querySelector("input, textarea, [contenteditable=true], button")?.focus({ preventScroll: true });
+			(/** @type {HTMLElement | null} */ (node.querySelector("input, textarea, [contenteditable=true], button")))?.focus({ preventScroll: true });
 		} catch (error) {
 			if (disposed) return;
 			sheet.replaceChildren(el("p", { class: "psi-sk-error" }, `Couldn't open this challenge. ${failure(error)}`),
@@ -558,7 +565,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 			}
 		}
 		// Statuses (solid steps, unlocked stops) come from the server's progression rules.
-		void api.get(`/api/skills/${enc(skill)}`).then((detail) => {
+		void api.get(`/api/skills/${enc(/** @type {string} */ (skill))}`).then((detail) => {
 			if (disposed || !detail?.plan) return;
 			state.plan = detail.plan;
 			refreshMap();
@@ -582,7 +589,7 @@ export function mountPractice(host, { skill, navigate } = {}) {
 			disposed = true;
 			clearTimeout(refs.announceTimer);
 			for (const cleanup of cleanups) cleanup();
-			for (const sheet of host.querySelectorAll(".psi-sk-sheet")) sheet._destroy?.();
+			for (const sheet of host.querySelectorAll(".psi-sk-sheet")) (/** @type {HTMLElement & { _destroy?: () => void }} */ (sheet))._destroy?.();
 			host.replaceChildren();
 		},
 	};

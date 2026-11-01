@@ -1,21 +1,41 @@
 {
   "name": "psi-harness",
   "version": "0.1.0",
-  "description": "ψ — a practice-first learning agent with long-term learner memory, built as a pi / oh-my-pi package.",
+  "description": "\u03c8 \u2014 a practice-first learning agent with long-term learner memory, built as a pi / oh-my-pi package.",
   "type": "module",
   "license": "PolyForm-Noncommercial-1.0.0",
-  "keywords": ["pi-package", "learning", "tutor", "manim", "explainer", "agent"],
-  "repository": { "type": "git", "url": "git+https://github.com/argenestel/psiharness.git" },
-  "engines": { "node": ">=22.18" },
-  "bin": { "psi": "cli/src/psi.ts" },
+  "keywords": [
+    "pi-package",
+    "learning",
+    "tutor",
+    "manim",
+    "explainer",
+    "agent"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/argenestel/psiharness.git"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "bin": {
+    "psi": "cli/src/psi.ts"
+  },
   "pi": {
-    "extensions": ["./extension/src/index.ts"],
-    "skills": ["./skills"],
-    "prompts": ["./prompts/*.md"]
+    "extensions": [
+      "./extension/src/index.ts"
+    ],
+    "skills": [
+      "./skills"
+    ],
+    "prompts": [
+      "./prompts/*.md"
+    ]
   },
   "scripts": {
     "test": "node --test \"core/test/*.test.ts\" \"visual/test/*.test.ts\" \"crew/test/*.test.ts\" \"studio/test/*.test.ts\" \"cli/test/*.test.ts\" \"extension/test/*.test.ts\"",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc -p studio/public/tsconfig.json && tsc -p studio/public/js/runners/tsconfig.json",
     "check": "npm run typecheck && npm test",
     "studio": "node studio/src/server.ts",
     "psi": "node cli/src/psi.ts"
@@ -24,7 +44,9 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "peerDependenciesMeta": {
-    "@earendil-works/pi-coding-agent": { "optional": true }
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "^1.1.0",

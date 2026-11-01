@@ -148,7 +148,8 @@ async function request(method, path, body) {
 	let data;
 	try { data = await response.json(); } catch { data = {}; }
 	if (!response.ok) {
-		const error = new Error(data.message || data.error || `Request failed (${response.status})`);
+		const error = /** @type {Error & {status?: number}} */
+			(new Error(data.message || data.error || `Request failed (${response.status})`));
 		error.status = response.status;
 		throw error;
 	}
@@ -232,7 +233,10 @@ function indexGraph(graph) {
 
 /* ---------- View ---------- */
 
-/** Mount the paths list (no id) or one path page. */
+/** Mount the paths list (no id) or one path page.
+ * @param {HTMLElement} root
+ * @param {{navigate?: (hash: string) => void, id?: string}} [options]
+ */
 export function mountPaths(root, { navigate, id } = {}) {
 	let disposed = false;
 	const go = (hash) => (navigate ? navigate(hash) : (location.hash = hash));
@@ -401,7 +405,7 @@ export function mountPaths(root, { navigate, id } = {}) {
 
 	async function renderPage() {
 		try {
-			[path] = await Promise.all([call("get", `/api/paths/${enc(id)}`), loadGraph()]);
+			[path] = await Promise.all([call("get", `/api/paths/${enc(/** @type {string} */ (id))}`), loadGraph()]);
 		} catch (error) {
 			if (disposed) return;
 			if (error.status === 404) {
@@ -477,7 +481,7 @@ export function mountPaths(root, { navigate, id } = {}) {
 		const body = { title: path.title, goal: path.goal, steps: path.steps,
 			...(path.targetId ? { targetId: path.targetId } : {}), ...patch };
 		if (body.targetId && !body.steps.includes(body.targetId)) delete body.targetId;
-		return call("put", `/api/paths/${enc(id)}`, body);
+		return call("put", `/api/paths/${enc(/** @type {string} */ (id))}`, body);
 	}
 
 	function stepList(progress) {
@@ -603,7 +607,7 @@ export function mountPaths(root, { navigate, id } = {}) {
 			const yes = el("button", { type: "button", class: "psi-pa-danger", onclick: async () => {
 				yes.disabled = true;
 				try {
-					await call("del", `/api/paths/${enc(id)}`);
+					await call("del", `/api/paths/${enc(/** @type {string} */ (id))}`);
 					if (disposed) return;
 					emit("psi:paths-changed", { id, deleted: true });
 					toast(`Deleted “${path.title}”.`);

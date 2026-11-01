@@ -19,6 +19,9 @@
 import { el, toast } from "./ui.js";
 import { api } from "./api.js";
 
+/** @typedef {{ s: any, t: any, spring: { length: number, strength: number }, bias: number, strength: number }} SimLink */
+/** @typedef {[string, (edge: any) => boolean, "from" | "to" | "other"]} LinkGroup */
+
 export const LAYOUT_KEY = "psi-graph-layout";
 const KIND_ORDER = { skill: 0, topic: 1, subskill: 2, concept: 3, note: 4 };
 const SPRING = {
@@ -223,12 +226,13 @@ export function repulsion(tree, p, { theta = 0.9, strength = 1, minDistance = 2,
 export function createSimulation(nodes, edges, { alpha = 1, charge = 180, gravity = 0.08, maxDistance = 360, aspect = 1 } = {}) {
 	const byId = new Map(nodes.map((n, i) => { n.index = i; n.vx ??= 0; n.vy ??= 0; return [n.id, n]; }));
 	const count = new Map();
+	/** @type {SimLink[]} */
 	const links = [];
 	for (const e of edges) {
 		const s = byId.get(e.from), t = byId.get(e.to);
 		if (!s || !t || s === t) continue;
 		count.set(s, (count.get(s) ?? 0) + 1); count.set(t, (count.get(t) ?? 0) + 1);
-		links.push({ s, t, spring: SPRING[e.kind] ?? SPRING.link });
+		links.push(/** @type {SimLink} */ ({ s, t, spring: SPRING[e.kind] ?? SPRING.link }));
 	}
 	for (const n of nodes) n.mass = 1 + Math.sqrt(count.get(n) ?? 0) * 0.35;
 	for (const l of links) {
@@ -564,6 +568,7 @@ async function deleteLink(from, to) {
 const reduceMotion = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** Mount the knowledge graph into `root`. */
+/** @param {Element} root @param {{ navigate?: (hash: string) => void, focus?: string }} [options] */
 export function mountGraph(root, { navigate = (hash) => { location.hash = hash; }, focus } = {}) {
 	let destroyed = false;
 	const cleanups = [];
@@ -758,7 +763,7 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 			const p = paths.find((x) => x.id === state.pathId);
 			if (p) fitTo(p.steps, { maxK: 1.4 });
 		}
-		function centreOn(id, { zoom } = {}) {
+		function centreOn(id, { zoom } = /** @type {{ zoom?: number }} */ ({})) {
 			const s = simById.get(id); if (!s) return;
 			const k = zoom ?? Math.max(state.view.k, 1.1);
 			setView({ k, x: (state.width - panelInset()) * (state.width < 560 ? 0.36 : 0.5) - s.x * k, y: (state.height - sheetInset()) / 2 - s.y * k });
@@ -972,6 +977,7 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 				const w = ctx.measureText(text).width, h = c.big ? 18 : 16;
 				const gap = c.n.id === state.selectedId ? 14 : 6;
 				// Try the preferred spot first, then the other sides, before giving up on a label.
+				/** @type {[string, number, number][]} */
 				const spots = c.big
 					? [["center", p.x, p.y + r + gap + h / 2], ["center", p.x, p.y - r - gap - h / 2]]
 					: [["left", p.x + r + gap, p.y], ["right", p.x - r - gap, p.y], ["center", p.x, p.y - r - 4 - h / 2], ["center", p.x, p.y + r + 4 + h / 2]];
@@ -1049,6 +1055,7 @@ export function mountGraph(root, { navigate = (hash) => { location.hash = hash; 
 		}
 
 		function linkGroups(id) {
+			/** @type {LinkGroup[]} */
 			const groups = [
 				["Needs first", (e) => e.kind === "prerequisite" && e.to === id, "from"],
 				["Comes before", (e) => e.kind === "prerequisite" && e.from === id, "to"],

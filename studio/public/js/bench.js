@@ -53,6 +53,8 @@ async function loadTrail() {
  * Mount the progress bench: active skill, target, next subskill, attempt trail, level, streak and hours.
  * `skill` pins a skill; otherwise the active skill from /api/state is used. `onChange(hasSkill)` reports
  * whether there is anything to show, so the shell can hide the column.
+ * @param {HTMLElement} root
+ * @param {{skill?: string, onChange?: (hasSkill: boolean) => void, onClose?: () => void}} [options]
  */
 export function mountBench(root, { skill, onChange, onClose } = {}) {
 	let disposed = false, token = 0, lastAttemptId, current = skill, announceTimer, goal;

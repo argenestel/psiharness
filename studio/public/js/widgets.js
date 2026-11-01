@@ -22,7 +22,10 @@ const KIND_PHRASES = {
 	quickfire: "Quick question", predict: "Predict the output", debug: "Find the bug", apply: "Apply it",
 	explain: "Explain it back", build: "Build", boss: "Boss challenge",
 };
-/** Challenge kind as a plain phrase. Predictions without code read "Predict what happens". */
+/** Challenge kind as a plain phrase. Predictions without code read "Predict what happens".
+ * @param {string} kind
+ * @param {Partial<import("../../../core/src/types.ts").Challenge>} [options]
+ */
 export function kindPhrase(kind, { format, prompt } = {}) {
 	if (kind === "predict" && format !== "code" && !/`/.test(String(prompt ?? ""))) return "Predict what happens";
 	return KIND_PHRASES[kind] ?? "Challenge";
@@ -162,8 +165,8 @@ async function apiFor(ctx) {
 }
 function isTextField(target) {
 	if (!(target instanceof Element)) return false;
-	if (target.isContentEditable || target.tagName === "TEXTAREA" || target.tagName === "SELECT") return true;
-	return target.tagName === "INPUT" && !["radio", "checkbox", "button", "submit", "reset"].includes(target.type);
+	if (/** @type {HTMLElement} */ (target).isContentEditable || target.tagName === "TEXTAREA" || target.tagName === "SELECT") return true;
+	return target.tagName === "INPUT" && !["radio", "checkbox", "button", "submit", "reset"].includes(/** @type {HTMLInputElement} */ (target).type);
 }
 const MAC = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform ?? "");
 

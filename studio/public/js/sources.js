@@ -184,6 +184,10 @@ export function closeSourcePopover({ restoreFocus = true } = {}) {
 /**
  * Open a popover beside a citation marker showing one source (or a "loading"/"not found" line while
  * `item` is a promise or missing). Escape, the close button and clicks outside close it. Returns { close }.
+ * @param {HTMLElement} anchor
+ * @param {(import("../../../core/src/types.ts").Source & {n?: number, then?: never})
+ * | Promise<(import("../../../core/src/types.ts").Source & {n?: number}) | undefined> | undefined} item
+ * @param {{n?: number}} [options]
  */
 export function sourcePopover(anchor, item, { n } = {}) {
 	if (openPopover?.anchor === anchor) { closeSourcePopover(); return { close() {} }; }

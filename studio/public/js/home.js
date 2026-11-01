@@ -38,7 +38,7 @@ export function hasHistory(summary, recap) {
 /**
  * The Today row's primary action: the skill to continue (recap skill, then the active skill, then the skill with the
  * most attempts) and its next step. `skills` = [{ skill, plan, progress }]. Returns null when there is no skill.
- */
+ * @param {{skills?: any[], recap?: any, active?: string}} [options] */
 export function continueAction({ skills, recap, active } = {}) {
 	const list = (Array.isArray(skills) ? skills : []).filter((s) => s && s.skill);
 	const pick = list.find((s) => s.skill === recap?.skill) ?? list.find((s) => s.skill === active)
@@ -143,7 +143,7 @@ export function mountHome(root, { navigate }) {
 	function afterAttempt(widget, result, after) {
 		if (widget.skill !== "sample") { emit("psi:attempt", result); emit("psi:skills-changed"); }
 		after.replaceChildren(widget.skill === "sample"
-			? el("button", { type: "button", onclick: () => document.querySelector("#learning-goal")?.focus() }, "Start a skill")
+			? el("button", { type: "button", onclick: () => /** @type {HTMLInputElement | null} */ (document.querySelector("#learning-goal"))?.focus() }, "Start a skill")
 			: el("a", { class: "button", href: `#/skills/${enc(widget.skill)}` }, "Open skill"));
 	}
 
