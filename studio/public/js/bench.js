@@ -103,8 +103,10 @@ export function mountBench(root, { skill, onChange, onClose } = {}) {
 		if (goal?.isConnected && goal.update) goal.update(summary);
 		else goal = goalWidget(summary, { compact: true });
 		const combo = Number(summary.combo) || 0;
-		today.replaceChildren(el("h3", {}, "Today"), goal,
-			combo >= 3 ? el("p", { class: "psi-bench-combo" }, `${combo} right in a row. Bonus XP is on.`) : null);
+		// Native replaceChildren stringifies null, so only pass real nodes.
+		today.replaceChildren(...[el("h3", {}, "Today"), goal,
+			combo >= 3 ? el("p", { class: "psi-bench-combo" }, `${combo} right in a row. Bonus XP is on.`) : null]
+			.filter(Boolean));
 		syncToday();
 	}
 

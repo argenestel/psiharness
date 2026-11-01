@@ -209,7 +209,7 @@ export class ProfileStore {
 			return { ...definition, earned, ...(earned && first ? { earnedAt: first.at } : {}) };
 		});
 		return { today: { date: today, challenges: todays.length, minutes: minutesToday,
-			xp: todays.reduce((sum, a) => sum + a.xp, 0), goalMet }, dailyGoal: profile.dailyGoal,
+			xp: todays.reduce((sum, a) => sum + a.xp, 0), goalMet }, dailyGoal: profile.dailyGoal, tutorMode: profile.tutorMode,
 			streakDays, calendar: Array.from({ length: 84 }, (_, i) => {
 				const date = day(offset(now, i - 83));
 				return { date, attempts: counts.get(date) ?? 0 };

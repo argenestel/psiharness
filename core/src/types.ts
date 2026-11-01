@@ -648,6 +648,8 @@ export interface Achievement {
 export interface LearnerSummary {
 	today: { date: string; challenges: number; minutes: number; xp: number; goalMet: boolean };
 	dailyGoal: GameProfile["dailyGoal"];
+	/** How the tutor balances teaching and testing (from the profile). */
+	tutorMode: TutorMode;
 	streakDays: number;
 	/** Last 84 days, oldest first: attempts per day. */
 	calendar: { date: string; attempts: number }[];
