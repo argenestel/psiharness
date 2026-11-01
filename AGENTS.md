@@ -106,7 +106,9 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 ### web (psi web — the browser UI; lives in `studio/`)
 - Server `studio/src/server.ts` (existing routes stay) + new modules:
   - `studio/src/agent.ts` — `class AgentHub`: one `pi --mode rpc` child per chat (`-e extension`, `--skill skills`,
-    `--session-dir $PSI_HOME/web-sessions`, `--tools read,psi_*` allowlist; `PSI_HOST=omp` → omp with its flag rules;
+    `--session-dir $PSI_HOME/web-sessions`, an explicit tool list from `extension/src/tool-policy.ts` (execution tools —
+    psi_run, psi_manim, psi_crew — only with `PSI_CODE_EXEC=1`; reads confined to PSI_HOME + bundled skills/prompts);
+    `PSI_HOST=omp` → omp with its flag rules;
     model from `PSI_WEB_MODEL` or request). Strict LF JSONL framing (not readline).
   - `studio/src/practice-api.ts` — REST over PracticeStore/MemoryStore/StateStore.
 - HTTP API (JSON; every non-GET must send header `X-Psi: 1`, else 403):
