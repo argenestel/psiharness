@@ -2,7 +2,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { ProfileStore } from "../../../core/src/profile.ts";
 import { SourceStore } from "../../../core/src/sources.ts";
 import { StateStore } from "../../../core/src/state.ts";
-import type { Challenge } from "../../../core/src/types.ts";
+import type { Attempt, Challenge } from "../../../core/src/types.ts";
 import type { PracticeDeps } from "./index.ts";
 import { readAttempts } from "./tools.ts";
 
@@ -12,6 +12,12 @@ export const HIDDEN = "[answer hidden until you try]";
 export const CITATION_NOTE = "(A citation was removed because it didn't match a source.)";
 /** Block reason for a challenge offered on a continue/show turn before any teaching. */
 export const TEACH_FIRST = "Teach the next chunk first (explanation or worked example), then offer a challenge.";
+/** Block reason for a Socratic prompt offered on a continue/show turn before any teaching. */
+export const ASK_AFTER_TEACHING =
+	"Teach the next chunk first (explanation or worked example); a psi_ask prompt may follow it.";
+/** Block reason for the first challenge on a new subskill whose lesson was not shown this session. */
+export const lessonFirst = (subskillId: string) => `Subskill "${subskillId}" is new: show its lesson first with `
+	+ `psi_lesson action "show" (write it if missing), teach from it with [n] citations, then offer the challenge.`;
 
 export interface NextStep { label: string; message: string }
 type Span = { start: number; end: number; kind: "fence" | "code" | "math" | "link"; inner: string };
@@ -117,13 +123,29 @@ export function fixCitations(text: string, count: number): { text: string; remov
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const NUMBER = /^[+-]?(?:\d+(?:[.,]\d+)*|[.,]\d+)%?$/;
 
-/** A case-insensitive whole-word (or exact numeric-literal) pattern for one accepted answer. */
-export function answerPattern(answer: string, unit?: string): RegExp | undefined {
+// A single digit is everywhere in teaching prose ("2 points", "step 3"); it is only an answer after a cue (or in a
+// table cell, where worked results live).
+const ANSWER_CUE = String.raw`(?:\b(?:is|are|was|were|equals?|gives?|gets?|got|makes?|yields?|comes? (?:out )?to`
+	+ String.raw`|answer|result|total|slope|value|rate)\b|[=→⇒≈:|])[\s$*_(]*`;
+/** Patterns that only apply to prose: never matched inside code. */
+const PROSE_ONLY = new WeakSet<RegExp>();
+
+/**
+ * A case-insensitive whole-word (or exact numeric-literal) pattern for one accepted answer. A single-digit numeric
+ * answer only matches after an answer cue ("is 5", "= 5", "answer: 5", "→ 5") unless `loose` is set.
+ */
+export function answerPattern(answer: string, unit?: string, loose = false): RegExp | undefined {
 	let core = answer.normalize("NFC").trim()
 		.replace(/^[\s"'`“”‘’([{!?¡¿,:;]+|[\s"'`“”‘’)\]}!?.,:;]+$/gu, "").replace(/\s+/g, " ");
 	const bare = unit && core.toLowerCase().endsWith(unit.trim().toLowerCase())
 		? core.slice(0, core.length - unit.trim().length).trim() : core;
-	if (NUMBER.test(bare)) return new RegExp(`(?<![\\p{L}\\p{N}_.,])${escape(bare)}(?![\\p{N}_]|[.,]\\p{N})`, "gu");
+	if (NUMBER.test(bare)) {
+		const token = `${escape(bare)}(?![\\p{N}_]|[.,]\\p{N})`;
+		if (loose || !/^[+-]?\d$/.test(bare)) return new RegExp(`(?<![\\p{L}\\p{N}_.,])${token}`, "gu");
+		const cued = new RegExp(`(?<=${ANSWER_CUE})(?<![\\p{L}\\p{N}_.,])${token}`, "giu");
+		PROSE_ONLY.add(cued);
+		return cued;
+	}
 	if (core.length < 2) return undefined;
 	core = core.toLowerCase();
 	const letters = [...core].map((ch) => {
@@ -136,10 +158,10 @@ export function answerPattern(answer: string, unit?: string): RegExp | undefined
 }
 
 /** Every accepted answer of a challenge as a pattern; code challenges (graded by tests) have none. */
-export function answerPatterns(c: AnswerSource): RegExp[] {
+export function answerPatterns(c: AnswerSource, loose = false): RegExp[] {
 	if (c.format === "code") return [];
 	return [c.expected, ...(c.acceptable ?? [])].filter((v): v is string => typeof v === "string" && !!v.trim())
-		.map((v) => answerPattern(v, c.unit)).filter((p): p is RegExp => !!p);
+		.map((v) => answerPattern(v, c.unit, loose)).filter((p): p is RegExp => !!p);
 }
 
 /** Replace accepted answers in tutor text, keeping citation markers, the challenge prompt and learner code. */
@@ -147,20 +169,24 @@ export function redactAnswers(text: string, challenges: AnswerSource[], learnerT
 	{ text: string; count: number } {
 	if (!text || !challenges.length) return { text, count: 0 };
 	const keep: { start: number; end: number }[] = [];
+	const code: { start: number; end: number }[] = [];
 	for (const match of text.matchAll(CITE)) keep.push({ start: match.index, end: match.index + match[0].length });
 	for (const span of protectedSpans(text)) {
-		const code = span.inner.trim();
-		if ((span.kind === "fence" || span.kind === "code") && code && learnerTexts.some((t) => t.includes(code))) keep.push(span);
+		const inner = span.inner.trim();
+		if (span.kind !== "fence" && span.kind !== "code") continue;
+		code.push(span);
+		if (inner && learnerTexts.some((t) => t.includes(inner))) keep.push(span);
 	}
 	for (const c of challenges) {
 		const prompt = c.prompt?.trim();
 		if (prompt) for (const m of text.matchAll(new RegExp(escape(prompt), "gi"))) keep.push({ start: m.index, end: m.index + m[0].length });
 	}
 	const hits: { start: number; end: number }[] = [];
-	for (const pattern of challenges.flatMap(answerPatterns)) {
+	for (const pattern of challenges.flatMap((c) => answerPatterns(c))) {
 		for (const m of text.matchAll(pattern)) {
 			const hit = { start: m.index, end: m.index + m[0].length };
 			if (!m[0] || inside(keep, hit.start, hit.end) || inside(hits, hit.start, hit.end)) continue;
+			if (PROSE_ONLY.has(pattern) && inside(code, hit.start, hit.end)) continue;
 			hits.push(hit);
 		}
 	}
@@ -184,6 +210,8 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 	let teachChars = 0, teachTools = 0;
 	let presented: { skill: string; id: string; at: number } | undefined;
 	const closed = new Set<string>(), pending = new Set<string>();
+	// Subskills whose lesson was shown or written this session, and how often a challenge was held back for each.
+	const taught = new Set<string>(), lessonBlocks = new Map<string, number>();
 	const fire = (kind: string, detail: Record<string, unknown>) => {
 		try { pi.appendEntry("psi-guard", { kind, detail }); } catch { /* counters never break a turn */ }
 	};
@@ -212,7 +240,38 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		if (open) consider(open.skill, open.id, presented?.id === open.id ? presented.at : undefined);
 		return [...found.values()];
 	};
-	const unspoken = (cs: AnswerSource[]) => cs.filter((c) => !answerPatterns(c).some((p) => new RegExp(p).test(learner)));
+	const unspoken = (cs: AnswerSource[]) => cs.filter((c) => !answerPatterns(c, true)
+		.some((p) => new RegExp(p).test(learner)));
+
+	/**
+	 * The subskill a challenge call would open when it is new (no attempts yet, in the saved plan) and its lesson was
+	 * not shown this session; undefined when teaching first is not required. After two hold-backs it fails open, so a
+	 * lesson that cannot be written never locks practice.
+	 */
+	const lessonNeeded = (args: Record<string, unknown>, inMessage: Set<string> = new Set()): string | undefined =>
+		attempt(() => {
+			if (profile.read().tutorMode === "test") return undefined;
+			const skill = typeof args.skill === "string" ? args.skill : deps.state.skill;
+			if (!skill) return undefined;
+			let subskillId = typeof args.subskillId === "string" ? args.subskillId : undefined;
+			if (!subskillId && args.action === "next") {
+				subskillId = deps.practice.nextChallenge(skill)?.challenge.subskillId;
+			}
+			const key = `${skill}:${subskillId}`;
+			if (!subskillId || taught.has(key) || inMessage.has(key)) return undefined;
+			if ((lessonBlocks.get(key) ?? 0) >= 2) return undefined;
+			if (!deps.practice.readPlan(skill)?.subskills.some((s) => s.id === subskillId)) return undefined;
+			if (readAttempts(home, skill).some((a: Attempt) => a.subskillId === subskillId)) return undefined;
+			return subskillId;
+		});
+	const lessonKey = (args: Record<string, unknown>, details?: { widget?: { subskillId?: unknown } }) => {
+		const skill = typeof args.skill === "string" ? args.skill : deps.state.skill;
+		const plan = skill ? attempt(() => deps.practice.readPlan(skill)) : undefined;
+		const id = typeof details?.widget?.subskillId === "string" ? details.widget.subskillId
+			: typeof args.subskillId === "string" ? args.subskillId
+			: plan ? attempt(() => deps.practice.nextSubskill(plan)?.id) : undefined;
+		return skill && id ? `${skill}:${id}` : undefined;
+	};
 
 	/** Redact next-step buttons and add Continue; returns whether anything changed. */
 	const guardNextSteps = (input: Record<string, unknown>, open: AnswerSource[], where: string): boolean => {
@@ -247,7 +306,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 
 	pi.on("session_start", async () => {
 		learner = ""; learnerTexts = []; teachChars = 0; teachTools = 0; presented = undefined;
-		closed.clear(); pending.clear();
+		closed.clear(); pending.clear(); taught.clear(); lessonBlocks.clear();
 	});
 	pi.on("before_agent_start", async (event) => {
 		if (event.messageType === "user") newTurn(event.prompt);
@@ -267,7 +326,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		teachChars += prose;
 		// Simulate this message's tool calls in order: a challenge shown with this text makes its answer private now,
 		// while an attempt in this message means the learner already answered.
-		const answered = new Set<string>();
+		const answered = new Set<string>(), lessons = new Set<string>();
 		const upcoming: AnswerSource[] = [];
 		let tools = teachTools;
 		for (const b of blocks) {
@@ -275,7 +334,11 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 			const args = b.arguments!;
 			if (b.name === "psi_attempt" && typeof args.challengeId === "string") answered.add(args.challengeId);
 			if (b.name === "psi_run" || (b.name === "psi_lesson" && (args.action === "show" || args.action === "write"))) tools++;
-			if (b.name !== "psi_challenge" || mustTeach(teachChars, tools)) continue;
+			if (b.name === "psi_lesson" && (args.action === "show" || args.action === "write")) {
+				const key = lessonKey(args);
+				if (key) lessons.add(key);
+			}
+			if (b.name !== "psi_challenge" || mustTeach(teachChars, tools) || lessonNeeded(args, lessons)) continue;
 			if (args.action === "next") {
 				const skill = typeof args.skill === "string" ? args.skill : deps.state.skill;
 				const next = skill ? attempt(() => deps.practice.nextChallenge(skill,
@@ -320,12 +383,27 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 			case "psi_run": teachTools++; return;
 			case "psi_lesson": if (input.action === "show" || input.action === "write") teachTools++; return;
 			case "psi_attempt": if (typeof input.challengeId === "string") pending.add(input.challengeId); return;
-			case "psi_challenge":
-				if (!mustTeach()) return;
-				fire("teach-first", { learner: learner.slice(0, 120), teachChars, action: input.action ?? "create" });
-				return { block: true, reason: TEACH_FIRST };
+			case "psi_challenge": {
+				if (mustTeach()) {
+					const action = input.action ?? "create";
+					fire("teach-first", { learner: learner.slice(0, 120), teachChars, action });
+					return { block: true, reason: TEACH_FIRST };
+				}
+				const subskillId = lessonNeeded(input);
+				if (!subskillId) return;
+				const key = `${typeof input.skill === "string" ? input.skill : deps.state.skill}:${subskillId}`;
+				lessonBlocks.set(key, (lessonBlocks.get(key) ?? 0) + 1);
+				fire("lesson-first", { subskillId, action: input.action ?? "create" });
+				return { block: true, reason: lessonFirst(subskillId) };
+			}
 			case "psi_next_steps": guardNextSteps(input, unspoken(openChallenges()), "tool_call"); return;
-			case "psi_ask": guardAsk(input, unspoken(openChallenges()), "tool_call"); return;
+			case "psi_ask":
+				if (mustTeach()) {
+					fire("teach-first", { learner: learner.slice(0, 120), teachChars, tool: "psi_ask" });
+					return { block: true, reason: ASK_AFTER_TEACHING };
+				}
+				guardAsk(input, unspoken(openChallenges()), "tool_call");
+				return;
 		}
 	});
 	pi.on("tool_result", async (event) => {
@@ -341,7 +419,12 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 			if (!event.isError && typeof details?.outcome === "string") closed.add(input.challengeId);
 		}
 		// A missing or failed lesson taught nothing; a failing psi_run demo still showed something.
-		if (event.toolName === "psi_lesson" && (input.action === "show" || input.action === "write")
-			&& (event.isError || details?.missing)) teachTools = Math.max(0, teachTools - 1);
+		if (event.toolName === "psi_lesson" && (input.action === "show" || input.action === "write")) {
+			if (event.isError || details?.missing) teachTools = Math.max(0, teachTools - 1);
+			else {
+				const key = lessonKey(input, event.details as { widget?: { subskillId?: unknown } });
+				if (key) taught.add(key);
+			}
+		}
 	});
 }

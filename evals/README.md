@@ -110,12 +110,15 @@ informational: a guard-corrected turn still scores on what the learner finally s
 
 ## Interpretation and limits
 
-Question and citation detection are heuristics. Question counting excludes fenced/inline code and double-quoted
-text. Continuation/repair teaching text is a non-question sentence of at least 40 characters; continuation also accepts
+Question and citation detection are heuristics. Question counting excludes fenced/inline code, double-quoted
+text, markdown table rows (column labels like `Austin?`) and Spanish-style `¿…?` spans (target-language examples
+such as **¿Cómo se llama?**, not questions to the learner). A `psi_ask` or `psi_challenge` that a guard blocked was
+never shown, so it is neither a question nor a subskill's first challenge. Continuation/repair teaching text is a non-question sentence of at least 40 characters; continuation also accepts
 `psi_lesson` or `psi_run`. Factual explanations use a 60-character sentence threshold (sentences are split on line
 breaks too, so list items stand alone) and omit verdicts, questions and meta/instructional prose: invitations and
-next-step offers ("Don't peek", "Try this", "Your turn", "We can…", "Next…", "Let's…") and remarks about the tutoring
-machinery (challenge, card, attempt, graded, hint, XP, button…). These thresholds miss short explanations and can
+next-step offers ("Don't peek", "Try this", "Your turn", "We can…", "Next…", "Let's…"), verdicts and session remarks
+("That's right…", "We're still on…", "We still owe…", "Continue keeps…"), remarks about the tutoring machinery
+(challenge, card, attempt, graded, hint, XP, button…), and markdown table rows (cells, not sentences). These thresholds miss short explanations and can
 misclassify prose. The one-question metric totals a scripted turn,
 which can contain several assistant messages, so it is stricter than a literal per-message interpretation.
 
@@ -130,14 +133,20 @@ are case-sensitive; math answers match with whitespace removed; other text match
 when it has at least four characters. Challenges that cannot be matched — code without `expected` (Python tests),
 SQL row sets, rubric answers, short text — are N/A and listed explicitly with the reason. Challenge-prompt text is
 removed, and in a learner answer turn only tutor text after the first `psi_attempt` counts (echoing the learner's
-own answer before grading is not a spoiler). Paraphrases are not detected. Wrong guesses come from verified keys
+own answer before grading is not a spoiler). Next-step buttons count until that challenge's own recorded grade;
+afterwards it is closed and "Why was it 5?" is review, not a spoiler. Each `harness_state` is a full snapshot (no
+`challengeId` means nothing is open), so a graded challenge is not checked against later turns. Only recorded
+attempts count: a `psi_attempt` the tool rejected (error, e.g. its 2-minute duplicate guard or a code answer without
+an outcome) or answered with `recorded: false` (skipping an already-graded challenge) saved nothing; it is listed
+under N/A instead of attempt-once. Paraphrases are not detected. Wrong guesses come from verified keys
 when a keyed challenge is open; otherwise they are scripted and do not adapt to the model. `/verify` can be extension-handled without a run;
 the current implementation sends a user message that usually starts one. No learning outcomes are measured.
 
 The injected contract mentions `id/skill` for an open answer while `psi_attempt` actually requires `challengeId`.
 It also distinguishes already-saved browser/card answers from pending answers. The runner submits raw answer keys
-and does not pretend browser grading occurred. The tool's duplicate-attempt guard covers two minutes, whereas this
-evaluation deliberately checks once per challenge across the whole session. These differences are reported, not fixed.
+and does not pretend browser grading occurred. The tool's duplicate-attempt guard covers two minutes (and a `skipped` attempt on an
+already-graded challenge records nothing), whereas this evaluation deliberately checks once per challenge across the
+whole session. These differences are reported, not fixed.
 
 ## Time and cost
 

@@ -160,6 +160,22 @@ test("reducer honors block endings, HUD clears, wrapped events, and handled prom
 	assert.equal(state.busy, false);
 });
 
+test("the finalized message replaces streamed text, so a guard's redaction is what stays on screen", () => {
+	let state = reduceRecord(undefined, { type: "message_start", message: { role: "assistant", content: [] } });
+	for (const update of [
+		{ type: "text_delta", contentIndex: 0, delta: "The slope is " },
+		{ type: "text_delta", contentIndex: 0, delta: "5." },
+		{ type: "text_end", contentIndex: 0, content: "The slope is 5." },
+	]) state = reduceRecord(state, { event: { type: "message_update", assistantMessageEvent: update } });
+	assert.equal(state.messages[0].text, "The slope is 5.");
+	const redacted = "The slope is [answer hidden until you try].";
+	state = reduceRecord(state, { type: "message_end", message: { role: "assistant",
+		content: [{ type: "text", text: redacted }] } });
+	assert.equal(state.messages.length, 1);
+	assert.equal(state.messages[0].text, redacted);
+	assert.equal(state.messages[0].done, true);
+});
+
 const tool = (name: string, args: object = {}, extra: object = {}) => ({ id: name + JSON.stringify(args), name, args,
 	done: true, isError: false, result: { content: [], details: {} }, ...extra });
 

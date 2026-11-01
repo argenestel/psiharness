@@ -6,8 +6,10 @@ import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { registerPractice } from "../src/practice/index.ts";
 import {
-	CITATION_NOTE, HIDDEN, TEACH_FIRST, fixCitations, isContinueIntent, redactAnswers, withContinue,
+	ASK_AFTER_TEACHING, CITATION_NOTE, HIDDEN, TEACH_FIRST, fixCitations, isContinueIntent, lessonFirst, redactAnswers,
+	withContinue,
 } from "../src/practice/guards.ts";
+import { turnReminder } from "../src/practice/inject.ts";
 import { SourceStore } from "../../core/src/sources.ts";
 import { ProfileStore } from "../../core/src/profile.ts";
 import { StateStore } from "../../core/src/state.ts";
@@ -221,4 +223,78 @@ test("message_end removes unknown citations using the active skill's sources", a
 	assert.equal(textOf(fixed), `Un café.\nPor favor [2].\n\n${CITATION_NOTE}`);
 	assert.deepEqual(f.guardEntries("citation-removed").at(-1).data, {
 		kind: "citation-removed", detail: { numbers: [9, 7], sourceCount: 2, skill: "spanish" } });
+}));
+
+test("single-digit numeric answers are hidden only in answer-like phrases, never in code", () => {
+	const c = { id: "c", prompt: "Compute the secant slope.", expected: "5", format: "number" as const };
+	const out = redactAnswers("Take 5 steps. The slope is 5. So $9-4=5$, answer: **5**. Code `range(5)` stays.", [c]);
+	assert.equal(out.text, `Take 5 steps. The slope is ${HIDDEN}. So $9-4=${HIDDEN}$, answer: **${HIDDEN}**. `
+		+ "Code `range(5)` stays.");
+	const choice = { id: "k", prompt: "", expected: "4", format: "choice" as const };
+	assert.equal(redactAnswers("A list of 4 items; len(x) → 4.", [choice]).text, `A list of 4 items; len(x) → ${HIDDEN}.`);
+	assert.equal(redactAnswers("| h | slope |\n| 1 | $5$ |", [c]).text, `| h | slope |\n| 1 | $${HIDDEN}$ |`, "table cells");
+	const many = { id: "m", prompt: "", expected: "12", format: "number" as const };
+	assert.equal(redactAnswers("Take 12 steps.", [many]).text, `Take ${HIDDEN} steps.`, "longer numbers stay strict");
+});
+
+test("Socratic prompts wait for teaching on continue turns", async () => fixture(async (f) => {
+	await f.learner("Continue");
+	await f.assistant([text("Next piece: names.")]);
+	const blocked = await f.call("psi_ask", { question: "What does me llamo mean?", kind: "predict" });
+	assert.deepEqual(blocked.blocked, { block: true, reason: ASK_AFTER_TEACHING });
+	await f.assistant([text(teaching)]);
+	assert.ok((await f.call("psi_ask", { question: "What does me llamo mean?", kind: "predict" })).result);
+}));
+
+test("a new subskill's first challenge waits for its lesson, then fails open", async () => fixture(async (f, home) => {
+	const plan = { skill: "spanish", title: "Spanish", targetPerformance: "Order coffee", whyItMatters: "Travel",
+		subskills: [{ id: "greet", title: "Greet", why: "First words", priority: 1, prerequisites: [], selfCorrection: "x",
+			drills: ["d"], status: "active" }], resources: [], barriers: [] };
+	await f.call("psi_skill_plan", { action: "create", plan });
+	await f.learner("Give me a challenge");
+	const first = await f.call("psi_challenge", { ...greet, subskillId: "greet" });
+	assert.deepEqual(first.blocked, { block: true, reason: lessonFirst("greet") });
+	assert.equal(f.guardEntries("lesson-first").length, 1);
+	const { LessonStore } = await import("../../core/src/lessons.ts");
+	const source = new SourceStore(home).add("spanish", { url: "https://www.rae.es/dpd/d%C3%ADa", title: "DPD: día" });
+	new LessonStore(home).write("spanish", "greet", { title: "Greetings", explanation: "Buenos días before noon.",
+		keyIdeas: ["Greet by time of day.", "Then give your name."], citations: [{ sourceId: source.id }] });
+	await f.call("psi_lesson", { action: "show", skill: "spanish", subskillId: "greet" });
+	assert.ok((await f.call("psi_challenge", { ...greet, subskillId: "greet" })).result, "allowed after the lesson");
+	// Another session: not new any more once attempted; and a lesson that cannot be shown never locks practice.
+	await f.fire("session_start", { type: "session_start" });
+	await f.call("psi_attempt", { challengeId: new StateStore(home).read().openChallenge!.id, skill: "spanish", answer: "x" });
+	assert.ok((await f.call("psi_challenge", { ...greet, subskillId: "greet" })).result, "attempted subskills are not new");
+	plan.subskills.push({ ...plan.subskills[0]!, id: "order", title: "Order" });
+	await f.call("psi_skill_plan", { action: "update", plan });
+	assert.ok((await f.call("psi_challenge", { ...greet, subskillId: "order" })).blocked);
+	assert.ok((await f.call("psi_challenge", { ...greet, subskillId: "order" })).blocked);
+	assert.ok((await f.call("psi_challenge", { ...greet, subskillId: "order" })).result, "fails open after two blocks");
+	new ProfileStore(home).update({ tutorMode: "test" });
+	await f.fire("session_start", { type: "session_start" });
+	assert.ok((await f.call("psi_challenge", { ...greet, subskillId: "order" })).result, "test mode never waits");
+}));
+
+test("skipping an already-graded challenge records nothing", async () => fixture(async (f, home) => {
+	const shown = await f.call("psi_challenge", greet);
+	const id = shown.result.details.challengeId;
+	await f.call("psi_attempt", { challengeId: id, skill: "spanish", answer: "buenas días" });
+	const skip = await f.call("psi_attempt", { challengeId: id, skill: "spanish", answer: "", outcome: "skipped" });
+	assert.equal(skip.result.isError, undefined);
+	assert.equal(skip.result.details.recorded, false);
+	const { readAttempts } = await import("../src/practice/tools.ts");
+	assert.equal(readAttempts(home, "spanish").length, 1);
+}));
+
+test("each model request carries a turn reminder on a copy of the latest learner message", async () => fixture(async (f) => {
+	const messages = [{ role: "user", content: "Teach me", timestamp: 1 }, { role: "assistant", content: [] },
+		{ role: "user", content: [{ type: "text", text: "Continue" }], timestamp: 2 }, { role: "toolResult", content: [] }];
+	const [result] = await f.fire("context", { type: "context", messages });
+	assert.equal(result.messages.length, 4);
+	assert.equal(result.messages[0], messages[0]);
+	assert.deepEqual(messages[2].content, [{ type: "text", text: "Continue" }], "the original is not mutated");
+	const note = result.messages[2].content.at(-1).text;
+	assert.equal(note, turnReminder({ continueIntent: true }));
+	assert.match(note, /Cite \[n\]/);
+	assert.match(note, /one question, placed last/);
 }));

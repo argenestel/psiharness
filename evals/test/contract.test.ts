@@ -74,19 +74,56 @@ test("citation validity is turn-wide and every numbered marker must be in range"
 	assert.equal(skipped.checks.citations.applicable, 0);
 });
 
-test("spoilers are checked on state-only turns and buttons after grading", () => {
+test("spoilers are checked on state-only turns and on buttons until the challenge is graded", () => {
 	const previous = [sent(1, "teach"), settled(1), row(1, { type: "harness_state", challengeId: "c1" })];
 	const stateOnly = score([
 		...previous, sent(2, "stuck"), text(2, "The answer is Buenos días."), settled(2),
 	]);
 	assert.equal(stateOnly.checks.spoilers.failures.length, 1);
-	const buttons = score([
-		...previous, sent(2, "correct_answer"), tool(2, "psi_attempt", { id: "c1" }),
-		tool(2, "psi_next_steps", { options: [
-			{ label: "Continue", message: "Continue" }, { label: "Buenos días", message: "Use that greeting" },
-		] }), settled(2),
+	const greeting = { options: [{ label: "Continue", message: "Continue" }, { label: "Buenos días", message: "Use it" }] };
+	const before = score([
+		sent(1, "challenge"), tool(1, "psi_challenge", { id: "c1" }), tool(1, "psi_next_steps", greeting), settled(1),
 	]);
-	assert.equal(buttons.checks.spoilers.failures.length, 1);
+	assert.equal(before.checks.spoilers.failures.length, 1, "buttons offered with the open card spoil it");
+	const after = score([
+		...previous, sent(2, "correct_answer"), tool(2, "psi_attempt", { id: "c1" }), tool(2, "psi_next_steps", greeting),
+		settled(2),
+	]);
+	assert.equal(after.checks.spoilers.failures.length, 0, "after its grade the challenge is closed: review, not a spoiler");
+});
+
+test("a state snapshot without a challenge closes it: later turns are not checked against a stale card", () => {
+	const result = score([
+		sent(1, "challenge"), tool(1, "psi_challenge", { id: "c1" }), settled(1), row(1, { type: "harness_state", challengeId: "c1" }),
+		sent(2, "wrong_guess"), tool(2, "psi_attempt", { challengeId: "c1" }), settled(2), row(2, { type: "harness_state" }),
+		sent(3, "stuck"), text(3, "The answer is Buenos días."), settled(3), row(3, { type: "harness_state" }),
+	]);
+	assert.equal(result.checks.spoilers.failures.length, 0);
+});
+
+function ended(turn: number, name: string, args: RecordData, result: RecordData, isError = false): RecordData {
+	const callId = `end-${++id}`;
+	return row(turn, { type: "tool_execution_end", toolCallId: callId, toolName: name, args, result, isError }, 130);
+}
+
+test("rejected attempts and blocked challenges or prompts never reached the learner", () => {
+	const rejected = score([
+		sent(1, "wrong_guess"), ended(1, "psi_attempt", { challengeId: "c1" }, { details: { errors: ["code requires an outcome"] } }),
+		ended(1, "psi_attempt", { challengeId: "c1", outcome: "fail" }, { details: { outcome: "fail" } }), settled(1),
+		sent(2, "challenge"), ended(2, "psi_attempt", { challengeId: "c1", outcome: "skipped" },
+			{ details: { errors: ["Attempt already recorded within the last 2 minutes"] } }, true),
+		ended(2, "psi_attempt", { challengeId: "c1", outcome: "skipped" }, { details: { recorded: false } }), settled(2),
+	]);
+	assert.equal(rejected.checks.attemptOnce.applicable, 1);
+	assert.equal(rejected.checks.attemptOnce.failures.length, 0);
+	assert.equal(rejected.checks.attemptOnce.notApplicable?.length, 3);
+	const blocked = score([
+		sent(1, "continue"), ended(1, "psi_ask", { question: "Why?" }, { content: [{ type: "text", text: "Teach first" }] }, true),
+		ended(1, "psi_challenge", { id: "c1" }, { content: [] }, true), text(1, explanation), settled(1),
+	]);
+	assert.equal(blocked.checks.continueTeaching.failures.length, 0);
+	assert.equal(blocked.checks.questionCount.failures.length, 0);
+	assert.equal(blocked.checks.teachFirst.applicable, 0, "a blocked challenge is not the subskill's first challenge");
 });
 
 test("repair follows the scripted wrong_guess kind even without a recorded grade", () => {

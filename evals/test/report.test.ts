@@ -43,6 +43,13 @@ test("meta and instructional sentences are not factual teaching", () => {
 		"That line is already in as your answer — I won’t re-grade it, but here is what it shows.",
 	]) assert.ok(isMetaSentence(sentence), sentence);
 	assert.ok(!isMetaSentence(long));
+	for (const verdict of ["That’s the right picture: inner call first, then feed that result in again.",
+		"We’re still on syntax and types (names, / vs //, truth values) before functions.",
+		"**Continue** keeps us on the opening; the order line can wait until that set is stable.",
+		"We still owe Buenos días a clean retry when you want to return to greetings."]) {
+		assert.ok(isMetaSentence(verdict), verdict);
+	}
+	assert.deepEqual(factualSentences("| **Podría** | finite verb that agrees with usted (poder, conditional) |"), []);
 	assert.ok(!isMetaSentence("Type hints document intent but Python does not enforce them at runtime for ordinary calls."));
 	assert.deepEqual(factualSentences(`Don't peek at the answer below until you have tried the problem yourself.\n${long}\nWhat do you predict happens with tabs here?`), [long]);
 });

@@ -84,6 +84,9 @@ test("scores the passing contract, uses last attempt, and reports latency", () =
 test("countQuestions excludes code, inline code, and quoted questions, then adds psi_ask", () => {
 	assert.equal(countQuestions("Use `why?` and ```js\nwhat?\n```\n> quoted?\nOne real question?"), 1);
 	assert.equal(countQuestions("Explain this?", 1), 2);
+	assert.equal(countQuestions("| name | Austin? | price ≥ 8? |\n|---|---|---|\n| Ana | yes | yes |"), 0, "table labels");
+	assert.equal(countQuestions("- Friend: **¿Cómo te llamas?**\n**¿Podrías** traer un café?\nWhat will you say?"), 1,
+		"¿…? marks a Spanish example, not a question to the learner");
 });
 
 test("teach-first fails when the first challenge has no same-subskill lesson", () => {

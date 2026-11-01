@@ -303,7 +303,13 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 			if ("error" in resolved) return result({ errors: [resolved.error] });
 			const { skill, challenge: c } = resolved;
 			const now = Date.now();
-			if (readAttempts(practice.root, skill).some((a) => a.challengeId === c.id
+			const previous = readAttempts(practice.root, skill).filter((a) => a.challengeId === c.id);
+			// Skipping an already-graded challenge would double-record it: a graded miss already closed the card.
+			if (p.outcome === "skipped" && previous.length && state.challengeId !== c.id) {
+				return result({ recorded: false, message: "Not recorded: this challenge was already graded, so there "
+					+ "is nothing to skip. Serve the next one with psi_challenge; do not tell the learner." });
+			}
+			if (previous.some((a) => a.challengeId === c.id
 				&& now - Date.parse(a.at) >= 0 && now - Date.parse(a.at) <= 120000)) {
 				return { ...result({ errors: ["Attempt already recorded within the last 2 minutes; coach without re-grading."] }),
 					isError: true };

@@ -594,6 +594,11 @@ function challengeIdOf(call: ToolCall): string | undefined {
 	return undefined;
 }
 
+/** A psi_attempt the tool actually saved: not rejected (error) and not a recorded:false no-op. */
+function attemptRecorded(call: ToolCall): boolean {
+	return !resultIsError(call) && deepField(call.result, "recorded") !== false;
+}
+
 function resultIsError(call: ToolCall): boolean {
 	if (call.isError) return true;
 	const result = call.result;
@@ -697,7 +702,15 @@ function cleanProse(value: string): string {
 export function countQuestions(text: string, psiAsk?: number): number;
 export function countQuestions(text: unknown, psiAsk = 0): number {
 	if (typeof text !== "string") return Math.max(0, Math.floor(psiAsk));
-	return (cleanProse(text).match(/[?？]/g) ?? []).length + Math.max(0, Math.floor(psiAsk));
+	return (withoutExamples(cleanProse(text)).match(/[?？]/g) ?? []).length + Math.max(0, Math.floor(psiAsk));
+}
+
+/**
+ * Drop markdown table rows ("| Austin? | price ≥ 8? |" are column labels) and Spanish-style ¿…? spans: an inverted
+ * question mark marks a target-language example being taught ("**¿Cómo se llama?**"), not a question to the learner.
+ */
+function withoutExamples(text: string): string {
+	return withoutTableRows(text).replace(/¿[^?？\n]*[?？]/g, " ");
 }
 
 function normalizeAnswer(value: string): string {
@@ -741,7 +754,10 @@ function isTeachingText(text: string): boolean {
 function firstQuestionPos(turn: TurnView): number | undefined {
 	let first: number | undefined;
 	for (const event of turn.textEvents) if (countQuestions(event.text ?? "") > 0) first = first === undefined ? event.pos : Math.min(first, event.pos);
-	for (const call of turn.calls) if (call.toolName === "psi_ask") first = first === undefined ? call.firstPos : Math.min(first, call.firstPos);
+	// A psi_ask the teach-first guard blocked was never shown.
+	for (const call of turn.calls) {
+		if (call.toolName === "psi_ask" && !resultIsError(call)) first = first === undefined ? call.firstPos : Math.min(first, call.firstPos);
+	}
 	// A challenge the teach-first guard blocked never reached the learner, so it is not a question.
 	for (const call of turn.calls) {
 		if (call.toolName === "psi_challenge" && !resultIsError(call)) first = first === undefined ? call.firstPos : Math.min(first, call.firstPos);
@@ -836,7 +852,10 @@ const META_OPENER = new RegExp("^(?:don['’]?t (?:peek|look|scroll|worry)|no pe
 	+ "|ready\\b|pick (?:one|an?)\\b|choose (?:one|an option)\\b|click\\b|tap\\b|press\\b|reply\\b|type (?:your|it|in|out)\\b|send\\b|say it\\b|write (?:your|it|down)\\b"
 	+ "|next(?:,|:| up| we| step| chunk| time)|up next|we can\\b|we['’]?ll\\b|let['’]?s\\b|let me\\b|i['’]?ll\\b|i will\\b|i['’]?m going to"
 	+ "|i won['’]?t\\b|now (?:try|you|it['’]?s your)|go ahead|feel free|if you['’]?d like|if you want|want to\\b|nice\\b|great\\b|good (?:job|work|try|question)"
-	+ "|well done|exactly\\b|not quite|almost\\b)", "i");
+	+ "|well done|exactly\\b|not quite|almost\\b"
+	// Verdicts on the learner's answer and remarks about where the session is ("We're still on …", "Continue keeps …").
+	+ "|that['’]?s (?:right|correct|it|exactly|the (?:right|one))\\b|we['’]?re (?:still )?on\\b"
+	+ "|we (?:still )?owe\\b|this (?:answer|line) is already\\b|continue\\b)", "i");
 const META_MECHANICS = /\b(?:challenges?|drills?|cards?|attempts?|attempted|graded|grading|re-?grade|recorded|xp|streaks?|badges?|buttons?|quiz(?:zes)?|chunks?)\b|(?<!type )\bhints?\b/i;
 
 /** True for an instructional or meta sentence that should not require a citation. */
@@ -847,8 +866,12 @@ export function isMetaSentence(sentence: string): boolean {
 
 /** Split assistant prose into sentences, keeping line/list boundaries, after code and quotes are removed. */
 function proseSentences(text: string): string[] {
-	return cleanProse(text).split(/\n+/).flatMap((line) => line.split(/(?<=[.!?])\s+/))
+	return withoutTableRows(cleanProse(text)).split(/\n+/).flatMap((line) => line.split(/(?<=[.!?])\s+/))
 		.map((sentence) => sentence.replace(/\s+/g, " ").trim()).filter(Boolean);
+}
+
+function withoutTableRows(text: string): string {
+	return text.split(/\r?\n/).filter((line) => !/^\s*\|.*\|\s*$/.test(line)).join("\n");
 }
 
 /** Factual teaching sentences: long, not questions, not verdicts, not meta/instructional prose. */
@@ -1031,8 +1054,10 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 	const normalized = normalizeInput(input);
 	const turns = selectTurns(normalized.entries);
 	let inheritedState: Dict | undefined;
+	// Each harness_state is a full snapshot taken after the turn settled (an absent challengeId means none is open),
+	// so it replaces the previous one; only a turn without a snapshot inherits the last known state.
 	for (const turn of turns) {
-		if (turn.state) inheritedState = { ...(inheritedState ?? {}), ...turn.state };
+		if (turn.state) inheritedState = { ...turn.state };
 		else if (inheritedState) turn.state = { ...inheritedState };
 	}
 	const index = buildChallengeIndex(typeof packData === "string" ? loadPack(packData) : packData);
@@ -1055,7 +1080,8 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 		return calls;
 	};
 	for (const turn of turns) {
-		for (const call of turn.calls.filter((candidate) => candidate.toolName === "psi_challenge")) {
+		// A challenge a guard blocked never reached the learner, so it cannot be the subskill's first challenge.
+		for (const call of turn.calls.filter((candidate) => candidate.toolName === "psi_challenge" && !resultIsError(candidate))) {
 			const info = challengeInfo(call, index);
 			const subskill = info.subskillId ?? "__unknown__";
 			if (seenSubskills.has(subskill)) continue;
@@ -1074,7 +1100,7 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 	let questionPassed = 0;
 	const questionFailures: FailureEvidence[] = [];
 	for (const turn of turns) {
-		const asks = turn.calls.filter((call) => call.toolName === "psi_ask").length;
+		const asks = turn.calls.filter((call) => call.toolName === "psi_ask" && !resultIsError(call)).length;
 		const count = countQuestions(turn.textEvents.map((event) => event.text ?? "").join(" "), asks);
 		if (count <= 1) questionPassed++;
 		else questionFailures.push(failure("questionCount", turn, `turn contains ${count} questions; at most one is allowed`, { count }));
@@ -1172,11 +1198,14 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 		// Once the learner has sent an answer, echoing it before grading is not a spoiler: only text after the
 		// first psi_attempt of an answer turn (e.g. a new challenge) is learner-facing pre-attempt material.
 		const answerTurn = LEARNER_ANSWER_KINDS.has(turn.sentKind ?? "");
-		const firstAttempt = turn.calls.filter((candidate) => candidate.toolName === "psi_attempt").map((candidate) => candidate.firstPos).sort((a, b) => a - b)[0];
+		const firstAttempt = turn.calls.filter((candidate) => candidate.toolName === "psi_attempt" && attemptRecorded(candidate))
+			.map((candidate) => candidate.firstPos).sort((a, b) => a - b)[0];
 		const after = answerTurn ? Math.max(firstAttempt ?? Number.POSITIVE_INFINITY, info.call.firstPos) : undefined;
 		const prose = removePrompt(normalizedTurnText(turn, attemptPos, after), info.prompt);
-		// Next-step buttons are checked even when they were emitted after psi_attempt: they are still learner-visible answers.
-		const buttons = turn.calls.filter((candidate) => candidate.toolName === "psi_next_steps").flatMap(optionTexts).join(" ");
+		// Next-step buttons count until this challenge's own grade: after it is recorded the challenge is closed, and
+		// naming its answer ("Why was it 5?") is review, not a spoiler.
+		const buttons = turn.calls.filter((candidate) => candidate.toolName === "psi_next_steps"
+			&& (attemptPos === undefined || candidate.firstPos < attemptPos)).flatMap(optionTexts).join(" ");
 		const previous = observations.get(key);
 		if (previous) {
 			previous.prose.push(prose);
@@ -1186,11 +1215,11 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 	for (const turn of turns) {
 		for (const call of turn.calls.filter((candidate) => candidate.toolName === "psi_challenge")) {
 			const info = challengeInfo(call, index);
-			const attemptPos = turn.calls.filter((candidate) => candidate.toolName === "psi_attempt")
+			const attemptPos = turn.calls.filter((candidate) => candidate.toolName === "psi_attempt" && attemptRecorded(candidate))
 				.map((candidate) => candidate.firstPos).find((position) => position > call.firstPos);
 			checkSpoiler(turn, info, attemptPos);
 		}
-		for (const call of turn.calls.filter((candidate) => candidate.toolName === "psi_attempt")) {
+		for (const call of turn.calls.filter((candidate) => candidate.toolName === "psi_attempt" && attemptRecorded(candidate))) {
 			checkSpoiler(turn, challengeForAttemptInTurn(turn, call, presentations, index), call.firstPos);
 		}
 		if (!turn.calls.some((call) => call.toolName === "psi_challenge" || call.toolName === "psi_attempt")) {
@@ -1215,9 +1244,17 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 	const session = "scripted";
 	const attemptsByTurn = new Map<string, number>();
 	const seenAttempts = new Set<string>();
+	const attemptSkipped: NotApplicable[] = [];
 	for (const turn of turns) for (const call of [...turn.calls].sort((a, b) => a.firstPos - b.firstPos)) {
 		if (call.toolName === "psi_practice_session") continue;
 		if (call.toolName !== "psi_attempt") continue;
+		// The tool's own duplicate/validation guard rejected it, so nothing was graded or saved.
+		if (!attemptRecorded(call)) {
+			const id = challengeIdOf(call);
+			attemptSkipped.push({ check: "attemptOnce", turn: turn.key, ...(id ? { challengeId: id } : {}),
+				reason: `rejected by psi_attempt, nothing recorded (event seq ${eventSeq(call.firstPos)})` });
+			continue;
+		}
 		attemptApplicable++;
 		const info = challengeForAttemptInTurn(turn, call, presentations, index);
 		const id = info.id ?? String(call.args.challengeId ?? "__unknown__");
@@ -1229,7 +1266,7 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 		}));
 		else { attemptPassed++; seenAttempts.add(key); }
 	}
-	checks.attemptOnce = checkResult("attemptOnce", attemptPassed, attemptApplicable, attemptFailures);
+	checks.attemptOnce = { ...checkResult("attemptOnce", attemptPassed, attemptApplicable, attemptFailures), notApplicable: attemptSkipped };
 
 	let wrongPassed = 0;
 	let wrongApplicable = 0;
