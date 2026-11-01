@@ -168,20 +168,22 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - `core/src/lessons.ts`: `class LessonStore` — `$PSI_HOME/skills/<s>/lessons/<subskillId>.json`: `read`, `write`
   (requires ≥ 1 citation whose sourceId exists in the skill's sources), `list(skill)`.
 - `core/src/profile.ts`: `class ProfileStore` — `$PSI_HOME/profile.json` (`read(): GameProfile` default
-  {dailyGoal:{kind:"challenges",target:5}, tutorMode:"practice"}, `update(patch)`), `summarize(now?): LearnerSummary`
+  {dailyGoal:{kind:"challenges",target:5}, tutorMode:"practice", gameLayer:"on"}, `update(patch)`), `summarize(now?): LearnerSummary`
   across all skills (today, calendar, streak, totalXp, level + levelTitle, combo = trailing run of successes in the active
   session, achievements = definitions in `ACHIEVEMENTS` evaluated from progress/attempts/lessons/paths).
 - `gamify.ts`: `comboBonus(combo): number` (×1 under 3, ×1.2 at 3–4, ×1.5 at 5+ on base XP; never applies to fails),
   `levelTitle(level)`.
 - Bundled packs ship `examples/skills/<s>/sources.json` and `lessons/<subskillId>.json`; `psi import-skill` and
   `POST /api/packs/:slug/import` copy them.
-- Extension tools (planned): `psi_lesson` {action: "show"|"write", subskillId?, lesson?} (show presents a lesson card
+- Extension tools: `psi_lesson` {action: "show"|"write", subskillId?, lesson?} (show presents a lesson card
   widget; write saves a lesson with citations), `psi_sources` {action: "list"|"add"|"remove", skill?, url?, title?, kind?,
   excerpt?, license?}, `psi_fetch` {url} (reads a web page as text, ≤ 20 k chars, http/https only, no private IPs),
-  `psi_search` {query} (web search results to find sources), `psi_verify` {claim, skill?} → Verification;
+  `psi_search` {query} (web search results to find sources), `psi_verify` {claim, skill?} → Verification with
+  BM25-ranked evidence passages from cached fetched pages and conservative verdicts (likely-supported /
+  possibly-contradicted / unclear); `psi_lesson write` rejects quotes not found on the fetched page;
   `/mode teach|practice|test`, `/verify <claim>`, `/sources`. Teaching contract: new or failed-twice subskill → lesson
   first; one question per message at most; every factual explanation cites [n] sources from the skill's list.
-- Web API (planned): `GET /api/me` → LearnerSummary, `PUT /api/me/profile` {dailyGoal?, tutorMode?},
+- Web API: `GET /api/me` → LearnerSummary, `PUT /api/me/profile` {dailyGoal?, tutorMode?, gameLayer?},
   `GET /api/skills/:s/sources`, `GET /api/skills/:s/lessons/:subskillId`.
 
 ### continuous lessons, sandboxed code execution, light Socratic prompts
@@ -199,6 +201,17 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - Flow contract (inject.ts): lessons run continuously in chunks (explain → demo with psi_run → optional Socratic
   prompt → next chunk); never end a turn without psi_next_steps; "continue"/"next" means proceed without
   re-asking; check understanding with one practice challenge at the end of a subskill, not after every chunk.
+
+### adaptive practice, guarantees, evals
+- `core/src/scheduler.ts`: `nextChallenge(skill, opts?)` → `{ challenge, reason: ChallengeReason }` — interleaved,
+  spaced selection (new / due review / delayed retry / stretch), difficulty adapts toward ~70–85% success; used by
+  `psi_challenge` action "next" and `GET /api/skills/:s/next`. Hints never reduce XP ("help-then-solve" badge).
+- `core/src/lock.ts`: `withFileLock(path, fn)` — every store's read-modify-write is serialized across processes.
+- Attempts are skill-scoped (`recordAttempt` takes `skill`); browser-reported code results are `verified: false`.
+- `extension/src/practice/guards.ts`: code-level guarantees — next steps always include Continue; an open challenge's
+  answers are redacted from tutor text and options; challenges are blocked on continue/show-me turns until something
+  was taught; [n] citations beyond the skill's sources are removed. Each intervention appends a `psi-guard` entry.
+- `evals/`: scripted learner sessions against the real model; `node evals/run.ts …` then `node evals/score.ts <dir>`.
 
 ### visual (`visual/src/index.ts` re-exports) — optional extras
 - `palettes.ts`: `type Palette = { name; bg; fg; muted; accent: string[]; deep; glow }`, `PALETTES`, `paletteFor(style, name?)`
