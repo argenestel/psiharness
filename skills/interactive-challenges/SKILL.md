@@ -10,8 +10,12 @@ Read ../../core/src/types.ts for Challenge, ../../core/src/practice.ts for check
 ../../extension/src/practice/tools.ts for the actual psi_challenge input schema.
 Stored types and registered tool arguments are different contracts.
 
-The registered psi_challenge accepts required kind, level, prompt, hints; optional skill, subskillId,
-expected, acceptable, tolerance, rubric, format, choices, unit, language, starterCode, setup, tests.
+The registered psi_challenge takes action: "next" or "create" (default create). action "next" serves a ready
+challenge chosen by the scheduler (new, due review, delayed retry, or one stretch item; difficulty adapts toward
+roughly 70–85% success) and returns its reason; optional subskillId focuses it. Prefer "next" before creating.
+For "create", kind, level, prompt, and hints are required in practice (the store validates them); optional fields
+are skill, subskillId, expected, acceptable, tolerance, rubric, format, choices, unit, language, starterCode,
+setup, tests.
 Supply skill explicitly unless an active skill is already selected. It returns challengeId, skill,
 and a widget for the browser. Stored types and registered arguments must not be confused.
 The examples below are complete stored Challenge objects, not tool-call envelopes. To create one,

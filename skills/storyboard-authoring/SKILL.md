@@ -203,7 +203,8 @@ Scene-level repetition keeps these examples short without inventing shared objec
 
 Duplicate element ids: rename colliding elements anywhere in the storyboard, including descendants.
 Missing props for a kind: compare against the table; an empty props object is not a drawable circle.
-Unknown Anim type: replace it with a supported type or use Manim for continuous geometry.
+Unknown Anim type: replace it with a supported type, or use Manim for continuous geometry when `psi_manim` is
+available (only with `PSI_CODE_EXEC=1`); otherwise use an explorable or describe the motion in narration.
 Group children misplaced: remove repeated parent offsets from their local coordinates.
 Text overflow: shorten labels, split lines, and inspect the actual preview bounds.
 Unknown palette: choose an exported registry name or omit palette for the style default.

@@ -31,15 +31,18 @@ of psi or a universal learning law.
 quickfire 0.5, predict 1, debug/apply 1.2, explain 1.3, build 2, and boss 3. For a non-skipped attempt, XP is:
 
 ```text
-max(1, round(outcome base × kind multiplier) + 2 × (learner level − 1) − 2 × max(0, hints used))
+max(1, round(outcome base × kind multiplier) + 2 × (learner level − 1))
 ```
 
+Hints are help, not a cost: they never reduce XP, and a success after a hint earns the `help-then-solve` badge.
 A failed attempt with a nonblank recorded lesson gets another 5 XP after that calculation. The level is the learner's
-current progress level, not the challenge's difficulty. Skips always earn 0. Thus a level-1, no-hint quickfire failure
-earns 2 XP; with a lesson it earns 7. Failure does not always earn exactly 4 XP.
+current progress level for that skill, not the challenge's difficulty. Skips always earn 0. A browser-reported
+(self-reported, unverified) success earns a flat 10. Thus a level-1 quickfire failure earns 2 XP; with a lesson it
+earns 7. Failure does not always earn exactly 4 XP. The combo shown after a run of successes is display-only; it is
+not added to recorded XP.
 `PracticeStore.recordAttempt()` applies the calculation and updates streaks and badges. The practice contract asks
-for constructive feedback and what the learner will try differently. A lesson must accompany the recorded attempt;
-there is no tool operation to retroactively award its bonus without recording another attempt.
+for constructive feedback and what the learner will try differently. `psi_attempt` takes the lesson with the attempt;
+the web app can attach it afterwards (`POST /api/skills/:s/attempts/:id/lesson`), which awards the bonus once.
 
 ## Deliberate practice
 
@@ -52,10 +55,14 @@ feedback, and repetition rather than mere time spent. Its subject is expert perf
 attempt, uses deterministic checking where possible, and grades open answers against a rubric. Build quests apply
 subskills to a small project. These are deliberate-practice-inspired workflows, not a guarantee of expert coaching.
 
-The host skills in `skills/practice-loop/SKILL.md` and `skills/super-mario-effect/SKILL.md` suggest roughly
-**70–85% success over comparable independent attempts** as a practical difficulty heuristic. Neither
-`core/src/practice.ts` nor `core/src/gamify.ts` implements that target, an adaptive difficulty controller, or a
-scientifically established optimum. Hint-assisted retries should not be mistaken for independent successes.
+psi aims for roughly **70–85% success over comparable independent attempts** as a practical difficulty heuristic,
+not a scientifically established optimum. `core/src/scheduler.ts` (`nextChallenge`, used by `psi_challenge` action
+`next` and `GET /api/skills/:s/next`) applies it heuristically: it estimates recent success from the last five
+attempts, lowers the target difficulty after two misses and raises it after three successes, and prefers items whose
+predicted success is nearest the middle of that band. Each pick has a reason: `new`, `review` (an FSRS-style replay
+of the item's attempt history says it is due), `retry` (a miss, offered again after at least two other attempts), or
+`stretch` (the nearest untried item above the learner's typical difficulty). Hint-assisted successes count as
+successes there; they should still not be mistaken for independent transfer.
 
 ## Limits of gamification
 
@@ -71,7 +78,10 @@ psi's existing safeguards are modest: plans retain the learner's own reason and 
 focus on doing something useful, failures still earn XP, and a reflection bonus rewards a stated lesson. The practice
 contract requests honest grading and forbids shaming mistakes. These design choices aim to keep attention on
 learning; their effectiveness against overjustification has not been evaluated. XP, badges, streaks, and hours are
-participation signals, not proof of competence. There is no implemented gamification-off setting.
+participation signals, not proof of competence. In psi web the learner can set the game layer to **On**,
+**Quiet** (numbers stay; no animations, announcements, or celebratory fills) or **Off** (no XP, levels, streaks,
+badges, combo, or goal ring; attempts and practice time stay). It is stored as `gameLayer` in `$PSI_HOME/profile.json`
+and affects the web UI only; the terminal HUD and the tutor's prompt do not read it.
 
 ## Optional concept and visual layer
 
@@ -91,7 +101,7 @@ Public Interest*, 14(1), 4–58).
 | Memory model | FSRS (Ye et al. 2022) | `core/src/fsrs.ts`, default FSRS-5 weights | code |
 | Knowledge tracing | Corbett & Anderson 1995 | `core/src/bkt.ts`, mastery at `pKnown ≥ 0.95`, frontier | code |
 | Prerequisite order | Knowledge space theory | Concept DAG, `frontier()`, `pathTo()` | code |
-| Interleaving | Rohrer & Taylor 2007 | Due queue mixes concepts; skills ask for mixed decks | partial |
+| Interleaving | Rohrer & Taylor 2007 | Practice scheduler avoids a third item from the same subskill when another is due; card due queue mixes concepts | code (practice) + partial (cards) |
 | Dual coding | Paivio 1971; Mayer 2009 | Storyboards, explorables, Manim with narration | prompt + renderer |
 | Worked examples, cognitive load | Sweller 1988 | One idea at a time, hint ladder, fading, `/tutor explain` | prompt |
 | Predict before reveal | Slamecka & Graf 1978; Kornell et al. 2009 | `predict` cards, every lesson command, explorable prompts | prompt |
@@ -170,7 +180,8 @@ largest for easily confused categories and is not universal (Brunmair & Richter,
 
 **In psi.** Partial. The due queue is ordered by due time, not by concept, so reviews naturally mix concepts;
 `psi review` with no topic mixes topics too. `skills/retrieval-practice/` asks for decks that contrast confusable ideas.
-There is no explicit interleaving scheduler.
+Practice challenges are interleaved in code: after two attempts in a row on one subskill, the scheduler prefers a due
+item from a different subskill when one exists. There is no interleaving scheduler for concept cards.
 
 ## Dual coding and multimedia
 
@@ -208,6 +219,11 @@ Sweller, 2003, *Educational Psychologist*, 38(1), 23–31), so support should fa
   fading ("now predict the slope at π without repeating the formula").
 - `/tutor explain` (more guidance) and `/tutor socratic` (less) let the learner pick the level of support.
 - The intuition crew role must produce a concrete worked example in its brief.
+- In the practice layer, a new or twice-missed subskill gets a sourced lesson (explanation, key ideas, a worked
+  example, pitfalls) before its first challenge. Lessons run in chunks with optional, ungraded `psi_ask` prompts, and
+  one practice challenge comes at the end of a subskill rather than after every chunk. `/mode teach|practice|test`
+  sets how much is explanation versus testing. Code guards refuse a challenge on a "continue" / "show me" turn until
+  something was taught.
 
 ## Predict before reveal (generation)
 
@@ -247,7 +263,8 @@ LaVancher, 1994, *Cognitive Science*, 18(3), 439–477) instead of re-reading. R
   self-reported styles lacks support (Pashler, McDaniel, Rohrer & Bjork, 2008, *Psychological Science in the Public
   Interest*, 9(3), 105–119). Visuals are used when the *content* is spatial or dynamic.
 - **XP is not mastery.** Practice shows points, levels, streaks, hours, and badges; these do not update concept BKT mastery.
-- **No hidden answer enforcement.** The model sees card answers; hiding them is an instruction, not a sandbox.
+- **Limited answer hiding.** The model sees card and challenge answers. For an open practice challenge, a code guard
+  redacts its accepted answers from the tutor's text and next-step buttons; card answers are hidden by instruction only.
 - **No personalized parameters yet.** FSRS weights and BKT probabilities are defaults, not fitted to you.
 - **No forgetting in BKT, no transfer between concepts.** A mastered concept stays mastered until a wrong answer
   lowers it; mastering one concept does not raise its neighbors. FSRS handles forgetting at the card level.

@@ -10,8 +10,10 @@ Use teach-first for Learn -> Try -> Check and source-grounding for research and 
 For a new subskill or after two misses on the same subskill, call psi_lesson action show; if absent,
 research with psi_search and psi_fetch, record sources with psi_sources action add, write the lesson
 with psi_lesson action write, then show it before the first or next challenge.
-Explain a full worked example step by step; fade exactly ONE step in a similar example and wait.
-Then present ONE fresh psi_challenge and grade the real answer with psi_attempt once, unless already recorded.
+Teach in continuous chunks: explain, a full worked example, an optional faded step or ungraded psi_ask, then the
+next chunk. "continue" or "just show me" means proceed without re-asking. End EVERY turn with psi_next_steps
+(2–4 options, always including Continue). At the end of the subskill, present ONE psi_challenge (action "next"
+first, "create" only if none remain) and grade the real answer with psi_attempt once, unless already recorded.
 Ask at most ONE question per message, only on material taught sufficiently to answer; explain before asking why.
 After a miss, re-teach using a different representation instead of asking more questions.
 Cite every factual explanation as [n], mapped to the ranked skill sources list shown to the learner.
@@ -36,10 +38,13 @@ If state is unavailable, treat the prerequisite as untaught and give a small les
 Match the challenge to one observable action from the target performance.
 Start or inspect the block through psi_practice_session; /practice is the learner-facing route.
 Choose a kind and a level from 1 through 5, with a reason tied to evidence.
-A level is challenge difficulty; it is not the learner's XP level.
+A level is challenge difficulty (shown to the learner as "Difficulty N"); it is not the learner's XP level.
+The web app says "Skill level N" for one skill's XP level and "Your level N" for the learner overall.
 
 ## Present, wait, grade
-Create and present a challenge through psi_challenge and retain its returned id.
+Serve a ready challenge first with psi_challenge action "next": the scheduler interleaves new items, due
+reviews, delayed retries and one stretch item, and adapts difficulty toward roughly 70–85% success. Its reason
+(new, review, retry, stretch) explains the pick. Only when none remain, use action "create". Retain the returned id.
 Use only quickfire, predict, debug, apply, explain, build, or boss as kind.
 Show the prompt and relevant data; keep expected, acceptable, rubric answers, and later hints hidden.
 A learner-facing rubric may state success criteria without revealing the solution.
@@ -48,7 +53,7 @@ Submit the actual answer through psi_attempt using the registered schema.
 When expected is set, checkAnswer determines the outcome before tutor grading.
 For open responses, grade against the rubric and provide the supported outcome.
 Outcomes are success, partial, fail, and skipped; do not invent a numeric grade.
-Record hintsUsed honestly and include feedback grounded in the actual response.
+Record hintsUsed honestly and include feedback grounded in the actual response. Hints never reduce XP.
 Do not resubmit the same answer to generate more XP.
 Use fresh challenges for transfer attempts and distinguish assisted from independent success.
 

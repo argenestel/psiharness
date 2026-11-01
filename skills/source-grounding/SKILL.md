@@ -51,10 +51,17 @@ Quote only short excerpts within the limits above and any source's reuse terms. 
 passages instead of copying them. Unknown licensing does not mean permission for wholesale reuse.
 
 ## Verify when reliance matters
-psi_verify accepts claim and optional skill, checks the claim against the skill's sources, and returns
-a Verification: claim, verdict (supported, contradicted, or unclear), citations, and note.
-Fetch any supporting pages not yet read before presenting their citations. Report the verdict and note,
-with source links and remaining limits; verification is evidence-based checking, not a correctness guarantee.
+psi_verify accepts claim and optional skill. It reads the skill's sources (cached pages from psi_fetch; up to
+three uncached pages are fetched, otherwise the stored excerpt is used), ranks sentences against the claim with
+BM25, and returns a Verification: claim, evidence (the ranked passages with context), citations, a note, and a
+conservative verdict: likely-supported (a top passage closely matches the claim's wording), possibly-contradicted
+(a strong passage has negation near the claim's terms), or unclear (everything else). Older sessions may show the
+legacy values supported / contradicted.
+The verdict is a lexical signal, not semantic proof: matching words do not establish that a claim is true.
+Present the evidence first: quote or summarize the passages, cite them as [n], explain them in your own words,
+then give the verdict in hedged language ("the sources likely support this", "a source may contradict this",
+"I couldn't confirm this from the sources"). State the uncertainty for unclear and possibly-contradicted
+results, mention any fetch failures listed in the note, and never claim more certainty than the passages show.
 Use it when the learner requests /verify, when references conflict, or before relying on an uncited claim.
 When a learner is about to rely on a claim, or a claim lacks a citation, end with:
 “Want me to check that against the sources?”

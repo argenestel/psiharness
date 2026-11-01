@@ -29,6 +29,9 @@ HOME/XDG dirs, and `exec`s omp. Pointing `PSI_BIN` at that wrapper lets crew spa
 
 ## What was verified (omp 18.14.0, pi 1.1.0, model `xai/grok-4.6`)
 
+These checks predate the practice layer's newer tools and the execution gate. Today `psi_run`, `psi_manim`, and
+`psi_crew` exist only when the host runs with `PSI_CODE_EXEC=1`; repeat the manim and crew rows with it set.
+
 | Check | pi | omp |
 |---|---|---|
 | Extension load, status `psi` + widget `psi-progress` | yes | yes |
@@ -66,8 +69,8 @@ psi imports only from `@earendil-works/pi-coding-agent` and `@earendil-works/pi-
 shim (`dist/types/extensibility/legacy-pi-coding-agent-shim.d.ts`) exports the same surface, including `defineTool`,
 and omp aliases the `@earendil-works/*` package names to its own copies. The methods psi uses exist in omp:
 `registerTool`, `registerCommand`, `registerFlag`, `getFlag`, `sendMessage`, `sendUserMessage`, `appendEntry`, and
-the `session_start`, `before_agent_start`, and `turn_end` events. `ctx.model` (used by `psi_crew` to give children the
-session's model) exists in both.
+the `session_start`, `before_agent_start`, and `turn_end` events. `ctx.model` (used by `psi_crew`, when
+`PSI_CODE_EXEC=1` registers it, to give children the session's model) exists in both.
 
 omp also exposes `pi.zod` next to TypeBox. psi uses TypeBox (`Type` from `pi-ai`) only; `Type.Unsafe` and
 `Type.Union` of literals work in both hosts.
@@ -79,5 +82,7 @@ omp also exposes `pi.zod` next to TypeBox. psi uses TypeBox (`Type` from `pi-ai`
 2. A full `buildLesson` under omp (5 roles, including the visualizer's manim render) was not run; only
    quizmaster ∥ critic. Under pi, `psi crew dot-product projection -- --model xai/grok-4.6` ran all five roles
    ok in about 12 minutes; the visualizer saved a storyboard and rendered an MP4 through the uv manim fallback.
-3. `psi_crew` called from inside an omp session spawns `pi` children unless `PSI_HOST=omp` is set; the extension
-   does not detect its host.
+3. `psi_crew` (registered only with `PSI_CODE_EXEC=1`) called from inside an omp session spawns `pi` children
+   unless `PSI_HOST=omp` is set; the extension does not detect its host.
+4. psi web under omp (`PSI_HOST=omp`) uses the same explicit tool list and a skill index instead of `--skill`.
+   This note records no omp runs of psi web, the `psi_next_steps` / `psi_ask` widgets, or the guards.

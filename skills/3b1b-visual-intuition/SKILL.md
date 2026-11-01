@@ -63,7 +63,8 @@ Move the learner's attention with the object being transformed.
 Use a cut only when changing the question or introducing a new setting.
 Pause before and after a transformation so the endpoints can be compared.
 Do not claim the Storyboard Anim contract includes a morph animation.
-For exact interpolation of mathematical geometry, write a Manim scene.
+For exact interpolation of mathematical geometry, write a Manim scene when `psi_manim` is in your tool list
+(it exists only with `PSI_CODE_EXEC=1`); otherwise use a slider explorable or describe the motion in words.
 For Storyboards, use documented slide, grow, draw, or camera transitions.
 
 ## Use color as meaning
@@ -109,7 +110,9 @@ Name the limits of the analogy instead of quietly extending it too far.
 
 ## Choose the psi deliverable
 
-Choose a Manim scene for a derivation with dependent geometric motion.
+Choose a Manim scene for a derivation with dependent geometric motion, but only when `psi_manim` is available.
+`psi_manim` is registered only when the host runs with `PSI_CODE_EXEC=1` (the Docker services set it).
+Without it, use an explorable for the same relationship, or describe the motion step by step in words.
 Examples include rotating vectors, transforming grids, and limiting secant slopes.
 Use ValueTracker and always_redraw when geometry must stay linked numerically.
 Consult the manim-scene-authoring skill before using psi_manim helpers.
@@ -172,7 +175,8 @@ The blue arrow is the main object; the yellow arrow is the reference direction.
 }
 ```
 
-After this opening, animate the perpendicular foot with Manim if precision matters.
+After this opening, animate the perpendicular foot with Manim if precision matters and `psi_manim` is available;
+otherwise let the learner drag the angle in an explorable, or describe where the foot moves.
 Before revealing it, ask whether increasing the arrow's angle lengthens its shadow.
 After revealing it, test an obtuse angle and a perpendicular arrow.
 End by asking the learner to invent a rule for the observed sign changes.
@@ -196,6 +200,7 @@ Deliver the puzzle, color key, beat order, and one learner check with the visual
 Include a brief note on the mathematical assumptions the picture uses.
 Call `psi_storyboard` with `{ "storyboard": <complete Storyboard> }` when choosing that format.
 Call `psi_explorable` with `{ "spec": <complete ExplorableSpec> }` when the learner should experiment.
-For Manim, inspect helpers, draft at low quality, and inspect the resulting frames.
-If a tool is unavailable, return the complete source and state that rendering is pending.
+For Manim (only with `psi_manim` available), inspect helpers, draft at low quality, and inspect the frames.
+If a tool is unavailable, say so plainly: describe the visual in words or switch to `psi_explorable` /
+`psi_storyboard`, and never claim a render happened. You may give the source for the learner to render.
 Call the lesson effective only after the learner can explain or predict a new case.

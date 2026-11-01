@@ -71,14 +71,15 @@ entrypoint logs only which files it copied and warns when no credentials are pre
 
 Compose sets `PSI_CODE_EXEC=1` for `web` and `psi`. The execution capability covers `psi_run`
 (Python, JavaScript, SQL, optionally bash), `psi_manim` (Python rendering), and `psi_crew` (child agents).
-Set `PSI_CODE_EXEC=0` to disable all three model-facing tools. Crew visualizers receive bash/write only
+Set `PSI_CODE_EXEC=0` to disable all three model-facing tools. `web-full` does not set it, so its Manim stack is
+unused by the tutor until you put `PSI_CODE_EXEC=1` in `docker/.env` (passed through `env_file`). Crew visualizers receive bash/write only
 when **both** `PSI_CODE_EXEC=1` and `PSI_CREW_ALLOW_BASH=1`; other roles never receive them.
 Bash in `psi_run` separately requires `PSI_CODE_EXEC_BASH=1`.
 
 `psi_run` uses a fresh temporary directory, stripped environment, 10 s timeout and 64 KB output cap.
 Crew and web pi/omp children inherit an allowlisted environment with pi provider credentials and config paths,
 not arbitrary host secrets. Web tools use an explicit list; a pi extension hook restricts the read tool to
-canonical paths beneath `PSI_HOME`, blocking symlink escapes. This guard does not confine enabled execution.
+canonical paths beneath `PSI_HOME` and psi's bundled `skills/` and `prompts/`, blocking symlink escapes. This guard does not confine enabled execution.
 
 All server-side code runs as the **same user** inside the container. This is not a security sandbox against
 a malicious learner or prompt injection: enabled execution can access that user's files and credentials.
@@ -117,8 +118,8 @@ The backup directory must be writable by UID 1000.
 
 ## Security
 
-- **What is isolated.** The pi agent and every tool it runs (the web agent is limited to `read` and `psi_*`
-  tools) execute inside the container. They see only the image, `/data`, and the container's own pi dir: no
+- **What is isolated.** The pi agent and every tool it runs (the web agent is limited to `read` and the
+  explicit `psi_*` list in `extension/src/tool-policy.ts`) execute inside the container. They see only the image, `/data`, and the container's own pi dir: no
   host files, no host home directory, no Docker socket.
 - **Code challenges** (Python via Pyodide, JavaScript in a Worker, SQL via sql.js) run in *your browser's*
   sandbox, not in the container or on the host.

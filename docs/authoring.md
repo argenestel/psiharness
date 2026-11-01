@@ -6,12 +6,14 @@ tables below `?` marks an optional field.
 
 ## Writing a skill pack
 
-Practice packs are the main authoring format: a first-20-hours plan and text challenges. Start from
-`examples/skills/mental-math/`, `examples/skills/sql-queries/`, `examples/skills/regex/`,
-`examples/skills/git-fluency/`, or `examples/skills/spanish-cafe-a1/`.
-Each contains `plan.json` and a `challenges.json` array. These are different from optional topic packs below
-and from host instruction skills (`SKILL.md`). Contracts are in `core/src/types.ts`; storage and grading are in
-`core/src/practice.ts`.
+Practice packs are the main authoring format: a first-20-hours plan, challenges, ranked sources, and sourced
+lessons. Start from any directory in `examples/skills/` (`python-foundations`, `javascript-essentials`, `sql-lab`,
+`sql-queries`, `algorithms-big-o`, `calculus-intuition`, `linear-algebra-practice`, `probability-statistics`,
+`physics-mechanics`, `mental-math`, `regex`, `git-fluency`, `spanish-cafe-a1`).
+Each contains `plan.json`, a `challenges.json` array, `sources.json`, and `lessons/<subskillId>.json`. These are
+different from optional topic packs below and from host instruction skills (`SKILL.md`). Contracts are in
+`core/src/types.ts`; storage and grading are in `core/src/practice.ts`, `core/src/sources.ts`, and
+`core/src/lessons.ts`.
 
 ### Plan fields
 
@@ -30,15 +32,27 @@ and from host instruction skills (`SKILL.md`). Contracts are in `core/src/types.
 Every subskill has `id`, `title`, `why`, `priority` (1 core, 2 useful, 3 later), `prerequisites` (subskill ids),
 `selfCorrection`, `drills` (string array), and `status` (`locked`, `active`, `practicing`, or `solid`).
 Use unique kebab-case ids and an acyclic prerequisite graph. Next-subskill selection chooses the lowest numeric
-priority unfinished subskill whose prerequisites are all solid, breaking ties by plan order. Successful attempts
-do not automatically change subskill status.
+priority unfinished subskill whose prerequisites are all solid, breaking ties by plan order. Attempts advance
+status automatically (`core/src/progression.ts`): a subskill becomes solid after enough distinct successes, recent
+accuracy, and success on its boss/level ≥ 4 challenges, and newly eligible dependents become active (details in
+[architecture](architecture.md#practice-layer)).
 
 ### Challenge fields and hint ladders
 
 Full pack records contain `id`, `skill`, `kind`, `level` (integer 1–5), `prompt`, `hints` (string array), and
-`createdAt`. Optional fields are `subskillId`, `expected`, `acceptable` (string array), `tolerance` (number), and
-`rubric` (string array). Use stable, globally unique challenge ids: attempt recording resolves ids across skills.
-The challenge tool assigns ids and timestamps for challenges it creates.
+`createdAt`. Optional fields are `subskillId`, `expected`, `acceptable` (string array), `tolerance` (number),
+`rubric` (string array), and the answer format:
+
+| `format` | Extra fields | Graded by |
+| --- | --- | --- |
+| `text` (default) | — | `checkAnswer` when `expected` is set, otherwise the tutor's rubric |
+| `number` | `unit?`, `tolerance?` | numeric comparison |
+| `math` | `unit?`, `tolerance?` | `core/src/mathexpr.ts`: parsed and compared numerically, never evaluated as code |
+| `choice` | `choices` (≥ 2 distinct; `expected` is one of them, not an index) | exact choice |
+| `code` | `language: python\|javascript\|sql`, `starterCode?`, `setup?`, `tests` | the browser sandbox: python/javascript pass when `tests` run without error; sql compares the learner's last result set with `expected` (JSON rows; `-- ordered` in `tests` enforces order) |
+
+Use stable, globally unique challenge ids: attempt recording resolves ids across skills. The challenge tool assigns
+ids and timestamps for challenges it creates.
 
 Kinds are `quickfire`, `predict`, `debug`, `apply`, `explain`, `build`, and `boss`. Give open tasks a concrete rubric;
 leave `expected` absent when a single exact answer would be misleading. Write hints in order from a small nudge to
@@ -63,11 +77,26 @@ Numeric comparison also accepts signed decimals, correctly grouped thousands com
 `1e-9 * max(1, abs(expectedNumericValue))`. A normalized exact-string match succeeds before numeric tolerance is
 checked. Use a nonnegative tolerance, including 0 for exact numeric answers.
 
+### Sources and lessons
+
+`sources.json` is an array of `Source` records: `id`, `url`, `title`, `kind` (`official-docs`, `textbook`, `course`,
+`paper`, `reference`, `video`, `article`, `forum`), `rank`, `rankReasons`, `accessedAt`, and optional `publisher`,
+`license`, `excerpt` (a short exact quote). `id` must equal `sourceId(url)` from `core/src/sources.ts`; the simplest
+way to get `id`, `rank`, and `rankReasons` right is to build the file with `new SourceStore(home).add(skill, draft)`
+against a scratch `PSI_HOME` and copy the result.
+
+`lessons/<subskillId>.json` is a `SkillLesson`: `title`, `explanation` (2–4 short paragraphs, Markdown + LaTeX),
+`keyIdeas` (2–4 lines), optional `workedExample { problem, steps, answer }` and `pitfalls`, and `citations`
+(≥ 1 `{ sourceId, quote?, locator? }`, quote ≤ 200 characters copied exactly from the page). The tutor shows a lesson
+before the first challenge on a new or twice-missed subskill, so ship one per subskill.
+
 ### Validate before importing
 
 `cli/src/commands/import-skill.ts` parses both JSON files, checks that the plan has a usable skill name and that
-challenges is an array, normalizes skill identities, and writes the two files. It does not validate subskill fields,
-prerequisite references, answer quality, or boss/build counts. `--force` replaces pack files while keeping existing
+challenges is an array, normalizes skill identities, and writes the two files. It copies `sources.json` when it is
+an array and writes each `lessons/<id>.json` through `LessonStore` (which requires the subskill to exist and every
+citation's `sourceId` to be in `sources.json`). It does not validate subskill fields, prerequisite references, answer
+quality, or boss/build counts. `POST /api/packs/:slug/import` does the same from psi web. `--force` replaces pack files while keeping existing
 attempts, sessions, and progress; keep ids stable when updating an installed pack.
 
 Before importing, inspect the fields above and use the checker against every canonical answer and alternative.
@@ -87,6 +116,7 @@ for (const pack of readdirSync("examples/skills")) {
     assert.equal(challenges.filter(c => c.kind === "build").length, 1);
     for (const c of challenges) {
         assert.equal(c.skill, plan.skill);
+        if (c.format === "code") continue; // graded by tests in the browser sandbox
         if (!c.expected?.trim()) {
             assert.equal(store.checkAnswer(c, "an open response"), undefined);
             assert.ok(c.rubric?.length, `${pack}/${c.id}: needs a rubric`);
@@ -101,7 +131,8 @@ JS
 ```
 
 This is a sanity check, not proof that answers are correct: also try plausible wrong answers, tolerance boundaries,
-and prompt-specific edge cases. Then run `psi import-skill examples/skills/mental-math` and
+and prompt-specific edge cases. Code challenges need their `tests` run against a reference solution (the eval answer
+keys in `evals/answer-keys/` were checked that way). Then run `psi import-skill examples/skills/mental-math` and
 `psi practice mental-math` against a scratch `PSI_HOME`. Open-ended build/boss tasks need the agent's rubric grading.
 
 ## Optional topic packs
@@ -314,7 +345,9 @@ class WaveQuestion(PsiScene):
   tracker time in turns, `plot_with_tracker(fn, x_range)` → `(group, tracker)`, `growth_dots(n)`. Add returned objects
   before animating trackers.
 
-**`psi_manim`** — `{ topic?, code?, storyboardId?, render?, scene?, quality?, runner? }`:
+**`psi_manim`** — `{ topic?, code?, storyboardId?, render?, scene?, quality?, runner? }`. The tool is registered only
+when the host runs with `PSI_CODE_EXEC=1` (the Docker `web` and `psi` services set it). Without it the agent cannot
+render; `psi render --manim` from your shell always works.
 
 - `storyboardId` (wins over `code`): transpiles a saved storyboard to `artifacts/<id>.py`; renders only with
   `render: true`.
@@ -328,8 +361,8 @@ psi render --manim storyboard.json --docker -o out/ # storyboard JSON, forced Do
 ```
 
 The CLI defaults to quality `m`, writes next to the input when `-o` is omitted, and has no `--scene` flag (first scene
-class wins). MP4s land under `<out>/media/…`. Studio's gallery lists only top-level files in `artifacts/`, so open
-nested videos by the returned path.
+class wins). MP4s land under `<out>/media/…`. `psi_manim` also copies each finished MP4 to `artifacts/<name>.mp4`, so
+it shows up in the web gallery.
 
 ## Skills and prompts
 
@@ -361,9 +394,10 @@ argument-hint: "<concept>"
 Ask one prediction question about $1, then wait for the learner.
 ```
 
-Name tools exactly as registered (`psi_…`, see [tools and commands](tools-and-commands.md)). New *slash commands*
-with behavior need `registerCommand()` in `extension/src/practice/commands.ts` for practice or
-`extension/src/commands.ts` for the optional concept layer.
+Name tools exactly as registered (`psi_…`, see [tools and commands](tools-and-commands.md)). When a skill uses an
+execution tool (`psi_run`, `psi_manim`, `psi_crew`), say what to do when it is absent: those exist only with
+`PSI_CODE_EXEC=1`. New *slash commands* with behavior need `registerCommand()` in `extension/src/practice/` for
+practice or `extension/src/commands.ts` for the optional concept layer.
 
 ## Adding a crew role
 

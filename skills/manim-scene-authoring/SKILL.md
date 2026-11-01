@@ -1,6 +1,6 @@
 ---
 name: manim-scene-authoring
-description: "Optional: Author mathematical Manim Community scenes using psi_manim helpers, trackers, and linked geometry. Use for continuous derivations, projections, limits, and transformations that need precise animated relationships."
+description: "Optional: Author mathematical Manim Community scenes using psi_manim helpers, trackers, and linked geometry. Use for continuous derivations, projections, limits, and transformations that need precise animated relationships. Rendering needs the psi_manim tool, which exists only with PSI_CODE_EXEC=1."
 ---
 
 # Write a mathematical scene
@@ -208,13 +208,20 @@ If moving labels crowd the formula, move the plot upward before constructing lin
 
 ## Render drafts before polishing
 
-Call `psi_manim` with `{ topic, code: <full Python source>, scene: <exact class name>, quality: "l" }`.
+`psi_manim` exists only when the host runs with `PSI_CODE_EXEC=1` (the Docker `web` and `psi` services set it; a
+bare host does not). Check your tool list before planning a render. When `psi_manim` is absent:
+- do not claim a video was made, and do not try to render through another tool;
+- describe the scene in words (what appears, what moves, what to notice), or show the relationship with
+  `psi_explorable` or a `psi_storyboard`, which need no execution;
+- you may still hand the learner the Python source with the exact command to render it themselves.
+
+When it is available, call `psi_manim` with `{ topic, code: <full Python source>, scene: <exact class name>, quality: "l" }`.
 Supply topic explicitly unless an active topic is selected. Direct code renders immediately.
 For a saved storyboard, pass `{ topic, storyboardId }` to generate Python only; add `render: true` to render.
 Save the storyboard with `psi_storyboard` first. When both code and storyboardId are supplied, the storyboard wins.
 Use -ql for drafts, -qm for review, and -qh only after content is stable.
 These map to quality "l", "m", and "h" in visual/src/manim.ts renderManim.
-For direct CLI use: manim -ql projection.py DotProductProjection.
+For a learner rendering by hand: manim -ql projection.py DotProductProjection.
 For the other example: manim -ql derivative.py SecantToTangent.
 Keep temporary draft sources and outputs outside the repo unless an artifact location is requested.
 Use runner "auto", "local", or "docker" only where supported by the exposed tool.

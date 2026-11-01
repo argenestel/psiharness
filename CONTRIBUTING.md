@@ -1,7 +1,8 @@
 # Contributing to psi
 
-psi is a text-first, practice-first learning agent. Prioritize learner memory, first-20-hours plans,
-auto-graded challenges, failure reflections, and build quests. Concept maps and visuals are optional extras.
+psi is a teach-first, practice-first learning agent with a browser UI (psi web). Prioritize sourced lessons,
+learner memory, first-20-hours plans, auto-graded and in-browser code challenges, failure reflections, and build
+quests. Concept maps and visuals are optional extras.
 
 Read [AGENTS.md](AGENTS.md) first: it holds the module map and the stable APIs. This file covers setup and workflow.
 
@@ -20,10 +21,10 @@ node cli/src/psi.ts doctor
 
 | Script | Runs |
 | --- | --- |
-| `npm run typecheck` | `tsc --noEmit -p tsconfig.json` |
+| `npm run typecheck` | `tsc` over the root project, the browser modules (`studio/public`), and the sandbox workers |
 | `npm test` | `node --test` over `core visual crew studio cli extension` `test/*.test.ts` |
 | `npm run check` | both; must pass before you open a PR |
-| `npm run studio` | standalone studio server (port 4173) |
+| `npm run studio` | the psi web server (port 4173), same as `node cli/src/psi.ts web` |
 | `npm run psi -- <args>` | the CLI |
 
 Run one file with `node --test core/test/fsrs.test.ts`. Use a throwaway store for manual testing:
@@ -31,11 +32,11 @@ Run one file with `node --test core/test/fsrs.test.ts`. Use a throwaway store fo
 
 ## Typechecking
 
-Run all three checks before opening a PR:
+`npm run typecheck` runs three checks; all must pass:
 
-- `npm run typecheck` — server/core/extension TypeScript.
-- `npx tsc -p studio/public/tsconfig.json` — browser ES modules (JSDoc-checked).
-- `npx tsc -p studio/public/js/runners/tsconfig.json` — sandbox web workers with the WebWorker library.
+- `tsc --noEmit -p tsconfig.json` — server/core/extension TypeScript.
+- `tsc -p studio/public/tsconfig.json` — browser ES modules (JSDoc-checked).
+- `tsc -p studio/public/js/runners/tsconfig.json` — sandbox web workers with the WebWorker library.
 
 Browser JavaScript has no build step; types are expressed as JSDoc. The browser and worker configs are separate
 from the root check so DOM and worker globals stay isolated. The worker config uses `noResolve` and a narrow
@@ -68,15 +69,17 @@ point `PSI_BIN` at a stub and `PSI_HOME` at a temp directory (see `crew/test/` a
 **Style.** Tabs, double quotes, semicolons, 120 columns. Small focused files. A short doc comment on every export.
 
 **Pedagogy.** Practice XP rewards attempts and reflection; it is not mastery. Only graded card reviews update
-concept BKT mastery. Keep practice text-first: one challenge, attempt, optional hint, feedback. Tools, prompts, and
-skills must name `psi_*` tools and parameters exactly as registered in `extension/src/practice/tools.ts` or
-`extension/src/tools.ts` — see
-[docs/tools-and-commands.md](docs/tools-and-commands.md).
+concept BKT mastery. Hints never cost XP. Teach before testing: a lesson in chunks, one challenge at the end of a
+subskill, one question per message. Tools, prompts, and skills must name `psi_*` tools and parameters exactly as
+registered in `extension/src/practice/*.ts` or `extension/src/tools.ts` — see
+[docs/tools-and-commands.md](docs/tools-and-commands.md). A new tool is not visible to web chats until it is added
+to `extension/src/tool-policy.ts`; mark anything that executes code `execution: true` and register it only when
+`PSI_CODE_EXEC=1`. Skills that mention an execution tool must say what to do when it is absent.
 
 ## Contributing learning material
 
-Practice packs live in `examples/skills/`: a plan plus challenges, with auto-gradable answers where appropriate and
-rubrics for open work. Include one boss and one build quest by convention. Follow
+Practice packs live in `examples/skills/`: a plan, challenges (auto-gradable answers where appropriate, rubrics for
+open work, `tests` for code), ranked `sources.json`, and a cited lesson per subskill. Include one boss and one build quest by convention. Follow
 [Writing a skill pack](docs/authoring.md#writing-a-skill-pack) and exercise canonical, alternate, and wrong answers
 with the answer checker before importing. Host instruction skills and prompt templates live separately in `skills/`
 and `prompts/`. Optional concept packs live in `examples/topics/`.
@@ -86,6 +89,18 @@ and `prompts/`. Optional concept packs live in `examples/topics/`.
 
 There is no separate build, lint, or static-analysis script. TypeScript checking and the Node test suite are the
 repository's automated checks; run both via `npm run check`.
+
+## Evals
+
+Changes to the tutor contract, injection, guards, skills, or prompts should be checked against a real model:
+
+```sh
+node evals/run.ts --dry-run                       # validate scenarios without a model
+node evals/run.ts --scenario python-foundations-first-lesson --model xai/grok-4.6
+node evals/score.ts evals/results/<timestamp>
+```
+
+Evals need an authenticated `pi`; `npm test` does not run them. See [evals/README.md](evals/README.md).
 
 ## Running studio and crew locally
 
@@ -129,4 +144,9 @@ To enable them, move them to `.github/workflows/` (see [ci/README.md](ci/README.
 
 - One concern per PR; stay inside the module you are changing.
 - `npm run check` passes.
-- Update `docs/` when you change a tool, command, flag, env var, schema, or on-disk path.
+- Update `docs/` when you change a tool, command, flag, env var, route, schema, or on-disk path.
+
+## License
+
+psi is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE.md); commercial and enterprise use needs a
+separate license, described in [COMMERCIAL.md](COMMERCIAL.md).

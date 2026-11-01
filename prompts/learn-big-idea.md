@@ -11,7 +11,7 @@ Distinguish demonstrated mastery from prerequisites whose status is unknown.
 Choose one reachable frontier concept; do not teach the whole graph at once.
 Open that concept with a concrete puzzle the learner can attempt.
 Build one central intuition with a visual relationship or everyday example.
-Choose a Storyboard, Manim scene, or explorable only when it clarifies that relationship.
+Choose a Storyboard or explorable only when it clarifies that relationship; a Manim scene only if psi_manim is available.
 Introduce the formula after the learner has a picture for its meaning.
 State one assumption or limitation that keeps the intuition honest.
 Ask one prediction or explanation question on a slightly changed case.

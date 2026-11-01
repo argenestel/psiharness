@@ -108,7 +108,8 @@ Do not add photographic textures to compensate for a weak silhouette.
 Reveal the background first, then the main subject, then its explanatory label.
 Use float or a subtle slide for a foreground companion when appropriate.
 Plan parallax as differential layer motion, not a supported "parallax" Anim type.
-Use Manim or renderer-supported composition if true independent layer motion is necessary.
+If true independent layer motion is necessary, use renderer-supported composition, or Manim only when
+`psi_manim` is available (it exists only with `PSI_CODE_EXEC=1`). Otherwise describe the depth in narration.
 Avoid moving labels while asking the viewer to read a difficult number.
 Depth should organize attention, not imply false physical distances.
 

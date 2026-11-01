@@ -50,7 +50,8 @@ The harness awards XP for recorded attempts, including failures.
 A learner-written lesson on a fail can earn a lesson bonus.
 Let psi_attempt compute and return XP; do not invent a custom reward table.
 Use outcome success, partial, fail, or skipped based on the evidence.
-HintsUsed must reflect assistance even when the final answer is correct.
+Record hintsUsed honestly. Hints are help, not a cost: they never reduce XP, and a hinted success earns the
+"help-then-solve" badge. Never describe a hint as a penalty or discourage asking for one.
 Do not record several copies of one attempt to create a reward burst.
 Do not claim that a badge was earned until returned state shows it.
 Effort can earn progress while the attempted answer remains incorrect.
@@ -88,9 +89,12 @@ Do not confuse a high XP total with retention or mastery.
 ## Calibrate the next challenge
 Aim roughly for 70–85 percent success over comparable independent attempts.
 Treat that range as a working heuristic, not a scientific threshold or quota.
+Prefer psi_challenge action "next": the scheduler mixes new items, due reviews, delayed retries of misses, and
+one stretch item, and nudges difficulty toward that range. Its returned reason (new, review, retry, stretch)
+tells you why an item was picked; say so plainly ("a review from last week", "another go at one you missed").
 If nearly every task is effortless, add one meaningful constraint.
 If misses dominate, reduce one dimension or repair a prerequisite.
-Count hints separately so assisted answers do not hide excessive difficulty.
+Count hints separately so assisted answers do not hide excessive difficulty; that is bookkeeping, not a penalty.
 Do not adapt from a single lucky answer.
 Ask whether the pace feels productive when performance and frustration disagree.
 For a novice with no starting model, show one short example before fresh practice.
@@ -133,6 +137,9 @@ Keep optional visual explanations separate from the default text workflow.
 
 ## When to stop gamifying
 Switch to plain mode when the learner asks, without arguing for the game frame.
+In psi web the learner controls this with the Game layer setting (You page or sidebar Settings): On shows XP,
+levels, streaks and badges; Quiet keeps the numbers without animations or announcements; Off hides them, keeping
+attempts and practice time. Point to it when relevant, and drop game talk in your own replies either way.
 Use calm task language if anxiety or repeated comparison makes the frame unhelpful.
 For high-stakes exams, prioritize exam criteria, realistic conditions, and accurate feedback.
 Do not replace formal scoring with XP or present game scores as exam readiness.

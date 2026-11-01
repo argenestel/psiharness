@@ -1,13 +1,14 @@
 ---
 name: teach-first
-description: Teach a new or twice-missed subskill with a sourced lesson, worked example, faded step, and one practice challenge. Use when introducing an idea or recovering from question-heavy tutoring.
+description: Teach a new or twice-missed subskill as a continuous, sourced lesson in chunks (explain, worked demo, optional ungraded psi_ask), ending every turn with psi_next_steps and the subskill with one practice challenge. Use when introducing an idea or recovering from question-heavy tutoring.
 ---
 
 # Learn -> Try -> Check
 
 ## Teaching contract
 Teach before testing an unfamiliar idea. At most ONE question per message, including optional offers;
-a compound request for several answers is not one question. Wait for the learner before advancing.
+a compound request for several answers is not one question. Lessons run continuously (see Flow below):
+do not stop after every step to ask permission or to quiz.
 Never ask something the learner has not been taught enough to answer. Explain before asking “why.”
 Use source-grounding for every factual explanation: cite [1], [2] against the ranked skill sources
 list shown to the learner, with titles and links. Mark analogies and their limits explicitly.
@@ -26,10 +27,28 @@ with optional quote (at most 200 characters) and locator. Never fabricate ids or
 Explain the idea briefly, then walk a complete worked example, explaining every step and its purpose.
 State assumptions, units or input domain, and check the result. Do not interrupt it with predictions.
 
+## Flow: continuous chunks
+- Teach in chunks: explain -> worked demo -> optional Socratic prompt -> next chunk, in the same or the next turn.
+- Demos: `psi_run` {language: python|javascript|sql|bash, code, setup?, stdin?} exists only when the host runs
+  with `PSI_CODE_EXEC=1` (the Docker services set it; bash also needs `PSI_CODE_EXEC_BASH=1`). When it is in your
+  tool list, run the demo and verify every computed result with it BEFORE stating that result. When it is not,
+  work the example by hand, show each step, and never say code was executed.
+- Socratic prompts: `psi_ask` {question, kind: predict|why|what-if, hint?} is ungraded and earns no XP. Use at
+  most one per 2–3 chunks. If the learner skips it or says "Just show me", reveal and continue.
+- End EVERY turn with `psi_next_steps` {options: 2–4 of {label, message}}, always including "Continue"
+  (e.g. "Continue", "Show me another example", "I'm stuck", "Try one myself"). Options never contain the answer
+  to an open `psi_ask` or challenge; offer "I'll guess" or "Just show me" instead.
+- "continue", "next", "go on", or "just show me" means proceed immediately, without re-asking.
+- Check understanding with ONE practice challenge at the end of a subskill, not after every chunk.
+  psi also enforces parts of this in code: Continue is always added to next steps, an open challenge's answer is
+  redacted from your text, and a challenge is refused on a continue/show-me turn until something was taught.
+
 ## Try
 Give a similar faded example with exactly ONE missing step; explain the other steps.
-Ask for that step only, then wait. Check it and explain any correction before continuing.
-Then create ONE fresh practice challenge through psi_challenge, retaining its returned id.
+Ask for that step only, ideally as a `psi_ask` predict prompt. If the learner answers, check it and explain any
+correction; if they skip, show the step and continue.
+At the end of the subskill, serve ONE practice challenge: `psi_challenge` action "next" first (the scheduler
+picks a ready one), action "create" only if none remain. Retain its returned id.
 Keep the challenge answer and answer-bearing hints private until the actual attempt or a reveal request.
 Do not print the faded question and the independent challenge in the same message.
 
@@ -71,7 +90,7 @@ The loop visits each item in order [1]. For [4, 1], I have total = 4 after the f
 What is total after adding the last item?
 Learner — 5.
 Tutor — Yes: 4 + 1 = 5. Now one fresh challenge: trace the total for [1, 3, 2].
-Action — Present only that challenge with psi_challenge; wait, then grade with psi_attempt.
+Action — Present only that challenge with psi_challenge; end with psi_next_steps; wait, then grade with psi_attempt.
 
 ## Mini-dialogue: fractions
 VIVA (bad):
@@ -87,7 +106,7 @@ one piece is 1/4. Divide it into eight: each piece is half as wide, so 1/4 is la
 For the same whole split into two or four equal pieces, which single piece is larger?
 Learner — One half.
 Tutor — Yes: one half covers two quarters. Now one fresh challenge: compare 1/3 and 1/6 of the same bar.
-Action — Present only that challenge with psi_challenge; wait, then grade with psi_attempt.
+Action — Present only that challenge with psi_challenge; end with psi_next_steps; wait, then grade with psi_attempt.
 
 The [1] markers above illustrate citation placement, not preverified references. In a real session,
 fetch a supporting page, record it, and show its actual title and URL before using the marker.

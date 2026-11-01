@@ -4,9 +4,36 @@ psi runs TypeScript directly on Node ≥ 22.18 (type stripping). It has no build
 Teaching sessions need an installed, authenticated [pi](https://pi.dev) or oh-my-pi (`omp`) host with model access;
 psi never handles provider credentials itself.
 
-## Practice first
+## psi web
 
-psi is a text-first, practice-first learning agent. Start from the repository root with Node ≥ 22.18.
+The main way to use psi is the browser app. From the repository root:
+
+```sh
+node cli/src/psi.ts web --open      # http://127.0.0.1:4173
+```
+
+It needs an authenticated `pi` on `PATH` (or `PSI_HOST=omp`); each chat runs its own pi child. Pick a skill pack
+from the start page (or import one), then work with the tutor in chat:
+
+- **Lessons first.** A new subskill starts with a short lesson that cites ranked sources ([1], [2]); open a source
+  to see why it ranks where it does. Lessons continue in chunks; each turn ends with one-click next steps
+  (always including Continue) and sometimes an ungraded "predict / why / what if" prompt.
+- **Practice.** Challenges appear as cards: text, number, math, multiple choice, or code. Code runs in your browser
+  (Pyodide for Python, a Worker for JavaScript, sql.js for SQL). A line above a challenge says when it is a
+  review, another go at one you missed, or a step up.
+- **Modes and settings.** Tutor mode is Teach, Practice (default), or Test. The game layer is On, Quiet, or Off.
+  Hints never cost XP. "Skill level" is one skill's XP level, "Your level" is overall, and "Difficulty" belongs to a
+  challenge.
+- **Graph and paths.** `#/graph` shows skills, steps, topics and notes as one knowledge graph; `#/paths` holds
+  learning paths toward a goal. The model picker in the composer switches models, even mid-chat.
+- **Memory.** The memory panel lists what psi remembers about how you learn; delete anything.
+
+Tutor-side code execution (`psi_run` demos, Manim renders, the lesson crew) is off on a bare host. Docker (below)
+turns it on inside a container; on a bare host it needs `PSI_CODE_EXEC=1`, which runs code as your user.
+
+## Practice in the terminal
+
+Start from the repository root with Node ≥ 22.18.
 In these examples, `psi` means `node cli/src/psi.ts` (also available as `npm run psi --`).
 
 ```sh
@@ -88,9 +115,10 @@ container's own writable pi volume; the host copy is never modified. Alternative
 `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` in `docker/.env` (start from `docker/.env.example`). The web agent's model is
 `PSI_WEB_MODEL` (default `xai/grok-4.6`); the host port is `PSI_WEB_PORT` (default 4173).
 
-Compose defaults `PSI_CODE_EXEC=1` for tutor demos inside `web`/`psi`; set it to `0` in `docker/.env`
-to disable execution. Learner code challenges stay in the browser. See [Code execution](../docker/README.md#code-execution)
-for bash opt-in, limits, and the current missing `psi_run` implementation.
+Compose sets `PSI_CODE_EXEC=1` for the `web` and `psi` services, which registers `psi_run` (tutor demos and
+verification of computed claims), `psi_manim`, and `psi_crew` inside the container; set it to `0` in `docker/.env`
+to remove them. Learner code challenges always run in the browser. See
+[Code execution](../docker/README.md#code-execution) for the bash opt-in and limits.
 
 ```sh
 docker compose -f docker/compose.yml run --rm psi                    # terminal tutor in a container
@@ -168,19 +196,21 @@ grading the current card.
 Each failure prints a fix. Exit status is 1 if **any** check fails, including optional tools you may not need (you only
 need omp, Manim, TeX, FFmpeg, or Docker for those features). Doctor does not test provider authentication.
 
-## Studio
+## Web server options
+
+`psi web`, `psi studio`, `npm run studio`, and `/studio` inside a session all start the same server.
 
 | Launch | Default URL | Notes |
 | --- | --- | --- |
-| `psi studio [--port N] [--host H] [--open]` | `http://127.0.0.1:4173` | Flags override `PSI_STUDIO_PORT` and `PSI_STUDIO_HOST`. `--port 0` picks a free port; `--open` opens a browser. |
+| `psi web [--port N] [--host H] [--open]` | `http://127.0.0.1:4173` | Flags override `PSI_STUDIO_PORT` and `PSI_STUDIO_HOST`. `--port 0` picks a free port; `--open` opens a browser. |
 | `npm run studio` | `http://127.0.0.1:4173` | Honors `PSI_STUDIO_PORT` and `PSI_STUDIO_HOST`; `HOST` is ignored. |
-| `/studio` in a session | `http://127.0.0.1:4173` | Starts or reuses the server using `PSI_STUDIO_PORT` and `PSI_STUDIO_HOST`; prints the connection URL. |
+| `/studio` in a session | `http://127.0.0.1:4173` | Starts or reuses the server; prints the connection URL. |
 
-For studio configuration, only `PSI_STUDIO_HOST`, `PSI_STUDIO_PORT`, and
-`PSI_STUDIO_ALLOWED_HOSTS` are honored; the last adds comma-separated names to the HTTP Host allowlist.
+`PSI_STUDIO_ALLOWED_HOSTS` adds comma-separated names to the HTTP Host allowlist; `PSI_WEB_MODEL` sets the default
+chat model. All variables: [tools and commands](tools-and-commands.md#environment-variables).
 
-Per topic, studio shows a concept map with frontier, the lesson path, an artifact gallery, reveal-and-rate card review,
-and progress/review history. It watches `$PSI_HOME/topics` and refreshes live; ratings made in studio go through the
-same `PsiStore.review()` as the terminal and the agent.
+For concept topics, the web app also shows a concept map with frontier, an artifact gallery, reveal-and-rate card
+review, and review history. It watches `$PSI_HOME/topics` and refreshes live; ratings made there go through the same
+`PsiStore.review()` as the terminal and the agent.
 
 Next: [authoring](authoring.md) · [architecture](architecture.md) · [learning science](learning-science.md)

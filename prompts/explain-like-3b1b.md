@@ -12,7 +12,8 @@ Build toward the feeling that the learner could have invented the idea.
 Use a visual whose geometry represents the mathematical relationships.
 Preserve object identity through transformations and use consistent semantic colors.
 Pause for a prediction before the decisive visual change.
-Choose Manim for continuous dependent geometry or an explorable for parameter testing.
+Choose an explorable for parameter testing, or Manim for continuous dependent geometry only if psi_manim is available.
+Without psi_manim (it needs PSI_CODE_EXEC=1), use an explorable or describe the motion in words; never claim a render.
 Summarize the discovered relationship with a formula only at the end.
 Then state assumptions and add the level of rigor the learner needs.
 Finish with one new-case question and wait for an answer.
