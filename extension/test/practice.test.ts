@@ -301,7 +301,9 @@ test("challenge widgets carry browser fields while content hides answers and cod
 		format: "text", prompt: "What is 2 + 2?", choices: undefined, unit: undefined,
 		language: undefined, starterCode: undefined, hintsCount: 2,
 	});
-	assert.equal(text.content[0].text, "The challenge card is shown to the learner; wait for their answer");
+	assert.match(text.content[0].text, /^The challenge card is shown to the learner; wait for their answer\./);
+	// The model needs the real id so it never guesses one for psi_attempt.
+	assert.ok(text.content[0].text.includes(`Challenge id: ${text.details.challengeId}`));
 	assert.doesNotMatch(JSON.stringify(text), /PRIVATE_ANSWER|ALTERNATE|expected/);
 	for (const language of ["python", "javascript", "sql"]) {
 		const code = await f.execute("psi_challenge", draft({

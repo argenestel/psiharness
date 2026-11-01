@@ -742,7 +742,10 @@ function firstQuestionPos(turn: TurnView): number | undefined {
 	let first: number | undefined;
 	for (const event of turn.textEvents) if (countQuestions(event.text ?? "") > 0) first = first === undefined ? event.pos : Math.min(first, event.pos);
 	for (const call of turn.calls) if (call.toolName === "psi_ask") first = first === undefined ? call.firstPos : Math.min(first, call.firstPos);
-	for (const call of turn.calls) if (call.toolName === "psi_challenge") first = first === undefined ? call.firstPos : Math.min(first, call.firstPos);
+	// A challenge the teach-first guard blocked never reached the learner, so it is not a question.
+	for (const call of turn.calls) {
+		if (call.toolName === "psi_challenge" && !resultIsError(call)) first = first === undefined ? call.firstPos : Math.min(first, call.firstPos);
+	}
 	return first;
 }
 

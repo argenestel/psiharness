@@ -147,7 +147,8 @@ function presentChallenge(c: Challenge, deps: PracticeDeps, ctx: ExtensionContex
 		...(c.format === "code" ? { setup: c.setup, tests: c.tests,
 			...(c.language === "sql" ? { expected: c.expected } : {}) } : {}) };
 	return result({ challengeId: c.id, skill: c.skill, widget },
-		"The challenge card is shown to the learner; wait for their answer");
+		`The challenge card is shown to the learner; wait for their answer. Challenge id: ${c.id} (skill ${c.skill}) — `
+		+ "use exactly this id with psi_attempt or psi_hint.");
 }
 
 /** Register memory, planning, challenge, grading, and session tools. */
