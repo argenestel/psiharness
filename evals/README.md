@@ -159,3 +159,13 @@ Long first turns (source search, fetch, lesson write) dominate: 30–70 s. Token
 harness; check the provider dashboard. Retries, the handled-command grace period and long tool use add time.
 In that run the SQL tutor created its own challenges (`psi_challenge` create, UUID ids) instead of presenting pack
 challenges, so its answer turns fell back to scripted text; model-created challenges have no keys by design.
+
+## Source search benchmark
+
+`node evals/search-bench.ts` checks whether `psi_search` puts on-topic, canonical learning sources at the top for
+13 learner goals (P@5, canonical resource in the top 3, off-topic count). `--held-out` runs 8 goals kept out of tuning
+and `--fresh` 8 goals written after the ranking was frozen; `--all` runs all 29. It uses the live network, so results
+vary a little between runs. Reference run (2026-11-02): all 29 goals P@5 95.9%, canonical in top 3 for 29/29, 6
+off-topic results in 145 top-5 slots; the fresh set scored P@5 92.5%, 8/8 on its single pre-change run. The original
+13 went from P@5 60%, 8/13, 26 off-topic (the first DuckDuckGo-free version) to 100%, 13/13, 0.
+

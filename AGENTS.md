@@ -178,8 +178,9 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - Extension tools: `psi_lesson` {action: "show"|"write", subskillId?, lesson?} (show presents a lesson card
   widget; write saves a lesson with citations), `psi_sources` {action: "list"|"add"|"remove", skill?, url?, title?, kind?,
   excerpt?, license?}, `psi_fetch` {url} (reads a web page as text, ≤ 20 k chars, http/https only, no private IPs),
-  `psi_search` {query, subject?} (Brave with `BRAVE_API_KEY` or SearXNG with `PSI_SEARXNG_URL`, else keyless
-  Wikipedia + arXiv; curated `TRUSTED_SOURCES` leads first for a known subject; never scrapes search pages), `psi_verify` {claim, skill?} → Verification with
+  `psi_search` {query, subject?} (`extension/src/practice/search.ts`: Wikipedia + Wikibooks, plus MDN / Stack Overflow /
+  GitHub / arXiv by topic, Brave or SearXNG when configured; every candidate incl. the catalog scored by relevance to
+  the goal, authority and popularity; off-topic dropped; never scrapes search pages; `evals/search-bench.ts` measures it), `psi_verify` {claim, skill?} → Verification with
   BM25-ranked evidence passages from cached fetched pages and conservative verdicts (likely-supported /
   possibly-contradicted / unclear); `psi_lesson write` rejects quotes not found on the fetched page;
   `/mode teach|practice|test`, `/verify <claim>`, `/sources`. Teaching contract: new or failed-twice subskill → lesson

@@ -47,7 +47,8 @@ export type TrustedSubject =
 	| "general";
 
 /** A catalog entry used to seed a skill's source list. */
-export type TrustedCatalogSource = Pick<Source, "title" | "url" | "kind"> & { publisher: string; license?: string };
+/** `covers`: words naming what the entry teaches, so search can match it to goals its title does not spell out. */
+export type TrustedCatalogSource = Pick<Source, "title" | "url" | "kind"> & { publisher: string; license?: string; covers?: string };
 
 interface TrustedDomain {
 	host: string;
@@ -74,6 +75,8 @@ const TRUSTED_DOMAINS: readonly TrustedDomain[] = [
 	{ host: "seeing-theory.brown.edu", kind: "textbook", publisher: "Brown University",
 		label: "Seeing Theory interactive textbook" },
 	{ host: "en.wikipedia.org", kind: "reference", publisher: "Wikipedia", label: "Wikipedia reference" },
+	{ host: "en.wikibooks.org", kind: "textbook", publisher: "Wikibooks",
+		label: "Wikibooks open textbook (community-written)", inferredBase: 70 },
 	{ host: "rae.es", kind: "reference", publisher: "Real Academia Española",
 		label: "Real Academia Española (official Spanish dictionary)", inferredBase: 85 },
 	{ host: "dle.rae.es", kind: "reference", publisher: "Real Academia Española",
@@ -137,13 +140,17 @@ export const TRUSTED_SOURCES: Record<TrustedSubject, TrustedCatalogSource[]> = {
 		{ title: "SQL Syntax | PostgreSQL",
 			url: "https://www.postgresql.org/docs/current/sql.html",
 			kind: "official-docs", publisher: "PostgreSQL Global Development Group" },
+		{ title: "Joins Between Tables | PostgreSQL Tutorial",
+			url: "https://www.postgresql.org/docs/current/tutorial-join.html",
+			kind: "official-docs", publisher: "PostgreSQL Global Development Group",
+			covers: "join joins inner outer left right self tables" },
 	],
 	git: [
 		{ title: "Pro Git", url: "https://git-scm.com/book/en/v2", kind: "official-docs", publisher: "Git" },
 		{ title: "Git Reference", url: "https://git-scm.com/docs", kind: "official-docs", publisher: "Git" },
 		{ title: "Git Branching",
 			url: "https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows",
-			kind: "official-docs", publisher: "Git" },
+			kind: "official-docs", publisher: "Git", covers: "branch branching merge merging workflow" },
 		{ title: "About Version Control",
 			url: "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control",
 			kind: "official-docs", publisher: "Git" },
@@ -234,15 +241,18 @@ export const TRUSTED_SOURCES: Record<TrustedSubject, TrustedCatalogSource[]> = {
 	"machine-learning": [
 		{ title: "Learn the Basics — PyTorch Tutorials",
 			url: "https://docs.pytorch.org/tutorials/beginner/basics/intro.html",
-			kind: "official-docs", publisher: "PyTorch Foundation" },
+			kind: "official-docs", publisher: "PyTorch Foundation", covers: "pytorch tensor training loop neural network model" },
 		{ title: "Dive into Deep Learning: Attention Mechanisms and Transformers",
 			url: "https://d2l.ai/chapter_attention-mechanisms-and-transformers/index.html",
-			kind: "textbook", publisher: "Dive into Deep Learning", license: "CC BY-SA 4.0" },
-		{ title: "Attention Is All You Need", url: "https://arxiv.org/abs/1706.03762", kind: "paper", publisher: "arXiv" },
+			kind: "textbook", publisher: "Dive into Deep Learning", license: "CC BY-SA 4.0",
+			covers: "transformer attention gpt language model pytorch deep learning" },
+		{ title: "Attention Is All You Need", url: "https://arxiv.org/abs/1706.03762", kind: "paper", publisher: "arXiv",
+			covers: "transformer attention" },
 		{ title: "Neural Networks: Zero to Hero", url: "https://karpathy.ai/zero-to-hero.html",
-			kind: "course", publisher: "Andrej Karpathy" },
+			kind: "course", publisher: "Andrej Karpathy",
+			covers: "neural network gpt language model text generator generation backpropagation pytorch from scratch" },
 		{ title: "nanoGPT", url: "https://github.com/karpathy/nanoGPT", kind: "reference", publisher: "Andrej Karpathy",
-			license: "MIT" },
+			license: "MIT", covers: "gpt transformer language model text generator train pytorch character" },
 	],
 	general: [
 		{ title: "Knowledge", url: "https://en.wikipedia.org/wiki/Knowledge", kind: "reference", publisher: "Wikipedia" },
