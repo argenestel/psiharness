@@ -220,8 +220,10 @@ Sweller, 2003, *Educational Psychologist*, 38(1), 23–31), so support should fa
 - `/tutor explain` (more guidance) and `/tutor socratic` (less) let the learner pick the level of support.
 - The intuition crew role must produce a concrete worked example in its brief.
 - In the practice layer, a new or twice-missed subskill gets a sourced lesson (explanation, key ideas, a worked
-  example, pitfalls) before its first challenge. Lessons run in chunks with optional, ungraded `psi_ask` prompts, and
-  one practice challenge comes at the end of a subskill rather than after every chunk. `/mode teach|practice|test`
+  example, pitfalls) before its first challenge. Lessons run in short chunks, and after every 1–2 chunks (3 in teach
+  mode) the learner gets one quick graded check: a faded version of the worked example with new values. Sessions open
+  with up to three due reviews, and a missed item returns as a variant of the same idea, not the same question
+  (retrieval practice and the testing effect; see below). `/mode teach|practice|test`
   sets how much is explanation versus testing. Code guards refuse a challenge on a "continue" / "show me" turn until
   something was taught.
 

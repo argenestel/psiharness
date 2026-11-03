@@ -45,8 +45,9 @@ ratings update BKT mastery; producing a lesson or visual does not.
 - `extension/src/practice/inject.ts` handles `before_agent_start`: it appends the memory summary, tutor mode, the
   active learning path's next step, active skill, next subskill, the open challenge, elapsed/planned session time,
   hours, streak, level, and the teaching contract (teach first, one question per message, continuous chunks, end
-  every turn with `psi_next_steps`, one challenge at the end of a subskill, cite sources). With `PSI_CODE_EXEC=1` it
-  adds "verify any computed result with `psi_run` before stating it". The block is capped near 2,500 characters.
+  every turn with `psi_next_steps`, practise as you go with a graded check every 1–2 chunks, cite sources), plus a
+  session warm-up line when reviews are due. A per-request reminder nudges a check when the cadence is overdue. With `PSI_CODE_EXEC=1` it
+  adds "verify any computed result with `psi_run` before stating it". The block is capped near 3,000 characters (`INJECTION_CAP`): the contract first, then practice state (open challenge first), and learner memory always keeps up to `MEMORY_FLOOR` (350) characters.
   Stored observations are data, not instructions. This injection remains active when concept tutor mode is off.
 - `extension/src/practice/guards.ts` enforces parts of that contract in code, on tool calls and on the finished
   assistant message: `psi_next_steps` always includes Continue; an open challenge's accepted answers are replaced by

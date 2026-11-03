@@ -128,3 +128,19 @@ test("migration restores existing history before recording the next attempt", (t
 	assert.equal(statuses(store.readPlan("demo")!).a, "solid");
 	assert.deepEqual(result.mastered, []);
 });
+
+test("solving a variant of a failed boss satisfies its gate; variants count as one item", () => {
+	const boss: Challenge = { ...challenges[0]!, id: "boss", kind: "boss", level: 5 };
+	const variant: Challenge = { ...challenges[0]!, id: "boss-v", kind: "boss", level: 5, variantOf: "boss" };
+	const all = [...challenges, boss, variant];
+	const history = [attempt("boss", "fail", 1), attempt("1", "success", 2), attempt("2", "success", 3),
+		attempt("boss-v", "success", 4), attempt("3", "success", 5)];
+	assert.equal(reconcileStatuses(plan(), all, history).subskills.find((s) => s.id === "a")?.status, "solid");
+	// Without the variant's success the failed boss still gates mastery.
+	assert.equal(reconcileStatuses(plan(), all, history.filter((a) => a.challengeId !== "boss-v"))
+		.subskills.find((s) => s.id === "a")?.status, "practicing");
+	// An original and its variant are one item: two solved versions of one question are not two distinct solutions.
+	const pair = [challenges[0]!, { ...challenges[0]!, id: "1-v", variantOf: "1" }, challenges[1]!, challenges[2]!];
+	assert.equal(reconcileStatuses(plan(), pair, [attempt("1", "success", 1), attempt("1-v", "success", 2),
+		attempt("2", "success", 3)]).subskills.find((s) => s.id === "a")?.status, "practicing");
+});

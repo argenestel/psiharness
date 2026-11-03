@@ -217,7 +217,11 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 	const fire = (kind: string, detail: Record<string, unknown>) => {
 		try { pi.appendEntry("psi-guard", { kind, detail }); } catch { /* counters never break a turn */ }
 	};
+	// Practice cadence: a turn that taught without the learner getting or answering a challenge counts toward the next
+	// check; a presented or answered challenge resets it. Counted once per learner turn, at the end of the agent run.
+	let checked = false, counted = false;
 	const newTurn = (text: string) => {
+		checked = false; counted = false;
 		repairing = repairDue || (repairing && text === learner);
 		repairDue = false;
 		learner = text;
@@ -278,6 +282,13 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		return skill && id ? `${skill}:${id}` : undefined;
 	};
 
+	/**
+	 * A warm-up review or a variant retry recalls earlier material, so it needs no teaching first on a continue turn
+	 * (a repair turn after a miss still teaches first).
+	 */
+	const warmupReview = (args: Record<string, unknown>) => !repairing
+		&& (args.action === "review" || typeof args.variantOf === "string");
+
 	/** Redact next-step buttons and add Continue; returns whether anything changed. */
 	const guardNextSteps = (input: Record<string, unknown>, open: AnswerSource[], where: string): boolean => {
 		if (!Array.isArray(input.options)) return false;
@@ -309,7 +320,13 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		return true;
 	};
 
+	pi.on("agent_end", async () => {
+		if (counted || checked || (teachChars < 200 && teachTools <= 0)) return;
+		counted = true;
+		deps.state.taughtSinceCheck = (deps.state.taughtSinceCheck ?? 0) + 1;
+	});
 	pi.on("session_start", async () => {
+		checked = false; counted = false;
 		learner = ""; learnerTexts = []; teachChars = 0; teachTools = 0; presented = undefined;
 		repairDue = false; repairing = false;
 		closed.clear(); pending.clear(); taught.clear(); lessonBlocks.clear();
@@ -344,12 +361,14 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 				const key = lessonKey(args);
 				if (key) lessons.add(key);
 			}
-			if (b.name !== "psi_challenge" || mustTeach(teachChars, tools) || lessonNeeded(args, lessons)) continue;
-			if (args.action === "next") {
+			if (b.name !== "psi_challenge" || (mustTeach(teachChars, tools) && !warmupReview(args))
+				|| lessonNeeded(args, lessons)) continue;
+			if (args.action === "next" || args.action === "review") {
 				const skill = typeof args.skill === "string" ? args.skill : deps.state.skill;
-				const next = skill ? attempt(() => deps.practice.nextChallenge(skill,
-					{ subskillId: typeof args.subskillId === "string" ? args.subskillId : undefined })) : undefined;
-				if (next) upcoming.push(next.challenge);
+				const next = skill ? attempt(() => deps.practice.nextChallenge(skill, { reviewOnly: args.action === "review",
+					subskillId: typeof args.subskillId === "string" ? args.subskillId : undefined })) : undefined;
+				// A variant request presents no card; anything else will open this challenge.
+				if (next && !next.needsVariant) upcoming.push(next.challenge);
 			} else if (typeof args.expected === "string") {
 				upcoming.push({ id: "pending", prompt: String(args.prompt ?? ""), expected: args.expected,
 					acceptable: Array.isArray(args.acceptable) ? args.acceptable.filter((v) => typeof v === "string") : undefined,
@@ -390,7 +409,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 			case "psi_lesson": if (input.action === "show" || input.action === "write") teachTools++; return;
 			case "psi_attempt": if (typeof input.challengeId === "string") pending.add(input.challengeId); return;
 			case "psi_challenge": {
-				if (mustTeach()) {
+				if (mustTeach() && !warmupReview(input)) {
 					const action = input.action ?? "create";
 					fire("teach-first", { learner: learner.slice(0, 120), teachChars, action, repair: repairing });
 					return { block: true, reason: TEACH_FIRST };
@@ -419,10 +438,23 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 			&& typeof details.skill === "string") {
 			presented = { skill: details.skill, id: details.challengeId, at: Date.now() };
 			closed.delete(details.challengeId);
+			checked = true;
+			deps.state.taughtSinceCheck = 0;
+			const warm = deps.state.warmup;
+			const reason = (event.details as { reason?: unknown }).reason;
+			if (warm?.skill === details.skill && (input.action === "review" || reason === "review" || reason === "retry"
+				|| typeof input.variantOf === "string")) warm.served++;
 		}
+		if (event.toolName === "psi_challenge" && !event.isError && input.action === "review"
+			&& typeof details?.challengeId !== "string" && !(details as { needsVariant?: unknown })?.needsVariant
+			&& deps.state.warmup) deps.state.warmup.served = deps.state.warmup.due;
 		if (event.toolName === "psi_attempt" && typeof input.challengeId === "string") {
 			pending.delete(input.challengeId);
-			if (!event.isError && typeof details?.outcome === "string") closed.add(input.challengeId);
+			if (!event.isError && typeof details?.outcome === "string") {
+				closed.add(input.challengeId);
+				checked = true;
+				deps.state.taughtSinceCheck = 0;
+			}
 			if (!event.isError && (details?.outcome === "fail" || details?.outcome === "partial")) repairDue = true;
 		}
 		// A missing or failed lesson taught nothing; a failing psi_run demo still showed something.

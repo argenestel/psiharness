@@ -135,6 +135,23 @@ export interface HealthSummary {
 	missingSettledEvidence: FailureEvidence[];
 }
 
+/** Informational practice density; overall first-rep latency is the mean of scenarios that present a rep. */
+export interface PracticeMetrics {
+	turnsToFirstRep: number | null;
+	repsPerTeachingTurn: number | null;
+	maxTeachStreak: number;
+	gradedAttempts: number;
+	teachingTurns: number;
+	presentedChallenges: number;
+}
+
+/** Cadence is scored separately from the original contract checks and headline ratio. */
+export interface PracticeSummary {
+	metrics: PracticeMetrics;
+	checks: { "practice-cadence": CheckScore };
+	modeDetection: string;
+}
+
 export interface ScenarioScore {
 	scenario: string;
 	/** Scenario id from harness_meta (falls back to the label); repeats share it. */
@@ -142,6 +159,7 @@ export interface ScenarioScore {
 	repeat: number;
 	guard: GuardSummary;
 	answers: AnswerSummary;
+	practice: PracticeSummary;
 	checks: Record<string, CheckScore>;
 	checkResults: Record<string, CheckScore>;
 	passed: number;
@@ -161,6 +179,7 @@ export interface ReportMetadata {
 }
 
 export interface ScoreReport {
+	practice: PracticeSummary;
 	scenarios: ScenarioScore[];
 	checks: Record<string, CheckScore>;
 	aggregate: Record<string, CheckScore>;
@@ -1315,9 +1334,74 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 	}
 	for (const item of [...health.timeoutEvidence, ...health.errorEvidence, ...health.missingSettledEvidence]) item.scenario = scenario;
 	const allFailures = CHECK_NAMES.flatMap((name) => checks[name].failures);
-	return { scenario, scenarioId, repeat, guard: normalized.guard, answers: normalized.answers, checks, checkResults: checks, passed, applicable,
+	return { practice: practiceForTurns(turns, meta, scenario), scenario, scenarioId, repeat,
+		guard: normalized.guard, answers: normalized.answers, checks, checkResults: checks, passed, applicable,
 		ratio: applicable ? passed / applicable : null, score: applicable ? passed / applicable : null, failures: allFailures, health, latency,
 		parseErrors: normalized.parseErrors };
+}
+
+function practiceForTurns(turns: TurnView[], metadata: Dict, scenario: string): PracticeSummary {
+	const metrics: PracticeMetrics = { turnsToFirstRep: null, repsPerTeachingTurn: null, maxTeachStreak: 0,
+		gradedAttempts: 0, teachingTurns: 0, presentedChallenges: 0 };
+	let streak = 0;
+	// Only explicit tutorMode fields are evidence; natural-language mentions of tests are not mode switches.
+	const modes = [metadata.tutorMode, ...turns.flatMap((turn) => turn.timeline
+		.filter((event) => event.kind === "state").map((event) => event.state?.tutorMode))]
+		.filter((mode) => mode === "teach" || mode === "practice" || mode === "test");
+	for (const [index, turn] of turns.entries()) {
+		const reps = turn.calls.filter((call) => {
+			const details = isObject(call.result) ? call.result.details : undefined;
+			return call.toolName === "psi_challenge" && !resultIsError(call) && isObject(details)
+				&& typeof details.challengeId === "string" && details.challengeId.length > 0;
+		}).length;
+		const attempts = turn.calls.filter((call) => call.toolName === "psi_attempt"
+			&& call.result !== undefined && attemptRecorded(call)).length;
+		const prose = cleanProse(turn.textEvents.map((event) => event.text ?? "").join(""))
+			.replace(/\s+/g, " ").trim();
+		const teaching = prose.length >= 200 || turn.calls.some((call) => call.toolName === "psi_run"
+			|| (call.toolName === "psi_lesson" && ["show", "write"].includes(String(call.args.action))
+				&& call.result !== undefined && !resultIsError(call)));
+		if (reps && metrics.turnsToFirstRep === null) metrics.turnsToFirstRep = index + 1;
+		metrics.presentedChallenges += reps;
+		metrics.gradedAttempts += attempts;
+		if (teaching) metrics.teachingTurns++;
+		// Like the runtime counter (taughtSinceCheck): only a presented challenge or a recorded attempt resets the streak;
+		// short non-teaching turns ("ok", "thanks") neither add to it nor reset it.
+		streak = reps || attempts ? 0 : teaching ? streak + 1 : streak;
+		metrics.maxTeachStreak = Math.max(metrics.maxTeachStreak, streak);
+	}
+	metrics.repsPerTeachingTurn = metrics.teachingTurns ? metrics.presentedChallenges / metrics.teachingTurns : null;
+	const name = "practice-cadence";
+	const testMode = modes.includes("test");
+	const applicable = metrics.teachingTurns >= 3 && !testMode;
+	const passed = applicable && metrics.maxTeachStreak <= 3;
+	const check = checkResult(name, Number(passed), Number(applicable), applicable && !passed
+		? [{ check: name, scenario, message: `maxTeachStreak ${metrics.maxTeachStreak} exceeds 3`, evidence: metrics }] : []);
+	if (!applicable) check.notApplicable = [{ check: name, scenario,
+		reason: testMode ? "explicit test mode observed" : "fewer than 3 teaching turns" }];
+	return { metrics, checks: { [name]: check }, modeDetection: modes.length
+		? `Explicit tutorMode observed: ${[...new Set(modes)].join(", ")}; any test mode exempts the scenario.`
+		: "Test mode not detectable; cadence applies to all scenarios with >= 3 teaching turns." };
+}
+
+function mergePractice(scenarios: ScenarioScore[]): PracticeSummary {
+	const values = scenarios.map((scenario) => scenario.practice.metrics);
+	const sum = (key: "teachingTurns" | "presentedChallenges" | "gradedAttempts") =>
+		values.reduce((total, value) => total + value[key], 0);
+	const firstReps = values.map((value) => value.turnsToFirstRep).filter((value) => value !== null);
+	const teachingTurns = sum("teachingTurns");
+	const presentedChallenges = sum("presentedChallenges");
+	const checks = scenarios.map((scenario) => scenario.practice.checks["practice-cadence"]);
+	return { metrics: {
+		turnsToFirstRep: firstReps.length ? firstReps.reduce((total, value) => total + value, 0) / firstReps.length : null,
+		repsPerTeachingTurn: teachingTurns ? presentedChallenges / teachingTurns : null,
+		maxTeachStreak: Math.max(0, ...values.map((value) => value.maxTeachStreak)),
+		gradedAttempts: sum("gradedAttempts"), teachingTurns, presentedChallenges,
+	}, checks: { "practice-cadence": { ...mergeCheckScores(checks), name: "practice-cadence",
+		notApplicable: checks.flatMap((check) => check.notApplicable ?? []) } },
+	modeDetection: `${scenarios.filter((scenario) =>
+			scenario.practice.modeDetection.startsWith("Test mode not detectable")).length}`
+		+ `/${scenarios.length} scenarios: test mode not detectable; apply cadence when >= 3 teaching turns.` };
 }
 
 function emptyCheck(name: string): CheckScore {
@@ -1374,7 +1458,8 @@ export function aggregateScores(scenarios: ScenarioScore[], parseErrors: ParseEr
 		for (const [turn, count] of Object.entries(scenario.guard?.byTurn ?? {})) guard.byTurn[`${scenario.scenario}:${turn}`] = count;
 	}
 	const variance = varianceFor(scenarios);
-	return { scenarios, checks, aggregate: checks, overall, ...overall, failures: scenarios.flatMap((scenario) => scenario.failures), health, latency, parseErrors: errors,
+	return { practice: mergePractice(scenarios), scenarios, checks, aggregate: checks, overall, ...overall,
+		failures: scenarios.flatMap((scenario) => scenario.failures), health, latency, parseErrors: errors,
 		metadata: metadata ?? { scenarioCount: scenarios.length }, guard,
 		notApplicable: CHECK_NAMES.flatMap((name) => checks[name].notApplicable ?? []), runs, ...(variance ? { variance } : {}) };
 }
@@ -1551,6 +1636,29 @@ export function renderReport(value: ScoreReport | ScenarioScore): string {
 		const na = report.scenarios.filter((scenario) => (scenario.checks[name]?.applicable ?? 0) === 0).length;
 		lines.push(checkRow(name, report.checks[name], na, variance ? ` ${spreadText(variance.checks[name])} |` : ""));
 	}
+	lines.push("", "## Practice (separate from headline score)", "", report.practice.modeDetection,
+		"Overall turnsToFirstRep = mean over scenarios with a rep; density = pooled reps / teaching turns; streak = maximum.",
+		"", "| Scenario | turnsToFirstRep | repsPerTeachingTurn | maxTeachStreak | gradedAttempts"
+			+ " | Teaching turns | Reps | practice-cadence |",
+		"| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |");
+	for (const [label, practice] of [["Overall", report.practice],
+		...report.scenarios.map((scenario) => [scenario.scenario, scenario.practice] as const)] as const) {
+		const m = practice.metrics;
+		const cadence = practice.checks["practice-cadence"];
+		const status = cadence.applicable
+			? `${cadence.passed}/${cadence.applicable} pass (${percent(cadence.ratio)})` : "N/A";
+		lines.push(`| ${label} | ${m.turnsToFirstRep ?? "null"} | ${m.repsPerTeachingTurn ?? "null"}`
+			+ ` | ${m.maxTeachStreak} | ${m.gradedAttempts} | ${m.teachingTurns} | ${m.presentedChallenges} | ${status} |`);
+	}
+	for (const scenario of report.scenarios) {
+		lines.push(`Mode [${scenario.scenario}]: ${scenario.practice.modeDetection}`);
+		for (const item of scenario.practice.checks["practice-cadence"].notApplicable ?? []) {
+			lines.push(`N/A practice-cadence [${scenario.scenario}]: ${item.reason}`);
+		}
+	}
+	for (const item of report.practice.checks["practice-cadence"].failures) {
+		lines.push(`FAIL practice-cadence [${item.scenario}]: ${item.message}`);
+	}
 	// The scenario summary table stays contiguous; per-scenario details follow it.
 	lines.push("", "## Scenarios", "", "| Scenario | Score | Pass | Fail | N/A | Dynamic answers | Guard | Run health |",
 		"| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |");
@@ -1609,7 +1717,7 @@ function runCli(): void {
 	const args = process.argv.slice(2);
 	const directory = args.find((arg) => !arg.startsWith("-"));
 	if (!directory) {
-		console.error("Usage: node evals/score.ts <dir-or-jsonl> [--json]");
+		console.error("Usage: node evals/score.ts <dir-or-jsonl> [--json] [--stdout]");
 		process.exitCode = 2;
 		return;
 	}
@@ -1617,7 +1725,7 @@ function runCli(): void {
 		const report = scoreDirectory(directory);
 		const outputDir = statSync(resolve(directory)).isFile() ? dirname(resolve(directory)) : resolve(directory);
 		const markdown = renderReport(report);
-		writeFileSync(join(outputDir, "report.md"), markdown);
+		if (!args.includes("--stdout")) writeFileSync(join(outputDir, "report.md"), markdown);
 		if (args.includes("--json")) writeFileSync(join(outputDir, "score.json"), `${JSON.stringify(report, null, 2)}\n`);
 		process.stdout.write(markdown);
 	} catch (error) {

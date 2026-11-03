@@ -171,6 +171,21 @@ test("a challenge created in the same message hides its answer from that message
 	assert.ok(textOf(message).includes(`Say ${HIDDEN} to the server`), textOf(message));
 }));
 
+test("a review served in the same message hides the reviewed challenge's answer", async () => fixture(async (f, home) => {
+	const { PracticeStore } = await import("../../core/src/practice.ts");
+	const store = new PracticeStore(home);
+	const old = store.addChallenge(greet as any);
+	store.recordAttempt({ skill: "spanish", challengeId: old.id, answer: "hola", outcome: "fail", hintsUsed: 0,
+		at: new Date(Date.now() - 3600000).toISOString() });
+	store.addChallenge({ ...greet, prompt: "Greet a server at 3 p.m.", expected: "Buenas tardes", acceptable: [],
+		variantOf: old.id } as any);
+	new StateStore(home).update({ activeSkill: "spanish" });
+	await f.learner("Hi again");
+	const message = await f.assistant([text("Warm-up first. In the afternoon you say Buenas tardes."),
+		toolCall("psi_challenge", { action: "review" })]);
+	assert.ok(textOf(message).includes(HIDDEN), textOf(message));
+}));
+
 test("continue intent detection", () => {
 	for (const yes of ["Continue", "continue.", "Next", "go on!", "Keep going", "Just show me", "show me", "OK, continue",
 		"Continue: stack greeting plus name in one café turn."]) assert.ok(isContinueIntent(yes), yes);
@@ -285,6 +300,81 @@ test("skipping an already-graded challenge records nothing", async () => fixture
 	const { readAttempts } = await import("../src/practice/tools.ts");
 	assert.equal(readAttempts(home, "spanish").length, 1);
 }));
+
+test("practise as you go: two teaching turns without a check make the next reminder ask for one", async () =>
+	fixture(async (f, home) => {
+		const remind = async () => {
+			const [r] = await f.fire("context", { type: "context", messages: [{ role: "user", content: "Continue" }] });
+			return r.messages[0].content as string;
+		};
+		await f.learner("Teach me greetings");
+		const id = (await f.call("psi_challenge", greet)).result.details.challengeId;
+		await f.learner("Buenos días");
+		await f.call("psi_attempt", { challengeId: id, skill: "spanish", answer: "Buenos días" });
+		await f.assistant([text(teaching)]);
+		await f.fire("agent_end", {});
+		assert.doesNotMatch(await remind(), /Practice is due/, "a turn with an answer is a check");
+		for (const msg of ["Teach me the next part", "Continue"]) {
+			await f.learner(msg);
+			await f.assistant([text(teaching)]);
+			await f.fire("agent_end", {});
+			await f.fire("agent_end", {});
+		}
+		assert.match(await remind(), /Practice is due \(2 chunks/, "counted once per turn");
+		new ProfileStore(home).update({ tutorMode: "teach" });
+		assert.doesNotMatch(await remind(), /Practice is due/, "teach mode waits for three");
+		new ProfileStore(home).update({ tutorMode: "practice" });
+		await f.learner("Continue");
+		await f.assistant([text(teaching)]);
+		assert.ok((await f.call("psi_challenge", greet)).result);
+		await f.fire("agent_end", {});
+		assert.doesNotMatch(await remind(), /Practice is due/, "a served check resets the count");
+	}));
+
+test("a card graded in the browser stops the open-challenge warning and counts as a check", async () =>
+	fixture(async (f, home) => {
+		await f.learner("Teach me greetings");
+		await f.call("psi_challenge", greet);
+		for (const msg of ["Explain more", "Continue", "Continue"]) {
+			await f.learner(msg);
+			await f.assistant([text(teaching)]);
+			await f.fire("agent_end", {});
+		}
+		// The web card's attempt route records the answer and clears state.json's openChallenge; this process still
+		// held the id.
+		const { PracticeStore } = await import("../../core/src/practice.ts");
+		const open = new StateStore(home).read().openChallenge!;
+		new PracticeStore(home).recordAttempt({ skill: open.skill, challengeId: open.id, answer: "Buenos días",
+			outcome: "success", hintsUsed: 0 });
+		new StateStore(home).update({ openChallenge: undefined });
+		const [r] = await f.fire("context", { type: "context", messages: [{ role: "user", content: "Continue" }] });
+		assert.doesNotMatch(r.messages[0].content, /is open/);
+		assert.doesNotMatch(r.messages[0].content, /Practice is due/);
+	}));
+
+test("session warm-up: due reviews open the session, even on a continue turn, and retries come back as variants",
+	async () => fixture(async (f, home) => {
+		const { PracticeStore } = await import("../../core/src/practice.ts");
+		const store = new PracticeStore(home);
+		const old = store.addChallenge(greet as any);
+		store.recordAttempt({ skill: "spanish", challengeId: old.id, answer: "hola", outcome: "fail", hintsUsed: 0,
+			at: new Date(Date.now() - 3600000).toISOString() });
+		new StateStore(home).update({ activeSkill: "spanish" });
+		const [started] = await f.fire("before_agent_start", { type: "before_agent_start", messageType: "user",
+			prompt: "Continue", systemPrompt: "" });
+		assert.match(started.systemPrompt, /Session warm-up: 1 review\(s\) due/);
+		await f.fire("message_end", { type: "message_end", message: { role: "user", content: "Continue" } });
+		const [r] = await f.fire("context", { type: "context", messages: [{ role: "user", content: "Continue" }] });
+		assert.match(r.messages[0].content, /Warm-up: 1 due review/);
+		const review = await f.call("psi_challenge", { action: "review" });
+		assert.ok(!review.blocked, "a warm-up review needs no teaching first");
+		assert.equal(review.result.details.needsVariant, true);
+		const variant = await f.call("psi_challenge", { ...greet, prompt: "How do you greet a server at 3 p.m.?",
+			expected: "Buenas tardes", acceptable: [], variantOf: old.id });
+		assert.ok(variant.result?.details.challengeId, "the variant is served on the same continue turn");
+		const [after] = await f.fire("context", { type: "context", messages: [{ role: "user", content: "Continue" }] });
+		assert.doesNotMatch(after.messages[0].content, /Warm-up/);
+	}));
 
 test("each model request carries a turn reminder on a copy of the latest learner message", async () => fixture(async (f) => {
 	const messages = [{ role: "user", content: "Teach me", timestamp: 1 }, { role: "assistant", content: [] },

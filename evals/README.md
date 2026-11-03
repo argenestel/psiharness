@@ -103,6 +103,36 @@ averages aggregate check ratios. N/A and latency do not inflate the score. `repo
 failures, explicit N/A items, run health and parse errors. Every failure names its scenario; position evidence is
 labelled `event seq`, the 1-based record number in that scenario's JSONL trace. `--json` adds `score.json`.
 
+**Practice density.** The separate **Practice** section (JSON: `practice.metrics` and
+`practice.checks["practice-cadence"]`, per scenario and overall) leaves all eight original checks, their
+headline ratio, failures, and repeat spreads unchanged. The four informational metrics are:
+
+- `turnsToFirstRep`: 1-based learner-turn count through the first successful `psi_challenge` result with a
+  nonempty `details.challengeId`; `null` if none. Reviews and created variants count like other presentations.
+- `repsPerTeachingTurn`: presented challenges / teaching turns; `null` with no teaching turns.
+  A teaching turn is one scripted learner turn's assistant response with at least 200 characters of prose,
+  a successful `psi_lesson` show/write result, or any `psi_run` call (including failed runs). Prose uses the
+  existing cleaner: fenced/inline code, blockquotes, and quoted spans are excluded; whitespace is collapsed.
+  Final assistant text blocks are concatenated across the turn; streaming deltas are used only without final text.
+  Multiple teaching signals count as one teaching turn. These density rules do not change existing teaching checks.
+- `maxTeachStreak`: longest consecutive run of teaching turns without a presented challenge or recorded attempt.
+  Only a presented challenge or a recorded attempt resets it (as the runtime `taughtSinceCheck` counter does); short non-teaching turns neither add nor reset.
+- `gradedAttempts`: non-error `psi_attempt` results with `recorded !== false`, including failed learner answers;
+  unfinished tool calls do not count. Error and no-op results do not reset the streak.
+
+The overall first-rep value is the arithmetic mean over scenarios with a rep (scenarios without reps remain
+explicitly `null` in their rows); overall density pools challenges and teaching turns, overall streak is the
+maximum scenario streak, and attempts are summed. Teaching-turn and presented-challenge counts are also reported.
+
+`practice-cadence` is a separate pass/fail check: scenarios with at least three teaching turns pass when
+`maxTeachStreak <= 3`. Explicit `tutorMode` values in `harness_meta` or state snapshots detect mode; any observed
+`test` mode exempts the scenario. Natural-language mentions of tests do not establish mode. Current runner traces
+do not log tutor mode: the report explicitly says when mode is not detectable and applies cadence to all such
+scenarios with at least three teaching turns. Practice failures and N/A reasons stay in the separate section.
+
+Use `node evals/score.ts <directory> --stdout` to print the report without writing `report.md`.
+`--json` still writes `score.json` (including practice metrics), even with `--stdout`.
+
 **Guard interventions.** The extension records corrective actions as pi custom session entries with
 `customType: "psi-guard"`; in RPC mode they arrive as `entry_appended` records. The scorer counts them per scenario
 and per turn (entries between turns are counted as "between turns") and reports 0 when there are none. They are

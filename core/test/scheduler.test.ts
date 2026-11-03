@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { selectNextChallenge, nextChallenge } from "../src/scheduler.ts";
+import { dueReviews, RETRY_AFTER_MS, selectNextChallenge, nextChallenge } from "../src/scheduler.ts";
 import { PracticeStore } from "../src/practice.ts";
 import { initFsrs, schedule } from "../src/fsrs.ts";
 import type { Attempt, Challenge, SkillPlan } from "../src/types.ts";
@@ -47,13 +47,36 @@ test("scheduler interleaves a due item after two consecutive items from one subs
 test("scheduler never bypasses the retry gap via an already due review", () => {
 	for (const outcome of ["fail", "partial"] as const) {
 		const c = challenge("miss"), other = challenge("other", "b");
-		const input = { challenges: [c], attempts: [attempt("1", c, outcome, now - 86400000)], plan };
+		const input = { challenges: [c], attempts: [attempt("1", c, outcome, now - 60000)], plan };
 		assert.equal(selectNextChallenge("sql", input, { now }), undefined);
 		input.attempts.push(attempt("2", other, "success", now - 2000));
 		assert.equal(selectNextChallenge("sql", input, { now }), undefined);
 		input.attempts.push(attempt("3", other, "success", now - 1000));
 		assert.equal(selectNextChallenge("sql", input, { now })?.reason, "retry");
 	}
+});
+
+test("a missed item comes back after a time gap, as a variant when one exists, sharing its family's memory", () => {
+	const miss = challenge("miss");
+	const input = { challenges: [miss], attempts: [attempt("1", miss, "fail", now - RETRY_AFTER_MS)], plan };
+	assert.deepEqual(selectNextChallenge("sql", input, { now }), { challenge: miss, reason: "retry", needsVariant: true });
+	assert.equal(selectNextChallenge("sql", input, { now: now - 1 }), undefined);
+	const variant = { ...challenge("variant"), variantOf: miss.id, createdAt: new Date(now - 1000).toISOString() };
+	input.challenges = [miss, variant];
+	assert.deepEqual(selectNextChallenge("sql", input, { now }), { challenge: variant, reason: "retry" });
+	// Answering the variant correctly closes the family's retry; it is not also served as "new".
+	input.attempts = [...input.attempts, attempt("2", variant, "success", now - 1000)];
+	assert.equal(selectNextChallenge("sql", input, { now }), undefined);
+	assert.deepEqual(dueReviews("sql", input, { now }), []);
+});
+
+test("review-only mode skips new items and looks across subskills", () => {
+	const fresh = challenge("fresh"), old = challenge("old", "b");
+	const input = { challenges: [fresh, old], attempts: [attempt("1", old, "fail", now - 2 * RETRY_AFTER_MS)], plan };
+	assert.deepEqual(selectNextChallenge("sql", input, { now, reviewOnly: true }),
+		{ challenge: old, reason: "retry", needsVariant: true });
+	assert.equal(dueReviews("sql", input, { now }).length, 1);
+	assert.equal(dueReviews("sql", { ...input, attempts: [] }, { now }).length, 0);
 });
 
 test("scheduler lowers difficulty after two misses and stretches after three successes", () => {

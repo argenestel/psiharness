@@ -151,6 +151,21 @@ function presentChallenge(c: Challenge, deps: PracticeDeps, ctx: ExtensionContex
 		+ "use exactly this id with psi_attempt or psi_hint.");
 }
 
+/**
+ * A missed challenge is due for a retry but has no fresh version: hand the tutor what it needs to write one (the
+ * original prompt and what the learner tried) instead of re-serving a question whose answer they have already seen.
+ */
+export function variantNeeded(c: Challenge, home: string) {
+	const tries = readAttempts(home, c.skill).filter((a) => a.challengeId === c.id || a.challengeId === c.variantOf)
+		.slice(-2).map((a) => ({ outcome: a.outcome, answer: a.answer.slice(0, 200), lesson: a.lesson?.slice(0, 200) }));
+	const details = { needsVariant: true, retryOf: c.id, original: { kind: c.kind, level: c.level,
+		format: c.format ?? "text", subskillId: c.subskillId, prompt: c.prompt.slice(0, 600) }, previousTries: tries };
+	// The model sees only `content`, so the original and the learner's tries go there too (never the answer key).
+	return result(details, `Retry due for a missed challenge (${c.id}). Do not re-serve it: write a fresh variant now `
+		+ `with psi_challenge create, variantOf "${c.id}", the same idea and kind, new values or wording, aimed at the `
+		+ `mistake in previousTries.\n${JSON.stringify(details, null, 2)}`);
+}
+
 /** Register memory, planning, challenge, grading, and session tools. */
 export function registerTools(pi: ExtensionAPI, deps: PracticeDeps): void {
 	const { memory, practice, state } = deps;
@@ -250,9 +265,11 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 	}));
 	pi.registerTool(defineTool({
 		name: "psi_challenge", label: "Practice challenge",
-		description: "Use action next to present a ready challenge first; create saves a new one. Keep answers private.",
+		description: "next presents a ready challenge; review presents a due review (session warm-up); create saves a new "
+			+ "one (variantOf: a fresh version of a missed challenge). Keep answers private.",
 		parameters: Type.Object({
-			action: Type.Optional(choice(["create", "next"] as const)),
+			action: Type.Optional(choice(["create", "next", "review"] as const)),
+			variantOf: optionalString(),
 			skill: optionalString(), subskillId: optionalString(),
 			kind: Type.Optional(choice<ChallengeKind>(["quickfire", "predict", "debug", "apply", "explain", "build", "boss"])),
 			level: Type.Optional(Type.Unsafe<1 | 2 | 3 | 4 | 5>(Type.Integer({ minimum: 1, maximum: 5 }))),
@@ -269,14 +286,16 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 		async execute(_id, p, _signal, _update, ctx) {
 			const skill = p.skill ?? state.skill;
 			if (!skill || !slug.test(skill)) return result({ errors: ["Select a skill with /skill first."] });
-			if (p.action === "next") {
-				const selected = practice.nextChallenge(skill, { subskillId: p.subskillId });
+			if (p.action === "next" || p.action === "review") {
+				const review = p.action === "review";
+				const selected = practice.nextChallenge(skill, { subskillId: p.subskillId, reviewOnly: review });
+				if (selected?.needsVariant) return variantNeeded(selected.challenge, practice.root);
 				if (selected) {
 					const shown = presentChallenge(selected.challenge, deps, ctx);
 					return { ...shown, details: { ...(shown.details as Record<string, unknown>), reason: selected.reason } };
 				}
-				return result({ message:
-					"No challenges remain; create one with action \"create\"." });
+				return result({ message: review ? "No reviews are due; continue with new material."
+					: "No challenges remain; create one with action \"create\"." });
 			}
 			const { action: _action, ...fields } = p;
 			const draft = { ...fields, skill } as Omit<Challenge, "id" | "createdAt">;
@@ -287,7 +306,10 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 				errors.push("choices must contain at least two distinct nonempty strings.");
 			}
 			if (errors.length) return result({ errors });
-			const c = practice.addChallenge(draft);
+			let c: Challenge;
+			try { c = practice.addChallenge(draft); } catch (error) {
+				return result({ errors: [error instanceof Error ? error.message : String(error)] });
+			}
 			return presentChallenge(c, deps, ctx);
 		},
 	}));

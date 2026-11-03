@@ -3,7 +3,7 @@ import { MemoryStore } from "../../../core/src/memory.ts";
 import { PracticeStore } from "../../../core/src/practice.ts";
 import { StateStore } from "../../../core/src/state.ts";
 import { slugify } from "../../../core/src/slug.ts";
-import { registerTools } from "./tools.ts";
+import { readAttempts, registerTools } from "./tools.ts";
 import { registerCommands } from "./commands.ts";
 import { registerInjection } from "./inject.ts";
 import { registerPaths } from "./paths.ts";
@@ -18,6 +18,10 @@ export interface PracticeState {
 	challengeId?: string;
 	hintIndex: number;
 	plannedMinutes?: number;
+	/** Teaching turns this session since the learner last got a challenge or answered one (in memory only). */
+	taughtSinceCheck?: number;
+	/** This session's opening warm-up: due reviews to serve first, and how many were served (in memory only). */
+	warmup?: { skill: string; due: number; served: number };
 }
 
 export interface PracticeDeps {
@@ -25,6 +29,8 @@ export interface PracticeDeps {
 	practice: PracticeStore;
 	state: PracticeState;
 	resume(): void;
+	/** Drop an open challenge that another process (the web card) already graded and cleared from state.json. */
+	sync(): void;
 	persist(): void;
 	activate(skill: string): void;
 	refresh(ctx: ExtensionContext): void;
@@ -43,6 +49,19 @@ export function registerPractice(pi: ExtensionAPI, options: { home?: string } = 
 			const saved = savedState.read();
 			state.skill = saved.activeSkill;
 			if (saved.openChallenge && saved.openChallenge.skill === state.skill) state.challengeId = saved.openChallenge.id;
+		},
+		sync() {
+			if (!state.challengeId) return;
+			let open: { skill: string; id: string } | undefined;
+			try { open = savedState.read().openChallenge; } catch { return; }
+			// The web attempt route clears state.json's openChallenge when it records an answer to that card; a resumed
+			// session (or another chat's card) leaves this process's own unanswered challenge alone.
+			if (open || !state.skill) return;
+			const id = state.challengeId;
+			if (!readAttempts(deps.practice.root, state.skill).some((a) => a.challengeId === id)) return;
+			state.challengeId = undefined;
+			state.hintIndex = 0;
+			state.taughtSinceCheck = 0;
 		},
 		persist() {
 			savedState.update({ activeSkill: state.skill,
@@ -84,6 +103,8 @@ export function registerPractice(pi: ExtensionAPI, options: { home?: string } = 
 		state.challengeId = undefined;
 		state.hintIndex = 0;
 		state.plannedMinutes = undefined;
+		state.taughtSinceCheck = 0;
+		state.warmup = undefined;
 		for (const entry of ctx.sessionManager.getBranch()) {
 			if (entry.type !== "custom" || entry.customType !== "psi-practice") continue;
 			const saved = entry.data as { skill?: unknown; challengeId?: unknown } | undefined;

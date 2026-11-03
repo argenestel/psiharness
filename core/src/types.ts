@@ -439,6 +439,11 @@ export interface Challenge {
 	 * without error. python/javascript: assertions; sql: a query whose result rows must equal `expected` (JSON rows).
 	 */
 	tests?: string;
+	/**
+	 * A fresh version of an earlier challenge (its id): same idea, new values or wording. A missed challenge comes back
+	 * as a variant so a retry tests the idea rather than recall of the previous answer; variants share its memory.
+	 */
+	variantOf?: string;
 	createdAt: string;
 }
 

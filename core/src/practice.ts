@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { levelFor, newBadges, updateStreak, xpFor } from "./gamify.ts";
 import { advanceAfterAttempt, reconcileStatuses } from "./progression.ts";
 import { withFileLock } from "./lock.ts";
-import { selectNextChallenge } from "./scheduler.ts";
+import { dueReviews, selectNextChallenge } from "./scheduler.ts";
 import type { ChallengeSelection, SchedulerOptions } from "./scheduler.ts";
 import { mathEquivalent } from "./mathexpr.ts";
 import type { Attempt, Challenge, Outcome, PracticeSession, Progress, SkillPlan, Subskill } from "./types.ts";
@@ -143,7 +143,7 @@ export function validateChallenge(c: Challenge): string[] {
 			errors.push(`${key} must be an array of strings`);
 		}
 	}
-	for (const key of ["subskillId", "expected", "unit", "starterCode", "setup", "tests"] as const) {
+	for (const key of ["subskillId", "expected", "unit", "starterCode", "setup", "tests", "variantOf"] as const) {
 		if (c[key] !== undefined && typeof c[key] !== "string") errors.push(`${key} must be a string`);
 	}
 	if (c.tolerance !== undefined && (!Number.isFinite(c.tolerance) || c.tolerance < 0)) {
@@ -261,7 +261,10 @@ export class PracticeStore {
 		});
 	}
 
-	/** Create and persist a uniquely identified challenge. */
+	/**
+	 * Create and persist a uniquely identified challenge. A `variantOf` must name a challenge of the same skill; it is
+	 * stored as that family's original, and the variant always practises the original's subskill.
+	 */
 	addChallenge(draft: Omit<Challenge, "id" | "createdAt" | "hints"> & { hints?: string[] }): Challenge {
 		const challenge: Challenge = { ...draft, id: randomUUID(), createdAt: new Date().toISOString(),
 			hints: draft.hints === undefined ? [] : draft.hints };
@@ -270,6 +273,17 @@ export class PracticeStore {
 		challenge.hints = [...challenge.hints];
 		return withFileLock(this.file(draft.skill, "challenges.json"), () => {
 			const challenges = this.listChallenges(draft.skill);
+			if (challenge.variantOf !== undefined) {
+				const original = challenges.find((c) => c.id === challenge.variantOf);
+				if (!original) throw new Error(`variantOf: no challenge ${challenge.variantOf} in ${draft.skill}`);
+				const root = original.variantOf && challenges.some((c) => c.id === original.variantOf)
+					? original.variantOf : original.id;
+				if (challenge.subskillId !== undefined && challenge.subskillId !== original.subskillId) {
+					throw new Error("variantOf: a variant must practise the original's subskill");
+				}
+				challenge.variantOf = root;
+				challenge.subskillId = original.subskillId;
+			}
 			this.write(draft.skill, "challenges.json", [...challenges, challenge]);
 			return challenge;
 		});
@@ -289,12 +303,21 @@ export class PracticeStore {
 			&& !attempted.has(challenge.id));
 	}
 
-	/** Select an adaptive item from a read-only snapshot of this store. */
+	/**
+	 * Select an adaptive item from a read-only snapshot of this store. Focuses the next subskill by default;
+	 * `reviewOnly` (a warm-up) looks across all subskills for due reviews and spaced retries.
+	 */
 	nextChallenge(skill: string, opts: SchedulerOptions = {}): ChallengeSelection | undefined {
 		const plan = this.readPlan(skill);
-		const subskillId = opts.subskillId ?? (plan && this.nextSubskill(plan)?.id);
+		const subskillId = opts.subskillId ?? (plan && !opts.reviewOnly ? this.nextSubskill(plan)?.id : undefined);
 		return selectNextChallenge(skill, { plan, challenges: this.listChallenges(skill),
 			attempts: this.lines<Attempt>(skill, "attempts.jsonl") }, { ...opts, subskillId });
+	}
+
+	/** Due reviews and spaced retries across all subskills, best first (a session warm-up queue). */
+	reviewsDue(skill: string, now?: number | Date): ChallengeSelection[] {
+		return dueReviews(skill, { plan: this.readPlan(skill), challenges: this.listChallenges(skill),
+			attempts: this.lines<Attempt>(skill, "attempts.jsonl") }, { now });
 	}
 
 	/** Grade explicit expected/acceptable answers; open answers require tutor grading. */

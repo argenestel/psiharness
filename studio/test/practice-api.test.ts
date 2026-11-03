@@ -297,4 +297,10 @@ test("next challenge route returns selection reasons without answer keys, includ
 	store.recordAttempt({ skill: "sql", challengeId: c.id, answer: "query", outcome: "success", hintsUsed: 0 });
 	assert.deepEqual(await call("GET", "/api/skills/sql/next"), { challenge: null, reason: null });
 	await assert.rejects(call("GET", "/api/skills/missing/next"), { status: 404 });
+	// A missed item due for a retry is never re-served as-is: the page is sent to the tutor for a variant.
+	const missed = store.addChallenge({ skill: "sql", kind: "apply", level: 1, prompt: "Count rows", expected: "PRIVATE" });
+	store.recordAttempt({ skill: "sql", challengeId: missed.id, answer: "x", outcome: "fail", hintsUsed: 0,
+		at: new Date(Date.now() - 3600000).toISOString() });
+	assert.deepEqual(await call("GET", "/api/skills/sql/next"),
+		{ challenge: null, reason: "retry", needsVariant: true, retryOf: missed.id });
 });

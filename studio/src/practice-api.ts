@@ -203,6 +203,8 @@ export class PracticeApi {
 		if (p.length === 4 && p[3] === "next" && method === "GET") {
 			const selected = this.practice.nextChallenge(skill);
 			if (!selected) return { challenge: null, reason: null };
+			// A missed item is never re-served as-is: the tutor writes a fresh variant, so the page routes there.
+			if (selected.needsVariant) return { challenge: null, reason: "retry", needsVariant: true, retryOf: selected.challenge.id };
 			const safe = publicChallenge(selected.challenge, this.attempts(skill));
 			// The scheduling endpoint never serves answer keys, including SQL sandbox expected rows.
 			const { expected: _expected, ...challenge } = safe as PublicChallenge & { expected?: string };

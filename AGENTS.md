@@ -97,6 +97,8 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
   - `startSession(skill, focus?, now?)`, `activeSession(skill?)`, `endSession(skill, now?): PracticeSession | undefined`
     (adds minutes to progress.minutesLogged; sessions longer than 3 h are capped)
   - `progress(skill): Progress`, `hours(skill): { logged: number; goal: number }`
+  - `nextChallenge(skill, opts?)` (scheduler over this store; `reviewOnly` = warm-up across subskills),
+    `reviewsDue(skill, now?): ChallengeSelection[]` (due reviews + spaced retries, best first)
 
 - `state.ts`: `class StateStore` — `read(): PsiState`, `update(patch: Partial<Omit<PsiState,"updatedAt">>): PsiState`
   (`$PSI_HOME/state.json`; extension + web keep activeSkill/activeTopic/openChallenge here so a new process resumes).
@@ -200,14 +202,24 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
   one-click replies (e.g. "Continue", "Show me another example", "I'm stuck", "Try one myself"); widget
   `{type:"next_steps", options}`. The web chat also always shows a default "Continue" reply after a teaching turn.
 - `psi_ask` {question, kind: "predict"|"why"|"what-if", hint?} — a light Socratic prompt inside a lesson (not graded,
-  no XP, never more than one per 2–3 teaching chunks); widget `{type:"socratic", question, kind, hint}` with an
+  no XP, a prediction before a demo, never in a turn with a challenge); widget `{type:"socratic", question, kind, hint}` with an
   answer box and "Just show me" (sends "Just show me" so the lesson continues).
-- Flow contract (inject.ts): lessons run continuously in chunks (explain → demo with psi_run → optional Socratic
-  prompt → next chunk); never end a turn without psi_next_steps; "continue"/"next" means proceed without
-  re-asking; check understanding with one practice challenge at the end of a subskill, not after every chunk.
+- Flow contract (inject.ts): practise as you go — short chunks (one idea → demo with psi_run) and ONE quick graded
+  psi_challenge (a faded example with new values) after every 1–2 chunks (`CHECK_EVERY`: teach 3, practice 2; test
+  mode is all challenges); an independent problem ends a subskill; never end a turn without psi_next_steps;
+  "continue"/"next" means proceed without re-asking. Guards count teaching turns since the last challenge
+  (`state.taughtSinceCheck`, session-only) and the per-request reminder nudges a check when it is due.
+- Session warm-up: the first turn with a skill computes `PracticeStore.reviewsDue(skill)` (max 3); the tutor serves
+  them with `psi_challenge` action "review" before new material (allowed on continue turns; counts in
+  `state.warmup`).
+- Variants: `Challenge.variantOf` (stored as the family's original id; `addChallenge` validates it and inherits the
+  subskill). A challenge and its variants share one FSRS memory in the scheduler; a due retry serves an unattempted
+  variant, else returns `needsVariant: true` and `psi_challenge` hands the tutor the original prompt + last tries
+  to write one. Missed items become retry-eligible after 2 other attempts or `RETRY_AFTER_MS` (30 min).
 
 ### adaptive practice, guarantees, evals
-- `core/src/scheduler.ts`: `nextChallenge(skill, opts?)` → `{ challenge, reason: ChallengeReason }` — interleaved,
+- `core/src/scheduler.ts`: `nextChallenge(skill, opts?: { subskillId?, now?, reviewOnly? })` →
+  `{ challenge, reason: ChallengeReason, needsVariant? }`, `dueReviews(skill, input, opts?)` — interleaved,
   spaced selection (new / due review / delayed retry / stretch), difficulty adapts toward ~70–85% success; used by
   `psi_challenge` action "next" and `GET /api/skills/:s/next`. Hints never reduce XP ("help-then-solve" badge).
 - `core/src/lock.ts`: `withFileLock(path, fn)` — read-modify-writes in PracticeStore, MemoryStore, ProfileStore,
@@ -246,7 +258,7 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - Practice-first layer lives in `extension/src/practice/` and is registered via `registerPractice(pi, deps)` from
   `extension/src/practice/index.ts`:
   - tools: `psi_memory_remember`, `psi_memory_recall`, `psi_memory_forget`, `psi_recap`, `psi_skill_plan`,
-    `psi_challenge` (create + present), `psi_attempt` (grade/record; uses checkAnswer first), `psi_hint`,
+    `psi_challenge` (action create [variantOf?] / next / review), `psi_attempt` (grade/record; uses checkAnswer first), `psi_hint`,
     `psi_practice_session` (start/stop/status), `psi_progress_report`
   - commands: `/skill <thing to learn>` (20-hour deconstruction), `/practice [focus] [minutes]`, `/challenge [kind]`,
     `/boss`, `/quest` (build-to-learn project), `/hint`, `/remember <fact>`, `/memory`, `/forget`, `/recap`, `/hours`, `/streak`

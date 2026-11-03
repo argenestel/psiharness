@@ -548,6 +548,14 @@ export function mountPractice(host, { skill, navigate } = {}) {
 			const close = el("button", { type: "button", class: "quiet psi-sk-next-close", onclick: () => {
 				panel._destroy?.(); panel._destroy = undefined; panel.hidden = true; panel.replaceChildren(); button.focus();
 			} }, "Close");
+			if (!next?.challenge && next?.needsVariant) {
+				panel.replaceChildren(el("div", { class: "psi-sk-empty" },
+					el("p", { class: "psi-sk-quiet" }, "A question you missed is due again. The tutor will give you a fresh "
+						+ "version of it rather than the same one."),
+					el("button", { type: "button", onclick: () => openTutor("Give me my due review.") }, "Retry with the tutor"),
+					close));
+				return;
+			}
 			if (!next?.challenge) {
 				panel.replaceChildren(el("div", { class: "psi-sk-empty" },
 					el("p", { class: "psi-sk-quiet" }, "Nothing is scheduled right now. Ask the tutor for a new challenge."),

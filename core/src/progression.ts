@@ -6,11 +6,17 @@ function historyStatus(plan: SkillPlan, id: string, challenges: Challenge[], att
 	const history = attempts.filter((a) => a.skill === plan.skill && (a.subskillId === id || ids.has(a.challengeId)))
 		.slice().sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
 	if (!history.length) return "active";
+	// A challenge and its variants are one item: solving any version satisfies that item and its gate.
+	const family = (cid: string): string => {
+		const variantOf = own.find((c) => c.id === cid)?.variantOf;
+		return variantOf && ids.has(variantOf) ? variantOf : cid;
+	};
 	const solved = new Set(history.filter((a) => a.outcome === "success" && ids.has(a.challengeId))
-		.map((a) => a.challengeId));
+		.map((a) => family(a.challengeId)));
+	const items = new Set(own.map((c) => family(c.id)));
 	const recent = history.slice(-5);
-	const gates = own.filter((c) => c.kind === "boss" || c.level >= 4);
-	return own.length > 0 && solved.size >= Math.min(3, ids.size)
+	const gates = own.filter((c) => (c.kind === "boss" || c.level >= 4) && !c.variantOf);
+	return own.length > 0 && solved.size >= Math.min(3, items.size)
 		&& recent.filter((a) => a.outcome === "success").length / recent.length >= 0.6
 		&& gates.every((c) => solved.has(c.id)) ? "solid" : "practicing";
 }

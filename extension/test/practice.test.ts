@@ -155,15 +155,16 @@ test("injection appends bounded memory, state, and tutor guidance", async (t) =>
 	assert.match(injected, /psi_attempt/);
 	assert.match(injected, /psi_recap/);
 	assert.match(injected, /LaTeX: \$\.\.\.\$ inline and \$\$\.\.\.\$\$ display/);
-	assert.match(injected, /worked example -> faded example -> independent problem/);
+	assert.match(injected, /PRACTISE AS YOU GO/);
+	assert.match(injected, /faded example/);
 	assert.match(injected, /code challenges with tests/);
 	assert.match(injected, /units and orders of magnitude/);
 	assert.match(injected, /TEACH FIRST/);
-	assert.ok(injected.length - "Original system\n\n".length <= 2500);
+	assert.ok(injected.length - "Original system\n\n".length <= 3000);
 	const { MemoryStore } = await import("../../core/src/memory.ts");
 	new MemoryStore(home).setName("Long learner name ".repeat(300));
 	const bounded = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
-	assert.ok(bounded.length - "Base\n\n".length <= 2500);
+	assert.ok(bounded.length - "Base\n\n".length <= 3000);
 	assert.match(bounded, /## Practice state/);
 	assert.match(bounded, /End sessions with psi_practice_session stop and psi_recap/);
 }));
@@ -424,8 +425,42 @@ test("next reports reasons, honors subskill focus, and delays immediate retries"
 		const c = store.addChallenge({ skill: "sql", subskillId: "select", kind: "apply", level: 1, prompt: "Other" });
 		store.recordAttempt({ skill: "sql", challengeId: c.id, answer: "", outcome: "success", hintsUsed: 0 });
 	}
-	assert.equal((await next()).details.reason, "retry");
-	assert.equal((await next()).details.challengeId, first.details.challengeId);
+	// The missed item is never re-served as-is: the tutor is asked to write a variant of the same idea.
+	const retry = await next();
+	assert.equal(retry.details.needsVariant, true);
+	assert.equal(retry.details.retryOf, first.details.challengeId);
+	assert.equal(retry.details.previousTries[0].answer, "wrong");
+	assert.match(retry.content[0].text, /variantOf/);
+	assert.match(retry.content[0].text, /What is 2 \+ 2\?/, "the model sees the original prompt");
+	assert.match(retry.content[0].text, /"answer": "wrong"/, "and what the learner tried");
+	assert.doesNotMatch(retry.content[0].text, /"expected"|Count two pairs/);
+	assert.equal(retry.details.widget, undefined);
+	const variant = await f.execute("psi_challenge", draft({ variantOf: first.details.challengeId, prompt: "What is 3 + 3?",
+		expected: "6" }));
+	const stored = store.getChallenge("sql", variant.details.challengeId)!;
+	assert.equal(stored.variantOf, first.details.challengeId);
+	assert.equal(stored.subskillId, "select");
+	// Unanswered, the variant is what the scheduler serves for the retry.
+	const served = await next();
+	assert.equal(served.details.challengeId, variant.details.challengeId);
+	assert.equal(served.details.reason, "retry");
+	const bad = await f.execute("psi_challenge", draft({ variantOf: "missing" }));
+	assert.match(JSON.stringify(bad.details.errors), /variantOf/);
+	const other = await f.execute("psi_challenge", draft({ variantOf: first.details.challengeId, subskillId: "other" }));
+	assert.match(JSON.stringify(other.details.errors), /original's subskill/);
+}));
+
+test("review serves due reviews across subskills and says when none are due", async (t) => fixture(t, async (f, home) => {
+	await f.execute("psi_skill_plan", { action: "create", plan: plan() });
+	assert.match((await f.execute("psi_challenge", { action: "review" })).content[0].text, /No reviews are due/);
+	const { PracticeStore } = await import("../../core/src/practice.ts");
+	const store = new PracticeStore(home);
+	const c = store.addChallenge({ skill: "sql", subskillId: "select", kind: "apply", level: 1, prompt: "Old", expected: "x" });
+	store.recordAttempt({ skill: "sql", challengeId: c.id, answer: "y", outcome: "fail", hintsUsed: 0,
+		at: new Date(Date.now() - 3600000).toISOString() });
+	assert.equal(store.reviewsDue("sql").length, 1);
+	const review = await f.execute("psi_challenge", { action: "review" });
+	assert.equal(review.details.needsVariant, true);
 }));
 
 test("next widgets match create and never leak expected answers into model text", async (t) => fixture(t, async (f) => {
@@ -451,10 +486,38 @@ test("saved-plan injection counts ready challenges and preserves instructions wi
 	const text = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt;
 	assert.ok(text.includes("SQL has a saved plan (1 steps, next: Select) and 2 ready challenges (1 not tried). "
 		+ "Do NOT create a new plan. Teach new or twice-missed material before serving ready challenges."));
-	assert.ok(text.includes("Skill files are optional reference: read at most one SKILL.md only when you need a "
-		+ "technique you don't know; start with the teaching contract."));
-	assert.ok(text.length - "Base\n\n".length <= 2500);
+	assert.ok(text.includes("Read a SKILL.md only for a technique you lack (at most one)."));
+	assert.ok(text.length - "Base\n\n".length <= 3000);
 }));
+
+test("injection keeps practice state and a share of learner memory under the cap, with warm-up and execution on",
+	async (t) => fixture(t, async (f, home) => {
+		const previous = process.env.PSI_CODE_EXEC;
+		process.env.PSI_CODE_EXEC = "1";
+		t.after(() => { if (previous === undefined) delete process.env.PSI_CODE_EXEC; else process.env.PSI_CODE_EXEC = previous; });
+		await f.execute("psi_skill_plan", { action: "create", plan: plan({ title: "T".repeat(300) }) });
+		const { MemoryStore } = await import("../../core/src/memory.ts");
+		const memory = new MemoryStore(home);
+		const topics = ["diagrams", "short examples", "spoken analogies", "evening sessions", "SQL joins", "dark mode",
+			"code first", "metric units", "no jokes", "quick recaps", "tables", "real datasets"];
+		for (const [i, topic] of topics.entries()) {
+			memory.remember({ kind: i % 2 ? "preference" : "struggle", text: `Learner ${i}: ${topic} ${"matters ".repeat(i + 3)}` });
+		}
+		const { PracticeStore } = await import("../../core/src/practice.ts");
+		const store = new PracticeStore(home);
+		const old = store.addChallenge({ skill: "sql", subskillId: "select", kind: "apply", level: 1, prompt: "Old", expected: "x" });
+		store.recordAttempt({ skill: "sql", challengeId: old.id, answer: "y", outcome: "fail", hintsUsed: 0,
+			at: new Date(Date.now() - 3600000).toISOString() });
+		await f.execute("psi_challenge", draft());
+		const text = (await f.fire("before_agent_start", { systemPrompt: "Base" }))[0].systemPrompt as string;
+		assert.ok(text.length - "Base\n\n".length <= 3000, `length ${text.length}`);
+		assert.match(text, /Session warm-up: 1 review/);
+		assert.match(text, /psi_run/);
+		assert.match(text, /## Practice state\nActive skill: sql/);
+		assert.match(text, /OPEN challenge: \{"id"/);
+		const memoryPart = text.slice(text.indexOf("## Learner memory\n") + 18, text.indexOf("## Practice state"));
+		assert.ok(memoryPart.trim().length >= 250, `memory kept ${memoryPart.trim().length} characters`);
+	}));
 
 test("practice prompts start sessions and serve ready challenges without replanning", async (t) => fixture(t, async (f) => {
 	await f.command("skill", "SQL");
@@ -741,7 +804,7 @@ test("execution registration and prompt are enabled only by exact opt-in", async
 			if (enabled !== "1") assert.doesNotMatch(prompt, /code execution/i);
 			assert.match(prompt, /psi_next_steps.*2–4.*Continue/);
 			assert.match(prompt, /already graded\/saved/);
-			assert.ok(prompt.length - "Base\n\n".length <= 2500);
+			assert.ok(prompt.length - "Base\n\n".length <= 3000);
 			if (enabled === "1") {
 				const result = await f.execute("psi_run", { language: "javascript",
 					code: "import { writeSync } from 'node:fs'; writeSync(1, '42\\n');" });
@@ -963,7 +1026,7 @@ test("psi_fetch caches full text but returns 20k and explicitly skips cache with
 		const f = fake(), state: import("../src/practice/index.ts").PracticeState = { hintIndex: 0 };
 		let calls = 0;
 		registerLessons(f.api, { practice: new PracticeStore(home), memory: new MemoryStore(home), state,
-			resume() {}, persist() {}, activate() {}, refresh() {} }, { fetcher: async (url) => {
+			resume() {}, sync() {}, persist() {}, activate() {}, refresh() {} }, { fetcher: async (url) => {
 				calls++; return { url, text: "a".repeat(25000) };
 			} });
 		const url = "https://example.org/read";
