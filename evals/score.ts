@@ -1343,7 +1343,10 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 function practiceForTurns(turns: TurnView[], metadata: Dict, scenario: string): PracticeSummary {
 	const metrics: PracticeMetrics = { turnsToFirstRep: null, repsPerTeachingTurn: null, maxTeachStreak: 0,
 		gradedAttempts: 0, teachingTurns: 0, presentedChallenges: 0 };
-	let streak = 0, cardOpen = false;
+	let streak = 0;
+	// The card the learner still owes an answer to: set when one is presented, cleared by an attempt on it or by a state
+	// snapshot that no longer lists it as open (e.g. graded on the web card).
+	let openCard: string | undefined;
 	// Only explicit tutorMode fields are evidence; natural-language mentions of tests are not mode switches.
 	const modes = [metadata.tutorMode, ...turns.flatMap((turn) => turn.timeline
 		.filter((event) => event.kind === "state").map((event) => event.state?.tutorMode))]
@@ -1369,10 +1372,24 @@ function practiceForTurns(turns: TurnView[], metadata: Dict, scenario: string): 
 		// Like the runtime counter (taughtSinceCheck): only a presented challenge or a recorded attempt resets the streak;
 		// short non-teaching turns ("ok", "thanks") neither add to it nor reset it, and neither do turns spent waiting
 		// on a card the learner has not answered yet (the tutor must not stack a second check on it).
-		const lastRep = Math.max(-1, ...repCalls.map((call) => call.firstPos));
-		const lastAttempt = Math.max(-1, ...attemptCalls.map((call) => call.firstPos));
-		const waiting = cardOpen && !reps && !attempts;
-		if (reps || attempts) cardOpen = lastRep > lastAttempt;
+		type Step = { pos: number; open?: string; attempt?: true; answered?: unknown; state?: Dict };
+		const steps: Step[] = [
+			...repCalls.map((call) => ({ pos: call.firstPos,
+				open: String((call.result as { details: { challengeId: string } }).details.challengeId) })),
+			...attemptCalls.map((call) => ({ pos: call.firstPos, attempt: true as const, answered: call.args.challengeId })),
+			...turn.timeline.filter((event) => event.kind === "state" && isObject(event.state)
+				&& Object.hasOwn(event.state, "openChallenge")).map((event) => ({ pos: event.pos, state: event.state })),
+		].sort((a, b) => a.pos - b.pos);
+		for (const step of steps) {
+			if (step.open) openCard = step.open;
+			else if (step.attempt && (step.answered === openCard || typeof step.answered !== "string")) {
+				openCard = undefined;
+			} else if (step.state) {
+				const open = step.state.openChallenge;
+				if (!isObject(open) || open.id !== openCard) openCard = undefined;
+			}
+		}
+		const waiting = openCard !== undefined && !reps && !attempts;
 		streak = reps || attempts ? 0 : teaching && !waiting ? streak + 1 : streak;
 		metrics.maxTeachStreak = Math.max(metrics.maxTeachStreak, streak);
 	}

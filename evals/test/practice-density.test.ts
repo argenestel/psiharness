@@ -82,6 +82,13 @@ test("streaks reset only on presented challenges and recorded attempts, like the
 	const waiting = scoreScenario([text(1), ...rep(2), text(2), text(3), text(4), text(5), text(6),
 		text(7), ...tool(7, "psi_attempt", {}, { details: { recorded: true } }), text(8), text(9)]);
 	assert.equal(waiting.practice.metrics.maxTeachStreak, 2);
+	// Grading another card does not close this one; a state snapshot that no longer lists it (web grade) does.
+	const other = scoreScenario([...rep(1, { action: "create" }), text(2),
+		...tool(2, "psi_attempt", { challengeId: "someone-else" }, { details: { recorded: true } }), text(3), text(4)]);
+	assert.equal(other.practice.metrics.maxTeachStreak, 0);
+	const closed = scoreScenario([...rep(1), row(2, { type: "harness_state", state: { openChallenge: null } }),
+		text(2), text(3), text(4), text(5)]);
+	assert.equal(closed.practice.metrics.maxTeachStreak, 4);
 });
 
 test("cadence requires three teaching turns and exempts explicitly observed test mode", () => {

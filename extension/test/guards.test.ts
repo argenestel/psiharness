@@ -6,7 +6,7 @@ import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { registerPractice } from "../src/practice/index.ts";
 import {
-	ANSWER_SHOWN, ASK_AFTER_TEACHING, CITATION_NOTE, HIDDEN, TEACH_FIRST, fixCitations, isContinueIntent, lessonFirst, redactAnswers,
+	ANSWER_SHOWN, ASK_AFTER_TEACHING, CITATION_NOTE, answerDisclosed, HIDDEN, TEACH_FIRST, fixCitations, isContinueIntent, lessonFirst, redactAnswers,
 	withContinue,
 } from "../src/practice/guards.ts";
 import { turnReminder } from "../src/practice/inject.ts";
@@ -382,6 +382,53 @@ test("refusal gate: lone digits and code output count; common words only in code
 		await f.assistant([text(teaching)]);
 		await f.call("psi_ask", { question: "Before 9 a.m.?", kind: "predict", hint: "It starts with Buenos días" });
 		assert.ok((await f.call("psi_challenge", greet)).blocked, "a Socratic hint shown this turn counts");
+	}));
+
+test("answerDisclosed: units, choice labels, no learner-history exemption, keywords as code", () => {
+	const speed = { id: "s", prompt: "Speed?", expected: "4", format: "number" as const, unit: "m/s" };
+	assert.ok(answerDisclosed("Work it out:\n\n4 m/s", speed));
+	assert.ok(answerDisclosed("```text\n4 m/s\n```", { ...speed, expected: "4 m/s" }));
+	assert.ok(answerDisclosed("Work it out:\n\n4.", speed, ["What is 4 + 0?"]), "the learner mentioning 4 exempts nothing");
+	assert.ok(!answerDisclosed("Step 4 multiplies by the time.", speed));
+	const pick = { id: "c", prompt: "Which?", expected: "B", format: "choice" as const, choices: ["A", "B"] };
+	assert.ok(answerDisclosed("The answer is B.", pick));
+	assert.ok(answerDisclosed("Options:\n\n(B)", pick));
+	assert.ok(!answerDisclosed("Use B as a label for the second set.", pick));
+	const skip = { id: "k", prompt: "Which keyword skips to the next iteration?", expected: "continue" };
+	assert.ok(!answerDisclosed("Let's continue with loops.", skip));
+	assert.ok(answerDisclosed("Use `continue` inside the loop.", skip));
+});
+
+test("only displayed widget text and real choices count: lesson metadata and the Continue button do not",
+	async () => fixture(async (f, home) => {
+		const plan = { skill: "spanish", title: "Spanish", targetPerformance: "Order coffee", whyItMatters: "Travel",
+			subskills: [{ id: "greet", title: "Greet", why: "First words", priority: 1, prerequisites: [], selfCorrection: "x",
+				drills: ["d"], status: "active" }], resources: [], barriers: [] };
+		await f.call("psi_skill_plan", { action: "create", plan });
+		const { LessonStore } = await import("../../core/src/lessons.ts");
+		const source = new SourceStore(home).add("spanish", { url: "https://www.rae.es/dpd/d%C3%ADa", title: "DPD: día" });
+		new LessonStore(home).write("spanish", "greet", { title: "Getting started", explanation: "Greet by the time of day.",
+			keyIdeas: ["Time decides the greeting.", "Then give your name."], citations: [{ sourceId: source.id }] });
+		await f.learner("Teach me greetings");
+		await f.call("psi_lesson", { action: "show", skill: "spanish", subskillId: "greet" });
+		await f.call("psi_next_steps", { options: [{ label: "Continue", message: "Continue" }, { label: "Hint", message: "Hint" }] });
+		const word = { ...greet, subskillId: "greet", prompt: "Which language are we learning?", expected: "spanish",
+			acceptable: [] };
+		const r = await f.call("psi_challenge", word);
+		assert.ok(r.result, `the skill id in the widget is not shown text: ${JSON.stringify(r.blocked)}`);
+		await f.learner("Next");
+		await f.assistant([text(teaching)]);
+		await f.call("psi_next_steps", { options: [{ label: "Continue", message: "Continue" }, { label: "Stop", message: "Stop" }] });
+		const keyword = { ...greet, subskillId: "greet", prompt: "Which keyword skips an iteration?", expected: "continue",
+			acceptable: [] };
+		assert.ok((await f.call("psi_challenge", keyword)).result, "the guaranteed Continue button is navigation");
+		// A lesson card that states the answer does count: the check right after it would test copying.
+		new LessonStore(home).write("spanish", "greet", { title: "Greetings", explanation: "Say Buenos días before noon.",
+			keyIdeas: ["Time decides the greeting.", "Then give your name."], citations: [{ sourceId: source.id }] });
+		await f.learner("Next");
+		await f.call("psi_lesson", { action: "show", skill: "spanish", subskillId: "greet" });
+		assert.deepEqual((await f.call("psi_challenge", { ...greet, subskillId: "greet" })).blocked,
+			{ block: true, reason: ANSWER_SHOWN });
 	}));
 
 test("a restarted chat keeps the original presentation time, so a browser answer given meanwhile closes the card",

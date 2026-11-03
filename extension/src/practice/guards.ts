@@ -170,7 +170,8 @@ export function answerPatterns(c: AnswerSource, loose = false): RegExp[] {
 // Function words that occur in any explanation: as answers they only count as shown when written as code or after an
 // answer cue ("the keyword is `in`"), never as ordinary prose ("we use this in Python").
 const COMMON_WORDS = new Set(["a", "an", "the", "in", "is", "on", "at", "to", "of", "as", "or", "and", "if", "for",
-	"not", "it", "be", "by", "no", "yes", "so", "do", "up", "out", "all", "any", "one", "but", "with", "from"]);
+	"not", "it", "be", "by", "no", "yes", "so", "do", "up", "out", "all", "any", "one", "but", "with", "from", "continue",
+	"next", "break", "pass", "return"]);
 const CUED = new RegExp(`${ANSWER_CUE}$`, "iu");
 
 /**
@@ -180,17 +181,27 @@ const CUED = new RegExp(`${ANSWER_CUE}$`, "iu");
  */
 export function answerDisclosed(text: string, card: AnswerSource, learnerTexts: string[] = []): boolean {
 	if (!text.trim() || card.format === "code") return false;
-	const spoken = learnerTexts.join("\n");
-	const answers = [card.expected, ...(card.acceptable ?? [])].filter((v): v is string => typeof v === "string" && !!v.trim())
-		.filter((v) => !answerPatterns({ ...card, expected: v, acceptable: [] }, true).some((p) => new RegExp(p).test(spoken)));
+	// What the learner said earlier never exempts an answer: the tutor showing it is what matters here.
+	const answers = [card.expected, ...(card.acceptable ?? [])].filter((v): v is string => typeof v === "string" && !!v.trim());
+	const unit = card.unit?.trim();
 	const prompt = card.prompt?.trim();
 	const visible = prompt ? text.split(prompt).join(" ") : text;
 	const code = protectedSpans(visible).filter((s) => s.kind === "fence" || s.kind === "code");
 	for (const answer of answers) {
-		const word = answer.normalize("NFC").trim().replace(/^[\s"'`([{]+|[\s"'`)\]}.,:;!?]+$/gu, "").toLowerCase();
+		let word = answer.normalize("NFC").trim().replace(/^[\s"'`([{]+|[\s"'`)\]}.,:;!?]+$/gu, "").toLowerCase();
+		if (unit && word.endsWith(unit.toLowerCase())) word = word.slice(0, word.length - unit.length).trim();
 		if (/^[+-]?\d$/.test(word)) {
-			const lone = new RegExp(`(?:^|[=:→⇒#>]|\\bis)[\\s$*_\`(]*${escape(word)}[\\s$*_\`).,;:!]*$`, "imu");
+			const units = unit ? `(?:\\s*${escape(unit)})?` : "";
+			const lone = new RegExp(`(?:^|[=:→⇒#>]|\\bis)[\\s$*_\`(]*${escape(word)}${units}[\\s$*_\`).,;:!]*$`, "imu");
 			if (visible.split("\n").some((line) => lone.test(line.trim()))) return true;
+		}
+		if (card.format === "choice" && /^\p{L}$/u.test(word)) {
+			// A choice label: "The answer is B", "→ (B)", or the label alone on a line; never "use B as a name".
+			const label = escape(word);
+			const cued = new RegExp(`${ANSWER_CUE}\\(?${label}\\)?(?![\\p{L}\\p{N}])`, "iu");
+			const alone = new RegExp(`^[\\s*_(]*${label}[\\s*_).:]*$`, "imu");
+			if (cued.test(visible) || visible.split("\n").some((line) => alone.test(line.trim()))) return true;
+			continue;
 		}
 		if (COMMON_WORDS.has(word)) {
 			const pattern = answerPattern(word, card.unit, true);
@@ -239,14 +250,26 @@ export function redactAnswers(text: string, challenges: AnswerSource[], learnerT
 	return { text: out, count: hits.length };
 }
 
+// Widget fields that are identifiers or plumbing, never shown to the learner as text.
+const HIDDEN_KEYS = new Set(["type", "id", "skill", "subskillId", "sourceId", "url", "createdAt", "updatedAt", "language",
+	"exitCode", "ms", "rank", "rankReasons", "accessedAt", "publisher", "kind", "license"]);
+const displayed = (value: unknown, key = ""): string => HIDDEN_KEYS.has(key) ? ""
+	: typeof value === "string" ? value
+	: Array.isArray(value) ? value.map((v) => displayed(v)).join("\n")
+	: value && typeof value === "object" ? Object.entries(value).map(([k, v]) => displayed(v, k)).join("\n") : "";
+
 /** Learner-visible text a tool result puts on screen (run output, lesson card, Socratic prompt, buttons). */
-function shownBy(tool: string, input: Record<string, unknown>, content: unknown): string {
-	if (tool === "psi_run" || (tool === "psi_lesson" && (input.action === "show" || input.action === "write"))) {
-		return textOf(content);
+function shownBy(tool: string, input: Record<string, unknown>, details: unknown): string {
+	const widget = details && typeof details === "object" ? (details as { widget?: unknown }).widget : undefined;
+	if (tool === "psi_run" && widget && typeof widget === "object") {
+		const w = widget as { stdout?: unknown; stderr?: unknown };
+		return [w.stdout, w.stderr].filter((v) => typeof v === "string").join("\n");
 	}
+	if (tool === "psi_lesson" && (input.action === "show" || input.action === "write")) return displayed(widget);
 	if (tool === "psi_ask") return [input.question, input.hint].filter((v) => typeof v === "string").join("\n");
 	if (tool === "psi_next_steps" && Array.isArray(input.options)) {
-		return input.options.map((o: unknown) => o && typeof o === "object"
+		// "Continue" is navigation the guard itself guarantees, not a disclosure.
+		return input.options.map((o: unknown) => o && typeof o === "object" && !CONTINUE_LABEL.test(String((o as NextStep).label))
 			? `${(o as NextStep).label ?? ""}\n${(o as NextStep).message ?? ""}` : "").join("\n");
 	}
 	return "";
@@ -369,6 +392,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		const options = input.options.map((o: unknown) => {
 			if (!o || typeof o !== "object") return o;
 			const option = { ...(o as NextStep) };
+			if (CONTINUE_LABEL.test(String(option.label)) && /^\W*continue\W*$/i.test(String(option.message))) return option;
 			for (const [key, max] of [["label", 60], ["message", 400]] as const) {
 				if (typeof option[key] !== "string") continue;
 				const r = redactAnswers(option[key], open);
@@ -511,7 +535,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		const input = event.input;
 		// What the learner sees besides prose also counts toward this turn's disclosures: run output, lesson cards,
 		// Socratic hints and next-step buttons.
-		if (!event.isError) turnProse += `${shownBy(event.toolName, input, event.content)}\n`;
+		if (!event.isError) turnProse += `${shownBy(event.toolName, input, event.details)}\n`;
 		if (event.toolName === "psi_challenge" && !event.isError && typeof details?.challengeId === "string"
 			&& typeof details.skill === "string") {
 			presented = { skill: details.skill, id: details.challengeId, at: Date.now() };
