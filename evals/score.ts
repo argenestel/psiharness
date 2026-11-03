@@ -1343,19 +1343,20 @@ export function scoreScenario(input: unknown, packData: unknown = {}): ScenarioS
 function practiceForTurns(turns: TurnView[], metadata: Dict, scenario: string): PracticeSummary {
 	const metrics: PracticeMetrics = { turnsToFirstRep: null, repsPerTeachingTurn: null, maxTeachStreak: 0,
 		gradedAttempts: 0, teachingTurns: 0, presentedChallenges: 0 };
-	let streak = 0;
+	let streak = 0, cardOpen = false;
 	// Only explicit tutorMode fields are evidence; natural-language mentions of tests are not mode switches.
 	const modes = [metadata.tutorMode, ...turns.flatMap((turn) => turn.timeline
 		.filter((event) => event.kind === "state").map((event) => event.state?.tutorMode))]
 		.filter((mode) => mode === "teach" || mode === "practice" || mode === "test");
 	for (const [index, turn] of turns.entries()) {
-		const reps = turn.calls.filter((call) => {
+		const repCalls = turn.calls.filter((call) => {
 			const details = isObject(call.result) ? call.result.details : undefined;
 			return call.toolName === "psi_challenge" && !resultIsError(call) && isObject(details)
 				&& typeof details.challengeId === "string" && details.challengeId.length > 0;
-		}).length;
-		const attempts = turn.calls.filter((call) => call.toolName === "psi_attempt"
-			&& call.result !== undefined && attemptRecorded(call)).length;
+		});
+		const attemptCalls = turn.calls.filter((call) => call.toolName === "psi_attempt"
+			&& call.result !== undefined && attemptRecorded(call));
+		const reps = repCalls.length, attempts = attemptCalls.length;
 		const prose = cleanProse(turn.textEvents.map((event) => event.text ?? "").join(""))
 			.replace(/\s+/g, " ").trim();
 		const teaching = prose.length >= 200 || turn.calls.some((call) => call.toolName === "psi_run"
@@ -1366,8 +1367,13 @@ function practiceForTurns(turns: TurnView[], metadata: Dict, scenario: string): 
 		metrics.gradedAttempts += attempts;
 		if (teaching) metrics.teachingTurns++;
 		// Like the runtime counter (taughtSinceCheck): only a presented challenge or a recorded attempt resets the streak;
-		// short non-teaching turns ("ok", "thanks") neither add to it nor reset it.
-		streak = reps || attempts ? 0 : teaching ? streak + 1 : streak;
+		// short non-teaching turns ("ok", "thanks") neither add to it nor reset it, and neither do turns spent waiting
+		// on a card the learner has not answered yet (the tutor must not stack a second check on it).
+		const lastRep = Math.max(-1, ...repCalls.map((call) => call.firstPos));
+		const lastAttempt = Math.max(-1, ...attemptCalls.map((call) => call.firstPos));
+		const waiting = cardOpen && !reps && !attempts;
+		if (reps || attempts) cardOpen = lastRep > lastAttempt;
+		streak = reps || attempts ? 0 : teaching && !waiting ? streak + 1 : streak;
 		metrics.maxTeachStreak = Math.max(metrics.maxTeachStreak, streak);
 	}
 	metrics.repsPerTeachingTurn = metrics.teachingTurns ? metrics.presentedChallenges / metrics.teachingTurns : null;

@@ -279,7 +279,7 @@ test("a new subskill's first challenge waits for its lesson, then fails open", a
 	assert.equal(f.guardEntries("lesson-first").length, 1);
 	const { LessonStore } = await import("../../core/src/lessons.ts");
 	const source = new SourceStore(home).add("spanish", { url: "https://www.rae.es/dpd/d%C3%ADa", title: "DPD: día" });
-	new LessonStore(home).write("spanish", "greet", { title: "Greetings", explanation: "Buenos días before noon.",
+	new LessonStore(home).write("spanish", "greet", { title: "Greetings", explanation: "Choose the greeting by the time of day.",
 		keyIdeas: ["Greet by time of day.", "Then give your name."], citations: [{ sourceId: source.id }] });
 	await f.call("psi_lesson", { action: "show", skill: "spanish", subskillId: "greet" });
 	assert.ok((await f.call("psi_challenge", { ...greet, subskillId: "greet" })).result, "allowed after the lesson");
@@ -357,6 +357,46 @@ test("a card graded in the browser stops the open-challenge warning and counts a
 		const [r] = await f.fire("context", { type: "context", messages: [{ role: "user", content: "Continue" }] });
 		assert.doesNotMatch(r.messages[0].content, /is open/);
 		assert.doesNotMatch(r.messages[0].content, /Practice is due/);
+	}));
+
+test("refusal gate: lone digits and code output count; common words only in code or after a cue; tool output counts",
+	async () => fixture(async (f) => {
+		const four = { ...greet, prompt: "What is 2 + 2?", expected: "4", acceptable: [], format: "number" };
+		await f.learner("Teach me addition");
+		await f.assistant([text(`${teaching}\n\n4.`)]);
+		assert.ok((await f.call("psi_challenge", four)).blocked, "a bare result line shows the answer");
+		await f.learner("Another one");
+		await f.assistant([text(`${teaching}\n\n\`\`\`python\n>>> 2 + 2\n4\n\`\`\``)]);
+		assert.ok((await f.call("psi_challenge", four)).blocked, "so does code output");
+		await f.learner("Another one");
+		await f.assistant([text(`${teaching} Step 4 of the recipe adds the milk.`)]);
+		assert.ok((await f.call("psi_challenge", four)).result, "an incidental digit in prose does not");
+		const keyword = { ...greet, prompt: "Which keyword tests membership?", expected: "in", acceptable: [] };
+		await f.learner("Next");
+		await f.assistant([text(`${teaching} We use this in Python all the time.`)]);
+		assert.ok((await f.call("psi_challenge", keyword)).result, "a preposition is not the keyword");
+		await f.learner("Next");
+		await f.assistant([text(`${teaching} Membership uses \`in\`.`)]);
+		assert.ok((await f.call("psi_challenge", keyword)).blocked, "the keyword written as code is");
+		await f.learner("Next");
+		await f.assistant([text(teaching)]);
+		await f.call("psi_ask", { question: "Before 9 a.m.?", kind: "predict", hint: "It starts with Buenos días" });
+		assert.ok((await f.call("psi_challenge", greet)).blocked, "a Socratic hint shown this turn counts");
+	}));
+
+test("a restarted chat keeps the original presentation time, so a browser answer given meanwhile closes the card",
+	async () => fixture(async (f, home) => {
+		const { PracticeStore } = await import("../../core/src/practice.ts");
+		await f.learner("Teach me greetings");
+		await f.assistant([text(teaching)]);
+		const id = (await f.call("psi_challenge", { ...greet, prompt: "Morning greeting?" })).result.details.challengeId;
+		new PracticeStore(home).recordAttempt({ skill: "spanish", challengeId: id, answer: "Buenos días", outcome: "success",
+			hintsUsed: 0 });
+		new StateStore(home).update({ openChallenge: undefined });
+		await new Promise((r) => setTimeout(r, 1100));
+		await f.fire("session_start", { type: "session_start" });
+		const [r] = await f.fire("context", { type: "context", messages: [{ role: "user", content: "Hi" }] });
+		assert.doesNotMatch(r.messages[0].content, /is open/);
 	}));
 
 test("open-card sync ignores other chats' cards and attempts made before this chat showed the card", async () =>

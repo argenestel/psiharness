@@ -348,7 +348,7 @@ Resources: {title,url?,why}; barriers: {barrier,fix,done}. For get/next, optiona
 			const recorded = practice.recordAttempt({ ...p, skill, outcome, hintsUsed, source, verified: source === "checked" });
 			deps.activate(skill);
 			const report = progressReport(practice, skill);
-			if (state.challengeId === c.id) { state.challengeId = undefined; state.hintIndex = 0; }
+			if (state.challengeId === c.id) { state.challengeId = undefined; state.challengeAt = undefined; state.hintIndex = 0; }
 			deps.persist();
 			deps.refresh(ctx);
 			const combo = new ProfileStore(practice.root).summarize().combo;

@@ -167,6 +167,46 @@ export function answerPatterns(c: AnswerSource, loose = false): RegExp[] {
 		.map((v) => answerPattern(v, c.unit, loose)).filter((p): p is RegExp => !!p);
 }
 
+// Function words that occur in any explanation: as answers they only count as shown when written as code or after an
+// answer cue ("the keyword is `in`"), never as ordinary prose ("we use this in Python").
+const COMMON_WORDS = new Set(["a", "an", "the", "in", "is", "on", "at", "to", "of", "as", "or", "and", "if", "for",
+	"not", "it", "be", "by", "no", "yes", "so", "do", "up", "out", "all", "any", "one", "but", "with", "from"]);
+const CUED = new RegExp(`${ANSWER_CUE}$`, "iu");
+
+/**
+ * Whether learner-visible text already gives away a card's answer (so serving the card would test reading, not
+ * recall). Stricter than redaction for short answers: a single digit counts when it stands alone on a line or ends a
+ * code/output line ("4.", "= 4", ">>> 2 * 2\n4"), and a common word counts in code or after an answer cue.
+ */
+export function answerDisclosed(text: string, card: AnswerSource, learnerTexts: string[] = []): boolean {
+	if (!text.trim() || card.format === "code") return false;
+	const spoken = learnerTexts.join("\n");
+	const answers = [card.expected, ...(card.acceptable ?? [])].filter((v): v is string => typeof v === "string" && !!v.trim())
+		.filter((v) => !answerPatterns({ ...card, expected: v, acceptable: [] }, true).some((p) => new RegExp(p).test(spoken)));
+	const prompt = card.prompt?.trim();
+	const visible = prompt ? text.split(prompt).join(" ") : text;
+	const code = protectedSpans(visible).filter((s) => s.kind === "fence" || s.kind === "code");
+	for (const answer of answers) {
+		const word = answer.normalize("NFC").trim().replace(/^[\s"'`([{]+|[\s"'`)\]}.,:;!?]+$/gu, "").toLowerCase();
+		if (/^[+-]?\d$/.test(word)) {
+			const lone = new RegExp(`(?:^|[=:→⇒#>]|\\bis)[\\s$*_\`(]*${escape(word)}[\\s$*_\`).,;:!]*$`, "imu");
+			if (visible.split("\n").some((line) => lone.test(line.trim()))) return true;
+		}
+		if (COMMON_WORDS.has(word)) {
+			const pattern = answerPattern(word, card.unit, true);
+			if (!pattern) continue;
+			for (const m of visible.matchAll(new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`))) {
+				if (inside(code, m.index, m.index + m[0].length) || CUED.test(visible.slice(Math.max(0, m.index - 40), m.index))) {
+					return true;
+				}
+			}
+			continue;
+		}
+		if (redactAnswers(visible, [{ ...card, expected: answer, acceptable: [] }], learnerTexts).count) return true;
+	}
+	return false;
+}
+
 /** Replace accepted answers in tutor text, keeping citation markers, the challenge prompt and learner code. */
 export function redactAnswers(text: string, challenges: AnswerSource[], learnerTexts: string[] = []):
 	{ text: string; count: number } {
@@ -197,6 +237,19 @@ export function redactAnswers(text: string, challenges: AnswerSource[], learnerT
 	let out = text;
 	for (const hit of hits.sort((a, b) => b.start - a.start)) out = out.slice(0, hit.start) + HIDDEN + out.slice(hit.end);
 	return { text: out, count: hits.length };
+}
+
+/** Learner-visible text a tool result puts on screen (run output, lesson card, Socratic prompt, buttons). */
+function shownBy(tool: string, input: Record<string, unknown>, content: unknown): string {
+	if (tool === "psi_run" || (tool === "psi_lesson" && (input.action === "show" || input.action === "write"))) {
+		return textOf(content);
+	}
+	if (tool === "psi_ask") return [input.question, input.hint].filter((v) => typeof v === "string").join("\n");
+	if (tool === "psi_next_steps" && Array.isArray(input.options)) {
+		return input.options.map((o: unknown) => o && typeof o === "object"
+			? `${(o as NextStep).label ?? ""}\n${(o as NextStep).message ?? ""}` : "").join("\n");
+	}
+	return "";
 }
 
 const textOf = (content: unknown): string => typeof content === "string" ? content : Array.isArray(content)
@@ -341,7 +394,8 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 	};
 
 	pi.on("agent_end", async () => {
-		if (counted || checked || (teachChars < 200 && teachTools <= 0)) return;
+		// Teaching while a card waits for its answer does not make a new check due (one card at a time).
+		if (counted || checked || deps.state.challengeId || (teachChars < 200 && teachTools <= 0)) return;
 		counted = true;
 		deps.state.taughtSinceCheck = (deps.state.taughtSinceCheck ?? 0) + 1;
 	});
@@ -431,7 +485,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 					return { block: true, reason: TEACH_FIRST };
 				}
 				const card = cardFor(input);
-				if (card && unspoken([card]).length && redactAnswers(turnProse, [card], learnerTexts).count) {
+				if (card && answerDisclosed(turnProse, card, learnerTexts)) {
 					fire("answer-shown", { action: input.action ?? "create", challengeId: card.id });
 					return { block: true, reason: ANSWER_SHOWN };
 				}
@@ -455,6 +509,9 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 	pi.on("tool_result", async (event) => {
 		const details = event.details as { challengeId?: unknown; skill?: unknown; outcome?: unknown; missing?: unknown };
 		const input = event.input;
+		// What the learner sees besides prose also counts toward this turn's disclosures: run output, lesson cards,
+		// Socratic hints and next-step buttons.
+		if (!event.isError) turnProse += `${shownBy(event.toolName, input, event.content)}\n`;
 		if (event.toolName === "psi_challenge" && !event.isError && typeof details?.challengeId === "string"
 			&& typeof details.skill === "string") {
 			presented = { skill: details.skill, id: details.challengeId, at: Date.now() };

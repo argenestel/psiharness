@@ -74,13 +74,15 @@ export function registerPractice(pi: ExtensionAPI, options: { home?: string } = 
 		persist() {
 			savedState.update({ activeSkill: state.skill,
 				openChallenge: state.skill && state.challengeId ? { skill: state.skill, id: state.challengeId } : undefined });
-			pi.appendEntry("psi-practice", { skill: state.skill, challengeId: state.challengeId });
+			pi.appendEntry("psi-practice", { skill: state.skill, challengeId: state.challengeId,
+				challengeAt: state.challengeId ? state.challengeAt : undefined });
 		},
 		activate(skill) {
 			const normalized = slugify(skill);
 			if (!normalized) throw new Error("Choose a skill with /skill <what to learn>.");
 			if (state.skill !== normalized) {
 				state.challengeId = undefined;
+				state.challengeAt = undefined;
 				state.hintIndex = 0;
 				state.plannedMinutes = undefined;
 			}
@@ -109,17 +111,21 @@ export function registerPractice(pi: ExtensionAPI, options: { home?: string } = 
 	pi.on("session_start", async (_event, ctx) => {
 		state.skill = undefined;
 		state.challengeId = undefined;
+		state.challengeAt = undefined;
 		state.hintIndex = 0;
 		state.plannedMinutes = undefined;
 		state.taughtSinceCheck = 0;
 		state.warmup = undefined;
 		for (const entry of ctx.sessionManager.getBranch()) {
 			if (entry.type !== "custom" || entry.customType !== "psi-practice") continue;
-			const saved = entry.data as { skill?: unknown; challengeId?: unknown } | undefined;
+			const saved = entry.data as { skill?: unknown; challengeId?: unknown; challengeAt?: unknown } | undefined;
 			if (typeof saved?.skill === "string") {
 				state.skill = slugify(saved.skill) || undefined;
 				state.challengeId = typeof saved.challengeId === "string" ? saved.challengeId : undefined;
-				state.challengeAt = state.challengeId ? Date.now() : undefined;
+				// The original presentation time, so an answer given in the browser while this process was down still
+				// closes the card (older entries have none: then only later answers count).
+				state.challengeAt = !state.challengeId ? undefined
+					: typeof saved.challengeAt === "number" && Number.isFinite(saved.challengeAt) ? saved.challengeAt : Date.now();
 			}
 		}
 		deps.resume();

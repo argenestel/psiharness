@@ -78,6 +78,10 @@ test("streaks reset only on presented challenges and recorded attempts, like the
 	const lecture = scoreScenario(Array.from({ length: 15 }, (_, i) => text(i + 1, i % 3 === 2 ? "OK" : undefined)));
 	assert.equal(lecture.practice.metrics.maxTeachStreak, 10);
 	assert.equal(lecture.practice.checks["practice-cadence"].ratio, 0);
+	// Turns spent waiting on an unanswered card do not count; once it is answered, teaching counts again.
+	const waiting = scoreScenario([text(1), ...rep(2), text(2), text(3), text(4), text(5), text(6),
+		text(7), ...tool(7, "psi_attempt", {}, { details: { recorded: true } }), text(8), text(9)]);
+	assert.equal(waiting.practice.metrics.maxTeachStreak, 2);
 });
 
 test("cadence requires three teaching turns and exempts explicitly observed test mode", () => {
