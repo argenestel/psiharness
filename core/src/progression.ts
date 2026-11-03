@@ -1,5 +1,8 @@
 import type { Attempt, Challenge, SkillPlan, Subskill } from "./types.ts";
 
+/** A mastery gate: a boss or a level 4–5 challenge. */
+export const isGate = (c: Pick<Challenge, "kind" | "level">): boolean => c.kind === "boss" || c.level >= 4;
+
 function historyStatus(plan: SkillPlan, id: string, challenges: Challenge[], attempts: Attempt[]): Subskill["status"] {
 	const own = challenges.filter((c) => c.skill === plan.skill && c.subskillId === id);
 	const ids = new Set(own.map((c) => c.id));
@@ -15,10 +18,12 @@ function historyStatus(plan: SkillPlan, id: string, challenges: Challenge[], att
 		.map((a) => family(a.challengeId)));
 	const items = new Set(own.map((c) => family(c.id)));
 	const recent = history.slice(-5);
-	const gates = own.filter((c) => (c.kind === "boss" || c.level >= 4) && !c.variantOf);
+	// Every boss or level >= 4 item gates mastery; any solved version of it (original or variant) opens the gate.
+	// A variant whose original is missing is its own item, so an orphaned hard variant still gates.
+	const gates = own.filter(isGate);
 	return own.length > 0 && solved.size >= Math.min(3, items.size)
 		&& recent.filter((a) => a.outcome === "success").length / recent.length >= 0.6
-		&& gates.every((c) => solved.has(c.id)) ? "solid" : "practicing";
+		&& gates.every((c) => solved.has(family(c.id))) ? "solid" : "practicing";
 }
 
 /**

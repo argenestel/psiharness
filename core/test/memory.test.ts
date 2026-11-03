@@ -256,3 +256,16 @@ test("writes create missing home directories and PSI_HOME is read at constructio
 		else process.env.PSI_HOME = previous;
 	}
 });
+
+test("clipped summaries never split a surrogate pair", async () => {
+	const { clipText } = await import("../src/slug.ts");
+	assert.equal(clipText("ab😀", 3), "ab");
+	assert.equal(clipText("ab😀", 4), "ab😀");
+	const home = fs.mkdtempSync(path.join(os.tmpdir(), "psi-memory-utf16-"));
+	try {
+		const store = new MemoryStore(home);
+		store.setName(`x${"😀".repeat(400)}`);
+		const lone = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+		for (const max of [349, 350, 351]) assert.doesNotMatch(store.summarize({ maxChars: max }), lone);
+	} finally { fs.rmSync(home, { recursive: true, force: true }); }
+});

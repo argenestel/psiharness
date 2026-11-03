@@ -495,7 +495,8 @@ test("injection keeps practice state and a share of learner memory under the cap
 		const previous = process.env.PSI_CODE_EXEC;
 		process.env.PSI_CODE_EXEC = "1";
 		t.after(() => { if (previous === undefined) delete process.env.PSI_CODE_EXEC; else process.env.PSI_CODE_EXEC = previous; });
-		await f.execute("psi_skill_plan", { action: "create", plan: plan({ title: "T".repeat(300) }) });
+		await f.execute("psi_skill_plan", { action: "create", plan: plan({ title: "T".repeat(300),
+			subskills: [{ ...plan().subskills[0], title: "S".repeat(300) }] }) });
 		const { MemoryStore } = await import("../../core/src/memory.ts");
 		const memory = new MemoryStore(home);
 		const topics = ["diagrams", "short examples", "spoken analogies", "evening sessions", "SQL joins", "dark mode",
@@ -514,7 +515,12 @@ test("injection keeps practice state and a share of learner memory under the cap
 		assert.match(text, /Session warm-up: 1 review/);
 		assert.match(text, /psi_run/);
 		assert.match(text, /## Practice state\nActive skill: sql/);
-		assert.match(text, /OPEN challenge: \{"id"/);
+		const open = /OPEN challenge: (\{.*\})\n/.exec(text);
+		assert.ok(open, "the open card line is complete");
+		assert.equal(JSON.parse(open[1]).prompt, "What is 2 + 2?");
+		assert.match(text, /\nNext subskill: select: /);
+		assert.match(text, /\nSession: (inactive|[\d.]+\/\d+ minutes)\n/);
+		assert.doesNotMatch(text, /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/);
 		const memoryPart = text.slice(text.indexOf("## Learner memory\n") + 18, text.indexOf("## Practice state"));
 		assert.ok(memoryPart.trim().length >= 250, `memory kept ${memoryPart.trim().length} characters`);
 	}));

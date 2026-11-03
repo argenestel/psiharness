@@ -1,5 +1,6 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { ProfileStore } from "../../../core/src/profile.ts";
+import { clipText } from "../../../core/src/slug.ts";
 import type { PracticeDeps } from "./index.ts";
 import { isContinueIntent } from "./guards.ts";
 
@@ -91,27 +92,36 @@ export function registerInjection(
 				+ "action \"review\" unless the learner asks for something else.\n" : "";
 		const execution = process.env.PSI_CODE_EXEC === "1"
 			? "\nDemo with psi_run when useful; ALWAYS verify any computed result with psi_run BEFORE stating it." : "";
-		const required = `Tutor mode: ${mode}.\n` + warmupLine + (path ? `${path.slice(0, 300)}\n` : "") + `${guidance}\n`
-			+ `Read a SKILL.md only for a technique you lack (at most one).\n${contract}${execution}`;
+		const fixed = `Tutor mode: ${mode}.\n${warmupLine}`;
+		const rules = `Read a SKILL.md only for a technique you lack (at most one).\n${contract}${execution}`;
 		const nextLabel = next ? `${next.id}: ${next.title}`
 			: plan ? "all steps solid" : "create a plan with psi_skill_plan";
-		// Most essential first, since this section is trimmed from the end when the block runs out of room.
-		const optional = `## Practice state
-Active skill: ${(skill ?? "not selected").slice(0, 100)}
+		// Never trimmed: which skill, the open card (complete), what is next, and the session clock.
+		const essential = `## Practice state
+Active skill: ${clipText(skill ?? "not selected", 100)}
 OPEN challenge: ${challenge ? JSON.stringify({ id: challenge.id, kind: challenge.kind,
-	format: challenge.format ?? "text", prompt: challenge.prompt.slice(0, 200) }) : "none"}
-${challenge ? "For an unrecorded OPEN answer use psi_attempt with id/skill; do not search files; card notes are already graded.\n" : ""}\
-Next subskill: ${nextLabel.slice(0, 160)}
+	format: challenge.format ?? "text", prompt: clipText(challenge.prompt, 200) }) : "none"}
+Next subskill: ${clipText(nextLabel, 160)}
 Session: ${session ? `${elapsed.toFixed(1)}/${deps.state.plannedMinutes ?? 20} minutes` : "inactive"}
-Hours: ${hours.logged.toFixed(1)}/${hours.goal}; streak: ${progress?.streakDays ?? 0}; level: ${progress?.level ?? 1}.
 `;
-		// Priority: the contract, then practice state, then learner memory, which keeps up to MEMORY_FLOOR characters.
+		const extra = (challenge ? "For an unrecorded OPEN answer use psi_attempt with id/skill; do not search files; "
+			+ "card notes are already graded.\n" : "")
+			+ `Hours: ${hours.logged.toFixed(1)}/${hours.goal}; streak: ${progress?.streakDays ?? 0}; level: ${progress?.level ?? 1}.\n`;
+		// Budget order: contract and essential state in full, then learner memory up to MEMORY_FLOOR, then the plan
+		// guidance, the active path and the remaining state lines in what is left, then more memory.
 		const prefix = "## Learner memory\n";
 		const floor = Math.min(MEMORY_FLOOR, deps.memory.summarize({ skill, maxChars: MEMORY_FLOOR }).length);
-		const optionalBudget = Math.max(0, INJECTION_CAP - required.length - prefix.length - floor - 3);
-		const state = `${optional.slice(0, optionalBudget)}\n${required}`;
+		let room = Math.max(0, INJECTION_CAP - prefix.length - 4 - essential.length - fixed.length - rules.length - floor);
+		const take = (text: string): string => {
+			const kept = clipText(text, room);
+			room -= kept.length;
+			return kept;
+		};
+		const guidanceText = take(`${guidance}\n`);
+		const pathText = path ? take(`${clipText(path, 300)}\n`) : "";
+		const state = `${essential}${take(extra)}\n${fixed}${pathText}${guidanceText}${rules}`;
 		const budget = Math.max(0, INJECTION_CAP - prefix.length - state.length - 2);
-		const memory = budget ? deps.memory.summarize({ skill, maxChars: budget }).slice(0, budget) : "";
+		const memory = budget ? clipText(deps.memory.summarize({ skill, maxChars: budget }), budget) : "";
 		deps.refresh(ctx);
 		return { systemPrompt: `${event.systemPrompt}\n\n${prefix}${memory}\n\n${state}` };
 	});

@@ -212,7 +212,7 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
 - Session warm-up: the first turn with a skill computes `PracticeStore.reviewsDue(skill)` (max 3); the tutor serves
   them with `psi_challenge` action "review" before new material (allowed on continue turns; counts in
   `state.warmup`).
-- Variants: `Challenge.variantOf` (stored as the family's original id; `addChallenge` validates it and inherits the
+- Variants: `Challenge.variantOf` (stored as the family's original id; `addChallenge` validates it, keeps the original's gate class (boss / level ≥ 4) and inherits the
   subskill). A challenge and its variants share one FSRS memory in the scheduler; a due retry serves an unattempted
   variant, else returns `needsVariant: true` and `psi_challenge` hands the tutor the original prompt + last tries
   to write one. Missed items become retry-eligible after 2 other attempts or `RETRY_AFTER_MS` (30 min).
@@ -227,7 +227,7 @@ Only touch files in the directory you were assigned. Never `git commit` or `git 
   PsiStore topic files are single-writer).
 - Attempts are skill-scoped (`recordAttempt` takes `skill`); browser-reported code results are `verified: false`.
 - `extension/src/practice/guards.ts`: code-level guarantees — next steps always include Continue; an open challenge's
-  answers are redacted from tutor text and options (single-digit answers only after an answer cue or in a table cell);
+  answers are redacted from tutor text and options (single-digit answers only after an answer cue or in a table cell); a challenge (create/next/review) whose answer this turn's already-streamed text showed is refused (`ANSWER_SHOWN`) rather than redacted after the fact;
   challenges and psi_ask are blocked on continue/show-me turns until something was taught; a new subskill's first
   challenge waits for its lesson (not in test mode; released after two blocks); the turn after a graded miss must
   teach before a new challenge or psi_ask; [n] citations beyond the skill's sources are removed. Each intervention

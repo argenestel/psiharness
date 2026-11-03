@@ -12,6 +12,9 @@ export const HIDDEN = "[answer hidden until you try]";
 export const CITATION_NOTE = "(A citation was removed because it didn't match a source.)";
 /** Block reason for a challenge offered on a continue/show turn before any teaching. */
 export const TEACH_FIRST = "Teach the next chunk first (explanation or worked example), then offer a challenge.";
+/** Block reason for a challenge whose answer this turn's text already showed (it streamed to the learner). */
+export const ANSWER_SHOWN = "This turn's text already shows that challenge's answer, so it would test reading, not "
+	+ "recall. Use new values whose answer appears nowhere in this turn, or offer the check next turn.";
 /** Block reason for a Socratic prompt offered on a continue/show turn before any teaching. */
 export const ASK_AFTER_TEACHING =
 	"Teach the next chunk first (explanation or worked example); a psi_ask prompt may follow it.";
@@ -208,6 +211,8 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 	let learner = "";
 	let learnerTexts: string[] = [];
 	let teachChars = 0, teachTools = 0;
+	// Everything the tutor wrote this learner turn, as streamed (before any redaction).
+	let turnProse = "";
 	// After a graded miss, the learner's next turn is a repair turn: teach before any new question or challenge.
 	let repairDue = false, repairing = false;
 	let presented: { skill: string; id: string; at: number } | undefined;
@@ -228,6 +233,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		learnerTexts = [...learnerTexts, text].slice(-50);
 		teachChars = 0;
 		teachTools = 0;
+		turnProse = "";
 	};
 	const mustTeach = (chars = teachChars, tools = teachTools) => (repairing || isContinueIntent(learner))
 		&& tools <= 0 && chars < 200
@@ -282,6 +288,20 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		return skill && id ? `${skill}:${id}` : undefined;
 	};
 
+	/** The card a psi_challenge call would show (with its answer), or undefined (variant request, nothing due). */
+	const cardFor = (args: Record<string, unknown>): AnswerSource | undefined => {
+		if (args.action === "next" || args.action === "review") {
+			const skill = typeof args.skill === "string" ? args.skill : deps.state.skill;
+			const next = skill ? attempt(() => deps.practice.nextChallenge(skill, { reviewOnly: args.action === "review",
+				subskillId: typeof args.subskillId === "string" ? args.subskillId : undefined })) : undefined;
+			return next && !next.needsVariant ? next.challenge : undefined;
+		}
+		if (typeof args.expected !== "string") return undefined;
+		return { id: "pending", prompt: String(args.prompt ?? ""), expected: args.expected,
+			acceptable: Array.isArray(args.acceptable) ? args.acceptable.filter((v) => typeof v === "string") : undefined,
+			format: args.format as Challenge["format"], unit: typeof args.unit === "string" ? args.unit : undefined };
+	};
+
 	/**
 	 * A warm-up review or a variant retry recalls earlier material, so it needs no teaching first on a continue turn
 	 * (a repair turn after a miss still teaches first).
@@ -327,7 +347,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 	});
 	pi.on("session_start", async () => {
 		checked = false; counted = false;
-		learner = ""; learnerTexts = []; teachChars = 0; teachTools = 0; presented = undefined;
+		learner = ""; learnerTexts = []; teachChars = 0; teachTools = 0; presented = undefined; turnProse = "";
 		repairDue = false; repairing = false;
 		closed.clear(); pending.clear(); taught.clear(); lessonBlocks.clear();
 	});
@@ -363,18 +383,14 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 			}
 			if (b.name !== "psi_challenge" || (mustTeach(teachChars, tools) && !warmupReview(args))
 				|| lessonNeeded(args, lessons)) continue;
-			if (args.action === "next" || args.action === "review") {
-				const skill = typeof args.skill === "string" ? args.skill : deps.state.skill;
-				const next = skill ? attempt(() => deps.practice.nextChallenge(skill, { reviewOnly: args.action === "review",
-					subskillId: typeof args.subskillId === "string" ? args.subskillId : undefined })) : undefined;
-				// A variant request presents no card; anything else will open this challenge.
-				if (next && !next.needsVariant) upcoming.push(next.challenge);
-			} else if (typeof args.expected === "string") {
-				upcoming.push({ id: "pending", prompt: String(args.prompt ?? ""), expected: args.expected,
-					acceptable: Array.isArray(args.acceptable) ? args.acceptable.filter((v) => typeof v === "string") : undefined,
-					format: args.format as Challenge["format"], unit: typeof args.unit === "string" ? args.unit : undefined });
-			}
+			const card = cardFor(args);
+			if (card) upcoming.push(card);
 		}
+		// Text streams to the learner as it is written, so it is redacted only for cards that were already open. A card
+		// this message is about to open is refused at the tool gate if this turn's text already showed its answer;
+		// its answer is hidden from the (never streamed) buttons and Socratic hints below.
+		turnProse += blocks.map((b) => b.type === "text" ? `${b.text ?? ""}\n` : "").join("");
+		const openText = unspoken(openChallenges(answered));
 		const open = unspoken([...openChallenges(answered), ...upcoming.filter((c) => !answered.has(c.id))]);
 		const skill = deps.state.skill ?? attempt(() => deps.practice.activeSession()?.skill);
 		const count = skill ? attempt(() => sources.list(skill).length) : undefined;
@@ -382,7 +398,7 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 		const removed: number[] = [];
 		for (const b of blocks) {
 			if (b.type === "text" && typeof b.text === "string") {
-				const r = redactAnswers(b.text, open, learnerTexts);
+				const r = redactAnswers(b.text, openText, learnerTexts);
 				const c = count === undefined ? { text: r.text, removed: [] } : fixCitations(r.text, count);
 				hidden += r.count;
 				removed.push(...c.removed);
@@ -413,6 +429,11 @@ export function registerGuards(pi: ExtensionAPI, deps: PracticeDeps): void {
 					const action = input.action ?? "create";
 					fire("teach-first", { learner: learner.slice(0, 120), teachChars, action, repair: repairing });
 					return { block: true, reason: TEACH_FIRST };
+				}
+				const card = cardFor(input);
+				if (card && unspoken([card]).length && redactAnswers(turnProse, [card], learnerTexts).count) {
+					fire("answer-shown", { action: input.action ?? "create", challengeId: card.id });
+					return { block: true, reason: ANSWER_SHOWN };
 				}
 				const subskillId = lessonNeeded(input);
 				if (!subskillId) return;

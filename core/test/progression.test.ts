@@ -144,3 +144,26 @@ test("solving a variant of a failed boss satisfies its gate; variants count as o
 	assert.equal(reconcileStatuses(plan(), pair, [attempt("1", "success", 1), attempt("1-v", "success", 2),
 		attempt("2", "success", 3)]).subskills.find((s) => s.id === "a")?.status, "practicing");
 });
+
+test("hard variants of solved easy items and orphaned hard variants still gate mastery", () => {
+	const orphan: Challenge = { ...challenges[0]!, id: "orphan", kind: "boss", level: 5, variantOf: "gone" };
+	const history = challenges.map((c, n) => attempt(c.id, "success", n));
+	assert.equal(reconcileStatuses(plan(), [...challenges, orphan], history).subskills.find((s) => s.id === "a")?.status,
+		"practicing", "a variant whose original is missing is its own gate");
+	assert.equal(reconcileStatuses(plan(), [...challenges, orphan], [...history, attempt("orphan", "success", 9)])
+		.subskills.find((s) => s.id === "a")?.status, "solid");
+});
+
+test("a variant must keep its original's difficulty class", () => {
+	const home = fs.mkdtempSync(path.join(os.tmpdir(), "psi-variant-gate-"));
+	try {
+		const store = new PracticeStore(home);
+		const easy = store.addChallenge({ skill: "demo", subskillId: "a", kind: "apply", level: 1, prompt: "Easy" });
+		assert.throws(() => store.addChallenge({ skill: "demo", kind: "boss", level: 5, prompt: "Hard", variantOf: easy.id }),
+			/difficulty class/);
+		const boss = store.addChallenge({ skill: "demo", subskillId: "a", kind: "boss", level: 5, prompt: "Boss" });
+		assert.throws(() => store.addChallenge({ skill: "demo", kind: "apply", level: 2, prompt: "Soft", variantOf: boss.id }),
+			/difficulty class/);
+		assert.equal(store.addChallenge({ skill: "demo", kind: "apply", level: 4, prompt: "Hard v", variantOf: boss.id }).subskillId, "a");
+	} finally { fs.rmSync(path.join(home), { recursive: true, force: true }); }
+});

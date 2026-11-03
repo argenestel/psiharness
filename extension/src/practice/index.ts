@@ -16,6 +16,8 @@ import { refreshHud } from "./hud.ts";
 export interface PracticeState {
 	skill?: string;
 	challengeId?: string;
+	/** When this process presented (or restored) `challengeId`, in ms: only later attempts answer it. */
+	challengeAt?: number;
 	hintIndex: number;
 	plannedMinutes?: number;
 	/** Teaching turns this session since the learner last got a challenge or answered one (in memory only). */
@@ -48,18 +50,24 @@ export function registerPractice(pi: ExtensionAPI, options: { home?: string } = 
 			if (state.skill) return;
 			const saved = savedState.read();
 			state.skill = saved.activeSkill;
-			if (saved.openChallenge && saved.openChallenge.skill === state.skill) state.challengeId = saved.openChallenge.id;
+			if (saved.openChallenge && saved.openChallenge.skill === state.skill) {
+				state.challengeId = saved.openChallenge.id;
+				state.challengeAt = Date.now();
+			}
 		},
 		sync() {
 			if (!state.challengeId) return;
 			let open: { skill: string; id: string } | undefined;
 			try { open = savedState.read().openChallenge; } catch { return; }
-			// The web attempt route clears state.json's openChallenge when it records an answer to that card; a resumed
-			// session (or another chat's card) leaves this process's own unanswered challenge alone.
-			if (open || !state.skill) return;
-			const id = state.challengeId;
-			if (!readAttempts(deps.practice.root, state.skill).some((a) => a.challengeId === id)) return;
+			// The card was answered elsewhere (the web card's attempt route) when an attempt on it was recorded after
+			// this process presented it. Other chats' cards and earlier attempts on a reviewed card do not count.
+			if (open?.id === state.challengeId || !state.skill || state.challengeAt === undefined) return;
+			const id = state.challengeId, since = state.challengeAt - 1000;
+			if (!readAttempts(deps.practice.root, state.skill).some((a) => a.challengeId === id && Date.parse(a.at) >= since)) {
+				return;
+			}
 			state.challengeId = undefined;
+			state.challengeAt = undefined;
 			state.hintIndex = 0;
 			state.taughtSinceCheck = 0;
 		},
@@ -111,6 +119,7 @@ export function registerPractice(pi: ExtensionAPI, options: { home?: string } = 
 			if (typeof saved?.skill === "string") {
 				state.skill = slugify(saved.skill) || undefined;
 				state.challengeId = typeof saved.challengeId === "string" ? saved.challengeId : undefined;
+				state.challengeAt = state.challengeId ? Date.now() : undefined;
 			}
 		}
 		deps.resume();

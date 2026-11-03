@@ -6,7 +6,7 @@ import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { registerPractice } from "../src/practice/index.ts";
 import {
-	ASK_AFTER_TEACHING, CITATION_NOTE, HIDDEN, TEACH_FIRST, fixCitations, isContinueIntent, lessonFirst, redactAnswers,
+	ANSWER_SHOWN, ASK_AFTER_TEACHING, CITATION_NOTE, HIDDEN, TEACH_FIRST, fixCitations, isContinueIntent, lessonFirst, redactAnswers,
 	withContinue,
 } from "../src/practice/guards.ts";
 import { turnReminder } from "../src/practice/inject.ts";
@@ -164,14 +164,21 @@ test("a challenge graded outside the session (web card) stops redaction", async 
 	assert.equal(textOf(await f.assistant([text("Yes, Buenos días.")])), "Yes, Buenos días.");
 }));
 
-test("a challenge created in the same message hides its answer from that message's text", async () => fixture(async (f) => {
-	await f.learner("Teach me greetings");
-	const message = await f.assistant([text(`${teaching} Ready? Say buen día to the server.`),
-		toolCall("psi_challenge", greet)]);
-	assert.ok(textOf(message).includes(`Say ${HIDDEN} to the server`), textOf(message));
-}));
+test("a challenge whose answer this turn's streamed text already showed is refused, not hidden after the fact",
+	async () => fixture(async (f) => {
+		await f.learner("Teach me greetings");
+		const message = await f.assistant([text(`${teaching} Ready? Say buen día to the server.`),
+			toolCall("psi_challenge", greet)]);
+		assert.ok(textOf(message).includes("Say buen día to the server"), "streamed text is left as the learner saw it");
+		assert.deepEqual((await f.call("psi_challenge", greet)).blocked, { block: true, reason: ANSWER_SHOWN });
+		assert.equal(f.guardEntries("answer-shown").length, 1);
+		const fresh = { ...greet, prompt: "How do you greet a server at 3 p.m.?", expected: "Buenas tardes", acceptable: [] };
+		assert.ok((await f.call("psi_challenge", fresh)).result, "a check whose answer the turn did not show is served");
+		await f.learner("Buenas tardes");
+		assert.ok((await f.call("psi_challenge", greet)).result, "a new turn starts with no shown answers");
+	}));
 
-test("a review served in the same message hides the reviewed challenge's answer", async () => fixture(async (f, home) => {
+test("a review whose answer this turn already showed is refused too", async () => fixture(async (f, home) => {
 	const { PracticeStore } = await import("../../core/src/practice.ts");
 	const store = new PracticeStore(home);
 	const old = store.addChallenge(greet as any);
@@ -181,9 +188,9 @@ test("a review served in the same message hides the reviewed challenge's answer"
 		variantOf: old.id } as any);
 	new StateStore(home).update({ activeSkill: "spanish" });
 	await f.learner("Hi again");
-	const message = await f.assistant([text("Warm-up first. In the afternoon you say Buenas tardes."),
+	await f.assistant([text("Warm-up first. In the afternoon you say Buenas tardes."),
 		toolCall("psi_challenge", { action: "review" })]);
-	assert.ok(textOf(message).includes(HIDDEN), textOf(message));
+	assert.deepEqual((await f.call("psi_challenge", { action: "review" })).blocked, { block: true, reason: ANSWER_SHOWN });
 }));
 
 test("continue intent detection", () => {
@@ -350,6 +357,37 @@ test("a card graded in the browser stops the open-challenge warning and counts a
 		const [r] = await f.fire("context", { type: "context", messages: [{ role: "user", content: "Continue" }] });
 		assert.doesNotMatch(r.messages[0].content, /is open/);
 		assert.doesNotMatch(r.messages[0].content, /Practice is due/);
+	}));
+
+test("open-card sync ignores other chats' cards and attempts made before this chat showed the card", async () =>
+	fixture(async (f, home) => {
+		const { PracticeStore } = await import("../../core/src/practice.ts");
+		const store = new PracticeStore(home);
+		const remind = async () => {
+			const [r] = await f.fire("context", { type: "context", messages: [{ role: "user", content: "Hi" }] });
+			return r.messages[0].content as string;
+		};
+		// A reviewed card already has an old attempt; another chat then grades its own card and clears state.json.
+		const at = new Date(0).toISOString();
+		store.writePlan({ skill: "spanish", title: "Spanish", targetPerformance: "Order", whyItMatters: "Travel",
+			hoursGoal: 20, createdAt: at, updatedAt: at, resources: [], barriers: [],
+			subskills: [{ id: "greet", title: "Greet", why: "Polite", priority: 1, prerequisites: [], selfCorrection: "Ask",
+				drills: [], status: "practicing" }] });
+		const old = store.addChallenge({ ...greet, subskillId: "greet" } as any);
+		store.recordAttempt({ skill: "spanish", challengeId: old.id, answer: "Buenos días", outcome: "success",
+			hintsUsed: 0, at: new Date(Date.now() - 30 * 86400000).toISOString() });
+		await f.learner("Teach me greetings");
+		await f.assistant([text(teaching)]);
+		const served = await f.call("psi_challenge", { action: "next", skill: "spanish" });
+		assert.equal(served.result?.details.reason, "review");
+		const mine = new StateStore(home).read().openChallenge!.id;
+		new StateStore(home).update({ openChallenge: undefined });
+		assert.match(await remind(), new RegExp(`Challenge ${mine} is open`), "an earlier attempt does not answer it");
+		// Another chat owns the global card while this chat's card is graded in the browser.
+		const other = store.addChallenge({ ...greet, prompt: "Another card" } as any);
+		new StateStore(home).update({ openChallenge: { skill: "spanish", id: other.id } });
+		store.recordAttempt({ skill: "spanish", challengeId: mine, answer: "Buenos días", outcome: "success", hintsUsed: 0 });
+		assert.doesNotMatch(await remind(), /is open/, "an answer after it was shown closes it");
 	}));
 
 test("session warm-up: due reviews open the session, even on a continue turn, and retries come back as variants",

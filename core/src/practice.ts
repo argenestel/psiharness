@@ -3,7 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 import { levelFor, newBadges, updateStreak, xpFor } from "./gamify.ts";
-import { advanceAfterAttempt, reconcileStatuses } from "./progression.ts";
+import { advanceAfterAttempt, isGate, reconcileStatuses } from "./progression.ts";
 import { withFileLock } from "./lock.ts";
 import { dueReviews, selectNextChallenge } from "./scheduler.ts";
 import type { ChallengeSelection, SchedulerOptions } from "./scheduler.ts";
@@ -280,6 +280,10 @@ export class PracticeStore {
 					? original.variantOf : original.id;
 				if (challenge.subskillId !== undefined && challenge.subskillId !== original.subskillId) {
 					throw new Error("variantOf: a variant must practise the original's subskill");
+				}
+				// A variant stands in for its original, so a mastery gate's variant is a gate and an easy item's is not.
+				if (isGate(challenge) !== isGate(original)) {
+					throw new Error("variantOf: a variant keeps the original's difficulty class (boss / level 4–5 or not)");
 				}
 				challenge.variantOf = root;
 				challenge.subskillId = original.subskillId;

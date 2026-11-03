@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { withFileLock } from "./lock.ts";
-import { newId, nowIso } from "./slug.ts";
+import { clipText, newId, nowIso } from "./slug.ts";
 import type { LearnerMemory, MemoryItem, MemoryKind, SessionRecap } from "./types.ts";
 
 type Draft = Pick<MemoryItem, "kind" | "text"> &
@@ -209,7 +209,7 @@ export class MemoryStore {
 				const candidate = result + separator + line;
 				if (candidate.length > max) {
 					const base = index === 0 ? candidate : result;
-					return max ? base.slice(0, max - 1).trimEnd() + "…" : "";
+					return max ? clipText(base, max - 1).trimEnd() + "…" : "";
 				}
 				result = candidate;
 			}

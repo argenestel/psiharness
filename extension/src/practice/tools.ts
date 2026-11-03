@@ -138,6 +138,7 @@ function resolveAttemptChallenge(practice: PracticeDeps["practice"], challengeId
 function presentChallenge(c: Challenge, deps: PracticeDeps, ctx: ExtensionContext) {
 	deps.activate(c.skill);
 	deps.state.challengeId = c.id;
+	deps.state.challengeAt = Date.now();
 	deps.state.hintIndex = 0;
 	deps.persist();
 	deps.refresh(ctx);
